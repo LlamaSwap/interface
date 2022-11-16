@@ -764,10 +764,12 @@ export function AggregatorContainer({ tokenlist }) {
 			<FaqWrapper>
 				<h1>FAQ</h1>
 				<br />
+				<b>What is this?</b>
+				It's an aggregator of DEX aggregators, we query the price in 1inch, cowswap, matcha... and then offer you the best price among all of them<br /><br />
 				<b>Does DefiLlama take any fees? </b>
 				DefiLlama takes 0 fee on swaps.
 				<br /> You'll get the exact same price swapping through DefiLlama as what you'd get swapping through the chosen
-				aggregator directly. We add our referral code to swaps, so, for aggregators with revenue sharing, they will send
+				aggregator directly.<br />We do add our referral code to swaps tho, so, for aggregators with revenue sharing, they will send
 				us part of the fee they earn. This is not an extra fee, you'd be charged the same fee anyway, but now a small
 				part of it is shared with DefiLlama. We also integrate aggregators with no fee sharing the best price, and in
 				those cases we don't make any money. <br />
