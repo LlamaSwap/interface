@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { providers } from '../rpcs'
+import { providers } from '../../rpcs'
 import { ABI } from './abi'
 
 // Source https://github.com/yieldyak/yak-aggregator
