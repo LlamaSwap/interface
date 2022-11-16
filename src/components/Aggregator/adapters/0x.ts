@@ -1,4 +1,5 @@
 import { ethers, Signer } from 'ethers'
+import { defillamaReferrerAddress } from '../constants'
 
 export const chainToId = {
 	ethereum: 'https://api.0x.org/',
@@ -31,7 +32,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			chainToId[chain]
 		}swap/v1/quote?buyToken=${tokenTo}&sellToken=${tokenFrom}&sellAmount=${amount}&slippagePercentage=${
 			extra.slippage / 100 || 1
-		}`
+		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false`
 	).then((r) => r.json())
 	return {
 		amountReturned: data.buyAmount,
