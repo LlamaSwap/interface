@@ -1,26 +1,25 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork } from 'wagmi'
 import { groupBy, mapValues, merge, uniqBy } from 'lodash'
 import { FixedSizeList as List } from 'react-window'
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit'
-import { capitalizeFirstLetter } from '~/utils'
-import { Panel } from '~/components'
-
-import ReactSelect from '../MultiSelect/ReactSelect'
-import { getAllChains, listRoutes, swap } from './router'
+import { ethers } from 'ethers'
+import BigNumber from 'bignumber.js'
+import { ArrowRight } from 'react-feather'
 import styled, { css } from 'styled-components'
 import { createFilter } from 'react-select'
+import ReactSelect from '~/components/MultiSelect/ReactSelect'
+import { getAllChains, listRoutes, swap } from './router'
+
 import { TYPE } from '~/Theme'
 import { Input, TokenInput } from './TokenInput'
 import { CrossIcon, GasIcon } from './Icons'
 import Loader from './Loader'
 import Search from './Search'
-import { ButtonDark } from '../ButtonStyled'
+import { ButtonDark } from '~/components/ButtonStyled'
+import Tooltip from '~/components/Tooltip'
 import { useTokenApprove } from './hooks'
-import { ArrowRight } from 'react-feather'
-import BigNumber from 'bignumber.js'
-import Tooltip from '../Tooltip'
-import { ethers } from 'ethers'
+import { capitalizeFirstLetter } from '~/utils'
 
 /*
 Integrated:
@@ -109,6 +108,10 @@ const Wrapper = styled.div`
 	grid-row-gap: 36px;
 	margin: 0 auto;
 	margin-top: 10px;
+
+	h1 {
+		font-weight: 500;
+	}
 `
 
 const chainsMap = {
@@ -456,6 +459,17 @@ const InputFooter = styled.div`
 	justify-content: space-between;
 `
 
+const FaqWrapper = styled.div`
+	margin: 0 auto;
+	ackground-color: ${({ theme }) => theme.advancedBG};
+	padding: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	border-radius: 8px;
+	border: 1px solid ${({ theme }) => theme.bg3};
+	box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.05);
+`
+
 export function AggregatorContainer({ tokenlist }) {
 	const chains = getAllChains()
 	const { data: signer } = useSigner()
@@ -488,7 +502,7 @@ export function AggregatorContainer({ tokenlist }) {
 	useEffect(() => {
 		const nativeToken = tokenlist[chainsMap[selectedChain.value]][0]
 		setFromToken({ ...nativeToken, value: nativeToken.address, label: nativeToken.symbol })
-	}, [selectedChain])
+	}, [selectedChain, tokenlist])
 
 	const [isLoading, setLoading] = useState(false)
 
@@ -555,7 +569,7 @@ export function AggregatorContainer({ tokenlist }) {
 				setRoutes
 			).finally(() => setLoading(false))
 		}
-	}, [fromToken, toToken, amount, selectedChain])
+	}, [fromToken, toToken, amount, selectedChain, address, gasPriceData, slippage])
 
 	useEffect(() => {
 		if (toToken)
@@ -615,8 +629,15 @@ export function AggregatorContainer({ tokenlist }) {
 
 	return (
 		<Wrapper>
-			<TYPE.largeHeader>Meta-Aggregator</TYPE.largeHeader>
-			<TYPE.heading>This product is still WIP and not ready for public release yet. Please expect things to break and if you find anything broken please let us know in the <a style={{textDecoration:"underline"}} href="http://discord.gg/buPFYXzDDd">defillama discord</a></TYPE.heading>
+			<h1>Meta-Aggregator</h1>
+
+			<TYPE.heading>
+				This product is still WIP and not ready for public release yet. Please expect things to break and if you find
+				anything broken please let us know in the{' '}
+				<a style={{ textDecoration: 'underline' }} href="http://discord.gg/buPFYXzDDd">
+					defillama discord
+				</a>
+			</TYPE.heading>
 
 			<BodyWrapper>
 				<Body showRoutes={!!routes?.length || isLoading}>
@@ -739,10 +760,9 @@ export function AggregatorContainer({ tokenlist }) {
 						: null}
 				</Routes>
 			</BodyWrapper>
-			<Panel as="p" style={{ margin: '0 auto', textAlign: 'left', maxWidth: '600px', marginLeft: '120px' }}>
-				<div style={{ textAlign: 'center' }}>
-					<TYPE.largeHeader>FAQ</TYPE.largeHeader>
-				</div>{' '}
+
+			<FaqWrapper>
+				<h1>FAQ</h1>
 				<br />
 				<b>Does DefiLlama take any fees? </b>
 				DefiLlama takes 0 fee on swaps.
@@ -761,7 +781,7 @@ export function AggregatorContainer({ tokenlist }) {
 				router of each aggregator, so there's no difference between a swap executed directly from their UI and a swap
 				executed from DefiLlama, thus all swaps would be as eligible for airdrops as swaps made through their UI in case
 				there's a future airdrop.
-			</Panel>
+			</FaqWrapper>
 		</Wrapper>
 	)
 }
