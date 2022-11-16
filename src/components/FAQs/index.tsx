@@ -2,6 +2,9 @@ import { ChevronDown } from "react-feather";
 import styled from "styled-components";
 
 const Wrapper = styled.div`
+  margin: 0 auto;
+  width: 100%;
+  max-width: 900px;
   background-color: ${({ theme }) => theme.advancedBG};
   padding: 1.25rem;
   display: flex;
@@ -46,6 +49,7 @@ const Details = styled.details`
 `;
 
 const Description = styled.span`
+  font-size: 1rem;
   word-break: break-all;
 `;
 
