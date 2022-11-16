@@ -111,11 +111,11 @@ const Body = styled.div<{ showRoutes: boolean }>`
 `;
 
 const Wrapper = styled.div`
+  width: 100%;
   text-align: center;
   display: grid;
   grid-row-gap: 36px;
-  margin: 0 auto;
-  margin-top: 10px;
+  margin: 10px auto 40px;
 
   h1 {
     font-weight: 500;
