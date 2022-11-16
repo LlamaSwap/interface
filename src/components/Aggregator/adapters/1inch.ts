@@ -1,6 +1,7 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
 import { ethers, Signer } from 'ethers'
+import { defillamaReferrerAddress } from '../constants'
 
 export const chainToId = {
 	ethereum: 1,
@@ -51,7 +52,7 @@ export async function swap({ chain, from, to, amount, signer, slippage = '1', ra
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to
 
 	const data = await fetch(
-		`https://api.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${fromAddress}&slippage=${slippage}`
+		`https://api.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${fromAddress}&slippage=${slippage}&referrerAddress=${defillamaReferrerAddress}`
 	).then((r) => r.json())
 
 	const tx = await signer.sendTransaction({

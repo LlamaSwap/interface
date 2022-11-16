@@ -25,7 +25,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			sellToken: from,
 			buyToken: to,
 			receiver: extra.userAddress,
-			appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
+			appData: '0xf249b3db926aa5b5a1b18f3fec86b9cc99b9a8a99ad7e8034242d2838ae97422', // generated using https://explorer.cow.fi/appdata?tab=encode
 			partiallyFillable: false,
 			sellTokenBalance: 'erc20',
 			buyTokenBalance: 'erc20',
