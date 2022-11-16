@@ -1,6 +1,5 @@
-import { useRef, useState } from 'react'
+import {  useState } from 'react'
 import { FixedSizeList as List } from 'react-window'
-
 import { Input } from './TokenInput'
 import styled from 'styled-components'
 import { TYPE } from '~/Theme'
