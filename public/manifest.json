@@ -1,6 +1,6 @@
 {
-	"short_name": "SushiSwap Vision",
-	"name": "View statistics for SushiSwap exchanges.",
+	"short_name": "Llama Swap",
+	"name": "Llama Swap: Meta DEX aggregator",
 	"icons": [
 		{
 			"src": "favicon.ico",
