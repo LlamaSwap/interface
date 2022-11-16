@@ -744,6 +744,8 @@ export function AggregatorContainer({ tokenlist }) {
 					<TYPE.largeHeader>FAQ</TYPE.largeHeader>
 				</div>{' '}
 				<br />
+				<b>What is this?</b>
+				It's an aggregator of DEX aggregators, we query the price in 1inch, cowswap, matcha... and then offer you the best price among all of them<br /><br />
 				<b>Does DefiLlama take any fees? </b>
 				DefiLlama takes 0 fee on swaps.
 				<br /> You'll get the exact same price swapping through DefiLlama as what you'd get swapping through the chosen
