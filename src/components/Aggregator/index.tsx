@@ -778,7 +778,7 @@ export function AggregatorContainer({ tokenlist }) {
                 <Input
                   value={slippage}
                   type="number"
-                  style={{ width: 50, height: 30, display: "inline" }}
+                  style={{ width: 50, height: 30, display: "inline", appearance: 'textfield' }}
                   onChange={(val) => {
                     if (+val.target.value < 50) setSlippage(val.target.value);
                   }}
