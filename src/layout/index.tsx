@@ -2,8 +2,7 @@ import * as React from 'react'
 import Head from 'next/head'
 import styled from 'styled-components'
 import ThemeProvider, { GlobalStyle } from '~/Theme'
-import SEO from '~/components/SEO'
-import Nav from '~/components/Nav'
+
 
 const PageWrapper = styled.div`
 	flex: 1;
@@ -44,11 +43,8 @@ export default function Layout({ title, children, defaultSEO = false, ...props }
 				<title>{title}</title>
 			</Head>
 
-			{defaultSEO && <SEO />}
-
 			<ThemeProvider>
 				<GlobalStyle />
-				<Nav />
 				<PageWrapper>
 					<Center {...props}>{children}</Center>
 				</PageWrapper>

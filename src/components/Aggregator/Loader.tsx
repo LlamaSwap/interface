@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import loaderImg from '~/public/defillama-press-kit/nft/PNG/defillama_211230_brand_logo_defillama-nft-icon.png'
+import loaderImg from '~/public/loader.png'
 
 const LoaderWrapper = styled.div`
 	margin: 0 auto;
