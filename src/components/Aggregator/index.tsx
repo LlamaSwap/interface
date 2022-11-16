@@ -14,16 +14,16 @@ import BigNumber from "bignumber.js";
 import { ArrowRight } from "react-feather";
 import styled, { css } from "styled-components";
 import { createFilter } from "react-select";
-import ReactSelect from "~/components/MultiSelect";
-import { getAllChains, listRoutes, swap } from "./router";
-
 import { TYPE } from "~/Theme";
+import ReactSelect from "~/components/MultiSelect";
+import { ButtonDark } from "~/components/ButtonStyled";
+import Tooltip from "~/components/Tooltip";
+import FAQs from "~/components/FAQs";
+import { getAllChains, listRoutes, swap } from "./router";
 import { Input, TokenInput } from "./TokenInput";
 import { CrossIcon, GasIcon } from "./Icons";
 import Loader from "./Loader";
 import Search from "./Search";
-import { ButtonDark } from "~/components/ButtonStyled";
-import Tooltip from "~/components/Tooltip";
 import { useTokenApprove } from "./hooks";
 import { capitalizeFirstLetter } from "~/utils";
 
@@ -506,17 +506,6 @@ const InputFooter = styled.div`
   justify-content: space-between;
 `;
 
-const FaqWrapper = styled.div`
-  margin: 0 auto;
-  ackground-color: ${({ theme }) => theme.advancedBG};
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.bg3};
-  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.05);
-`;
-
 export function AggregatorContainer({ tokenlist }) {
   const chains = getAllChains();
   const { data: signer } = useSigner();
@@ -861,39 +850,7 @@ export function AggregatorContainer({ tokenlist }) {
         </Routes>
       </BodyWrapper>
 
-      <FaqWrapper>
-        <h1>FAQ</h1>
-        <br />
-        <b>What is this?</b>
-        It's an aggregator of DEX aggregators, we query the price in 1inch,
-        cowswap, matcha... and then offer you the best price among all of them
-        <br />
-        <br />
-        <b>Does DefiLlama take any fees? </b>
-        DefiLlama takes 0 fee on swaps.
-        <br /> You'll get the exact same price swapping through DefiLlama as
-        what you'd get swapping through the chosen aggregator directly.
-        <br />
-        We do add our referral code to swaps tho, so, for aggregators with
-        revenue sharing, they will send us part of the fee they earn. This is
-        not an extra fee, you'd be charged the same fee anyway, but now a small
-        part of it is shared with DefiLlama. We also integrate aggregators with
-        no fee sharing the best price, and in those cases we don't make any
-        money. <br />
-        <br />
-        <b>Is it safe?</b>Our aggregator uses the router contract of each
-        aggregator, we don't use any contracts developed by us. Thus you inherit
-        the same security you'd get by swapping directly from their UI instead
-        of ours.
-        <br />
-        <br />
-        <b>Will I be eligible for airdrops if I swap through DefiLlama?</b> Yes,
-        we execute swaps directly against the router of each aggregator, so
-        there's no difference between a swap executed directly from their UI and
-        a swap executed from DefiLlama, thus all swaps would be as eligible for
-        airdrops as swaps made through their UI in case there's a future
-        airdrop.
-      </FaqWrapper>
+      <FAQs />
     </Wrapper>
   );
 }
