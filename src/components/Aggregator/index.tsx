@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   useAccount,
   useBalance,
@@ -6,26 +6,41 @@ import {
   useNetwork,
   useSigner,
   useSwitchNetwork,
-} from "wagmi";
-import { groupBy, mapValues, merge, uniqBy } from "lodash";
-import { useAddRecentTransaction } from "@rainbow-me/rainbowkit";
-import { ethers } from "ethers";
-import BigNumber from "bignumber.js";
-import { ArrowRight } from "react-feather";
-import styled, { css } from "styled-components";
-import { createFilter } from "react-select";
-import { TYPE } from "~/Theme";
-import ReactSelect from "~/components/MultiSelect";
-import { ButtonDark } from "~/components/ButtonStyled";
-import Tooltip from "~/components/Tooltip";
-import FAQs from "~/components/FAQs";
-import { getAllChains, listRoutes, swap } from "./router";
-import { Input, TokenInput } from "./TokenInput";
-import { CrossIcon, GasIcon } from "./Icons";
-import Loader from "./Loader";
-import Search from "./Search";
-import { useTokenApprove } from "./hooks";
-import { capitalizeFirstLetter } from "~/utils";
+} from 'wagmi';
+import { groupBy, mapValues, merge, uniqBy } from 'lodash';
+import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
+import { ethers } from 'ethers';
+import BigNumber from 'bignumber.js';
+import { ArrowRight } from 'react-feather';
+import styled, { css } from 'styled-components';
+import { createFilter } from 'react-select';
+import { TYPE } from '~/Theme';
+import ReactSelect from '~/components/MultiSelect';
+import { ButtonDark } from '~/components/ButtonStyled';
+import Tooltip from '~/components/Tooltip';
+import FAQs from '~/components/FAQs';
+import { getAllChains, listRoutes, swap } from './router';
+import { Input, TokenInput } from './TokenInput';
+import { CrossIcon, GasIcon } from './Icons';
+import Loader from './Loader';
+import Search from './Search';
+import { useTokenApprove } from './hooks';
+import { capitalizeFirstLetter } from '~/utils';
+import {
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  Image,
+  Link,
+  ModalFooter,
+  Heading,
+} from '@chakra-ui/react';
+import { ExternalLinkIcon } from '@chakra-ui/icons';
+import txImg from '~/public/llamanote.png';
+import { chainsMap } from './constants';
 
 /*
 Integrated:
@@ -80,7 +95,6 @@ cant integrate:
 const Body = styled.div<{ showRoutes: boolean }>`
   display: grid;
   grid-row-gap: 16px;
-  margin: 0 auto;
   transform: translateX(180px);
   padding-bottom: 4px;
 
@@ -88,17 +102,17 @@ const Body = styled.div<{ showRoutes: boolean }>`
   max-width: 46rem;
 
   box-shadow: ${({ theme }) =>
-    theme.mode === "dark"
-      ? "10px 0px 50px 10px rgba(26, 26, 26, 0.9);"
-      : "10px 0px 50px 10px rgba(211, 211, 211, 0.9);;"};
+    theme.mode === 'dark'
+      ? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
+      : '10px 0px 50px 10px rgba(211, 211, 211, 0.9);;'};
   padding: 16px;
   border-radius: 16px;
   text-align: left;
   transition: all 0.66s ease-out;
   animation: ${(props) =>
     props.showRoutes === true
-      ? "slide-left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both"
-      : "none"};
+      ? 'slide-left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'
+      : 'none'};
 
   @keyframes slide-left {
     0% {
@@ -122,30 +136,6 @@ const Wrapper = styled.div`
   }
 `;
 
-const chainsMap = {
-  ethereum: 1,
-  bsc: 56,
-  polygon: 137,
-  optimism: 10,
-  arbitrum: 42161,
-  avax: 43114,
-  gnosis: 100,
-  fantom: 250,
-  klaytn: 8217,
-  aurora: 1313161554,
-  celo: 42220,
-  cronos: 25,
-  dogechain: 2000,
-  moonriver: 1285,
-  bttc: 199,
-  oasis: 42262,
-  velas: 106,
-  heco: 128,
-  harmony: 1666600000,
-  boba: 288,
-  okc: 66,
-};
-
 const idToChain = Object.entries(chainsMap).reduce(
   (acc, [key, val]) => ({ ...acc, [val]: key }),
   {}
@@ -165,11 +155,16 @@ const oneInchChains = {
 
 const formatOptionLabel = ({ label, ...rest }) => {
   return (
-    <div style={{ display: "flex" }}>
-      <div style={{ marginLeft: "10px", color: "#ccc" }}>
+    <div style={{ display: 'flex' }}>
+      <div style={{ marginLeft: '10px', color: '#ccc' }}>
         <img
           src={rest.logoURI}
-          style={{ width: 20, height: 20, marginRight: 8, borderRadius: "50%" }}
+          style={{
+            width: 20,
+            height: 20,
+            marginRight: 8,
+            borderRadius: '50%',
+          }}
         />
       </div>
       <div>{label}</div>
@@ -191,7 +186,7 @@ interface Route {
     symbol: string;
     decimals: string;
   };
-  fromToken: Route["toToken"];
+  fromToken: Route['toToken'];
   selectedChain: string;
 
   setRoute: () => void;
@@ -209,20 +204,23 @@ const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
   margin-top: 16px;
 
   background-color: ${({ theme, selected }) =>
-    theme.mode === "dark"
+    theme.mode === 'dark'
       ? selected
-        ? " #161616;"
-        : "#2d3039;"
+        ? ' #161616;'
+        : '#2d3039;'
       : selected
-      ? " #bec1c7;"
-      : " #dde3f3;"};
+      ? ' #bec1c7;'
+      : ' #dde3f3;'};
   border: ${({ theme }) =>
-    theme.mode === "dark" ? "1px solid #373944;" : "1px solid #c6cae0;"};
+    theme.mode === 'dark'
+      ? '1px solid #373944;'
+      : '1px solid #c6cae0;'};
   padding: 8px;
   border-radius: 8px;
   cursor: pointer;
 
-  animation: swing-in-left-fwd 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation: swing-in-left-fwd 0.5s
+    cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
   @keyframes swing-in-left-fwd {
     0% {
       transform: rotateX(100deg);
@@ -238,7 +236,7 @@ const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
 
   &:hover {
     background-color: ${({ theme }) =>
-      theme.mode === "dark" ? "#161616;" : "#b7b7b7;;"};
+      theme.mode === 'dark' ? '#161616;' : '#b7b7b7;;'};
   }
 `;
 
@@ -277,26 +275,39 @@ const Route = ({
 
   const amount = +price.amountReturned / 10 ** +toToken?.decimals;
   return (
-    <RouteWrapper onClick={setRoute} selected={selected} best={index === 0}>
+    <RouteWrapper
+      onClick={setRoute}
+      selected={selected}
+      best={index === 0}
+    >
       <RouteRow>
         <img
           src={toToken?.logoURI}
-          style={{ width: 24, height: 24, marginRight: 8, borderRadius: "50%" }}
+          style={{
+            width: 24,
+            height: 24,
+            marginRight: 8,
+            borderRadius: '50%',
+          }}
         />
         <TYPE.heading>
-          {amount.toFixed(3)}{" "}
+          {amount.toFixed(3)}{' '}
           {Number.isFinite(+amountUsd) ? `($${amountUsd})` : null}
         </TYPE.heading>
-        <div style={{ marginLeft: "auto", display: "flex" }}>
-          {name === "CowSwap" ? (
+        <div style={{ marginLeft: 'auto', display: 'flex' }}>
+          {name === 'CowSwap' ? (
             <Tooltip content="Gas is taken from output amount">
-              <GasIcon />{" "}
-              <div style={{ marginLeft: 8 }}>${gasUsd.toFixed(3)}</div>
+              <GasIcon />{' '}
+              <div style={{ marginLeft: 8 }}>
+                ${gasUsd.toFixed(3)}
+              </div>
             </Tooltip>
           ) : (
             <>
-              <GasIcon />{" "}
-              <div style={{ marginLeft: 8 }}>${gasUsd.toFixed(3)}</div>
+              <GasIcon />{' '}
+              <div style={{ marginLeft: 8 }}>
+                ${gasUsd.toFixed(3)}
+              </div>
             </>
           )}
         </div>
@@ -315,10 +326,10 @@ const Route = ({
           </Tooltip>
         ) : null}
         {index === 0 ? (
-          <div style={{ marginLeft: "auto", display: "flex" }}>
-            {" "}
-            <TYPE.heading style={{ color: "#3661c4" }}>
-              Best Route{" "}
+          <div style={{ marginLeft: 'auto', display: 'flex' }}>
+            {' '}
+            <TYPE.heading style={{ color: '#3661c4' }}>
+              Best Route{' '}
             </TYPE.heading>
           </div>
         ) : null}
@@ -337,24 +348,24 @@ const Routes = styled.div<{ show: boolean; isFirstRender: boolean }>`
   min-width: 26rem;
 
   box-shadow: ${({ theme }) =>
-    theme.mode === "dark"
-      ? "10px 0px 50px 10px rgba(26, 26, 26, 0.9);"
-      : "10px 0px 50px 10px rgba(211, 211, 211, 0.9);"};
+    theme.mode === 'dark'
+      ? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
+      : '10px 0px 50px 10px rgba(211, 211, 211, 0.9);'};
 
   ${(props) =>
     !props.isFirstRender &&
     css`
       animation: ${props.show === true
-        ? "tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;"
-        : "tilt-in-fwd-out 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;"};
+        ? 'tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;'
+        : 'tilt-in-fwd-out 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;'};
     `}
 
   animation: ${(props) =>
     props.show === true
-      ? "tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;"
+      ? 'tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;'
       : props.isFirstRender
-      ? "tilt-in-fwd-out 0.001s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;"
-      : "tilt-in-fwd-out 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;"};
+      ? 'tilt-in-fwd-out 0.001s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;'
+      : 'tilt-in-fwd-out 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;'};
 
   &::-webkit-scrollbar {
     display: none;
@@ -365,24 +376,26 @@ const Routes = styled.div<{ show: boolean; isFirstRender: boolean }>`
 
   @keyframes tilt-in-fwd-in {
     0% {
-      transform: rotateY(-20deg) rotateX(35deg) translate(-300px, -300px)
-        skew(35deg, -10deg);
+      transform: rotateY(-20deg) rotateX(35deg)
+        translate(-300px, -300px) skew(35deg, -10deg);
       opacity: 0;
     }
     100% {
-      transform: rotateY(0) rotateX(0deg) translate(0, 0) skew(0deg, 0deg);
+      transform: rotateY(0) rotateX(0deg) translate(0, 0)
+        skew(0deg, 0deg);
       opacity: 1;
     }
   }
 
   @keyframes tilt-in-fwd-out {
     0% {
-      transform: rotateY(-20deg) rotateX(35deg) translate(-1000px, -1000px)
-        skew(35deg, -10deg);
+      transform: rotateY(-20deg) rotateX(35deg)
+        translate(-1000px, -1000px) skew(35deg, -10deg);
       opacity: 0;
     }
     100% {
-      transform: rotateY(0) rotateX(0deg) translate(0, 0) skew(0deg, 0deg);
+      transform: rotateY(0) rotateX(0deg) translate(0, 0)
+        skew(0deg, 0deg);
       opacity: 1;
     }
   }
@@ -390,6 +403,7 @@ const Routes = styled.div<{ show: boolean; isFirstRender: boolean }>`
 const BodyWrapper = styled.div`
   display: flex;
   gap: 16px;
+  margin: 0 auto;
 `;
 
 const TokenSelect = styled.div`
@@ -418,22 +432,24 @@ interface Token {
 }
 
 export async function getTokenList() {
-  const uniList = await fetch("https://tokens.uniswap.org/").then((r) =>
-    r.json()
+  const uniList = await fetch('https://tokens.uniswap.org/').then(
+    (r) => r.json()
   );
-  const sushiList = await fetch("https://token-list.sushi.com/").then((r) =>
-    r.json()
+  const sushiList = await fetch('https://token-list.sushi.com/').then(
+    (r) => r.json()
   );
   const oneInch = await Promise.all(
     Object.values(oneInchChains).map(async (chainId) =>
-      fetch(`https://tokens.1inch.io/v1.1/${chainId}`).then((r) => r.json())
+      fetch(`https://tokens.1inch.io/v1.1/${chainId}`).then((r) =>
+        r.json()
+      )
     )
   );
-  const hecoList = await fetch("https://token-list.sushi.com/").then((r) =>
-    r.json()
+  const hecoList = await fetch('https://token-list.sushi.com/').then(
+    (r) => r.json()
   );
-  const lifiList = await fetch("https://li.quest/v1/tokens").then((r) =>
-    r.json()
+  const lifiList = await fetch('https://li.quest/v1/tokens').then(
+    (r) => r.json()
   );
 
   const oneInchList = Object.values(oneInchChains)
@@ -454,11 +470,12 @@ export async function getTokenList() {
           ...uniList.tokens,
           ...hecoList.tokens,
         ],
-        "chainId"
+        'chainId'
       ),
       lifiList.tokens
     ),
-    (val) => uniqBy(val, (token: Token) => token.address.toLowerCase())
+    (val) =>
+      uniqBy(val, (token: Token) => token.address.toLowerCase())
   );
 
   return {
@@ -469,7 +486,38 @@ export async function getTokenList() {
   };
 }
 
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const TransactionModal = ({ open, setOpen, link }) => {
+  return (
+    <Modal
+      closeOnOverlayClick={true}
+      isOpen={open}
+      onClose={() => setOpen(false)}
+    >
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader textAlign={'center'}>
+          Transaction submitted
+        </ModalHeader>
+        <ModalCloseButton />
+        <ModalBody pb={6}>
+          <Image src={txImg.src} />
+        </ModalBody>
+        <ModalFooter justifyContent={'center'}>
+          <Link
+            href={link}
+            isExternal
+            fontSize={'lg'}
+            textAlign={'center'}
+          >
+            View in explorer <ExternalLinkIcon mx="2px" />
+          </Link>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+};
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const FormHeader = styled.div`
   font-weight: bold;
@@ -480,7 +528,9 @@ const FormHeader = styled.div`
 
 const SelectWrapper = styled.div`
   border: ${({ theme }) =>
-    theme.mode === "dark" ? "2px solid #373944;" : "2px solid #c6cae0;"};
+    theme.mode === 'dark'
+      ? '2px solid #373944;'
+      : '2px solid #c6cae0;'};
   border-radius: 16px;
   padding: 8px;
   padding-bottom: 16px;
@@ -508,24 +558,30 @@ const InputFooter = styled.div`
 
 export function AggregatorContainer({ tokenlist }) {
   const chains = getAllChains();
+
   const { data: signer } = useSigner();
   const { address } = useAccount();
   const { chain } = useNetwork();
-  const [selectedChain, setSelectedChain] = useState({
-    value: "ethereum",
-    label: "Ethereum",
-  });
+  const [selectedChain, setSelectedChain] = useState(chains[0]);
   const [fromToken, setFromToken] = useState(null);
   const [toToken, setToToken] = useState(null);
   const [gasTokenPrice, setGasTokenPrice] = useState(0);
   const [toTokenPrice, setToTokenPrice] = useState(0);
-  const [slippage, setSlippage] = useState("1");
+  const [fromTokenPrice, setFromTokenPrice] = useState(0);
+
+  const [slippage, setSlippage] = useState('1');
 
   const addRecentTransaction = useAddRecentTransaction();
 
   const { switchNetwork } = useSwitchNetwork();
 
-  const [amount, setAmount] = useState("10");
+  const [amount, setAmount] = useState('10');
+  const [txModalOpen, setTxModalOpen] = useState(false);
+  const [txUrl, setTxUrl] = useState('');
+
+  const amountWithDecimals = BigNumber(amount)
+    .times(10 ** (fromToken?.decimals || 18))
+    .toFixed();
 
   const balance = useBalance({
     addressOrName: address,
@@ -533,19 +589,20 @@ export function AggregatorContainer({ tokenlist }) {
       fromToken?.address === ethers.constants.AddressZero
         ? undefined
         : fromToken?.address,
+    watch: true,
   });
 
   useEffect(() => {
     const currentChain = chain?.id;
     if (currentChain)
-      setSelectedChain({
-        value: idToChain[currentChain],
-        label: capitalizeFirstLetter(idToChain[currentChain]),
-      });
+      setSelectedChain(
+        chains.find(({ value }) => chainsMap[value] === currentChain)
+      );
   }, [chain]);
 
   useEffect(() => {
-    const nativeToken = tokenlist[chainsMap[selectedChain.value]][0];
+    const nativeToken =
+      tokenlist[chainsMap[selectedChain.value]]?.[0] || {};
     setFromToken({
       ...nativeToken,
       value: nativeToken.address,
@@ -561,13 +618,13 @@ export function AggregatorContainer({ tokenlist }) {
     chainId: chainsMap[selectedChain.value],
   });
 
-  const tokensInChain = tokenlist[chainsMap[selectedChain.value]]?.map(
-    (token) => ({
-      ...token,
-      value: token.address,
-      label: token.symbol,
-    })
-  );
+  const tokensInChain = tokenlist[
+    chainsMap[selectedChain.value]
+  ]?.map((token) => ({
+    ...token,
+    value: token.address,
+    label: token.symbol,
+  }));
 
   const setTokens = (tokens) => {
     setFromToken(tokens.token0);
@@ -582,18 +639,21 @@ export function AggregatorContainer({ tokenlist }) {
       chain: selectedChain.value,
       from: fromToken.value,
       to: toToken.value,
-      amount: BigNumber(amount)
-        .times(10 ** (fromToken.decimals || 18))
-        .toString(),
+      amount: amountWithDecimals,
       signer,
       slippage,
       adapter: route.name,
       rawQuote: route?.price?.rawQuote,
+      tokens: { fromToken, toToken },
     }).then((res) => {
       addRecentTransaction({
         hash: res.hash,
         description: `Swap transaction using ${route.name} is sent.`,
       });
+      const explorerUrl = chain.blockExplorers.default.url;
+      setTxModalOpen(true);
+
+      setTxUrl(`${explorerUrl}/tx/${res.hash}`);
     });
   };
 
@@ -607,10 +667,7 @@ export function AggregatorContainer({ tokenlist }) {
         selectedChain.value,
         fromToken.value,
         toToken.value,
-        BigNumber(amount)
-          .times(10 ** (fromToken.decimals || 18))
-          .toString(),
-
+        amountWithDecimals,
         {
           gasPriceData,
           userAddress: address,
@@ -633,9 +690,9 @@ export function AggregatorContainer({ tokenlist }) {
   ]);
 
   useEffect(() => {
-    if (toToken)
+    if (fromToken || toToken)
       fetch(
-        `https://coins.llama.fi/prices/current/${selectedChain.value}:${toToken.address},${selectedChain.value}:${ZERO_ADDRESS}`
+        `https://coins.llama.fi/prices/current/${selectedChain.value}:${toToken?.address},${selectedChain.value}:${ZERO_ADDRESS},${selectedChain.value}:${fromToken?.address}`
       )
         .then((r) => r.json())
         .then(({ coins }) => {
@@ -643,10 +700,14 @@ export function AggregatorContainer({ tokenlist }) {
             coins[`${selectedChain.value}:${ZERO_ADDRESS}`]?.price
           );
           setToTokenPrice(
-            coins[`${selectedChain.value}:${toToken.address}`]?.price
+            coins[`${selectedChain.value}:${toToken?.address}`]?.price
+          );
+          setFromTokenPrice(
+            coins[`${selectedChain.value}:${fromToken?.address}`]
+              ?.price
           );
         });
-  }, [toToken, selectedChain]);
+  }, [toToken, selectedChain, fromToken]);
 
   const cleanState = () => {
     setRenderNumber(0);
@@ -654,13 +715,13 @@ export function AggregatorContainer({ tokenlist }) {
     setToToken(null);
     setRoutes(null);
     setRoute(null);
+    setTxUrl('');
   };
+
   const { isApproved, approve, approveInfinite } = useTokenApprove(
     fromToken?.address,
     route?.price?.tokenApprovalAddress,
-    BigNumber(amount)
-      .times(10 ** (fromToken?.decimals || 18))
-      .toString()
+    amountWithDecimals
   );
 
   const onMaxClick = () => {
@@ -681,7 +742,8 @@ export function AggregatorContainer({ tokenlist }) {
           +route.price.estimatedGas *
           +gasPriceData?.formatted?.gasPrice) /
           1e18 || 0;
-      const amount = +route.price.amountReturned / 10 ** +toToken?.decimals;
+      const amount =
+        +route.price.amountReturned / 10 ** +toToken?.decimals;
       const amountUsd = (amount * toTokenPrice).toFixed(2);
       const netOut = +amountUsd - gasUsd;
 
@@ -689,23 +751,20 @@ export function AggregatorContainer({ tokenlist }) {
     })
     .filter(
       ({ fromAmount, amount: toAmount }) =>
-        Number(toAmount) &&
-        BigNumber(amount)
-          .times(10 ** (fromToken.decimals || 18))
-          .toString() === fromAmount
+        Number(toAmount) && amountWithDecimals === fromAmount
     )
     .sort((a, b) => b.netOut - a.netOut);
 
   return (
     <Wrapper>
-      <h1>Meta-Aggregator</h1>
+      <Heading>Meta-Aggregator</Heading>
 
       <TYPE.heading>
-        This product is still WIP and not ready for public release yet. Please
-        expect things to break and if you find anything broken please let us
-        know in the{" "}
+        This product is still WIP and not ready for public release
+        yet. Please expect things to break and if you find anything
+        broken please let us know in the{' '}
         <a
-          style={{ textDecoration: "underline" }}
+          style={{ textDecoration: 'underline' }}
           href="http://discord.gg/buPFYXzDDd"
         >
           defillama discord
@@ -717,12 +776,10 @@ export function AggregatorContainer({ tokenlist }) {
           <div>
             <FormHeader>Chain</FormHeader>
             <ReactSelect
-              options={chains.map((c) => ({
-                value: c,
-                label: capitalizeFirstLetter(c),
-              }))}
+              options={chains}
               value={selectedChain}
               onChange={onChainChange}
+              formatOptionLabel={formatOptionLabel}
             />
           </div>
           <SelectWrapper>
@@ -740,7 +797,11 @@ export function AggregatorContainer({ tokenlist }) {
                   width={24}
                   height={24}
                   display="block"
-                  style={{ marginTop: 8, marginLeft: 8, cursor: "pointer" }}
+                  style={{
+                    marginTop: 8,
+                    marginLeft: 8,
+                    cursor: 'pointer',
+                  }}
                   onClick={() => {
                     setFromToken(toToken);
                     setToToken(fromToken);
@@ -755,7 +816,7 @@ export function AggregatorContainer({ tokenlist }) {
                 filterOption={createFilter({ ignoreAccents: false })}
               />
             </TokenSelect>
-            <div style={{ textAlign: "center", margin: " 8px 16px" }}>
+            <div style={{ textAlign: 'center', margin: ' 8px 16px' }}>
               <TYPE.heading>OR</TYPE.heading>
             </div>
             <Search
@@ -774,15 +835,26 @@ export function AggregatorContainer({ tokenlist }) {
             />
             <InputFooter>
               <div style={{ marginTop: 4, marginLeft: 4 }}>
-                Slippage{" "}
+                Slippage %{' '}
                 <Input
                   value={slippage}
                   type="number"
-                  style={{ width: 50, height: 30, display: "inline", appearance: 'textfield' }}
-                  onChange={(val) => {
-                    if (+val.target.value < 50) setSlippage(val.target.value);
+                  style={{
+                    width: 55,
+                    height: 30,
+                    display: 'inline',
+                    appearance: 'textfield',
                   }}
-                />
+                  onChange={(val) => {
+                    if (+val.target.value < 50)
+                      setSlippage(val.target.value);
+                  }}
+                />{' '}
+                {fromTokenPrice ? (
+                  <>
+                    Value: ${(+fromTokenPrice * +amount).toFixed(3)}
+                  </>
+                ) : null}
               </div>
               {balance.isSuccess ? (
                 <Balance onClick={onMaxClick}>
@@ -801,19 +873,21 @@ export function AggregatorContainer({ tokenlist }) {
                   if (isApproved) handleSwap();
                 }}
               >
-                {isApproved ? "Swap" : "Approve"}
+                {isApproved ? 'Swap' : 'Approve'}
               </ButtonDark>
             ) : null}
             {route &&
             address &&
             !isApproved &&
-            ["Matcha/0x", "1inch", "CowSwap"].includes(route?.name) ? (
+            ['Matcha/0x', '1inch', 'CowSwap'].includes(
+              route?.name
+            ) ? (
               <ButtonDark
                 onClick={() => {
                   if (approveInfinite) approveInfinite();
                 }}
               >
-                {"Approve Infinite"}
+                {'Approve Infinite'}
               </ButtonDark>
             ) : null}
           </SwapWrapper>
@@ -824,7 +898,7 @@ export function AggregatorContainer({ tokenlist }) {
         >
           <FormHeader>
             Routes
-            <CloseBtn onClick={cleanState} />{" "}
+            <CloseBtn onClick={cleanState} />{' '}
           </FormHeader>
           {!routes?.length ? <Loader loaded={!isLoading} /> : null}
           {renderNumber !== 0
@@ -835,9 +909,7 @@ export function AggregatorContainer({ tokenlist }) {
                   selected={route?.name === r.name}
                   setRoute={() => setRoute(r.route)}
                   toToken={toToken}
-                  amountFrom={BigNumber(amount)
-                    .times(10 ** (fromToken?.decimals || 18))
-                    .toString()}
+                  amountFrom={amountWithDecimals}
                   fromToken={fromToken}
                   selectedChain={selectedChain.label}
                   gasTokenPrice={gasTokenPrice}
@@ -851,6 +923,11 @@ export function AggregatorContainer({ tokenlist }) {
       </BodyWrapper>
 
       <FAQs />
+      <TransactionModal
+        open={txModalOpen}
+        setOpen={setTxModalOpen}
+        link={txUrl}
+      />
     </Wrapper>
   );
 }
