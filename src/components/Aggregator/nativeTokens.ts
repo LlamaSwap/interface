@@ -231,7 +231,6 @@ export const nativeTokens = [
 	optimism,
 	polygon,
 	oasis,
-	oasis,
 	fantom,
 	velas,
 	harmony,
