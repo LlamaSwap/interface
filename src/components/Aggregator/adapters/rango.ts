@@ -2,6 +2,7 @@
 
 import BigNumber from 'bignumber.js';
 import { ethers, Signer } from 'ethers';
+import { providers } from '../rpcs'
 
 export const chainToId = {
   ethereum: 'ETH',
@@ -53,7 +54,11 @@ export async function getQuote(
     `https://api.rango.exchange/basic/swap?${params}`
   ).then((r) => r.json());
 
-  const estimatedGas = BigNumber(data?.tx?.gasLimit | 0);
+  const estimatedGas = await providers[chain].estimateGas({
+    to: data?.tx?.txTo,
+    data: data?.tx?.txData,
+    value: data?.tx?.value,
+  });
 
   return {
     amountReturned: data?.route?.outputAmount,
