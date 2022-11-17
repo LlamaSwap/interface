@@ -99,17 +99,19 @@ export async function swap({
   tokens,
 }) {
   const aggregator = adaptersMap[adapter];
-
-  const res = await aggregator.swap({
-    chain,
-    from,
-    to,
-    amount,
-    signer,
-    slippage,
-    rawQuote,
-    tokens,
-  });
-
-  return res;
+  try {
+    const res = await aggregator.swap({
+      chain,
+      from,
+      to,
+      amount,
+      signer,
+      slippage,
+      rawQuote,
+      tokens,
+    });
+    return res;
+  } catch (e) {
+    console.log(e);
+  }
 }
