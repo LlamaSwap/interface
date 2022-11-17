@@ -128,7 +128,7 @@ const velas = {
 };
 
 const oasis = {
-  id: 24462,
+  id: 42262,
   name: 'Oasis',
   network: 'oasis',
   iconUrl: chainIconUrl('oasis'),
