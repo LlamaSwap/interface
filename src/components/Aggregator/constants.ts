@@ -23,4 +23,6 @@ export const chainsMap = {
   harmony: 1666600000,
   boba: 288,
   okc: 66,
+  fuse: 122,
+  moonbeam: 1284,
 };

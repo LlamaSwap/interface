@@ -119,6 +119,26 @@ const moonriver = {
 	decimals: 18
 }
 
+const moonbeam = {
+	mcap: Number.MAX_SAFE_INTEGER,
+	address: ethers.constants.AddressZero,
+	chainId: 1284,
+	name: 'Moonbeam',
+	logoURI: chainIconUrl('moonbeam'),
+	symbol: 'GLMR',
+	decimals: 18
+}
+
+const fuse = {
+	mcap: Number.MAX_SAFE_INTEGER,
+	address: ethers.constants.AddressZero,
+	chainId: 122,
+	name: 'Fuse',
+	logoURI: chainIconUrl('fuse'),
+	symbol: 'FUSE',
+	decimals: 18
+}
+
 const dogechain = {
 	mcap: Number.MAX_SAFE_INTEGER,
 	address: ethers.constants.AddressZero,
@@ -226,5 +246,7 @@ export const nativeTokens = [
 	bttc,
 	heco,
 	boba,
-	okx
+	okx,
+	moonbeam,
+	fuse
 ]

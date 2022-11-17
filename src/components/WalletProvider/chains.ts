@@ -167,6 +167,52 @@ const bttc = {
   testnet: false,
 };
 
+const moonbeam = {
+  id: 1284,
+  name: 'Moonbeam',
+  network: 'moonbeam',
+  iconUrl: chainIconUrl('moonbeam'),
+  iconBackground: '#000',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Moonbeam',
+    symbol: 'GLMR',
+  },
+  rpcUrls: {
+    default: 'https://rpc.api.moonbeam.network',
+  },
+  blockExplorers: {
+    default: {
+      name: 'MoonScan',
+      url: 'https://moonscan.io/',
+    },
+  },
+  testnet: false,
+};
+
+const fuse = {
+  id: 122,
+  name: 'Fuse',
+  network: 'fuse',
+  iconUrl: chainIconUrl('fuse'),
+  iconBackground: '#000',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Fuse',
+    symbol: 'FUSE',
+  },
+  rpcUrls: {
+    default: 'https://rpc.fuse.io',
+  },
+  blockExplorers: {
+    default: {
+      name: 'Fuse Explorer',
+      url: 'https://explorer.fuse.io/',
+    },
+  },
+  testnet: false,
+};
+
 const moonriver = {
   id: 1285,
   name: 'MoonRiver',
@@ -406,4 +452,6 @@ export const allChains = [
   optimism,
   arbirum,
   ethereum,
+  moonbeam,
+  fuse,
 ];
