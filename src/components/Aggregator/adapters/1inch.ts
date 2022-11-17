@@ -40,13 +40,15 @@ export async function getQuote(
     from === ethers.constants.AddressZero ? nativeToken : from;
   const tokenTo =
     to === ethers.constants.AddressZero ? nativeToken : to;
-  const data = await fetch(
+  const [data, { address: tokenApprovalAddress }] = await Promise.all([
+	fetch(
     `https://api.1inch.io/v4.0/${chainToId[chain]}/quote?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&slippage=${extra.slippage}`
-  ).then((r) => r.json());
-
-  const { address: tokenApprovalAddress } = await fetch(
+  ).then((r) => r.json()),
+	fetch(
     `https://api.1inch.io/v4.0/${chainToId[chain]}/approve/spender`
-  ).then((r) => r.json());
+  ).then((r) => r.json())
+])
+
   return {
     amountReturned: data.toTokenAmount,
     estimatedGas: data.estimatedGas,
