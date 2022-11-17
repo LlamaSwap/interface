@@ -573,7 +573,7 @@ export function AggregatorContainer({ tokenlist }) {
 
   const addRecentTransaction = useAddRecentTransaction();
 
-  const { switchNetwork } = useSwitchNetwork();
+  const { switchNetworkAsync } = useSwitchNetwork();
 
   const [amount, setAmount] = useState('10');
   const [txModalOpen, setTxModalOpen] = useState(false);
@@ -729,10 +729,15 @@ export function AggregatorContainer({ tokenlist }) {
   };
 
   const onChainChange = (newChain) => {
-    cleanState();
-    setSelectedChain(newChain);
-
-    switchNetwork(chainsMap[newChain.value]);
+    if(switchNetworkAsync === undefined){
+      cleanState();
+      setSelectedChain(newChain);
+    } else {
+      switchNetworkAsync(chainsMap[newChain.value]).then(chain=>{
+        cleanState();
+        setSelectedChain(chains.find(({ value }) => chainsMap[value] === chain.id));
+      });
+    }
   };
 
   const normalizedRoutes = [...(routes || [])]
