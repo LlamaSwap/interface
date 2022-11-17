@@ -20,7 +20,7 @@ export const chainToId = {
   velas: 'vel',
   aurora: 'aur',
 };
-export const name = 'Lifi';
+export const name = 'LI.FI';
 export const token = null;
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
