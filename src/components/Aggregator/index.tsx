@@ -581,7 +581,7 @@ export function AggregatorContainer({ tokenlist }) {
 
   const amountWithDecimals = BigNumber(amount)
     .times(10 ** (fromToken?.decimals || 18))
-    .toFixed();
+    .toFixed(0);
 
   const balance = useBalance({
     addressOrName: address,
