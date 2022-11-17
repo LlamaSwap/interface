@@ -26,3 +26,10 @@ export const chainsMap = {
   fuse: 122,
   moonbeam: 1284,
 };
+
+export const chainNamesReplaced = {
+    bsc: "BSC",
+    avax: "Avalanche",
+    okc: "OKX",
+    bttc: "BitTorrent",
+}

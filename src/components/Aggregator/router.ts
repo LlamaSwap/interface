@@ -14,7 +14,7 @@ import * as rango from './adapters/rango';
 import * as yieldyak from './adapters/yieldyak';
 import { capitalizeFirstLetter } from '~/utils';
 import { allChains } from '../WalletProvider/chains';
-import { chainsMap } from './constants';
+import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
 const adapters = [
@@ -44,7 +44,7 @@ export function getAllChains() {
 
   const chainsOptions = chainsArr.map((c) => ({
     value: c,
-    label: capitalizeFirstLetter(c),
+    label: chainNamesReplaced[c] ?? capitalizeFirstLetter(c),
     logoURI: allChains.find(({ id }) => id === chainsMap[c])?.iconUrl,
   }));
 
