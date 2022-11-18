@@ -3,6 +3,7 @@ import { TYPE } from '~/Theme';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
 import { GasIcon } from '../Aggregator/Icons';
+import { Badge } from '@chakra-ui/react';
 
 interface IToken {
 	address: string;
@@ -55,7 +56,7 @@ const Route = ({
 	return (
 		<RouteWrapper onClick={setRoute} selected={selected} best={index === 0}>
 			<RouteRow>
-				<img src={toToken?.logoURI} alt="" />
+				<img src={toToken?.logoURI} alt="" style={{ marginRight: 4 }} />
 				<TYPE.heading>
 					{amount.toFixed(3)} {Number.isFinite(+amountUsd) ? `($${amountUsd})` : null}
 				</TYPE.heading>
@@ -87,7 +88,7 @@ const Route = ({
 				{index === 0 ? (
 					<div style={{ marginLeft: 'auto', display: 'flex' }}>
 						{' '}
-						<TYPE.heading style={{ color: '#3661c4' }}>Best Route </TYPE.heading>
+						<Badge colorScheme="green">Best Route</Badge>
 					</div>
 				) : null}
 			</RouteRow>
