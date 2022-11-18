@@ -494,10 +494,15 @@ export function AggregatorContainer({ tokenlist }) {
 		watch: true
 	});
 
+	const currentChainId = chain?.id;
+
+	const isValidSelectedChain = chains.find(
+		({ value }) => selectedChain.value === value && chainsMap[value] === currentChainId
+	);
+
 	useEffect(() => {
-		const currentChain = chain?.id;
-		if (currentChain) setSelectedChain(chains.find(({ value }) => chainsMap[value] === currentChain));
-	}, [chain, chains]);
+		if (!isValidSelectedChain) setSelectedChain(chains.find(({ value }) => chainsMap[value] === currentChainId));
+	}, [isValidSelectedChain, currentChainId, chains]);
 
 	useEffect(() => {
 		const nativeToken = tokenlist[chainsMap[selectedChain.value]]?.[0] || {};
