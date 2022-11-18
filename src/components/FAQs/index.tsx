@@ -1,128 +1,81 @@
-import { ChevronDown } from "react-feather";
-import styled from "styled-components";
-
-const Wrapper = styled.div`
-  margin: 0 auto;
-  width: 100%;
-  max-width: 900px;
-  background-color: ${({ theme }) => theme.advancedBG};
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.bg3};
-  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.05);
-
-  h1 {
-    margin-bottom: -20px;
-  }
-`;
-
-const Details = styled.details`
-  flex: 1;
-  font-size: 1rem;
-  text-align: left;
-
-  summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    text-align: left;
-    font-size: 1.125rem;
-    cursor: pointer;
-    padding-bottom: 4px;
-    border-bottom: 1px solid ${({ theme }) => theme.text4};
-    margin-bottom: 16px;
-    list-style: none;
-    list-style-type: none;
-  }
-
-  summary::-webkit-details-marker {
-    display: none;
-  }
-
-  &[open] #chevron {
-    transform: rotate(180deg);
-  }
-`;
-
-const Description = styled.span`
-  font-size: 1rem;
-  word-break: break-all;
-`;
+import { Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box } from '@chakra-ui/react';
+import { TYPE } from '~/Theme';
 
 export default function FaqWrapper() {
-  return (
-    <Wrapper>
-      <h1>FAQ</h1>
+	return (
+		<>
+			<TYPE.largeHeader>FAQ</TYPE.largeHeader>
+			<Accordion allowMultiple margin={'0 auto'} width={600}>
+				<AccordionItem>
+					<h2>
+						<AccordionButton>
+							<Box flex="1" textAlign="left">
+								What is this?
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+					</h2>
+					<AccordionPanel pb={4}>
+						It's an aggregator of DEX aggregators, we query the price in 1inch, cowswap, matcha... and then offer you
+						the best price among all of them
+					</AccordionPanel>
+				</AccordionItem>
 
-      <Details>
-        <summary>
-          <span>What is this?</span>
-          <ChevronDown size={18} id="chevron" />
-        </summary>
-        <Description>
-          It's an aggregator of DEX aggregators, we query the price in 1inch,
-          cowswap, matcha... and then offer you the best price among all of them
-        </Description>
-      </Details>
-
-      <Details>
-        <summary>
-          <span>Does DefiLlama take any fees?</span>
-          <ChevronDown size={18} id="chevron" />
-        </summary>
-
-        <Description>
-          DefiLlama takes 0 fee on swaps.
-          <br />
-          <br /> You'll get the exact same price swapping through DefiLlama as
-          what you'd get swapping through the chosen aggregator directly.
-          <br />
-          <br />
-          We do add our referral code to swaps tho, so, for aggregators with
-          revenue sharing, they will send us part of the fee they earn. This is
-          not an extra fee, you'd be charged the same fee anyway, but now a
-          small part of it is shared with DefiLlama. We also integrate
-          aggregators with no fee sharing the best price, and in those cases we
-          don't make any money.
-        </Description>
-      </Details>
-
-      <Details>
-        <summary>
-          <span>Is it safe?</span>
-          <ChevronDown size={18} id="chevron" />
-        </summary>
-
-        <Description>
-          Our aggregator uses the router contract of each aggregator, we don't
-          use any contracts developed by us. Thus you inherit the same security
-          you'd get by swapping directly from their UI instead of ours.
-        </Description>
-      </Details>
-
-      <Details>
-        <summary>
-          <span>
-            Will I be eligible for aggregator airdrops if I swap through DefiLlama?
-          </span>
-          <ChevronDown size={18} id="chevron" />
-        </summary>
-
-        <Description>
-          Yes, we execute swaps directly against the router of each aggregator,
-          so there's no difference between a swap executed directly from their
-          UI and a swap executed from DefiLlama.
-          <br />
-          <br />
-          Thus, if any of the aggregators we integrate does an airdrop 
-          in the future, all swaps made through them would be
-          eligible for airdrops as swaps made through their UI.
-        </Description>
-      </Details>
-    </Wrapper>
-  );
+				<AccordionItem>
+					<h2>
+						<AccordionButton>
+							<Box flex="1" textAlign="left">
+								Does DefiLlama take any fees?
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+					</h2>
+					<AccordionPanel pb={4}>
+						DefiLlama takes 0 fee on swaps.
+						<br />
+						<br /> You'll get the exact same price swapping through DefiLlama as what you'd get swapping through the
+						chosen aggregator directly.
+						<br />
+						<br />
+						We do add our referral code to swaps tho, so, for aggregators with revenue sharing, they will send us part
+						of the fee they earn. This is not an extra fee, you'd be charged the same fee anyway, but now a small part
+						of it is shared with DefiLlama. We also integrate aggregators with no fee sharing the best price, and in
+						those cases we don't make any money.
+					</AccordionPanel>
+				</AccordionItem>
+				<AccordionItem>
+					<h2>
+						<AccordionButton>
+							<Box flex="1" textAlign="left">
+								Is it safe?
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+					</h2>
+					<AccordionPanel pb={4}>
+						Our aggregator uses the router contract of each aggregator, we don't use any contracts developed by us. Thus
+						you inherit the same security you'd get by swapping directly from their UI instead of ours.
+					</AccordionPanel>
+				</AccordionItem>
+				<AccordionItem>
+					<h2>
+						<AccordionButton>
+							<Box flex="1" textAlign="left">
+								Will I be eligible for aggregator airdrops if I swap through DefiLlama?
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+					</h2>
+					<AccordionPanel pb={4}>
+						Yes, we execute swaps directly against the router of each aggregator, so there's no difference between a
+						swap executed directly from their UI and a swap executed from DefiLlama.
+						<br />
+						<br />
+						Thus, if any of the aggregators we integrate does an airdrop in the future, all swaps made through them
+						would be eligible for airdrops as swaps made through their UI.
+					</AccordionPanel>
+				</AccordionItem>
+			</Accordion>
+		</>
+	);
 }
