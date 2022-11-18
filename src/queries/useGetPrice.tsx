@@ -31,6 +31,6 @@ async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
 
 export default function useGetPrice({ chain, fromToken, toToken }: IGetPriceProps) {
 	return useQuery<IPrice>(['gasPrice', chain, fromToken, toToken], () => getPrice({ chain, fromToken, toToken }), {
-		refetchInterval: 30_000
+		refetchInterval: 20_000
 	});
 }
