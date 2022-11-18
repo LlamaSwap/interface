@@ -497,7 +497,7 @@ export function AggregatorContainer({ tokenlist }) {
 	useEffect(() => {
 		const currentChain = chain?.id;
 		if (currentChain) setSelectedChain(chains.find(({ value }) => chainsMap[value] === currentChain));
-	}, [chain]);
+	}, [chain, chains]);
 
 	useEffect(() => {
 		const nativeToken = tokenlist[chainsMap[selectedChain.value]]?.[0] || {};
@@ -507,8 +507,6 @@ export function AggregatorContainer({ tokenlist }) {
 			label: nativeToken.symbol
 		});
 	}, [selectedChain, tokenlist]);
-
-	const [renderNumber, setRenderNumber] = useState(1);
 
 	const { data: gasPriceData } = useFeeData({
 		chainId: chainsMap[selectedChain.value]
@@ -574,7 +572,6 @@ export function AggregatorContainer({ tokenlist }) {
 	const { gasTokenPrice = 0, toTokenPrice = 0, fromTokenPrice = 0 } = tokenPrices || {};
 
 	const cleanState = () => {
-		setRenderNumber(0);
 		setFromToken(null);
 		setToToken(null);
 		setRoute(null);
