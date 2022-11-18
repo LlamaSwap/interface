@@ -12,7 +12,7 @@ import ReactSelect from '~/components/MultiSelect';
 import { ButtonDark } from '~/components/ButtonStyled';
 import Tooltip from '~/components/Tooltip';
 import FAQs from '~/components/FAQs';
-import { getAllChains, listRoutes, swap } from './router';
+import { getAllChains, swap } from './router';
 import { Input, TokenInput } from './TokenInput';
 import { CrossIcon, GasIcon } from './Icons';
 import Loader from './Loader';
@@ -33,6 +33,8 @@ import {
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import txImg from '~/public/llamanote.png';
 import { chainsMap } from './constants';
+import useGetRoutes from '~/queries/useGetRoutes';
+import useGetPrice from '~/queries/useGetPrice';
 
 /*
 Integrated:
@@ -175,12 +177,11 @@ interface Route {
 	};
 	fromToken: Route['toToken'];
 	selectedChain: string;
-
 	setRoute: () => void;
 	selected: boolean;
 	index: number;
 	gasUsd: number;
-	amountUsd: number;
+	amountUsd: string;
 	airdrop: boolean;
 	amountFrom: string;
 }
@@ -444,8 +445,6 @@ const TransactionModal = ({ open, setOpen, link }) => {
 	);
 };
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-
 const FormHeader = styled.div`
 	font-weight: bold;
 	font-size: 16px;
@@ -489,9 +488,6 @@ export function AggregatorContainer({ tokenlist }) {
 	const [selectedChain, setSelectedChain] = useState(chains[0]);
 	const [fromToken, setFromToken] = useState(null);
 	const [toToken, setToToken] = useState(null);
-	const [gasTokenPrice, setGasTokenPrice] = useState(0);
-	const [toTokenPrice, setToTokenPrice] = useState(0);
-	const [fromTokenPrice, setFromTokenPrice] = useState(0);
 
 	const [slippage, setSlippage] = useState('1');
 
@@ -527,8 +523,6 @@ export function AggregatorContainer({ tokenlist }) {
 		});
 	}, [selectedChain, tokenlist]);
 
-	const [isLoading, setLoading] = useState(false);
-
 	const [renderNumber, setRenderNumber] = useState(1);
 
 	const { data: gasPriceData } = useFeeData({
@@ -547,7 +541,6 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const [route, setRoute] = useState(null);
-	const [routes, setRoutes] = useState(null);
 
 	const handleSwap = () => {
 		swap({
@@ -572,48 +565,33 @@ export function AggregatorContainer({ tokenlist }) {
 		});
 	};
 
-	useEffect(() => {
-		if (fromToken && toToken && amount) {
-			setRoutes(null);
-			setLoading(true);
-			setRoute(null);
-			setRenderNumber((num) => num + 1);
-			listRoutes(
-				selectedChain.value,
-				fromToken.value,
-				toToken.value,
-				amountWithDecimals,
-				{
-					gasPriceData,
-					userAddress: address,
-					amount,
-					fromToken,
-					toToken,
-					slippage
-				},
-				setRoutes
-			).finally(() => setLoading(false));
+	const { data: routes, isLoading } = useGetRoutes({
+		chain: selectedChain.value,
+		from: fromToken?.value,
+		to: toToken?.value,
+		amount: amountWithDecimals,
+		extra: {
+			gasPriceData,
+			userAddress: address,
+			amount,
+			fromToken,
+			toToken,
+			slippage
 		}
-	}, [fromToken, toToken, amount, selectedChain, address, gasPriceData, slippage]);
+	});
 
-	useEffect(() => {
-		if (fromToken || toToken)
-			fetch(
-				`https://coins.llama.fi/prices/current/${selectedChain.value}:${toToken?.address},${selectedChain.value}:${ZERO_ADDRESS},${selectedChain.value}:${fromToken?.address}`
-			)
-				.then((r) => r.json())
-				.then(({ coins }) => {
-					setGasTokenPrice(coins[`${selectedChain.value}:${ZERO_ADDRESS}`]?.price);
-					setToTokenPrice(coins[`${selectedChain.value}:${toToken?.address}`]?.price);
-					setFromTokenPrice(coins[`${selectedChain.value}:${fromToken?.address}`]?.price);
-				});
-	}, [toToken, selectedChain, fromToken]);
+	const { data: tokenPrices } = useGetPrice({
+		chain: selectedChain.value,
+		toToken: toToken?.address,
+		fromToken: fromToken?.address
+	});
+
+	const { gasTokenPrice = 0, toTokenPrice = 0, fromTokenPrice = 0 } = tokenPrices || {};
 
 	const cleanState = () => {
 		setRenderNumber(0);
 		setFromToken(null);
 		setToToken(null);
-		setRoutes(null);
 		setRoute(null);
 		setTxUrl('');
 	};
@@ -712,7 +690,7 @@ export function AggregatorContainer({ tokenlist }) {
 						<div style={{ textAlign: 'center', margin: ' 8px 16px' }}>
 							<TYPE.heading>OR</TYPE.heading>
 						</div>
-						<Search tokens={tokensInChain} setTokens={setTokens} onClick={() => setRoutes(null)} />
+						<Search tokens={tokensInChain} setTokens={setTokens} />
 					</SelectWrapper>
 
 					<div>
@@ -782,9 +760,6 @@ export function AggregatorContainer({ tokenlist }) {
 									amountFrom={amountWithDecimals}
 									fromToken={fromToken}
 									selectedChain={selectedChain.label}
-									gasTokenPrice={gasTokenPrice}
-									toTokenPrice={toTokenPrice}
-									gasPrice={gasPriceData?.formatted?.gasPrice}
 									key={i}
 								/>
 						  ))

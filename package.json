@@ -20,6 +20,7 @@
 		"@emotion/styled": "^11",
 		"@gnosis.pm/gp-v2-contracts": "^1.1.2",
 		"@rainbow-me/rainbowkit": "^0.7.1",
+		"@tanstack/react-query": "^4.16.1",
 		"ariakit": "^2.0.0-next.41",
 		"bignumber.js": "^9.0.2",
 		"ethers": "^5.7.1",

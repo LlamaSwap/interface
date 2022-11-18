@@ -1,16 +1,15 @@
-import {  useState } from 'react'
-import { FixedSizeList as List } from 'react-window'
-import { Input } from './TokenInput'
-import styled from 'styled-components'
-import { TYPE } from '~/Theme'
-import { CloseBtn } from '.'
+import { useState } from 'react';
+import { FixedSizeList as List } from 'react-window';
+import { Input } from './TokenInput';
+import styled from 'styled-components';
+import { TYPE } from '~/Theme';
+import { CloseBtn } from '.';
 
 interface Props {
-	tokens: Array<{ symbol: string; address: string }>
+	tokens: Array<{ symbol: string; address: string }>;
 	setTokens: (
 		obj: Record<'token0' | 'token1', { address: string; logoURI: string; symbol: string; decimals: string }>
-	) => void
-	onClick: () => void
+	) => void;
 }
 
 const ModalWrapper = styled.div`
@@ -43,7 +42,7 @@ const ModalWrapper = styled.div`
 			opacity: 1;
 		}
 	}
-`
+`;
 
 const Header = styled.div`
 	position: sticky;
@@ -51,7 +50,7 @@ const Header = styled.div`
 	justify-content: center;
 	display: flex;
 	margin-bottom: 8px;
-`
+`;
 
 const PairRow = styled.div`
 	display: flex;
@@ -64,24 +63,24 @@ const PairRow = styled.div`
 	&:hover {
 		background-color: rgba(246, 246, 246, 0.1);
 	}
-`
+`;
 
 const IconImage = styled.img`
 	border-radius: 50%;
 	width: 20px;
 	height: 20px;
-`
+`;
 const IconWrapper = styled.div`
 	display: flex;
 	margin-right: 8px;
-`
+`;
 
 const Pairs = styled.div`
 	overflow-y: scroll;
-`
+`;
 
 const Row = ({ data: { data, onClick }, index, style }) => {
-	const pair = data[index]
+	const pair = data[index];
 
 	return (
 		<PairRow key={pair.value} style={style} onClick={() => onClick(pair)}>
@@ -90,8 +89,8 @@ const Row = ({ data: { data, onClick }, index, style }) => {
 			</IconWrapper>
 			<TYPE.heading>{pair.label}</TYPE.heading>
 		</PairRow>
-	)
-}
+	);
+};
 const Modal = ({ close, onInputChange, data, onClick }) => {
 	return (
 		<ModalWrapper>
@@ -107,37 +106,37 @@ const Modal = ({ close, onInputChange, data, onClick }) => {
 			</List>
 			<Pairs></Pairs>
 		</ModalWrapper>
-	)
-}
+	);
+};
 
-export default function Search({ tokens, setTokens, onClick }: Props) {
-	const [isOpen, setIsOpen] = useState(false)
+export default function Search({ tokens, setTokens }: Props) {
+	const [isOpen, setIsOpen] = useState(false);
 
-	const toggle = () => setIsOpen((open) => !open)
+	const toggle = () => setIsOpen((open) => !open);
 
-	const [data, setData] = useState([])
+	const [data, setData] = useState([]);
 
 	const onRowClick = (pair) => {
-		setTokens(pair)
-		setIsOpen(false)
-		setData([])
-	}
+		setTokens(pair);
+		setIsOpen(false);
+		setData([]);
+	};
 
 	const onChange = ({ target: { value } }) => {
-		const [symbol0, symbol1] = value.split(/-| | \//)
+		const [symbol0, symbol1] = value.split(/-| | \//);
 		if (symbol0?.length < 2) {
-			setData([])
-			return
+			setData([]);
+			return;
 		}
 
-		const tokens00 = tokens.filter(({ symbol }) => symbol.toLowerCase() === symbol0.toLowerCase())
-		const tokens01 = tokens.filter(({ symbol }) => symbol.toLowerCase().includes(symbol0.toLowerCase()))
-		const tokens0 = tokens00.concat(tokens01)
+		const tokens00 = tokens.filter(({ symbol }) => symbol.toLowerCase() === symbol0.toLowerCase());
+		const tokens01 = tokens.filter(({ symbol }) => symbol.toLowerCase().includes(symbol0.toLowerCase()));
+		const tokens0 = tokens00.concat(tokens01);
 
 		const tokens1 = (() => {
-			if (tokens0.length > 100 || !symbol1) return tokens.slice(0, 100)
-			else return tokens.filter(({ symbol }) => symbol.toLowerCase().includes(symbol1))
-		})()
+			if (tokens0.length > 100 || !symbol1) return tokens.slice(0, 100);
+			else return tokens.filter(({ symbol }) => symbol.toLowerCase().includes(symbol1));
+		})();
 
 		const data = tokens0.reduce(
 			(acc, token0) =>
@@ -150,10 +149,10 @@ export default function Search({ tokens, setTokens, onClick }: Props) {
 					}))
 				),
 			[]
-		)
+		);
 
-		setData(data)
-	}
+		setData(data);
+	};
 
 	return (
 		<>
@@ -161,13 +160,12 @@ export default function Search({ tokens, setTokens, onClick }: Props) {
 				placeholder="Search... (BTC-ETH)"
 				disabled
 				onClick={() => {
-					toggle()
-					onClick()
+					toggle();
 				}}
 			/>
 			{isOpen ? (
 				<Modal onClick={onRowClick} close={() => setIsOpen(false)} onInputChange={onChange} data={data} />
 			) : null}
 		</>
-	)
+	);
 }
