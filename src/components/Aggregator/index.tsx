@@ -464,9 +464,9 @@ const InputFooter = styled.div`
 	justify-content: space-between;
 `;
 
-export function AggregatorContainer({ tokenlist }) {
-	const chains = getAllChains();
+const chains = getAllChains();
 
+export function AggregatorContainer({ tokenlist }) {
 	const { data: signer } = useSigner();
 	const { address } = useAccount();
 	const { chain } = useNetwork();
@@ -502,7 +502,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	useEffect(() => {
 		if (!isValidSelectedChain) setSelectedChain(chains.find(({ value }) => chainsMap[value] === currentChainId));
-	}, [isValidSelectedChain, currentChainId, chains]);
+	}, [isValidSelectedChain, currentChainId]);
 
 	useEffect(() => {
 		const nativeToken = tokenlist[chainsMap[selectedChain.value]]?.[0] || {};
