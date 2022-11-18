@@ -21,8 +21,8 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount) =
 		enabled: isConnected
 	});
 
-	const { write: approve } = useContractWrite(config);
-	const { write: approveInfinite } = useContractWrite(configInfinite);
+	const { write: approve, isLoading } = useContractWrite(config);
+	const { write: approveInfinite, isLoading: isInfiniteLoading } = useContractWrite(configInfinite);
 
 	const { data: allowance } = useContractRead({
 		address: token,
@@ -40,5 +40,5 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount) =
 
 	if (normalizedAmount && allowance.gte(BigNumber.from(normalizedAmount))) return { isApproved: true };
 
-	return { isApproved: false, approve, approveInfinite };
+	return { isApproved: false, approve, approveInfinite, isLoading: isLoading || isInfiniteLoading };
 };

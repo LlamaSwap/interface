@@ -28,13 +28,17 @@ import {
 	Image,
 	Link,
 	ModalFooter,
-	Heading
+	Heading,
+	useToast,
+	Button
 } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import txImg from '~/public/llamanote.png';
 import { chainsMap } from './constants';
 import useGetRoutes from '~/queries/useGetRoutes';
 import useGetPrice from '~/queries/useGetPrice';
+import { nativeTokens } from './nativeTokens';
+import { useMutation } from '@tanstack/react-query';
 
 /*
 Integrated:
@@ -396,7 +400,7 @@ export async function getTokenList() {
 
 	const tokensByChain = mapValues(
 		merge(
-			groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...hecoList.tokens], 'chainId'),
+			groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...hecoList.tokens, ...nativeTokens], 'chainId'),
 			lifiList.tokens
 		),
 		(val) => uniqBy(val, (token: Token) => token.address.toLowerCase())
@@ -473,6 +477,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const [selectedChain, setSelectedChain] = useState(chains[0]);
 	const [fromToken, setFromToken] = useState(null);
 	const [toToken, setToToken] = useState(null);
+	const toast = useToast();
 
 	const [slippage, setSlippage] = useState('1');
 
@@ -531,8 +536,43 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const [route, setRoute] = useState(null);
 
+	const swapMutation = useMutation({
+		mutationFn: (params: {
+			chain: string;
+			from: string;
+			to: string;
+			amount: string;
+			adapter: string;
+			signer: ethers.Signer;
+			slippage: string;
+			rawQuote: any;
+			tokens: { toToken: Token; fromToken: Token };
+		}) => swap(params),
+		onSuccess: (data, variables) => {
+			addRecentTransaction({
+				hash: data.hash,
+				description: `Swap transaction using ${variables.adapter} is sent.`
+			});
+			const explorerUrl = chain.blockExplorers.default.url;
+			setTxModalOpen(true);
+
+			setTxUrl(`${explorerUrl}/tx/${data.hash}`);
+		},
+		onError: (err: { reason: string; code: string }) => {
+			if (err.code !== 'ACTION_REJECTED')
+				toast({
+					title: 'Something went wrong.',
+					description: err.reason,
+					status: 'error',
+					duration: 9000,
+					isClosable: true,
+					position: 'top'
+				});
+		}
+	});
+
 	const handleSwap = () => {
-		swap({
+		swapMutation.mutate({
 			chain: selectedChain.value,
 			from: fromToken.value,
 			to: toToken.value,
@@ -542,15 +582,6 @@ export function AggregatorContainer({ tokenlist }) {
 			adapter: route.name,
 			rawQuote: route?.price?.rawQuote,
 			tokens: { fromToken, toToken }
-		}).then((res) => {
-			addRecentTransaction({
-				hash: res.hash,
-				description: `Swap transaction using ${route.name} is sent.`
-			});
-			const explorerUrl = chain.blockExplorers.default.url;
-			setTxModalOpen(true);
-
-			setTxUrl(`${explorerUrl}/tx/${res.hash}`);
 		});
 	};
 
@@ -584,11 +615,12 @@ export function AggregatorContainer({ tokenlist }) {
 		setTxUrl('');
 	};
 
-	const { isApproved, approve, approveInfinite } = useTokenApprove(
-		fromToken?.address,
-		route?.price?.tokenApprovalAddress,
-		amountWithDecimals
-	);
+	const {
+		isApproved,
+		approve,
+		approveInfinite,
+		isLoading: isApproveLoading
+	} = useTokenApprove(fromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
 
 	const onMaxClick = () => {
 		if (balance?.data?.formatted) setAmount(balance?.data?.formatted);
@@ -709,7 +741,10 @@ export function AggregatorContainer({ tokenlist }) {
 					</div>
 					<SwapWrapper>
 						{route && address ? (
-							<ButtonDark
+							<Button
+								isLoading={swapMutation.isLoading || isApproveLoading}
+								loadingText="Preparing transaction"
+								colorScheme={'messenger'}
 								onClick={() => {
 									if (approve) approve();
 
@@ -718,16 +753,19 @@ export function AggregatorContainer({ tokenlist }) {
 								}}
 							>
 								{isApproved ? 'Swap' : 'Approve'}
-							</ButtonDark>
+							</Button>
 						) : null}
 						{route && address && !isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) ? (
-							<ButtonDark
+							<Button
+								colorScheme={'messenger'}
+								loadingText="Preparing transaction"
+								isLoading={isApproveLoading}
 								onClick={() => {
 									if (approveInfinite) approveInfinite();
 								}}
 							>
 								{'Approve Infinite'}
-							</ButtonDark>
+							</Button>
 						) : null}
 					</SwapWrapper>
 				</Body>

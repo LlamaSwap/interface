@@ -84,6 +84,6 @@ export async function swap({ chain, from, to, amount, signer, slippage = '1', ad
 		});
 		return res;
 	} catch (e) {
-		console.log(e);
+		throw e;
 	}
 }
