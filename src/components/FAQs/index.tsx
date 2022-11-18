@@ -107,7 +107,7 @@ export default function FaqWrapper() {
       <Details>
         <summary>
           <span>
-            Will I be eligible for airdrops if I swap through DefiLlama?
+            Will I be eligible for aggregator airdrops if I swap through DefiLlama?
           </span>
           <ChevronDown size={18} id="chevron" />
         </summary>
@@ -115,9 +115,12 @@ export default function FaqWrapper() {
         <Description>
           Yes, we execute swaps directly against the router of each aggregator,
           so there's no difference between a swap executed directly from their
-          UI and a swap executed from DefiLlama, thus all swaps would be as
-          eligible for airdrops as swaps made through their UI in case there's a
-          future airdrop.
+          UI and a swap executed from DefiLlama.
+          <br />
+          <br />
+          Thus, if any of the aggregators we integrate does an airdrop 
+          in the future, all swaps made through them would be
+          eligible for airdrops as swaps made through their UI.
         </Description>
       </Details>
     </Wrapper>
