@@ -17,101 +17,73 @@ import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
-const adapters = [
-  matcha,
-  inch,
-  cowswap,
-  kyberswap,
-  openocean,
-  paraswap,
-  yieldyak,
-  lifi,
-  rango,
-];
-const adaptersMap = adapters.reduce(
-  (acc, adapter) => ({ ...acc, [adapter.name]: adapter }),
-  {}
-) as Record<string, typeof inch>;
+export const adapters = [matcha, inch, cowswap, kyberswap, openocean, paraswap, yieldyak, lifi, rango];
+
+const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {}) as Record<
+	string,
+	typeof inch
+>;
 
 export function getAllChains() {
-  const chains = new Set<string>();
-  for (const adapter of adapters) {
-    Object.keys(adapter.chainToId).forEach((chain) =>
-      chains.add(chain)
-    );
-  }
-  const chainsArr = Array.from(chains);
+	const chains = new Set<string>();
+	for (const adapter of adapters) {
+		Object.keys(adapter.chainToId).forEach((chain) => chains.add(chain));
+	}
+	const chainsArr = Array.from(chains);
 
-  const chainsOptions = chainsArr.map((c) => ({
-    value: c,
-    label: chainNamesReplaced[c] ?? capitalizeFirstLetter(c),
-    logoURI: allChains.find(({ id }) => id === chainsMap[c])?.iconUrl,
-  }));
+	const chainsOptions = chainsArr.map((c) => ({
+		value: c,
+		label: chainNamesReplaced[c] ?? capitalizeFirstLetter(c),
+		logoURI: allChains.find(({ id }) => id === chainsMap[c])?.iconUrl
+	}));
 
-  return chainsOptions;
+	return chainsOptions;
 }
 
-export function listRoutes(
-  chain: string,
-  from: string,
-  to: string,
-  amount: string,
-  extra,
-  setter
-) {
-  setter([]);
-  return Promise.all(
-    adapters
-      .filter((adap) => adap.chainToId[chain] !== undefined)
-      .map(async (adapter) => {
-        let price = 'failure' as any;
-        try {
-          price = await adapter.getQuote(chain, from, to, amount, {
-            ...extra,
-          });
-        } catch (e) {
-          console.error(e);
-        }
-        const res = {
-          price,
-          name: adapter.name,
-          airdrop: !adapter.token,
-          fromAmount: amount,
-        };
+export function listRoutes(chain: string, from: string, to: string, amount: string, extra, setter) {
+	setter([]);
+	return Promise.all(
+		adapters
+			.filter((adap) => adap.chainToId[chain] !== undefined)
+			.map(async (adapter) => {
+				let price = 'failure' as any;
+				try {
+					price = await adapter.getQuote(chain, from, to, amount, {
+						...extra
+					});
+				} catch (e) {
+					console.error(e);
+				}
+				const res = {
+					price,
+					name: adapter.name,
+					airdrop: !adapter.token,
+					fromAmount: amount
+				};
 
-        if (price.price !== 'failure') {
-          setter((state) => [...(state || []), res]);
-        }
-        return res;
-      })
-  );
+				if (price.price !== 'failure') {
+					setter((state) => [...(state || []), res]);
+				}
+				return res;
+			})
+	);
 }
 
-export async function swap({
-  chain,
-  from,
-  to,
-  amount,
-  signer,
-  slippage = '1',
-  adapter,
-  rawQuote,
-  tokens,
-}) {
-  const aggregator = adaptersMap[adapter];
-  try {
-    const res = await aggregator.swap({
-      chain,
-      from,
-      to,
-      amount,
-      signer,
-      slippage,
-      rawQuote,
-      tokens,
-    });
-    return res;
-  } catch (e) {
-    console.log(e);
-  }
+export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
+	const aggregator = adaptersMap[adapter];
+	try {
+		const res = await aggregator.swap({
+			chain,
+			from,
+			to,
+			amount,
+			signer,
+			slippage,
+			rawQuote,
+			tokens
+		});
+		return res;
+	} catch (e) {
+		console.log(e);
+	}
 }
