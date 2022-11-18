@@ -501,7 +501,8 @@ export function AggregatorContainer({ tokenlist }) {
 	);
 
 	useEffect(() => {
-		if (!isValidSelectedChain) setSelectedChain(chains.find(({ value }) => chainsMap[value] === currentChainId));
+		if (!isValidSelectedChain)
+			setSelectedChain(chains.find(({ value }) => chainsMap[value] === currentChainId) ?? chains[0]);
 	}, [isValidSelectedChain, currentChainId]);
 
 	useEffect(() => {
