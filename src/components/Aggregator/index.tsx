@@ -5,7 +5,7 @@ import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
 import { ArrowRight } from 'react-feather';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { createFilter } from 'react-select';
 import { TYPE } from '~/Theme';
 import ReactSelect from '~/components/MultiSelect';
@@ -89,7 +89,6 @@ cant integrate:
 const Body = styled.div<{ showRoutes: boolean }>`
 	display: grid;
 	grid-row-gap: 16px;
-	transform: translateX(180px);
 	padding-bottom: 4px;
 
 	min-width: 30rem;
@@ -300,7 +299,7 @@ const Route = ({
 	);
 };
 
-const Routes = styled.div<{ show: boolean; isFirstRender: boolean }>`
+const Routes = styled.div`
 	padding: 16px;
 	border-radius: 16px;
 	text-align: left;
@@ -308,26 +307,12 @@ const Routes = styled.div<{ show: boolean; isFirstRender: boolean }>`
 	min-width: 360px;
 	max-height: 444px;
 	min-width: 26rem;
+	animation: tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
 			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
 			: '10px 0px 50px 10px rgba(211, 211, 211, 0.9);'};
-
-	${(props) =>
-		!props.isFirstRender &&
-		css`
-			animation: ${props.show === true
-				? 'tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;'
-				: 'tilt-in-fwd-out 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;'};
-		`}
-
-	animation: ${(props) =>
-		props.show === true
-			? 'tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;'
-			: props.isFirstRender
-			? 'tilt-in-fwd-out 0.001s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;'
-			: 'tilt-in-fwd-out 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both;'};
 
 	&::-webkit-scrollbar {
 		display: none;
@@ -565,7 +550,7 @@ export function AggregatorContainer({ tokenlist }) {
 		});
 	};
 
-	const { data: routes, isLoading } = useGetRoutes({
+	const { data: routes = [], isLoading } = useGetRoutes({
 		chain: selectedChain.value,
 		from: fromToken?.value,
 		to: toToken?.value,
@@ -643,7 +628,7 @@ export function AggregatorContainer({ tokenlist }) {
 			</TYPE.heading>
 
 			<BodyWrapper>
-				<Body showRoutes={!!routes?.length || isLoading}>
+				<Body showRoutes={fromToken && toToken}>
 					<div>
 						<FormHeader>Chain</FormHeader>
 						<ReactSelect
@@ -743,28 +728,31 @@ export function AggregatorContainer({ tokenlist }) {
 						) : null}
 					</SwapWrapper>
 				</Body>
-				<Routes show={!!routes?.length || isLoading} isFirstRender={renderNumber === 1}>
-					<FormHeader>
-						Routes
-						<CloseBtn onClick={cleanState} />{' '}
-					</FormHeader>
-					{!routes?.length ? <Loader loaded={!isLoading} /> : null}
-					{renderNumber !== 0
-						? normalizedRoutes.map((r, i) => (
-								<Route
-									{...r}
-									index={i}
-									selected={route?.name === r.name}
-									setRoute={() => setRoute(r.route)}
-									toToken={toToken}
-									amountFrom={amountWithDecimals}
-									fromToken={fromToken}
-									selectedChain={selectedChain.label}
-									key={i}
-								/>
-						  ))
-						: null}
-				</Routes>
+
+				{fromToken && toToken && (
+					<Routes>
+						<FormHeader>
+							Routes
+							<CloseBtn onClick={cleanState} />{' '}
+						</FormHeader>
+
+						{isLoading ? <Loader loaded={!isLoading} /> : null}
+
+						{normalizedRoutes.map((r, i) => (
+							<Route
+								{...r}
+								index={i}
+								selected={route?.name === r.name}
+								setRoute={() => setRoute(r.route)}
+								toToken={toToken}
+								amountFrom={amountWithDecimals}
+								fromToken={fromToken}
+								selectedChain={selectedChain.label}
+								key={i}
+							/>
+						))}
+					</Routes>
+				)}
 			</BodyWrapper>
 
 			<FAQs />

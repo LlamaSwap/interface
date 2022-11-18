@@ -56,7 +56,8 @@ export default function useGetRoutes({ chain, from, to, amount, extra = {} }: IG
 			.map<UseQueryOptions<IRoute>>((adapter) => {
 				return {
 					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(extra)],
-					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra })
+					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
+					refetchInterval: 30_000
 				};
 			})
 	});
