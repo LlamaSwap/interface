@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork } from 'wagmi';
 import { groupBy, mapValues, merge, uniqBy } from 'lodash';
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
@@ -7,17 +8,6 @@ import BigNumber from 'bignumber.js';
 import { ArrowRight } from 'react-feather';
 import styled from 'styled-components';
 import { createFilter } from 'react-select';
-import { TYPE } from '~/Theme';
-import ReactSelect from '~/components/MultiSelect';
-import { ButtonDark } from '~/components/ButtonStyled';
-import Tooltip from '~/components/Tooltip';
-import FAQs from '~/components/FAQs';
-import { getAllChains, swap } from './router';
-import { Input, TokenInput } from './TokenInput';
-import { CrossIcon, GasIcon } from './Icons';
-import Loader from './Loader';
-import Search from './Search';
-import { useTokenApprove } from './hooks';
 import {
 	Modal,
 	ModalBody,
@@ -34,11 +24,20 @@ import {
 } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import txImg from '~/public/llamanote.png';
-import { chainsMap } from './constants';
+import { TYPE } from '~/Theme';
+import ReactSelect from '~/components/MultiSelect';
+import FAQs from '~/components/FAQs';
+import Route from '~/components/SwapRoute';
+import { getAllChains, swap } from './router';
+import { Input, TokenInput } from './TokenInput';
+import { CrossIcon } from './Icons';
+import Loader from './Loader';
+import Search from './Search';
+import { useTokenApprove } from './hooks';
 import useGetRoutes from '~/queries/useGetRoutes';
 import useGetPrice from '~/queries/useGetPrice';
 import { nativeTokens } from './nativeTokens';
-import { useMutation } from '@tanstack/react-query';
+import { chainsMap } from './constants';
 
 /*
 Integrated:
@@ -143,87 +142,6 @@ const oneInchChains = {
 	klaytn: 8217
 };
 
-const formatOptionLabel = ({ label, ...rest }) => {
-	return (
-		<div style={{ display: 'flex' }}>
-			<div style={{ marginLeft: '10px', color: '#ccc' }}>
-				<img
-					src={rest.logoURI}
-					style={{
-						width: 20,
-						height: 20,
-						marginRight: 8,
-						borderRadius: '50%',
-						aspectRatio: 1
-					}}
-					alt=""
-				/>
-			</div>
-			<div>{label}</div>
-		</div>
-	);
-};
-
-interface Route {
-	name: string;
-	price: {
-		amountReturned: string;
-		estimatedGas: string;
-		tokenApprovalAddress: string;
-		logo: string;
-	};
-	toToken: {
-		address: string;
-		logoURI: string;
-		symbol: string;
-		decimals: string;
-	};
-	fromToken: Route['toToken'];
-	selectedChain: string;
-	setRoute: () => void;
-	selected: boolean;
-	index: number;
-	gasUsd: number;
-	amountUsd: string;
-	airdrop: boolean;
-	amountFrom: string;
-}
-
-const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
-	display: grid;
-	grid-row-gap: 8px;
-	margin-top: 16px;
-
-	background-color: ${({ theme, selected }) =>
-		theme.mode === 'dark' ? (selected ? ' #161616;' : '#2d3039;') : selected ? ' #bec1c7;' : ' #dde3f3;'};
-	border: ${({ theme }) => (theme.mode === 'dark' ? '1px solid #373944;' : '1px solid #c6cae0;')};
-	padding: 8px;
-	border-radius: 8px;
-	cursor: pointer;
-
-	animation: swing-in-left-fwd 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-	@keyframes swing-in-left-fwd {
-		0% {
-			transform: rotateX(100deg);
-			transform-origin: left;
-			opacity: 0;
-		}
-		100% {
-			transform: rotateX(0);
-			transform-origin: left;
-			opacity: 1;
-		}
-	}
-
-	&:hover {
-		background-color: ${({ theme }) => (theme.mode === 'dark' ? '#161616;' : '#b7b7b7;;')};
-	}
-`;
-
-const RouteRow = styled.div`
-	display: flex;
-`;
-
 const Balance = styled.div`
 	text-align: right;
 	padding-right: 4px;
@@ -231,77 +149,6 @@ const Balance = styled.div`
 	margin-top: 4px;
 	cursor: pointer;
 `;
-
-const Route = ({
-	name,
-	price,
-	toToken,
-	setRoute,
-	selected,
-	index,
-	gasUsd,
-	amountUsd,
-	airdrop,
-	fromToken,
-	amountFrom
-}: Route) => {
-	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
-
-	if (!price.amountReturned) return null;
-
-	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
-	return (
-		<RouteWrapper onClick={setRoute} selected={selected} best={index === 0}>
-			<RouteRow>
-				<img
-					src={toToken?.logoURI}
-					style={{
-						width: 24,
-						height: 24,
-						marginRight: 8,
-						borderRadius: '50%',
-						aspectRatio: 1
-					}}
-					alt=""
-				/>
-				<TYPE.heading>
-					{amount.toFixed(3)} {Number.isFinite(+amountUsd) ? `($${amountUsd})` : null}
-				</TYPE.heading>
-				<div style={{ marginLeft: 'auto', display: 'flex' }}>
-					{name === 'CowSwap' ? (
-						<Tooltip content="Gas is taken from output amount">
-							<GasIcon /> <div style={{ marginLeft: 8 }}>${gasUsd.toFixed(3)}</div>
-						</Tooltip>
-					) : (
-						<>
-							<GasIcon /> <div style={{ marginLeft: 8 }}>${gasUsd.toFixed(3)}</div>
-						</>
-					)}
-				</div>
-			</RouteRow>
-
-			<RouteRow>
-				{toToken.symbol} via {name}
-				{airdrop ? (
-					<Tooltip content="This project has no token and might airdrop one in the future">
-						<span style={{ marginLeft: 4 }}>🪂</span>
-					</Tooltip>
-				) : null}
-				{isApproved ? (
-					<Tooltip content="Token is approved for this aggregator.">
-						<span style={{ marginLeft: 4 }}>🔓</span>
-					</Tooltip>
-				) : null}
-				{index === 0 ? (
-					<div style={{ marginLeft: 'auto', display: 'flex' }}>
-						{' '}
-						<TYPE.heading style={{ color: '#3661c4' }}>Best Route </TYPE.heading>
-					</div>
-				) : null}
-			</RouteRow>
-		</RouteWrapper>
-	);
-};
 
 const Routes = styled.div`
 	padding: 16px;
@@ -666,13 +513,9 @@ export function AggregatorContainer({ tokenlist }) {
 				<Body showRoutes={fromToken && toToken}>
 					<div>
 						<FormHeader>Chain</FormHeader>
-						<ReactSelect
-							options={chains}
-							value={selectedChain}
-							onChange={onChainChange}
-							formatOptionLabel={formatOptionLabel}
-						/>
+						<ReactSelect options={chains} value={selectedChain} onChange={onChainChange} />
 					</div>
+
 					<SelectWrapper>
 						<FormHeader>Select Tokens</FormHeader>
 						<TokenSelect>
@@ -680,7 +523,6 @@ export function AggregatorContainer({ tokenlist }) {
 								options={tokensInChain}
 								value={fromToken}
 								onChange={setFromToken}
-								formatOptionLabel={formatOptionLabel}
 								filterOption={createFilter({ ignoreAccents: false })}
 							/>
 							<div>
@@ -703,7 +545,6 @@ export function AggregatorContainer({ tokenlist }) {
 								options={tokensInChain}
 								value={toToken}
 								onChange={setToToken}
-								formatOptionLabel={formatOptionLabel}
 								filterOption={createFilter({ ignoreAccents: false })}
 							/>
 						</TokenSelect>

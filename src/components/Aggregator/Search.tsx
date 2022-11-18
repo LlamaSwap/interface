@@ -15,11 +15,14 @@ interface Props {
 const ModalWrapper = styled.div`
 	display: flex;
 	flex-direction: column;
-	min-width: 540px;
+	max-width: 540px;
 	height: 500px;
 	background: ${({ theme }) => theme.bg1};
-	left: -5%;
 	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
 
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
@@ -91,6 +94,7 @@ const Row = ({ data: { data, onClick }, index, style }) => {
 		</PairRow>
 	);
 };
+
 const Modal = ({ close, onInputChange, data, onClick }) => {
 	return (
 		<ModalWrapper>

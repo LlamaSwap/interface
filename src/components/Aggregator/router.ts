@@ -40,35 +40,6 @@ export function getAllChains() {
 	return chainsOptions;
 }
 
-export function listRoutes(chain: string, from: string, to: string, amount: string, extra, setter) {
-	setter([]);
-	return Promise.all(
-		adapters
-			.filter((adap) => adap.chainToId[chain] !== undefined)
-			.map(async (adapter) => {
-				let price = 'failure' as any;
-				try {
-					price = await adapter.getQuote(chain, from, to, amount, {
-						...extra
-					});
-				} catch (e) {
-					console.error(e);
-				}
-				const res = {
-					price,
-					name: adapter.name,
-					airdrop: !adapter.token,
-					fromAmount: amount
-				};
-
-				if (price.price !== 'failure') {
-					setter((state) => [...(state || []), res]);
-				}
-				return res;
-			})
-	);
-}
-
 export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
 	const aggregator = adaptersMap[adapter];
 	try {
