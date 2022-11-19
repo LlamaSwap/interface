@@ -1,5 +1,7 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { adapters } from '~/components/Aggregator/router';
+import { providers } from '~/components/Aggregator/rpcs';
 
 interface IGetListRoutesProps {
 	chain: string;
@@ -14,10 +16,41 @@ interface IRoute {
 	name: string;
 	airdrop: boolean;
 	fromAmount: string;
+	rawQuote?: {
+		data: string;
+		to: string;
+		value: string;
+	};
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
 	adapter: any;
+}
+
+interface IEstimateGasQuery {
+	name?: string;
+	data?: string;
+	to?: string;
+	value?: string;
+	chain: string;
+}
+
+async function estimateTxGas({ chain, data, to, value }: IEstimateGasQuery) {
+	try {
+		if (!data || !to || !value || !chain) {
+			return null;
+		}
+
+		const estimatedGas = await providers[chain].estimateGas({
+			to,
+			data,
+			value
+		});
+
+		return estimatedGas ? Number(estimatedGas.toString()) : null;
+	} catch (error) {
+		return null;
+	}
 }
 
 async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
@@ -26,7 +59,7 @@ async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }
 	}
 
 	try {
-		const price = await adapter.getQuote(chain, from, to, amount, {
+		const { rawQuote, ...price } = await adapter.getQuote(chain, from, to, amount, {
 			...extra
 		});
 
@@ -34,12 +67,12 @@ async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }
 			price,
 			name: adapter.name,
 			airdrop: !adapter.token,
-			fromAmount: amount
+			fromAmount: amount,
+			rawQuote
 		};
 
 		return res;
 	} catch (e) {
-		console.error(e);
 		return {
 			price: null,
 			name: adapter.name,
@@ -50,7 +83,7 @@ async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }
 }
 
 export default function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRoutesProps) {
-	const res = useQueries({
+	const routes = useQueries({
 		queries: adapters
 			.filter((adap) => adap.chainToId[chain] !== undefined)
 			.map<UseQueryOptions<IRoute>>((adapter) => {
@@ -62,8 +95,35 @@ export default function useGetRoutes({ chain, from, to, amount, extra = {} }: IG
 			})
 	});
 
+	const filteredRoutes = useMemo(
+		() => routes?.filter((r) => r.status === 'success' && !!r.data && r.data.price).map((r) => r.data) ?? [],
+		[routes]
+	);
+
+	const gasEstimatesByRoutes = useQueries({
+		queries: filteredRoutes.map<UseQueryOptions<number | null>>((route) => {
+			return {
+				queryKey: ['gasEstimates', route.name, chain, route.rawQuote?.to, route.rawQuote?.value],
+				queryFn: () => estimateTxGas({ chain, ...(route.rawQuote || {}) }),
+				refetchInterval: 20_000
+			};
+		})
+	});
+
+	const data = useMemo(() => {
+		if (!gasEstimatesByRoutes) {
+			return filteredRoutes;
+		}
+
+		return filteredRoutes.map((route, index) => {
+			const estimatedGas = gasEstimatesByRoutes[index].status === 'success' && gasEstimatesByRoutes[index].data;
+
+			return { ...route, price: { ...route.price, estimatedGas: estimatedGas || route.price.estimatedGas } };
+		});
+	}, [filteredRoutes, gasEstimatesByRoutes]);
+
 	return {
-		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
-		data: res?.filter((r) => r.status === 'success' && !!r.data && r.data.price).map((r) => r.data) ?? []
+		isLoading: routes.filter((r) => r.status === 'success').length >= 1 ? false : true,
+		data
 	};
 }

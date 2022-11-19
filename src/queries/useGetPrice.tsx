@@ -18,6 +18,7 @@ async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
 	if (!fromToken && !toToken) {
 		return { gasTokenPrice: 0, fromTokenPrice: 0, toTokenPrice: 0 };
 	}
+
 	const { coins } = await fetch(
 		`https://coins.llama.fi/prices/current/${chain}:${toToken},${chain}:${ZERO_ADDRESS},${chain}:${fromToken}`
 	).then((r) => r.json());
@@ -30,7 +31,7 @@ async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
 }
 
 export default function useGetPrice({ chain, fromToken, toToken }: IGetPriceProps) {
-	return useQuery<IPrice>(['gasPrice', chain, fromToken, toToken], () => getPrice({ chain, fromToken, toToken }), {
+	return useQuery<IPrice>(['tokenPrice', chain, fromToken, toToken], () => getPrice({ chain, fromToken, toToken }), {
 		refetchInterval: 20_000
 	});
 }

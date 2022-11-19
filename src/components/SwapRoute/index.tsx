@@ -32,6 +32,11 @@ interface IRoute {
 	amountUsd: string;
 	airdrop: boolean;
 	amountFrom: string;
+	rawQuote?: {
+		data: string;
+		to: string;
+		value: string;
+	};
 }
 
 const Route = ({
