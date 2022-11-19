@@ -573,10 +573,22 @@ export function AggregatorContainer({ tokenlist }) {
 										if (+val.target.value < 50) setSlippage(val.target.value);
 									}}
 								/>{' '}
-								{fromTokenPrice ? <>Value: ${(+fromTokenPrice * +amount).toFixed(3)}</> : null}
+								{fromTokenPrice ? (
+									<>
+										Value: $
+										{(+fromTokenPrice * +amount).toLocaleString(undefined, {
+											maximumFractionDigits: 3
+										})}
+									</>
+								) : null}
 							</div>
 							{balance.isSuccess ? (
-								<Balance onClick={onMaxClick}>Balance: {(+balance?.data?.formatted).toFixed(3)}</Balance>
+								<Balance onClick={onMaxClick}>
+									Balance:{' '}
+									{(+balance?.data?.formatted).toLocaleString(undefined, {
+										maximumFractionDigits: 3
+									})}
+								</Balance>
 							) : null}
 						</InputFooter>
 					</div>

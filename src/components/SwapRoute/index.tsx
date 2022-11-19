@@ -58,16 +58,28 @@ const Route = ({
 			<RouteRow>
 				<img src={toToken?.logoURI} alt="" style={{ marginRight: 4 }} />
 				<TYPE.heading>
-					{amount.toFixed(3)} {Number.isFinite(+amountUsd) ? `($${amountUsd})` : null}
+					{amount.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}{' '}
+					{Number.isFinite(+amountUsd)
+						? `($${Number(amountUsd).toLocaleString(undefined, {
+								minimumFractionDigits: 3,
+								maximumFractionDigits: 3
+						  })})`
+						: null}
 				</TYPE.heading>
 				<div style={{ marginLeft: 'auto', display: 'flex' }}>
 					{name === 'CowSwap' ? (
 						<Tooltip content="Gas is taken from output amount">
-							<GasIcon /> <div style={{ marginLeft: 8 }}>${gasUsd.toFixed(3)}</div>
+							<GasIcon />{' '}
+							<div style={{ marginLeft: 8 }}>
+								${gasUsd.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+							</div>
 						</Tooltip>
 					) : (
 						<>
-							<GasIcon /> <div style={{ marginLeft: 8 }}>${gasUsd.toFixed(3)}</div>
+							<GasIcon />{' '}
+							<div style={{ marginLeft: 8 }}>
+								${gasUsd.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+							</div>
 						</>
 					)}
 				</div>
