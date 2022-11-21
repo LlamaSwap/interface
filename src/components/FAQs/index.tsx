@@ -72,7 +72,7 @@ export default function FaqWrapper() {
 						<br />
 						<br />
 						Thus, if any of the aggregators we integrate does an airdrop in the future, all swaps made through them
-						would be eligible for airdrops as swaps made through their UI.
+						would be eligible for their airdrop.
 					</AccordionPanel>
 				</AccordionItem>
 			</Accordion>
