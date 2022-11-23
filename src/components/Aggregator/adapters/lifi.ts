@@ -71,23 +71,11 @@ export async function swap({
   slippage,
   rawQuote,
 }) {
-  const fromAddress = await signer.getAddress();
-
-  const data = await fetch(
-    `https://li.quest/v1/quote?fromChain=${
-      chainToId[chain]
-    }&toChain=${
-      chainToId[chain]
-    }&fromToken=${from}&toToken=${to}&fromAmount=${amount}&fromAddress=${fromAddress}&slippage=${
-      slippage / 100 || '0.05'
-    }`
-  ).then((r) => r.json());
-
   const tx = await signer.sendTransaction({
-    from: data.transactionRequest.from,
-    to: data.transactionRequest.to,
-    data: data.transactionRequest.data,
-    value: data.transactionRequest.value,
+    from: rawQuote.transactionRequest.from,
+    to: rawQuote.transactionRequest.to,
+    data: rawQuote.transactionRequest.data,
+    value: rawQuote.transactionRequest.value,
   });
   return tx;
 }
