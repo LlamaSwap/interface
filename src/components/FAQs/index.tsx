@@ -67,7 +67,7 @@ export default function FaqWrapper() {
 						</AccordionButton>
 					</h2>
 					<AccordionPanel pb={4}>
-						Yes, we execute swaps directly against the router of each aggregator, so there's no difference between a
+						We execute swaps directly against the router of each aggregator, so there's no difference between a
 						swap executed directly from their UI and a swap executed from DefiLlama.
 						<br />
 						<br />
