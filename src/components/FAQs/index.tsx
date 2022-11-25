@@ -5,7 +5,7 @@ export default function FaqWrapper() {
 	return (
 		<>
 			<TYPE.largeHeader>FAQ</TYPE.largeHeader>
-			<Accordion allowMultiple margin={'0 auto'} width={600}>
+			<Accordion allowMultiple margin={'0 auto'} style={{ width: '100%', maxWidth: '600px' }}>
 				<AccordionItem>
 					<h2>
 						<AccordionButton>
@@ -67,8 +67,8 @@ export default function FaqWrapper() {
 						</AccordionButton>
 					</h2>
 					<AccordionPanel pb={4}>
-						We execute swaps directly against the router of each aggregator, so there's no difference between a
-						swap executed directly from their UI and a swap executed from DefiLlama.
+						We execute swaps directly against the router of each aggregator, so there's no difference between a swap
+						executed directly from their UI and a swap executed from DefiLlama.
 						<br />
 						<br />
 						Thus, if any of the aggregators we integrate does an airdrop in the future, all swaps made through them

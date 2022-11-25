@@ -94,8 +94,8 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	grid-row-gap: 16px;
 	padding-bottom: 4px;
 
-	min-width: 30rem;
-	max-width: 46rem;
+	width: 100%;
+	max-width: 30rem;
 
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
@@ -124,9 +124,15 @@ const Wrapper = styled.div`
 	display: grid;
 	grid-row-gap: 36px;
 	margin: 10px auto 40px;
+	position: relative;
+	top: 36px;
 
 	h1 {
 		font-weight: 500;
+	}
+
+	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
+		top: 0px;
 	}
 `;
 
@@ -196,8 +202,13 @@ const Routes = styled.div`
 `;
 const BodyWrapper = styled.div`
 	display: flex;
+	flex-direction: column;
 	gap: 16px;
 	margin: 0 auto;
+
+	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
+		flex-direction: row;
+	}
 `;
 
 const TokenSelect = styled.div`
