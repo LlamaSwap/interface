@@ -20,7 +20,9 @@ import {
 	ModalFooter,
 	Heading,
 	useToast,
-	Button
+	Button,
+	Alert,
+	AlertIcon
 } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import txImg from '~/public/llamanote.png';
@@ -506,7 +508,10 @@ export function AggregatorContainer({ tokenlist }) {
 			return { route, gasUsd, amountUsd, amount, netOut, ...route };
 		})
 		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
-		.sort((a, b) => b.netOut - a.netOut);
+		.sort((a, b) => b.netOut - a.netOut)
+		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
+
+	const priceImpact = 100 - (route.route.netOut / (+fromTokenPrice * +amount)) * 100;
 
 	return (
 		<Wrapper>
@@ -632,6 +637,12 @@ export function AggregatorContainer({ tokenlist }) {
 							</Button>
 						) : null}
 					</SwapWrapper>
+					{priceImpact > 15 ? (
+						<Alert status="warning">
+							<AlertIcon />
+							High price impact! More than {priceImpact.toFixed(2)}% drop.
+						</Alert>
+					) : null}
 				</Body>
 
 				{fromToken && toToken && (
@@ -648,7 +659,7 @@ export function AggregatorContainer({ tokenlist }) {
 								{...r}
 								index={i}
 								selected={route?.name === r.name}
-								setRoute={() => setRoute(r.route)}
+								setRoute={() => setRoute({ ...r.route, route: r })}
 								toToken={toToken}
 								amountFrom={amountWithDecimals}
 								fromToken={fromToken}

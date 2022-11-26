@@ -1,4 +1,4 @@
-import { ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 import { defillamaReferrerAddress } from '../constants';
 
 export const chainToId = {
@@ -38,43 +38,19 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: data.buyAmount,
 		estimatedGas: data.gas,
 		tokenApprovalAddress: data.to,
+		rawQuote: data,
 		logo: 'https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F1690203644-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FKX9pG8rH3DbKDOvV7di7%252Ficon%252F1nKfBhLbPxd2KuXchHET%252F0x%2520logo.png%3Falt%3Dmedia%26token%3D25a85a3e-7f72-47ea-a8b2-e28c0d24074b'
 	};
 }
 
-export async function swap({
-	chain,
-	from,
-	to,
-	amount,
-	signer,
-	slippage
-}: {
-	signer: Signer;
-	chain: string;
-	from: string;
-	to: string;
-	amount: string;
-	slippage: string;
-}) {
+export async function swap({ signer, rawQuote }) {
 	const fromAddress = await signer.getAddress();
-
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-
-	const data = await fetch(
-		`${
-			chainToId[chain]
-		}swap/v1/quote?buyToken=${tokenTo}&sellToken=${tokenFrom}&sellAmount=${amount}&takerAddress=${fromAddress}&slippagePercentage=${
-			+slippage / 100 || 1
-		}`
-	).then((r) => r.json());
 
 	const tx = await signer.sendTransaction({
 		from: fromAddress,
-		to: data.to,
-		data: data.data,
-		value: data.value
+		to: rawQuote.to,
+		data: rawQuote.data,
+		value: rawQuote.value
 	});
 
 	return tx;

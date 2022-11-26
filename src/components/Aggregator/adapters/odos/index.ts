@@ -1,4 +1,4 @@
-import { ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 import { ABI } from './abi';
 
 // All info collected from reverse engineering https://app.odos.xyz/

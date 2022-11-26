@@ -10,7 +10,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount) =
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
-		enabled: isConnected
+		enabled: isConnected && !!spender && !!token
 	});
 
 	const { config: configInfinite } = usePrepareContractWrite({
@@ -18,7 +18,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount) =
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, ethers.constants.MaxUint256],
-		enabled: isConnected
+		enabled: isConnected && !!spender && !!token
 	});
 
 	const { write: approve, isLoading } = useContractWrite(config);
@@ -30,7 +30,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount) =
 		functionName: 'allowance',
 		args: [address, spender],
 		watch: true,
-		enabled: isConnected
+		enabled: isConnected && !!spender && token !== ethers.constants.AddressZero
 	});
 
 	if (token === ethers.constants.AddressZero) return { isApproved: true };

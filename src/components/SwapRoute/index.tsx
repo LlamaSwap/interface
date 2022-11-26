@@ -4,6 +4,8 @@ import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
 import { GasIcon } from '../Aggregator/Icons';
 import { Badge } from '@chakra-ui/react';
+import { UnlockIcon } from '@chakra-ui/icons';
+import { Gift, Unlock } from 'react-feather';
 
 interface IToken {
 	address: string;
@@ -32,6 +34,7 @@ interface IRoute {
 	amountUsd: string;
 	airdrop: boolean;
 	amountFrom: string;
+	lossPercent: number;
 }
 
 const Route = ({
@@ -45,7 +48,8 @@ const Route = ({
 	amountUsd,
 	airdrop,
 	fromToken,
-	amountFrom
+	amountFrom,
+	lossPercent
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
@@ -89,12 +93,17 @@ const Route = ({
 				{toToken.symbol} via {name}
 				{airdrop ? (
 					<Tooltip content="This project has no token and might airdrop one in the future">
-						<span style={{ marginLeft: 4 }}>🪂</span>
+						<span style={{ marginLeft: 4 }}>
+							{' '}
+							<Gift width={16} height={16} />
+						</span>
 					</Tooltip>
 				) : null}
 				{isApproved ? (
 					<Tooltip content="Token is approved for this aggregator.">
-						<span style={{ marginLeft: 4 }}>🔓</span>
+						<span style={{ marginLeft: 4 }}>
+							<Unlock width={16} height={16} />
+						</span>
 					</Tooltip>
 				) : null}
 				{index === 0 ? (
@@ -102,7 +111,11 @@ const Route = ({
 						{' '}
 						<Badge colorScheme="green">Best Route</Badge>
 					</div>
-				) : null}
+				) : (
+					<div style={{ marginLeft: 'auto', display: 'flex' }}>
+						<Badge colorScheme="red">-{(100 - lossPercent * 100).toFixed(2)}%</Badge>
+					</div>
+				)}
 			</RouteRow>
 		</RouteWrapper>
 	);
