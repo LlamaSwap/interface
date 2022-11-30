@@ -12,13 +12,13 @@ interface Props {
 	) => void;
 }
 
-const ModalWrapper = styled.div`
+export const ModalWrapper = styled.div`
 	display: flex;
 	flex-direction: column;
 	max-width: 540px;
 	height: 500px;
 	background: ${({ theme }) => theme.bg1};
-	top: 0;
+	top: -50px;
 	bottom: 0;
 	left: 0;
 	right: 0;
@@ -47,7 +47,7 @@ const ModalWrapper = styled.div`
 	}
 `;
 
-const Header = styled.div`
+export const Header = styled.div`
 	position: sticky;
 	text-align: center;
 	justify-content: center;
@@ -55,7 +55,7 @@ const Header = styled.div`
 	margin-bottom: 8px;
 `;
 
-const PairRow = styled.div`
+export const PairRow = styled.div<{ hover?: boolean }>`
 	display: flex;
 	grid-row-gap: 8px;
 	margin-top: 16px;
@@ -64,16 +64,16 @@ const PairRow = styled.div`
 	cursor: pointer;
 
 	&:hover {
-		background-color: rgba(246, 246, 246, 0.1);
+		background-color: ${({ hover }) => (hover ? ' rgba(246, 246, 246, 0.1);' : 'none')};
 	}
 `;
 
-const IconImage = styled.img`
+export const IconImage = styled.img`
 	border-radius: 50%;
 	width: 20px;
 	height: 20px;
 `;
-const IconWrapper = styled.div`
+export const IconWrapper = styled.div`
 	display: flex;
 	margin-right: 8px;
 `;

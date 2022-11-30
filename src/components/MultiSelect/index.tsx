@@ -1,22 +1,28 @@
 import Select, { Props } from 'react-select';
 import styled from 'styled-components';
 import { FixedSizeList as List } from 'react-window';
+import { QuestionIcon } from '@chakra-ui/icons';
 
 const formatOptionLabel = ({ label, ...rest }) => {
+	console.log({ rest, label });
 	return (
 		<div style={{ display: 'flex' }}>
 			<div style={{ marginLeft: '10px', color: '#ccc' }}>
-				<img
-					src={rest.logoURI}
-					style={{
-						width: 20,
-						height: 20,
-						marginRight: 8,
-						borderRadius: '50%',
-						aspectRatio: 1
-					}}
-					alt=""
-				/>
+				{rest.logoURI ? (
+					<img
+						src={rest.logoURI}
+						style={{
+							width: 20,
+							height: 20,
+							marginRight: 8,
+							borderRadius: '50%',
+							aspectRatio: 1
+						}}
+						alt=""
+					/>
+				) : (
+					<QuestionIcon height="20px" width="20px" marginRight={'8px'} />
+				)}
 			</div>
 			<div>{label}</div>
 		</div>

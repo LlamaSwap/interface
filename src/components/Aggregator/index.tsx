@@ -7,7 +7,6 @@ import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
 import { ArrowRight } from 'react-feather';
 import styled from 'styled-components';
-import { createFilter } from 'react-select';
 import {
 	Modal,
 	ModalBody,
@@ -40,6 +39,7 @@ import useGetRoutes from '~/queries/useGetRoutes';
 import useGetPrice from '~/queries/useGetPrice';
 import { nativeTokens } from './nativeTokens';
 import { chainsMap } from './constants';
+import TokenSelect from './TokenSelect';
 
 /*
 Integrated:
@@ -213,7 +213,7 @@ const BodyWrapper = styled.div`
 	}
 `;
 
-const TokenSelect = styled.div`
+const TokenSelectBody = styled.div`
 	display: grid;
 	grid-column-gap: 8px;
 	margin-top: 16px;
@@ -345,7 +345,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const { switchNetworkAsync } = useSwitchNetwork();
 
-	const [amount, setAmount] = useState('10');
+	const [amount, setAmount] = useState<number | string>('10');
 	const [txModalOpen, setTxModalOpen] = useState(false);
 	const [txUrl, setTxUrl] = useState('');
 
@@ -483,7 +483,16 @@ export function AggregatorContainer({ tokenlist }) {
 	} = useTokenApprove(fromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
 
 	const onMaxClick = () => {
-		if (balance?.data?.formatted) setAmount(balance?.data?.formatted);
+		if (balance?.data?.formatted) {
+			if (route && fromToken?.address === ethers.constants.AddressZero) {
+				const gas = (+route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
+
+				const amountWithoutGas = +balance?.data?.formatted - gas;
+				setAmount(amountWithoutGas);
+			} else {
+				setAmount(balance?.data?.formatted);
+			}
+		}
 	};
 
 	const onChainChange = (newChain) => {
@@ -511,7 +520,7 @@ export function AggregatorContainer({ tokenlist }) {
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
-	const priceImpact = 100 - (route.route.netOut / (+fromTokenPrice * +amount)) * 100;
+	const priceImpact = 100 - (route?.route?.netOut / (+fromTokenPrice * +amount)) * 100;
 
 	return (
 		<Wrapper>
@@ -534,13 +543,9 @@ export function AggregatorContainer({ tokenlist }) {
 
 					<SelectWrapper>
 						<FormHeader>Select Tokens</FormHeader>
-						<TokenSelect>
-							<ReactSelect
-								options={tokensInChain}
-								value={fromToken}
-								onChange={setFromToken}
-								filterOption={createFilter({ ignoreAccents: false })}
-							/>
+						<TokenSelectBody>
+							<TokenSelect tokens={tokensInChain} token={fromToken} onClick={setFromToken} />
+
 							<div>
 								<ArrowRight
 									width={24}
@@ -557,13 +562,8 @@ export function AggregatorContainer({ tokenlist }) {
 									}}
 								/>
 							</div>
-							<ReactSelect
-								options={tokensInChain}
-								value={toToken}
-								onChange={setToToken}
-								filterOption={createFilter({ ignoreAccents: false })}
-							/>
-						</TokenSelect>
+							<TokenSelect tokens={tokensInChain} token={toToken} onClick={setToToken} />
+						</TokenSelectBody>
 						<div style={{ textAlign: 'center', margin: ' 8px 16px' }}>
 							<TYPE.heading>OR</TYPE.heading>
 						</div>
