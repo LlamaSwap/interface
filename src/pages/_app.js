@@ -5,15 +5,21 @@ import LocalStorageContextProvider, { Updater as LocalStorageContextUpdater } fr
 import { useAnalytics } from '~/hooks';
 import '~/Theme/globals.css';
 
+const setChakraMode = () => {
+	localStorage.setItem('chakra-ui-color-mode', 'dark');
+};
+
 function App({ Component, pageProps }) {
-	
 	const [queryClient] = React.useState(() => new QueryClient());
 
 	useAnalytics();
 
-	const [isMounted, setIsMounted] = React.useState(false)
+	const [isMounted, setIsMounted] = React.useState(false);
 
-	React.useEffect(() => setIsMounted(true), [])
+	React.useEffect(() => {
+		setIsMounted(true);
+		setChakraMode();
+	}, []);
 
 	return (
 		<QueryClientProvider client={queryClient}>
