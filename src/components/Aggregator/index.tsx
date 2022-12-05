@@ -395,7 +395,7 @@ export function AggregatorContainer({ tokenlist }) {
 			value: token.address,
 			label: token.symbol
 		}))
-		.concat(savedTokens[chain.id] || [])
+		.concat(savedTokens[chain?.id] || [])
 		.map((token) => ({
 			...token,
 			amount: tokenBalances?.[chain.id]?.[token.address.toLowerCase()]?.amount || 0,
