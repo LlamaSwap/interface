@@ -398,8 +398,8 @@ export function AggregatorContainer({ tokenlist }) {
 		.concat(savedTokens[chain?.id] || [])
 		.map((token) => ({
 			...token,
-			amount: tokenBalances?.[chain.id]?.[token.address.toLowerCase()]?.amount || 0,
-			balanceUSD: tokenBalances?.[chain.id]?.[token.address.toLowerCase()]?.balanceUSD || 0
+			amount: tokenBalances?.[chain?.id]?.[token.address.toLowerCase()]?.amount || 0,
+			balanceUSD: tokenBalances?.[chain?.id]?.[token.address.toLowerCase()]?.balanceUSD || 0
 		}))
 		.sort((a, b) => b.balanceUSD - a.balanceUSD);
 
@@ -521,7 +521,7 @@ export function AggregatorContainer({ tokenlist }) {
 		} else {
 			switchNetworkAsync(chainsMap[newChain.value]).then((chain) => {
 				cleanState();
-				setSelectedChain(chains.find(({ value }) => chainsMap[value] === chain.id));
+				setSelectedChain(chains.find(({ value }) => chainsMap[value] === chain?.id));
 			});
 		}
 	};

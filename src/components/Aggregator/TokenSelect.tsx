@@ -46,7 +46,7 @@ const AddToken = ({ address, onClick }) => {
 	};
 
 	const onAddClick = () => {
-		saveToken({ address, ...(data || {}), label: data?.symbol, value: address, chainId: chain.id });
+		saveToken({ address, ...(data || {}), label: data?.symbol, value: address, chainId: chain?.id });
 	};
 	return (
 		<PairRow key={address} style={{ lineHeight: '38px' }} hover={false} onClick={onTokenClick}>
