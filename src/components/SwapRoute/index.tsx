@@ -113,7 +113,7 @@ const Route = ({
 					</div>
 				) : (
 					<div style={{ marginLeft: 'auto', display: 'flex' }}>
-						<Badge colorScheme="red">-{(100 - lossPercent * 100).toFixed(2)}%</Badge>
+						<Badge colorScheme="red">-{Math.abs(100 - lossPercent * 100).toFixed(2)}%</Badge>
 					</div>
 				)}
 			</RouteRow>

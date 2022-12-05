@@ -40,6 +40,8 @@ import useGetPrice from '~/queries/useGetPrice';
 import { nativeTokens } from './nativeTokens';
 import { chainsMap } from './constants';
 import TokenSelect from './TokenSelect';
+import { getSavedTokens } from '~/utils';
+import useTokenBalances from '~/queries/useTokenBalances';
 
 /*
 Integrated:
@@ -229,13 +231,15 @@ export const CloseBtn = ({ onClick }) => {
 	);
 };
 
-interface Token {
+export interface Token {
 	address: string;
 	logoURI: string;
 	symbol: string;
 	decimals: string;
 	name: string;
 	chainId: number;
+	amount?: string;
+	balanceUSD?: number;
 }
 
 export async function getTokenList() {
@@ -338,6 +342,8 @@ export function AggregatorContainer({ tokenlist }) {
 	const [fromToken, setFromToken] = useState(null);
 	const [toToken, setToToken] = useState(null);
 	const toast = useToast();
+	const savedTokens = getSavedTokens();
+	const { data: tokenBalances } = useTokenBalances(address);
 
 	const [slippage, setSlippage] = useState('1');
 
@@ -383,11 +389,19 @@ export function AggregatorContainer({ tokenlist }) {
 		chainId: chainsMap[selectedChain.value]
 	});
 
-	const tokensInChain = tokenlist[chainsMap[selectedChain.value]]?.map((token) => ({
-		...token,
-		value: token.address,
-		label: token.symbol
-	}));
+	const tokensInChain = tokenlist[chainsMap[selectedChain.value]]
+		?.map((token) => ({
+			...token,
+			value: token.address,
+			label: token.symbol
+		}))
+		.concat(savedTokens[chain.id] || [])
+		.map((token) => ({
+			...token,
+			amount: tokenBalances?.[chain.id]?.[token.address.toLowerCase()]?.amount || 0,
+			balanceUSD: tokenBalances?.[chain.id]?.[token.address.toLowerCase()]?.balanceUSD || 0
+		}))
+		.sort((a, b) => b.balanceUSD - a.balanceUSD);
 
 	const setTokens = (tokens) => {
 		setFromToken(tokens.token0);
@@ -409,14 +423,19 @@ export function AggregatorContainer({ tokenlist }) {
 			tokens: { toToken: Token; fromToken: Token };
 		}) => swap(params),
 		onSuccess: (data, variables) => {
-			addRecentTransaction({
-				hash: data.hash,
-				description: `Swap transaction using ${variables.adapter} is sent.`
-			});
-			const explorerUrl = chain.blockExplorers.default.url;
-			setTxModalOpen(true);
+			if (data.hash) {
+				addRecentTransaction({
+					hash: data.hash,
+					description: `Swap transaction using ${variables.adapter} is sent.`
+				});
+				const explorerUrl = chain.blockExplorers.default.url;
+				setTxModalOpen(true);
 
-			setTxUrl(`${explorerUrl}/tx/${data.hash}`);
+				setTxUrl(`${explorerUrl}/tx/${data.hash}`);
+			} else {
+				setTxModalOpen(true);
+				setTxUrl(`https://explorer.cow.fi/orders/${data}`);
+			}
 		},
 		onError: (err: { reason: string; code: string }) => {
 			if (err.code !== 'ACTION_REJECTED')
@@ -520,7 +539,7 @@ export function AggregatorContainer({ tokenlist }) {
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
-	const priceImpact = 100 - (route?.route?.netOut / (+fromTokenPrice * +amount)) * 100;
+	const priceImpact = 100 - (route?.route?.amountUsd / (+fromTokenPrice * +amount)) * 100;
 
 	return (
 		<Wrapper>

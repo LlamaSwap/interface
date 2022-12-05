@@ -4,7 +4,6 @@ import { FixedSizeList as List } from 'react-window';
 import { QuestionIcon } from '@chakra-ui/icons';
 
 const formatOptionLabel = ({ label, ...rest }) => {
-	console.log({ rest, label });
 	return (
 		<div style={{ display: 'flex' }}>
 			<div style={{ marginLeft: '10px', color: '#ccc' }}>

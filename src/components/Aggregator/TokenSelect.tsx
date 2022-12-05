@@ -8,7 +8,7 @@ import { CloseBtn } from '.';
 import ReactSelect from '../MultiSelect';
 import { Header, IconImage, IconWrapper, ModalWrapper, PairRow } from './Search';
 import { Input } from './TokenInput';
-import { useToken } from 'wagmi';
+import { useNetwork, useToken } from 'wagmi';
 import { Button } from '@chakra-ui/react';
 
 const Row = ({ data: { data, onClick }, index, style }) => {
@@ -20,14 +20,33 @@ const Row = ({ data: { data, onClick }, index, style }) => {
 				<IconImage src={token.logoURI} />
 			</IconWrapper>
 			<TYPE.heading>{token.label}</TYPE.heading>
+			{token.balanceUSD ? (
+				<div style={{ marginRight: 0, marginLeft: 'auto' }}>
+					{(token.amount / 10 ** token.decimals).toFixed(3)}
+					<span style={{ fontSize: 12 }}> (~${token.balanceUSD?.toFixed(3)})</span>
+				</div>
+			) : null}
 		</PairRow>
 	);
 };
 
+const saveToken = (token) => {
+	const tokens = JSON.parse(localStorage.getItem('savedTokens') || '{}');
+	const chainTokens = tokens[token.chainId] || [];
+	const newTokens = { ...tokens, [token.chainId]: chainTokens.concat(token) };
+	localStorage.setItem('savedTokens', JSON.stringify(newTokens));
+};
+
 const AddToken = ({ address, onClick }) => {
 	const { data } = useToken({ address });
+	const { chain } = useNetwork();
+
 	const onTokenClick = () => {
 		onClick({ address, ...(data || {}), label: data?.symbol, value: address });
+	};
+
+	const onAddClick = () => {
+		saveToken({ address, ...(data || {}), label: data?.symbol, value: address, chainId: chain.id });
 	};
 	return (
 		<PairRow key={address} style={{ lineHeight: '38px' }} hover={false} onClick={onTokenClick}>
@@ -35,9 +54,9 @@ const AddToken = ({ address, onClick }) => {
 				<QuestionIcon height="20px" width="20px" marginTop={'10px'} />
 			</IconWrapper>
 			<TYPE.heading>{data?.symbol || 'Loading...'}</TYPE.heading>
-			{/* <Button height={38} marginLeft="auto">
+			<Button height={38} marginLeft="auto" onClick={onAddClick}>
 				Add token
-			</Button> */}
+			</Button>
 		</PairRow>
 	);
 };

@@ -16,15 +16,16 @@ export const referral = true;
 export function approvalAddress() {
 	return '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
 }
-
+const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 // https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/2.-query-the-fee-endpoint
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
+	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	// amount should include decimals
 	const data = await fetch(`${chainToId[chain]}/api/v1/quote`, {
 		method: 'POST',
 		body: JSON.stringify({
 			sellToken: from,
-			buyToken: to,
+			buyToken: tokenTo,
 			receiver: extra.userAddress,
 			appData: '0xf249b3db926aa5b5a1b18f3fec86b9cc99b9a8a99ad7e8034242d2838ae97422', // generated using https://explorer.cow.fi/appdata?tab=encode
 			partiallyFillable: false,
@@ -32,7 +33,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			buyTokenBalance: 'erc20',
 			from: extra.userAddress,
 			//"priceQuality": "fast",
-			signingScheme: 'eip712',
+			signingScheme: 'ethsign',
 			//"onchainOrder": false,
 			kind: 'sell',
 			sellAmountBeforeFee: amount
@@ -54,6 +55,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ chain, signer, rawQuote }) {
+	const fromAddress = await signer.getAddress();
+
 	const order = {
 		sellToken: rawQuote.quote.sellToken,
 		buyToken: rawQuote.quote.buyToken,
@@ -61,6 +64,7 @@ export async function swap({ chain, signer, rawQuote }) {
 		buyAmount: rawQuote.quote.buyAmount,
 		validTo: rawQuote.quote.validTo,
 		appData: rawQuote.quote.appData,
+		receiver: fromAddress,
 		feeAmount: rawQuote.quote.feeAmount,
 		kind: OrderKind.SELL,
 		partiallyFillable: rawQuote.quote.partiallyFillable
@@ -86,6 +90,8 @@ export async function swap({ chain, signer, rawQuote }) {
 			'Content-Type': 'application/json'
 		}
 	}).then((r) => r.json());
+
+	if (data.errorType) throw { reason: data.description };
 
 	return data;
 }
