@@ -371,9 +371,18 @@ export function AggregatorContainer({ tokenlist }) {
 		({ value }) => selectedChain.value === value && chainsMap[value] === currentChainId
 	);
 
+	const cleanState = () => {
+		setFromToken(null);
+		setToToken(null);
+		setRoute(null);
+		setTxUrl('');
+	};
+
 	useEffect(() => {
-		if (!isValidSelectedChain)
+		if (!isValidSelectedChain) {
 			setSelectedChain(chains.find(({ value }) => chainsMap[value] === currentChainId) ?? chains[0]);
+			cleanState();
+		}
 	}, [isValidSelectedChain, currentChainId]);
 
 	useEffect(() => {
@@ -486,13 +495,6 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 
 	const { gasTokenPrice = 0, toTokenPrice = 0, fromTokenPrice = 0 } = tokenPrices || {};
-
-	const cleanState = () => {
-		setFromToken(null);
-		setToToken(null);
-		setRoute(null);
-		setTxUrl('');
-	};
 
 	const {
 		isApproved,
