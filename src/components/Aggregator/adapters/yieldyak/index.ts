@@ -14,11 +14,14 @@ export function approvalAddress(chain: string) {
 	return chainToId[chain];
 }
 
+const nativeToken = '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7';
+
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: any) {
 	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, providers[chain]);
-
+	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
+	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const gasPrice = extra.gasPriceData.gasPrice.toNumber();
-	const data = await routerContract.findBestPathWithGas(amount, from, to, 3, gasPrice);
+	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
 
 	return {
 		amountReturned: data.amounts[data.amounts.length - 1],
@@ -29,14 +32,21 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ chain, signer, rawQuote }) {
+export async function swap({ chain, signer, rawQuote, from, to }) {
 	const fromAddress = await signer.getAddress();
 
 	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, signer);
-	const tx = await routerContract.swapNoSplit(
+	const swapFunc = (() => {
+		if (from === ethers.constants.AddressZero) return routerContract.swapNoSplitFromAVAX;
+		if (to === ethers.constants.AddressZero) return routerContract.swapNoSplitToAVAX;
+		return routerContract.swapNoSplit;
+	})();
+
+	const tx = await swapFunc(
 		[rawQuote.amounts[0], rawQuote.amounts[rawQuote.amounts.length - 1], rawQuote.path, rawQuote.adapters],
 		fromAddress,
-		0
+		0,
+		from === ethers.constants.AddressZero ? { value: rawQuote.amounts[0] } : {}
 	);
 
 	return tx;

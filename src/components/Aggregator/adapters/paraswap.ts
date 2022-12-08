@@ -5,7 +5,7 @@ import { ethers, Signer } from 'ethers';
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
 	ethereum: 1,
-	bsc: 52,
+	bsc: 56,
 	polygon: 137,
 	avax: 43114,
 	arbitrum: 42161,

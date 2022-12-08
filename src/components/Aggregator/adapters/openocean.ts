@@ -2,7 +2,7 @@ import { ethers, Signer } from 'ethers';
 
 export const chainToId = {
 	ethereum: 1,
-	bsc: 52,
+	bsc: 56,
 	polygon: 137,
 	optimism: 10,
 	arbitrum: 42161,
