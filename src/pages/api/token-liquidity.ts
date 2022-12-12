@@ -41,48 +41,71 @@ export default async function TokenLiquidity(req, res) {
 					label: value.symbol
 				};
 			}
-			``;
 		}
 
 		const gasPriceData = await providers[chainName].getFeeData();
 
 		const data = await Promise.all(
-			topTokensOfChain.map((toToken) => getAdapterRoutesByToken({ chain, fromToken, toToken, gasPriceData }))
+			topTokensOfChain.map((toToken) =>
+				getAdapterRoutesByLiquidity({
+					chain: chainName,
+					fromToken,
+					toToken,
+					gasPriceData
+				})
+			)
 		);
 
-		res.status(200).json({ data });
+		res.status(200).json(data);
 	}
 
 	return res;
 }
 
-async function getAdapterRoutesByToken({ chain, fromToken, toToken, gasPriceData }) {
+async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken, gasPriceData }) {
 	const data = await Promise.all(
 		liquidity.map(({ amount, slippage }) =>
-			adapters
-				.filter((adap) => adap.chainToId[chain] !== undefined)
-				.map((adapter) => {
-					const amountWithDecimals = BigNumber(amount)
-						.times(10 ** (fromToken?.decimals || 18))
-						.toFixed(0);
-
-					return getAdapterRoutes({
-						adapter,
-						chain,
-						from: fromToken?.value,
-						to: toToken?.value,
-						amount: amountWithDecimals,
-						extra: {
-							gasPriceData,
-							amount: amount.toString(),
-							fromToken,
-							toToken,
-							slippage: slippage.toString()
-						}
-					});
-				})
+			getAdapterRoutesByAmount({
+				chain,
+				fromToken,
+				toToken,
+				amount,
+				slippage,
+				gasPriceData
+			})
 		)
 	);
-	console.log({ data });
-	return data;
+
+	return { [toToken.label]: data };
+}
+
+async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, slippage, gasPriceData }) {
+	const amountWithDecimals = BigNumber(amount)
+		.times(10 ** (fromToken?.decimals || 18))
+		.toFixed(0);
+
+	const data = await Promise.all(
+		adapters
+			.filter((adap) => adap.chainToId[chain] !== undefined)
+			.map((adapter) =>
+				getAdapterRoutes({
+					adapter,
+					chain,
+					from: fromToken?.value,
+					to: toToken?.value,
+					amount: amountWithDecimals,
+					extra: {
+						gasPriceData,
+						amount: amount.toString(),
+						fromToken,
+						toToken,
+						slippage: slippage.toString()
+					}
+				})
+			)
+	);
+
+	return {
+		[`${amount.toString()}+${slippage.toString()}`]: data
+	};
 }
