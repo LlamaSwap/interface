@@ -38,7 +38,7 @@ import { useTokenApprove } from './hooks';
 import useGetRoutes from '~/queries/useGetRoutes';
 import useGetPrice from '~/queries/useGetPrice';
 import { nativeTokens } from './nativeTokens';
-import { chainsMap } from './constants';
+import { chainsMap, nativeAddress } from './constants';
 import TokenSelect from './TokenSelect';
 import { getSavedTokens } from '~/utils';
 import useTokenBalances from '~/queries/useTokenBalances';
@@ -361,7 +361,9 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const balance = useBalance({
 		addressOrName: address,
-		token: fromToken?.address === ethers.constants.AddressZero ? undefined : fromToken?.address,
+		token: [ethers.constants.AddressZero, nativeAddress.toLowerCase()].includes(fromToken?.address?.toLowerCase())
+			? undefined
+			: fromToken?.address,
 		watch: true
 	});
 
@@ -484,7 +486,8 @@ export function AggregatorContainer({ tokenlist }) {
 			amount,
 			fromToken,
 			toToken,
-			slippage
+			slippage,
+			selectedRoute: route?.name
 		}
 	});
 
@@ -540,8 +543,10 @@ export function AggregatorContainer({ tokenlist }) {
 		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
-
-	const priceImpact = 100 - (route?.route?.amountUsd / (+fromTokenPrice * +amount)) * 100;
+	const priceImpact =
+		fromTokenPrice && route?.route?.amountUsd > 0
+			? 100 - (route?.route?.amountUsd / (+fromTokenPrice * +amount)) * 100
+			: 0;
 
 	return (
 		<Wrapper>

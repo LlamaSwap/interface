@@ -1,5 +1,6 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { providers } from '../rpcs';
 
@@ -49,11 +50,16 @@ export async function getQuote(
 
 	const data = await fetch(`https://api.rango.exchange/basic/swap?${params}`).then((r) => r.json());
 
-	const estimatedGas = await providers[chain].estimateGas({
-		to: data?.tx?.txTo,
-		data: data?.tx?.txData,
-		value: data?.tx?.value
-	});
+	let estimatedGas;
+	try {
+		estimatedGas = await providers[chain].estimateGas({
+			to: data?.tx?.txTo,
+			data: data?.tx?.txData,
+			value: data?.tx?.value
+		});
+	} catch (e) {
+		estimatedGas = BigNumber(data?.tx?.gasLimit).toString();
+	}
 
 	return {
 		amountReturned: data?.route?.outputAmount,

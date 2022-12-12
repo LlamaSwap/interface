@@ -1,5 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 import { erc20ABI, useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
+import { nativeAddress } from '../constants';
 
 // To change the approve amount you first have to reduce the addresses`
 //  allowance to zero by calling `approve(_spender, 0)` if it is not
@@ -22,7 +23,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount) =
 		enabled: isConnected && !!spender && token !== ethers.constants.AddressZero
 	});
 
-	const shouldRemoveApproval = isOld && allowance && allowance.gt(BigNumber.from('0'));
+	const shouldRemoveApproval = isOld && allowance && allowance.lt(BigNumber.from(amount));
 
 	const normalizedAmount = Number(amount) ? amount : '0';
 	const { config } = usePrepareContractWrite({
@@ -51,7 +52,8 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount) =
 	const { write: approve, isLoading } = useContractWrite(config);
 	const { write: approveInfinite, isLoading: isInfiniteLoading } = useContractWrite(configInfinite);
 
-	if (token === ethers.constants.AddressZero) return { isApproved: true };
+	if (token === ethers.constants.AddressZero || token?.toLowerCase() === nativeAddress.toLowerCase())
+		return { isApproved: true };
 
 	if (!address || !allowance) return { isApproved: false };
 	if (allowance.toString() === ethers.constants.MaxUint256.toString()) return { isApproved: true };

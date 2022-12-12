@@ -1,4 +1,5 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
+import { omit } from 'lodash';
 import { adapters } from '~/components/Aggregator/router';
 
 interface IGetListRoutesProps {
@@ -55,9 +56,12 @@ export default function useGetRoutes({ chain, from, to, amount, extra = {} }: IG
 			.filter((adap) => adap.chainToId[chain] !== undefined)
 			.map<UseQueryOptions<IRoute>>((adapter) => {
 				return {
-					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(extra)],
+					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'selectedRoute'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: 15_000
+					refetchInterval: 15_000,
+					onSuccess: (data) => {
+						if (data.name === extra.selectedRoute) extra.setRoute(data);
+					}
 				};
 			})
 	});
