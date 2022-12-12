@@ -34,3 +34,17 @@ export const chainNamesReplaced = {
 };
 
 export const nativeAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowerCase();
+
+export const topTokens = {
+	ethereum: ['ETH', 'USDT', 'WBTC']
+};
+
+// amount and slippage to test liquidity of a token
+export const liquidity = [
+	{ amount: 1_000, slippage: 0.01 },
+	{ amount: 1_000_000, slippage: 0.1 },
+	{ amount: 10_000_000, slippage: 1 },
+	{ amount: 50_000_000, slippage: 10 },
+	{ amount: 100_000_000, slippage: 30 },
+	{ amount: 500_000_000, slippage: 90 }
+];
