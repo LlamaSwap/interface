@@ -19,7 +19,13 @@ export function approvalAddress() {
 	return '0x216b4b4ba9f3e719726886d34a177484278bfcae';
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-export async function getQuote(chain: string, from: string, to: string, amount: string, { fromToken, toToken }) {
+export async function getQuote(
+	chain: string,
+	from: string,
+	to: string,
+	amount: string,
+	{ fromToken, toToken, userAddress }
+) {
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
 
@@ -28,43 +34,41 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const data = await fetch(
 		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${amount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&side=SELL&network=${chainToId[chain]}`
 	).then((r) => r.json());
-	return {
-		amountReturned: data.priceRoute.destAmount,
-		estimatedGas: data.priceRoute.gasCost,
-		tokenApprovalAddress: data.priceRoute.tokenTransferProxy,
-		rawQuote: data,
-		logo: 'https://assets.coingecko.com/coins/images/20403/small/ep7GqM19_400x400.jpg?1636979120'
-	};
-}
 
-export async function swap({ chain, signer, rawQuote }) {
-	const fromAddress = await signer.getAddress();
-
-	const data = await fetch(`https://apiv5.paraswap.io/transactions/${chainToId[chain]}`, {
+	const dataSwap = await fetch(`https://apiv5.paraswap.io/transactions/${chainToId[chain]}`, {
 		method: 'POST',
 		body: JSON.stringify({
-			srcToken: rawQuote.priceRoute.srcToken,
-			srcDecimals: rawQuote.priceRoute.srcDecimals,
-			destToken: rawQuote.priceRoute.destToken,
-			destDecimals: rawQuote.priceRoute.destDecimals,
-			srcAmount: rawQuote.priceRoute.srcAmount,
-			destAmount: rawQuote.priceRoute.destAmount,
-			userAddress: fromAddress,
-			txOrigin: fromAddress,
+			srcToken: data.priceRoute.srcToken,
+			srcDecimals: data.priceRoute.srcDecimals,
+			destToken: data.priceRoute.destToken,
+			destDecimals: data.priceRoute.destDecimals,
+			srcAmount: data.priceRoute.srcAmount,
+			destAmount: data.priceRoute.destAmount,
+			userAddress: userAddress,
+			txOrigin: userAddress,
 			deadline: Math.floor(Date.now() / 1000) + 300,
-			priceRoute: rawQuote.priceRoute
+			priceRoute: data.priceRoute
 		}),
 		headers: {
 			'Content-Type': 'application/json'
 		}
 	}).then((r) => r.json());
+	return {
+		amountReturned: data.priceRoute.destAmount,
+		estimatedGas: data.priceRoute.gasCost,
+		tokenApprovalAddress: data.priceRoute.tokenTransferProxy,
+		rawQuote: dataSwap,
+		logo: 'https://assets.coingecko.com/coins/images/20403/small/ep7GqM19_400x400.jpg?1636979120'
+	};
+}
 
+export async function swap({ signer, rawQuote }) {
 	const tx = await signer.sendTransaction({
-		from: data.from,
-		to: data.to,
-		data: data.data,
-		value: data.value,
-		gasPrice: data.gasPrice
+		from: rawQuote.from,
+		to: rawQuote.to,
+		data: rawQuote.data,
+		value: rawQuote.value,
+		gasPrice: rawQuote.gasPrice
 	});
 	return tx;
 }

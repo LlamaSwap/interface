@@ -21,7 +21,13 @@ import {
 	useToast,
 	Button,
 	Alert,
-	AlertIcon
+	AlertIcon,
+	FormControl,
+	FormLabel,
+	Switch,
+	Flex,
+	Box,
+	Spacer
 } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import txImg from '~/public/llamanote.png';
@@ -42,6 +48,7 @@ import { chainsMap, nativeAddress } from './constants';
 import TokenSelect from './TokenSelect';
 import { getSavedTokens } from '~/utils';
 import useTokenBalances from '~/queries/useTokenBalances';
+import Tooltip from '../Tooltip';
 
 /*
 Integrated:
@@ -166,7 +173,7 @@ const Routes = styled.div`
 	text-align: left;
 	overflow-y: scroll;
 	min-width: 360px;
-	max-height: 444px;
+	max-height: 482px;
 	min-width: 26rem;
 	animation: tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 
@@ -341,6 +348,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const [selectedChain, setSelectedChain] = useState(chains[0]);
 	const [fromToken, setFromToken] = useState(null);
 	const [toToken, setToToken] = useState(null);
+	const [isPrivacyEnabled, setIsPrivacyEnabled] = useState(false);
 	const toast = useToast();
 	const savedTokens = getSavedTokens();
 	const { data: tokenBalances } = useTokenBalances(address);
@@ -482,12 +490,13 @@ export function AggregatorContainer({ tokenlist }) {
 		amount: amountWithDecimals,
 		extra: {
 			gasPriceData,
-			userAddress: address,
+			userAddress: address || ethers.constants.AddressZero,
 			amount,
 			fromToken,
 			toToken,
 			slippage,
-			selectedRoute: route?.name
+			selectedRoute: route?.name,
+			isPrivacyEnabled
 		}
 	});
 
@@ -563,7 +572,24 @@ export function AggregatorContainer({ tokenlist }) {
 			<BodyWrapper>
 				<Body showRoutes={fromToken && toToken}>
 					<div>
-						<FormHeader>Chain</FormHeader>
+						<FormHeader>
+							<Flex>
+								<Box>Chain</Box>
+								<Spacer />
+								<Tooltip content="Redirect requests through the DefiLlama Server to hide your IP address">
+									<FormControl display="flex" justifyContent={'center'}>
+										<FormLabel htmlFor="privacy-switch" pb="0" lineHeight={1}>
+											Private mode
+										</FormLabel>
+										<Switch
+											id="privacy-switch"
+											onChange={(e) => setIsPrivacyEnabled(e?.target?.checked)}
+											isChecked={isPrivacyEnabled}
+										/>
+									</FormControl>
+								</Tooltip>
+							</Flex>
+						</FormHeader>
 						<ReactSelect options={chains} value={selectedChain} onChange={onChainChange} />
 					</div>
 

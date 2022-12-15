@@ -1,5 +1,6 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
 import { omit } from 'lodash';
+import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { adapters } from '~/components/Aggregator/router';
 
 interface IGetListRoutesProps {
@@ -27,9 +28,14 @@ async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }
 	}
 
 	try {
-		const price = await adapter.getQuote(chain, from, to, amount, {
-			...extra
-		});
+		let price;
+		if (extra.isPrivacyEnabled) {
+			price = await redirectQuoteReq(adapter.name, chain, from, to, amount, extra);
+		} else {
+			price = await adapter.getQuote(chain, from, to, amount, {
+				...extra
+			});
+		}
 
 		const res: IRoute = {
 			price,

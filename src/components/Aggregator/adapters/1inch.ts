@@ -32,35 +32,32 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const [data, { address: tokenApprovalAddress }] = await Promise.all([
+
+	const [data, { address: tokenApprovalAddress }, swapData] = await Promise.all([
 		fetch(
 			`https://api.1inch.io/v4.0/${chainToId[chain]}/quote?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&slippage=${extra.slippage}`
 		).then((r) => r.json()),
-		fetch(`https://api.1inch.io/v4.0/${chainToId[chain]}/approve/spender`).then((r) => r.json())
+		fetch(`https://api.1inch.io/v4.0/${chainToId[chain]}/approve/spender`).then((r) => r.json()),
+		fetch(
+			`https://api.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${extra.userAddress}&slippage=${extra.slippage}&referrerAddress=${defillamaReferrerAddress}`
+		).then((r) => r.json())
 	]);
 
 	return {
 		amountReturned: data.toTokenAmount,
 		estimatedGas: data.estimatedGas,
 		tokenApprovalAddress,
+		rawQuote: swapData,
 		logo: 'https://defillama.com/_next/image?url=https%3A%2F%2Ficons.llama.fi%2F1inch-network.jpg&w=48&q=75'
 	};
 }
 
-export async function swap({ chain, from, to, amount, signer, slippage = '1', rawQuote, tokens }) {
-	const fromAddress = await signer.getAddress();
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-
-	const data = await fetch(
-		`https://api.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${fromAddress}&slippage=${slippage}&referrerAddress=${defillamaReferrerAddress}`
-	).then((r) => r.json());
-
+export async function swap({ signer, rawQuote }) {
 	const tx = await signer.sendTransaction({
-		from: data.tx.from,
-		to: data.tx.to,
-		data: data.tx.data,
-		value: data.tx.value
+		from: rawQuote.tx.from,
+		to: rawQuote.tx.to,
+		data: rawQuote.tx.data,
+		value: rawQuote.tx.value
 	});
 	return tx;
 }

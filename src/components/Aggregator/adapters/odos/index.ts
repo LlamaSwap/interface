@@ -22,20 +22,20 @@ const routers = {
 	optimism: '0x69Dd38645f7457be13571a847FfD905f9acbaF6d'
 };
 
-export async function getQuote(
-	chain: string,
-	from: string,
-	to: string,
-	_: string,
-	{ slippage, userAddress, amount, toToken }
-) {
+export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	const data = await fetch(
-		`https://api.llama.fi/dexAggregatorQuote?protocol=Odos&chain=${chain}&from=${from}&to=${to}&amount=${amount}&slippage=${slippage}&=userAddress=${userAddress}`
-	).then((r) => r.json());
+		`https://api.llama.fi/dexAggregatorQuote?protocol=${name}&chain=${chain}&from=${from}&to=${to}&amount=${
+			+amount / 10 ** extra?.fromToken?.decimals
+		}`,
+		{
+			method: 'POST',
+			body: JSON.stringify(extra)
+		}
+	).then((res) => res.json());
 	return {
 		...data,
 		tokenApprovalAddress: routers[chain],
-		amountReturned: data.amountReturned * 10 ** toToken.decimals
+		amountReturned: data.amountReturned * 10 ** extra.toToken.decimals
 	};
 }
 
