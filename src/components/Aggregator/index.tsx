@@ -716,6 +716,7 @@ export function AggregatorContainer({ tokenlist }) {
 								amountFrom={amountWithDecimals}
 								fromToken={fromToken}
 								selectedChain={selectedChain.label}
+								gasTokenPrice={gasTokenPrice}
 								key={i}
 							/>
 						))}

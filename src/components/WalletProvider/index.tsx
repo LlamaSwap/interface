@@ -18,7 +18,7 @@ const { provider, chains } = configureChains(
 		{
 			...chain.optimism,
 			rpcUrls: {
-				default: 'https://mainnet.optimism.io'
+				default: 'https://optimism-mainnet.public.blastapi.io'
 			}
 		},
 		...allChains

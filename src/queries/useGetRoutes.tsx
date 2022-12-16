@@ -16,6 +16,7 @@ interface IRoute {
 	name: string;
 	airdrop: boolean;
 	fromAmount: string;
+	txData: string;
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
@@ -39,6 +40,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 		const res: IRoute = {
 			price,
+			txData: adapter?.getTxData(price) || '',
 			name: adapter.name,
 			airdrop: !adapter.token,
 			fromAmount: amount

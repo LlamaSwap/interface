@@ -4,8 +4,8 @@ import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
 import { GasIcon } from '../Aggregator/Icons';
 import { Badge } from '@chakra-ui/react';
-import { UnlockIcon } from '@chakra-ui/icons';
 import { Gift, Unlock } from 'react-feather';
+import { useOptimismFees } from '../Aggregator/hooks/useOptimismFees';
 
 interface IToken {
 	address: string;
@@ -35,6 +35,8 @@ interface IRoute {
 	airdrop: boolean;
 	amountFrom: string;
 	lossPercent: number;
+	gasTokenPrice: number;
+	txData: string;
 }
 
 const Route = ({
@@ -49,9 +51,15 @@ const Route = ({
 	airdrop,
 	fromToken,
 	amountFrom,
-	lossPercent
+	lossPercent,
+	txData,
+	gasTokenPrice
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
+
+	const l1FeeUsd = useOptimismFees(txData, gasTokenPrice);
+
+	const gas = l1FeeUsd ? l1FeeUsd + gasUsd : gasUsd;
 
 	if (!price.amountReturned) return null;
 
@@ -82,7 +90,7 @@ const Route = ({
 						<>
 							<GasIcon />{' '}
 							<div style={{ marginLeft: 8 }}>
-								${gasUsd.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+								${gas.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
 							</div>
 						</>
 					)}

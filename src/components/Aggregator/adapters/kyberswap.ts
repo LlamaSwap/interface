@@ -66,3 +66,4 @@ export async function swap({ signer, from, rawQuote }) {
 
 	return tx;
 }
+export const getTxData = ({ rawQuote }) => rawQuote.encodedSwapData;
