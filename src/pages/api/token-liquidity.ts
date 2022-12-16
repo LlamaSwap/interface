@@ -1,14 +1,38 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
+import Cors from 'cors';
+import BigNumber from 'bignumber.js';
 import { getTokenList } from '~/components/Aggregator';
 import { chainsMap, liquidity, topTokens } from '~/components/Aggregator/constants';
 import { adapters } from '~/components/Aggregator/router';
-import { getAdapterRoutes } from '~/queries/useGetRoutes';
-import BigNumber from 'bignumber.js';
 import { providers } from '~/components/Aggregator/rpcs';
+import { getAdapterRoutes } from '~/queries/useGetRoutes';
+
+// Initializing the cors middleware
+// You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
+const cors = Cors({
+	methods: ['POST', 'GET', 'HEAD'],
+	origin: '*'
+});
+
+// Helper method to wait for a middleware to execute before continuing
+// And to throw an error when an error happens in a middleware
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
+	return new Promise((resolve, reject) => {
+		fn(req, res, (result: any) => {
+			if (result instanceof Error) {
+				return reject(result);
+			}
+
+			return resolve(result);
+		});
+	});
+}
 
 export default async function TokenLiquidity(req, res) {
-	const { chain, token } = req.query;
+	// Run the middleware
+	await runMiddleware(req, res, cors);
 
-	return [];
+	const { chain, token } = req.query;
 
 	const chainName = typeof chain === 'string' ? chain.toLowerCase() : null;
 	const fromTokenSymbol = typeof token === 'string' ? token.toLowerCase() : null;
