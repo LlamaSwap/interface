@@ -56,7 +56,7 @@ export default async function TokenLiquidity(req, res) {
 			)
 		);
 
-		res.status(200).json(data);
+		res.status(200).json({ data });
 	}
 
 	return res;
