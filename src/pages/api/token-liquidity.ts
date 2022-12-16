@@ -6,17 +6,21 @@ import { providers } from '~/components/Aggregator/rpcs';
 import { getAdapterRoutes } from '~/queries/useGetRoutes';
 
 const allowCors = (fn) => async (req, res) => {
+	res.setHeader('Access-Control-Allow-Credentials', true);
 	res.setHeader('Access-Control-Allow-Origin', '*');
-
+	res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+	res.setHeader(
+		'Access-Control-Allow-Headers',
+		'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+	);
 	if (req.method === 'OPTIONS') {
 		res.status(200).end();
 		return;
 	}
-
 	return await fn(req, res);
 };
 
-async function TokenLiquidity(req, res) {
+const tokenLiquidity = async (req, res) => {
 	const { chain, token } = req.query;
 
 	const chainName = typeof chain === 'string' ? chain.toLowerCase() : null;
@@ -71,7 +75,7 @@ async function TokenLiquidity(req, res) {
 	}
 
 	return res;
-}
+};
 
 async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken, gasPriceData }) {
 	const data = await Promise.all(
@@ -121,4 +125,4 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, sli
 	};
 }
 
-module.exports = allowCors(TokenLiquidity);
+module.exports = allowCors(tokenLiquidity);
