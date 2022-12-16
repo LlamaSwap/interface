@@ -1,5 +1,3 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import Cors from 'cors';
 import BigNumber from 'bignumber.js';
 import { getTokenList } from '~/components/Aggregator';
 import { chainsMap, liquidity, topTokens } from '~/components/Aggregator/constants';
@@ -7,31 +5,18 @@ import { adapters } from '~/components/Aggregator/router';
 import { providers } from '~/components/Aggregator/rpcs';
 import { getAdapterRoutes } from '~/queries/useGetRoutes';
 
-// Initializing the cors middleware
-// You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
-const cors = Cors({
-	methods: ['POST', 'GET', 'HEAD'],
-	origin: '*'
-});
+const allowCors = (fn) => async (req, res) => {
+	res.setHeader('Access-Control-Allow-Origin', '*');
 
-// Helper method to wait for a middleware to execute before continuing
-// And to throw an error when an error happens in a middleware
-function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
-	return new Promise((resolve, reject) => {
-		fn(req, res, (result: any) => {
-			if (result instanceof Error) {
-				return reject(result);
-			}
+	if (req.method === 'OPTIONS') {
+		res.status(200).end();
+		return;
+	}
 
-			return resolve(result);
-		});
-	});
-}
+	return await fn(req, res);
+};
 
-export default async function TokenLiquidity(req, res) {
-	// Run the middleware
-	await runMiddleware(req, res, cors);
-
+async function TokenLiquidity(req, res) {
 	const { chain, token } = req.query;
 
 	const chainName = typeof chain === 'string' ? chain.toLowerCase() : null;
@@ -135,3 +120,5 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, sli
 		[`${amount.toString()}+${slippage.toString()}`]: data
 	};
 }
+
+module.exports = allowCors(TokenLiquidity);
