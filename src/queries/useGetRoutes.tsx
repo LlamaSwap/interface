@@ -22,7 +22,7 @@ interface IGetAdapterRouteProps extends IGetListRoutesProps {
 	adapter: any;
 }
 
-async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
+export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
 	if (!chain || !from || !to || !amount) {
 		return { price: null, name: adapter.name, airdrop: !adapter.token, fromAmount: amount };
 	}
