@@ -19,10 +19,7 @@ import { chainNamesReplaced, chainsMap } from './constants';
 
 export const adapters = [matcha, inch, cowswap, kyberswap, openocean, paraswap, yieldyak, lifi, rango, odos];
 
-const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {}) as Record<
-	string,
-	typeof inch
->;
+const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
 
 export function getAllChains() {
 	const chains = new Set<string>();
