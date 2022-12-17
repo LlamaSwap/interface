@@ -11,7 +11,7 @@ export const useOptimismFees = (txData, gasTokenPrice) => {
 		abi: FEE_ABI,
 		functionName: 'getL1Fee',
 		args: [txData],
-		enabled: chain.id === 10,
+		enabled: chain?.id === 10,
 		cacheTime: 10_000
 	});
 
