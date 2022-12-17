@@ -41,14 +41,15 @@ import { CrossIcon } from './Icons';
 import Loader from './Loader';
 import Search from './Search';
 import { useTokenApprove } from './hooks';
-import useGetRoutes from '~/queries/useGetRoutes';
-import useGetPrice from '~/queries/useGetPrice';
+import { useGetRoutes } from '~/queries/useGetRoutes';
+import { useGetPrice } from '~/queries/useGetPrice';
+import { useTokenBalances } from '~/queries/useTokenBalances';
 import { nativeTokens } from './nativeTokens';
 import { chainsMap, nativeAddress } from './constants';
 import TokenSelect from './TokenSelect';
 import { getSavedTokens } from '~/utils';
-import useTokenBalances from '~/queries/useTokenBalances';
 import Tooltip from '../Tooltip';
+import type { IToken } from '~/types';
 
 /*
 Integrated:
@@ -238,17 +239,6 @@ export const CloseBtn = ({ onClick }) => {
 	);
 };
 
-export interface Token {
-	address: string;
-	logoURI: string;
-	symbol: string;
-	decimals: string;
-	name: string;
-	chainId: number;
-	amount?: string;
-	balanceUSD?: number;
-}
-
 export async function getTokenList() {
 	const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
 	const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
@@ -274,7 +264,7 @@ export async function getTokenList() {
 			groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...hecoList.tokens, ...nativeTokens], 'chainId'),
 			lifiList.tokens
 		),
-		(val) => uniqBy(val, (token: Token) => token.address.toLowerCase())
+		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
 	return {
@@ -439,7 +429,7 @@ export function AggregatorContainer({ tokenlist }) {
 			signer: ethers.Signer;
 			slippage: string;
 			rawQuote: any;
-			tokens: { toToken: Token; fromToken: Token };
+			tokens: { toToken: IToken; fromToken: IToken };
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			if (data.hash) {

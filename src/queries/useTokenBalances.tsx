@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { Token } from '~/components/Aggregator';
+import type { IToken } from '~/types';
 
 type ChainId = number | string;
 type Address = string;
-type Balances = Record<ChainId, Record<Address, Token>>;
+type Balances = Record<ChainId, Record<Address, IToken>>;
 
 const getBalances = async (address) => {
 	if (!address) return {};
@@ -25,10 +25,8 @@ const getBalances = async (address) => {
 	return balancesByChain;
 };
 
-const useTokenBalances = (address) => {
+export const useTokenBalances = (address) => {
 	return useQuery<Balances>(['balances', address], () => getBalances(address), {
 		refetchInterval: 20_000
 	});
 };
-
-export default useTokenBalances;

@@ -40,7 +40,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 		const res: IRoute = {
 			price,
-			txData: adapter?.getTxData(price) || '',
+			txData: adapter?.getTxData(price) ?? '',
 			name: adapter.name,
 			airdrop: !adapter.token,
 			fromAmount: amount
@@ -59,7 +59,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 	}
 }
 
-export default function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRoutesProps) {
+export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRoutesProps) {
 	const res = useQueries({
 		queries: adapters
 			.filter((adap) => adap.chainToId[chain] !== undefined)
