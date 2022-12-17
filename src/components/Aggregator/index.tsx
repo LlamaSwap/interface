@@ -564,7 +564,7 @@ export function AggregatorContainer({ tokenlist }) {
 			<TYPE.heading>
 				This product is still WIP and not ready for public release yet. Please expect things to break and if you find
 				anything broken please let us know in the{' '}
-				<a style={{ textDecoration: 'underline' }} href="http://discord.gg/buPFYXzDDd">
+				<a style={{ textDecoration: 'underline' }} href="https://discord.defillama.com/">
 					defillama discord
 				</a>
 			</TYPE.heading>
