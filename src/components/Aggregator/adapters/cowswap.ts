@@ -95,3 +95,5 @@ export async function swap({ chain, signer, rawQuote }) {
 
 	return data;
 }
+
+export const getTxData = () => '';
