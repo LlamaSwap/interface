@@ -144,8 +144,6 @@ export default function TokenLiquidity({ tokenlist }) {
 
 										const topRoute = routes.length > 0 ? routes[0] : {};
 
-										console.log({ topRoute });
-
 										return (
 											<tr key={token.address + liq.amount + liq.slippage}>
 												<td>{`${liq.amount.toLocaleString()} ${selectedToken.symbol}  (${liq.slippage}% slippage)`}</td>
