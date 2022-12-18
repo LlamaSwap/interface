@@ -35,24 +35,27 @@ export async function getQuote(
 		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${amount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&side=SELL&network=${chainToId[chain]}`
 	).then((r) => r.json());
 
-	const dataSwap = await fetch(`https://apiv5.paraswap.io/transactions/${chainToId[chain]}`, {
-		method: 'POST',
-		body: JSON.stringify({
-			srcToken: data.priceRoute.srcToken,
-			srcDecimals: data.priceRoute.srcDecimals,
-			destToken: data.priceRoute.destToken,
-			destDecimals: data.priceRoute.destDecimals,
-			srcAmount: data.priceRoute.srcAmount,
-			destAmount: data.priceRoute.destAmount,
-			userAddress: userAddress,
-			txOrigin: userAddress,
-			deadline: Math.floor(Date.now() / 1000) + 300,
-			priceRoute: data.priceRoute
-		}),
-		headers: {
-			'Content-Type': 'application/json'
-		}
-	}).then((r) => r.json());
+	const dataSwap =
+		userAddress !== ethers.constants.AddressZero
+			? await fetch(`https://apiv5.paraswap.io/transactions/${chainToId[chain]}`, {
+					method: 'POST',
+					body: JSON.stringify({
+						srcToken: data.priceRoute.srcToken,
+						srcDecimals: data.priceRoute.srcDecimals,
+						destToken: data.priceRoute.destToken,
+						destDecimals: data.priceRoute.destDecimals,
+						srcAmount: data.priceRoute.srcAmount,
+						destAmount: data.priceRoute.destAmount,
+						userAddress: userAddress,
+						txOrigin: userAddress,
+						deadline: Math.floor(Date.now() / 1000) + 300,
+						priceRoute: data.priceRoute
+					}),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+			  }).then((r) => r.json())
+			: null;
 	return {
 		amountReturned: data.priceRoute.destAmount,
 		estimatedGas: data.priceRoute.gasCost,
@@ -73,4 +76,4 @@ export async function swap({ signer, rawQuote }) {
 	return tx;
 }
 
-export const getTxData = ({ rawQuote }) => rawQuote.data;
+export const getTxData = ({ rawQuote }) => rawQuote?.data;
