@@ -40,7 +40,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 		const res: IRoute = {
 			price,
-			txData: adapter?.getTxData(price) ?? '',
+			txData: adapter?.getTxData?.(price) ?? '',
 			name: adapter.name,
 			airdrop: !adapter.token,
 			fromAmount: amount

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueries } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { liquidity, topTokens } from '~/components/Aggregator/constants';
 import { adapters } from '~/components/Aggregator/router';
@@ -6,107 +6,77 @@ import { providers } from '~/components/Aggregator/rpcs';
 import type { IToken } from '~/types';
 import { getAdapterRoutes } from './useGetRoutes';
 
-async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken, gasPriceData }) {
-	const data = await Promise.all(
-		liquidity.map(({ amount, slippage }) =>
-			getAdapterRoutesByAmount({
-				chain,
-				fromToken,
-				toToken,
-				amount,
-				slippage,
-				gasPriceData
-			})
-		)
-	);
+async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken }) {
+	if (!fromToken || !chain || !toToken) {
+		return [];
+	}
 
-	return { [toToken.label]: data };
-}
-
-async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, slippage, gasPriceData }) {
-	const amountWithDecimals = BigNumber(amount)
-		.times(10 ** (fromToken?.decimals || 18))
-		.toFixed(0);
-
-	const data = await Promise.all(
-		adapters
-			.filter((adap) => adap.chainToId[chain] !== undefined)
-			.map((adapter) =>
-				getAdapterRoutes({
-					adapter,
-					chain,
-					from: fromToken?.value,
-					to: toToken?.value,
-					amount: amountWithDecimals,
-					extra: {
-						gasPriceData,
-						amount: amount.toString(),
-						fromToken,
-						toToken,
-						slippage: slippage.toString()
-					}
-				})
-			)
-	);
-
-	return {
-		[`${amount.toString()}+${slippage.toString()}`]: data
-	};
-}
-
-const getTokenLiquidity = async ({
-	chain,
-	token,
-	tokenList
-}: {
-	chain: string | null;
-	token: string | null;
-	tokenList: Array<IToken>;
-}) => {
 	try {
-		if (!chain || !token || !tokenList) {
-			return [];
-		}
-
-		let topTokensOfChain = [];
-		let fromToken = null;
-
-		for (let index = 0; index < tokenList.length; index++) {
-			const value = tokenList[index];
-
-			if (topTokens[chain].includes(value.symbol)) {
-				topTokensOfChain.push({
-					...value,
-					value: value.address,
-					label: value.symbol
-				});
-			}
-
-			if (value.symbol.toLowerCase() === token) {
-				fromToken = {
-					...value,
-					value: value.address,
-					label: value.symbol
-				};
-			}
-		}
-
 		const gasPriceData = await providers[chain].getFeeData();
 
-		const data = await Promise.all(
-			topTokensOfChain.map((toToken) =>
-				getAdapterRoutesByLiquidity({
-					chain: chain,
-					fromToken,
+		const data = await Promise.allSettled(
+			liquidity.map(({ amount, slippage }) =>
+				getAdapterRoutesByAmount({
+					chain,
+					fromToken: { ...fromToken, value: fromToken.address, label: fromToken.symbol },
 					toToken,
+					amount,
+					slippage,
 					gasPriceData
 				})
 			)
 		);
 
-		return data;
-	} catch (error) {}
-};
+		return {
+			[toToken.label]: data
+				.map((route) => (route.status === 'fulfilled' ? route.value : null))
+				.filter((route) => !!route)
+		};
+	} catch (error) {
+		console.log(error);
+
+		return { [toToken.label]: [] };
+	}
+}
+
+async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, slippage, gasPriceData }) {
+	try {
+		const amountWithDecimals = BigNumber(amount)
+			.times(10 ** (fromToken?.decimals || 18))
+			.toFixed(0);
+
+		const data = await Promise.allSettled(
+			adapters
+				.filter((adap) => adap.chainToId[chain] !== undefined)
+				.map((adapter) =>
+					getAdapterRoutes({
+						adapter,
+						chain,
+						from: fromToken?.value,
+						to: toToken?.value,
+						amount: amountWithDecimals,
+						extra: {
+							gasPriceData,
+							amount: amount.toString(),
+							fromToken,
+							toToken,
+							slippage: slippage.toString()
+						}
+					})
+				)
+		);
+
+		return {
+			[`${amount.toString()}+${slippage.toString()}`]: data
+				.map((route) => (route.status === 'fulfilled' ? route.value : null))
+				.filter((route) => !!route)
+		};
+	} catch (error) {
+		console.log(error);
+
+		return { [`${amount.toString()}+${slippage.toString()}`]: [] };
+	}
+}
 
 export const useGetTokenLiquidity = ({
 	chain,
@@ -117,11 +87,45 @@ export const useGetTokenLiquidity = ({
 	token: string | null;
 	tokenList: Array<IToken>;
 }) => {
-	return useQuery(
-		['tokenLiquidity', chain, token, tokenList ? true : false],
-		() => getTokenLiquidity({ chain, token, tokenList }),
-		{
-			refetchInterval: 30_000
-		}
-	);
+	const topTokensOfChain =
+		chain && token && tokenList
+			? topTokens[chain]
+					.map((topToken) => {
+						const values = tokenList.find((t) => t.symbol === topToken);
+
+						if (values && topToken.toLowerCase() !== token) {
+							return {
+								...values,
+								value: values.address,
+								label: values.symbol
+							};
+						}
+
+						return null;
+					})
+					.filter((t) => !!t)
+			: [];
+
+	const fromToken =
+		chain && token && tokenList ? tokenList.find((t) => t.symbol?.toLowerCase() === token) ?? null : null;
+
+	const res = useQueries({
+		queries: topTokensOfChain.map((toToken) => {
+			return {
+				queryKey: ['tokenLiquidity', chain, fromToken, toToken],
+				queryFn: () =>
+					getAdapterRoutesByLiquidity({
+						chain: chain,
+						fromToken,
+						toToken
+					}),
+				refetchInterval: 30_000
+			};
+		})
+	});
+
+	return {
+		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
+		data: res
+	};
 };

@@ -16,13 +16,12 @@ export default function TokenLiquidity({ tokenlist }) {
 	const { chain, token } = router.query;
 
 	const chainName = typeof chain === 'string' ? chain.toLowerCase() : null;
+
 	const fromTokenSymbol = typeof token === 'string' ? token.toLowerCase() : null;
 
 	const chainTokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainsMap[chainName]] : null;
 
 	const { data } = useGetTokenLiquidity({ chain: chainName, token: fromTokenSymbol, tokenList: chainTokenList });
-
-	console.log({ data });
 
 	return (
 		<Layout title={`Token Liquidity - LlamaSwap`} defaultSEO>
