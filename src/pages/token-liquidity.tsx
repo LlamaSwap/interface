@@ -98,7 +98,7 @@ export default function TokenLiquidity({ tokenlist }) {
 				</FormControl>
 			</Flex>
 
-			<Flex flexDir="column" gap={16} marginY={4} overflowX="auto">
+			<Flex flexDir="column" gap="44px" marginY={4} overflowX="auto">
 				{topTokensOfChain.length > 0 &&
 					topTokensOfChain.map((token) => {
 						const tokenLiquidity = data.find((d) => d[0] === token.symbol)?.[1] ?? [];
