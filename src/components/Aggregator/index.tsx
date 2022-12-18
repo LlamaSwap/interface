@@ -240,15 +240,21 @@ export const CloseBtn = ({ onClick }) => {
 };
 
 export async function getTokenList() {
-	const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
-	const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
+	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
+	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
 	const oneInch = await Promise.all(
 		Object.values(oneInchChains).map(async (chainId) =>
 			fetch(`https://tokens.1inch.io/v1.1/${chainId}`).then((r) => r.json())
 		)
 	);
-	const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
-	const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
+	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
+	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
+
+	const [uniList, sushiList, lifiList] = await Promise.all([
+		await fetch('https://tokens.uniswap.org/').then((r) => r.json()),
+		await fetch('https://token-list.sushi.com/').then((r) => r.json()),
+		await fetch('https://li.quest/v1/tokens').then((r) => r.json())
+	]);
 
 	const oneInchList = Object.values(oneInchChains)
 		.map((chainId, i) =>
@@ -261,7 +267,7 @@ export async function getTokenList() {
 
 	const tokensByChain = mapValues(
 		merge(
-			groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...hecoList.tokens, ...nativeTokens], 'chainId'),
+			groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...nativeTokens], 'chainId'),
 			lifiList.tokens
 		),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())

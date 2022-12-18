@@ -2,6 +2,11 @@ import Select, { Props } from 'react-select';
 import styled from 'styled-components';
 import { FixedSizeList as List } from 'react-window';
 import { QuestionIcon } from '@chakra-ui/icons';
+import { CSSProperties } from 'react';
+
+interface IReactSelect extends Props {
+	style?: CSSProperties;
+}
 
 const formatOptionLabel = ({ label, ...rest }) => {
 	return (
@@ -105,10 +110,10 @@ const MenuList = (props) => {
 	);
 };
 
-const ReactSelect = ({ options, styles, ...props }: Props) => (
-	<Wrapper>
+const ReactSelect = ({ options, style, ...props }: IReactSelect) => (
+	<Wrapper style={style}>
 		<Select
-			styles={{ ...customStyles, ...styles }}
+			styles={{ ...customStyles }}
 			options={options}
 			theme={(theme) => {
 				return {

@@ -1,6 +1,6 @@
 import { useQueries } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
-import { liquidity, topTokens } from '~/components/Aggregator/constants';
+import { liquidity } from '~/components/Aggregator/constants';
 import { adapters } from '~/components/Aggregator/router';
 import { providers } from '~/components/Aggregator/rpcs';
 import type { IToken } from '~/types';
@@ -27,15 +27,14 @@ async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken }) {
 			)
 		);
 
-		return {
-			[toToken.label]: data
-				.map((route) => (route.status === 'fulfilled' ? route.value : null))
-				.filter((route) => !!route)
-		};
+		return [
+			toToken.label,
+			data.map((route) => (route.status === 'fulfilled' ? route.value : null)).filter((route) => !!route)
+		];
 	} catch (error) {
 		console.log(error);
 
-		return { [toToken.label]: [] };
+		return [toToken.label, []];
 	}
 }
 
@@ -66,49 +65,26 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, sli
 				)
 		);
 
-		return {
-			[`${amount.toString()}+${slippage.toString()}`]: data
-				.map((route) => (route.status === 'fulfilled' ? route.value : null))
-				.filter((route) => !!route)
-		};
+		return [
+			`${amount.toString()}+${slippage.toString()}`,
+			data.map((route) => (route.status === 'fulfilled' ? route.value : null)).filter((route) => !!route)
+		];
 	} catch (error) {
 		console.log(error);
 
-		return { [`${amount.toString()}+${slippage.toString()}`]: [] };
+		return [`${amount.toString()}+${slippage.toString()}`, []];
 	}
 }
 
 export const useGetTokenLiquidity = ({
 	chain,
-	token,
-	tokenList
+	fromToken,
+	topTokensOfChain
 }: {
 	chain: string | null;
-	token: string | null;
-	tokenList: Array<IToken>;
+	fromToken: IToken | null;
+	topTokensOfChain: Array<IToken>;
 }) => {
-	const topTokensOfChain =
-		chain && token && tokenList
-			? topTokens[chain]
-					.map((topToken) => {
-						const values = tokenList.find((t) => t.symbol === topToken);
-
-						if (values && topToken.toLowerCase() !== token) {
-							return {
-								...values,
-								value: values.address,
-								label: values.symbol
-							};
-						}
-
-						return null;
-					})
-					.filter((t) => !!t)
-			: [];
-
-	const fromToken =
-		chain && token && tokenList ? tokenList.find((t) => t.symbol?.toLowerCase() === token) ?? null : null;
-
 	const res = useQueries({
 		queries: topTokensOfChain.map((toToken) => {
 			return {
@@ -118,14 +94,13 @@ export const useGetTokenLiquidity = ({
 						chain: chain,
 						fromToken,
 						toToken
-					}),
-				refetchInterval: 30_000
+					})
 			};
 		})
 	});
 
 	return {
 		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
-		data: res
+		data: res.map((item) => (item.status === 'success' ? item.data : null)).filter((item) => !!item)
 	};
 };
