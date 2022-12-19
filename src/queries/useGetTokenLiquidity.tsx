@@ -1,4 +1,4 @@
-import { useQueries } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { liquidity } from '~/components/Aggregator/constants';
 import { adapters } from '~/components/Aggregator/router';
@@ -27,24 +27,32 @@ async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken }) {
 			)
 		);
 
-		return [
-			toToken.label,
-			data.map((route) => (route.status === 'fulfilled' ? route.value : null)).filter((route) => !!route)
-		];
+		return data.map((route) => (route.status === 'fulfilled' ? route.value : null)).filter((route) => !!route);
 	} catch (error) {
 		console.log(error);
 
-		return [toToken.label, []];
+		return [];
 	}
 }
 
-async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, slippage, gasPriceData }) {
+async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, slippage, gasPriceData }): Promise<
+	[
+		string,
+		Array<{
+			price?: { amountReturned: string; name: string } | null;
+			txData: any;
+			name: any;
+			airdrop: boolean;
+			fromAmount: string;
+		}>
+	]
+> {
 	try {
 		const amountWithDecimals = BigNumber(amount)
 			.times(10 ** (fromToken?.decimals || 18))
 			.toFixed(0);
 
-		const data = await Promise.allSettled(
+		const res = await Promise.allSettled(
 			adapters
 				.filter((adap) => adap.chainToId[chain] !== undefined)
 				.map((adapter) =>
@@ -65,10 +73,9 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, sli
 				)
 		);
 
-		return [
-			`${amount.toString()}+${slippage.toString()}`,
-			data.map((route) => (route.status === 'fulfilled' ? route.value : null)).filter((route) => !!route)
-		];
+		const data = res.map((route) => (route.status === 'fulfilled' ? route.value : null)).filter((route) => !!route);
+
+		return [`${amount.toString()}+${slippage.toString()}`, data];
 	} catch (error) {
 		console.log(error);
 
@@ -79,28 +86,17 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, sli
 export const useGetTokenLiquidity = ({
 	chain,
 	fromToken,
-	topTokensOfChain
+	toToken
 }: {
 	chain: string | null;
 	fromToken: IToken | null;
-	topTokensOfChain: Array<IToken>;
+	toToken: IToken | null;
 }) => {
-	const res = useQueries({
-		queries: topTokensOfChain.map((toToken) => {
-			return {
-				queryKey: ['tokenLiquidity', chain, fromToken, toToken],
-				queryFn: () =>
-					getAdapterRoutesByLiquidity({
-						chain: chain,
-						fromToken,
-						toToken
-					})
-			};
+	return useQuery([chain, fromToken?.address, toToken?.address], () =>
+		getAdapterRoutesByLiquidity({
+			chain: chain,
+			fromToken,
+			toToken
 		})
-	});
-
-	return {
-		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
-		data: res.map((item) => (item.status === 'success' ? item.data : null)).filter((item) => !!item)
-	};
+	);
 };

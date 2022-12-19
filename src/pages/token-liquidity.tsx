@@ -1,16 +1,13 @@
 import * as React from 'react';
 import { useRouter } from 'next/router';
-import BigNumber from 'bignumber.js';
-import { Box, Flex, FormControl, FormLabel, Heading } from '@chakra-ui/react';
-import { ArrowRight } from 'react-feather';
+import { Flex, FormControl, FormLabel, Heading } from '@chakra-ui/react';
 import Layout from '~/layout';
 import { getTokenList } from '~/components/Aggregator';
-import { chainsMap, liquidity, topTokens } from '~/components/Aggregator/constants';
+import { chainsMap, topTokens } from '~/components/Aggregator/constants';
 import ReactSelect from '~/components/MultiSelect';
 import { getAllChains } from '~/components/Aggregator/router';
-import { useGetTokenLiquidity } from '~/queries/useGetTokenLiquidity';
+import { LiquidityByToken } from '~/components/LiquidityByToken';
 import type { IToken } from '~/types';
-import styled from 'styled-components';
 
 export async function getStaticProps() {
 	return getTokenList();
@@ -65,8 +62,6 @@ export default function TokenLiquidity({ tokenlist }) {
 		};
 	}, [chainName, fromTokenSymbol, tokenlist]);
 
-	const { data } = useGetTokenLiquidity({ chain: chainName, fromToken: selectedToken, topTokensOfChain });
-
 	const onChainChange = (chain) => {
 		router.push({ pathname: router.pathname, query: { ...router.query, chain: chain.value } }, undefined, {
 			shallow: true
@@ -100,87 +95,15 @@ export default function TokenLiquidity({ tokenlist }) {
 
 			<Flex flexDir="column" gap="44px" marginY={4} overflowX="auto">
 				{topTokensOfChain.length > 0 &&
-					topTokensOfChain.map((token) => {
-						const tokenLiquidity = data.find((d) => d[0] === token.symbol)?.[1] ?? [];
-
-						return (
-							<Table key={token.address + selectedToken.address}>
-								<caption>
-									<Flex alignItems="center" flexWrap="nowrap" justifyContent="center" gap={1}>
-										<Flex as="span" alignItems="center" gap="2px" flexWrap="nowrap">
-											<img
-												src={selectedToken.logoURI}
-												alt=""
-												style={{ width: '20px', height: '20px', objectFit: 'cover', display: ' flex' }}
-											/>
-											<Box as="span" fontWeight={500} fontSize={16}>
-												{selectedToken.symbol}
-											</Box>
-										</Flex>
-										<ArrowRight width={16} height={16} display="block" />
-										<Flex as="span" alignItems="center" gap="2px" flexWrap="nowrap">
-											<img
-												src={token.logoURI}
-												alt=""
-												style={{ width: '20px', height: '20px', objectFit: 'cover', display: ' flex' }}
-											/>
-											<Box as="span" fontWeight={500} fontSize={16}>
-												{token.symbol}
-											</Box>
-										</Flex>
-									</Flex>
-								</caption>
-								<thead>
-									<tr>
-										<th>Trade</th>
-										<th>Receive</th>
-									</tr>
-								</thead>
-								<tbody>
-									{liquidity.map((liq) => {
-										const routes = (
-											tokenLiquidity.find((t) => t[0] === `${liq.amount}+${liq.slippage}`)?.[1] ?? []
-										).sort((a, b) => b.price?.amountReturned - a.price?.amountReturned);
-
-										const topRoute = routes.length > 0 ? routes[0] : {};
-
-										return (
-											<tr key={token.address + liq.amount + liq.slippage}>
-												<td>{`${liq.amount.toLocaleString()} ${selectedToken.symbol}  (${liq.slippage}% slippage)`}</td>
-												<td>
-													{topRoute.price?.amountReturned
-														? `${BigNumber(topRoute.price?.amountReturned ?? 0)
-																.div(10 ** Number(token.decimals || 18))
-																.toFixed(3)} ${token.symbol} via ${topRoute.name}`
-														: ''}
-												</td>
-											</tr>
-										);
-									})}
-								</tbody>
-							</Table>
-						);
-					})}
+					topTokensOfChain.map((token) => (
+						<LiquidityByToken
+							key={token.address + selectedToken.address}
+							fromToken={selectedToken}
+							toToken={token}
+							chain={chainName}
+						/>
+					))}
 			</Flex>
 		</Layout>
 	);
 }
-
-const Table = styled.table`
-	table-layout: fixed;
-	width: 100%;
-
-	th,
-	td,
-	caption {
-		padding: 4px;
-		font-size: 1rem;
-		font-weight: 400;
-		text-align: center;
-		border: 1px solid ${({ theme }) => theme.bg3};
-	}
-
-	caption {
-		border-bottom: none;
-	}
-`;

@@ -38,7 +38,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			});
 		}
 
-		const res: IRoute = {
+		const res = {
 			price,
 			txData: adapter?.getTxData?.(price) ?? '',
 			name: adapter.name,

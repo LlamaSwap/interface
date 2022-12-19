@@ -3,7 +3,8 @@
 	"rules": {
 		"no-undef": "warn",
 		"no-unused-vars": "warn",
-		"react/no-unescaped-entities": "off"
+		"react/no-unescaped-entities": "off",
+		"@next/next/no-img-element": "off"
 	},
 	"env": {
 		"es6": true
