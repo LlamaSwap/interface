@@ -52,7 +52,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 
 					return (
 						<tr key={toToken.address + liq.amount + liq.slippage}>
-							<td>{`${liq.amount.toLocaleString()} ${fromToken.symbol}  (${liq.slippage}% slippage)`}</td>
+							<td>{`${liq.amount.toLocaleString()} ${fromToken.symbol}`}</td>
 							<td>
 								{isLoading ? (
 									<Skeleton height="16px" width="100%" maxWidth="24ch" margin="auto" />
