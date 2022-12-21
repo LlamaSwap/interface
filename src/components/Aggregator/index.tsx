@@ -525,7 +525,8 @@ export function AggregatorContainer({ tokenlist }) {
 			toToken,
 			slippage,
 			selectedRoute: route?.name,
-			isPrivacyEnabled
+			isPrivacyEnabled,
+			setRoute
 		}
 	});
 
@@ -718,7 +719,7 @@ export function AggregatorContainer({ tokenlist }) {
 							</Button>
 						) : null}
 					</SwapWrapper>
-					{priceImpact > 15 ? (
+					{priceImpact > 15 && !isLoading ? (
 						<Alert status="warning">
 							<AlertIcon />
 							High price impact! More than {priceImpact.toFixed(2)}% drop.
