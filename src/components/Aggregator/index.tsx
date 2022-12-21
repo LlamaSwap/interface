@@ -49,6 +49,7 @@ import TokenSelect from './TokenSelect';
 import { getSavedTokens } from '~/utils';
 import useTokenBalances from '~/queries/useTokenBalances';
 import Tooltip from '../Tooltip';
+import { sendSwapEvent } from './adapters/utils';
 
 /*
 Integrated:
@@ -442,6 +443,7 @@ export function AggregatorContainer({ tokenlist }) {
 			tokens: { toToken: Token; fromToken: Token };
 		}) => swap(params),
 		onSuccess: (data, variables) => {
+			let txUrl;
 			if (data.hash) {
 				addRecentTransaction({
 					hash: data.hash,
@@ -449,15 +451,29 @@ export function AggregatorContainer({ tokenlist }) {
 				});
 				const explorerUrl = chain.blockExplorers.default.url;
 				setTxModalOpen(true);
-
-				setTxUrl(`${explorerUrl}/tx/${data.hash}`);
+				txUrl = `${explorerUrl}/tx/${data.hash}`;
+				setTxUrl(txUrl);
 			} else {
 				setTxModalOpen(true);
-				setTxUrl(`https://explorer.cow.fi/orders/${data}`);
+				txUrl = `https://explorer.cow.fi/orders/${data}`;
+				setTxUrl(txUrl);
 			}
+
+			sendSwapEvent({
+				chain: selectedChain.value,
+				user: address,
+				from: variables.from,
+				to: variables.to,
+				aggregator: variables.adapter,
+				isError: false,
+				quote: variables.rawQuote,
+				txUrl,
+				amount: String(amount),
+				errorData: {}
+			});
 		},
-		onError: (err: { reason: string; code: string }) => {
-			if (err.code !== 'ACTION_REJECTED')
+		onError: (err: { reason: string; code: string }, variables) => {
+			if (err.code !== 'ACTION_REJECTED') {
 				toast({
 					title: 'Something went wrong.',
 					description: err.reason,
@@ -466,6 +482,19 @@ export function AggregatorContainer({ tokenlist }) {
 					isClosable: true,
 					position: 'top'
 				});
+				sendSwapEvent({
+					chain: selectedChain.value,
+					user: address,
+					from: variables.from,
+					to: variables.to,
+					aggregator: variables.adapter,
+					isError: true,
+					quote: variables.rawQuote,
+					txUrl: '',
+					amount: String(amount),
+					errorData: err
+				});
+			}
 		}
 	});
 

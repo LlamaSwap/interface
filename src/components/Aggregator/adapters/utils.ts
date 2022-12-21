@@ -16,3 +16,25 @@ export const redirectQuoteReq = async (
 
 	return data;
 };
+
+interface SwapEvent {
+	user: string;
+	aggregator: string;
+	isError: boolean;
+	chain: string;
+	from: string;
+	to: string;
+	quote: any;
+	txUrl: string;
+	amount: string;
+	errorData: any;
+}
+
+export const sendSwapEvent = async (event: SwapEvent) => {
+	const data = await fetch(`https://api.llama.fi/storeAggregatorEvent`, {
+		method: 'POST',
+		body: JSON.stringify(event)
+	}).then((res) => res.json());
+
+	return data;
+};
