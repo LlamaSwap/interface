@@ -5,32 +5,57 @@ import { ArrowRight } from 'react-feather';
 import { liquidity } from '~/components/Aggregator/constants';
 import type { IToken } from '~/types';
 import { useGetTokenLiquidity } from '~/queries/useGetTokenLiquidity';
+import { useMemo } from 'react';
 
 export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: IToken; toToken: IToken; chain: string }) {
 	const { data, isLoading } = useGetTokenLiquidity({ fromToken, toToken, chain });
 
-	const topRoutes =
-		data?.map(([liq, routes]) => {
-			const sortedRoutes = routes.sort(
-				(a, b) => Number(b.price?.amountReturned ?? 0) - Number(a.price?.amountReturned ?? 0)
-			);
+	const { topRoutes, chartData } = useMemo(() => {
+		const topRoutes =
+			data?.map(([liq, routes]) => {
+				const sortedRoutes = routes.sort(
+					(a, b) => Number(b.price?.amountReturned ?? 0) - Number(a.price?.amountReturned ?? 0)
+				);
 
-			const topRoute = sortedRoutes.length > 0 ? sortedRoutes[0] : null;
+				const topRoute = sortedRoutes.length > 0 ? sortedRoutes[0] : null;
 
-			return [liq, topRoute] as [
-				string,
-				{
-					price?: {
-						amountReturned: string;
-						name: string;
-					};
-					txData: any;
-					name: any;
-					airdrop: boolean;
-					fromAmount: string;
+				return [liq, topRoute] as [
+					string,
+					{
+						price?: {
+							amountReturned: string;
+							name: string;
+						};
+						txData: any;
+						name: any;
+						airdrop: boolean;
+						fromAmount: string;
+					}
+				];
+			}) ?? [];
+
+		const currentPrice = topRoutes[0]?.[1]?.price?.amountReturned ?? null;
+
+		const chartData = [];
+
+		if (currentPrice) {
+			topRoutes.forEach((route) => {
+				const nofOfTokensToSwap = Number(route[0].split('+')[0]);
+
+				const amountReturned = route[1].price?.amountReturned ?? null;
+
+				if (amountReturned) {
+					const expectedPrice = Number(currentPrice) * (nofOfTokensToSwap / 500);
+
+					const slippage = ((Number(amountReturned) - expectedPrice) / expectedPrice) * 100;
+
+					chartData.push([nofOfTokensToSwap, Number(Math.abs(slippage).toFixed(2))]);
 				}
-			];
-		}) ?? [];
+			});
+		}
+
+		return { topRoutes, chartData };
+	}, [data]);
 
 	return (
 		<Table>
@@ -66,7 +91,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 				</tr>
 			</thead>
 			<tbody>
-				{liquidity.map((liq) => {
+				{liquidity.slice(1).map((liq) => {
 					const topRoute = topRoutes.find((t) => t[0] === `${liq.amount}+${liq.slippage}`)?.[1] ?? null;
 
 					return (
