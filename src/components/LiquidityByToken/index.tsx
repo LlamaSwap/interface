@@ -9,6 +9,29 @@ import { useGetTokenLiquidity } from '~/queries/useGetTokenLiquidity';
 export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: IToken; toToken: IToken; chain: string }) {
 	const { data, isLoading } = useGetTokenLiquidity({ fromToken, toToken, chain });
 
+	const topRoutes =
+		data?.map(([liq, routes]) => {
+			const sortedRoutes = routes.sort(
+				(a, b) => Number(b.price?.amountReturned ?? 0) - Number(a.price?.amountReturned ?? 0)
+			);
+
+			const topRoute = sortedRoutes.length > 0 ? sortedRoutes[0] : null;
+
+			return [liq, topRoute] as [
+				string,
+				{
+					price?: {
+						amountReturned: string;
+						name: string;
+					};
+					txData: any;
+					name: any;
+					airdrop: boolean;
+					fromAmount: string;
+				}
+			];
+		}) ?? [];
+
 	return (
 		<Table>
 			<caption>
@@ -44,11 +67,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 			</thead>
 			<tbody>
 				{liquidity.map((liq) => {
-					const routes = (data?.find((t) => t[0] === `${liq.amount}+${liq.slippage}`)?.[1] ?? []).sort(
-						(a, b) => Number(b.price?.amountReturned ?? 0) - Number(a.price?.amountReturned ?? 0)
-					);
-
-					const topRoute = routes.length > 0 ? routes[0] : null;
+					const topRoute = topRoutes.find((t) => t[0] === `${liq.amount}+${liq.slippage}`)?.[1] ?? null;
 
 					return (
 						<tr key={toToken.address + liq.amount + liq.slippage}>
