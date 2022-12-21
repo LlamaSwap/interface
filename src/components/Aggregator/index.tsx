@@ -572,7 +572,13 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const normalizedRoutes = [...(routes || [])]
 		?.map((route) => {
-			const gasUsd = (gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+			let gasUsd = (gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+
+			// CowSwap native token swap
+			gasUsd =
+				route.price.feeAmount && fromToken.address === ethers.constants.AddressZero
+					? (route.price.feeAmount / 1e18) * gasTokenPrice
+					: gasUsd;
 			const amount = +route.price.amountReturned / 10 ** +toToken?.decimals;
 			const amountUsd = (amount * toTokenPrice).toFixed(2);
 			const netOut = +amountUsd - gasUsd;
