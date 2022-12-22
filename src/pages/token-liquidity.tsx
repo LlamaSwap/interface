@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useRouter } from 'next/router';
 import { Flex, FormControl, FormLabel, Heading } from '@chakra-ui/react';
 import Layout from '~/layout';
-import { getTokenList } from '~/components/Aggregator';
+import { getTokenList } from '~/components/Aggregator/getTokenList';
 import { chainsMap, topTokens } from '~/components/Aggregator/constants';
 import ReactSelect from '~/components/MultiSelect';
 import { getAllChains } from '~/components/Aggregator/router';

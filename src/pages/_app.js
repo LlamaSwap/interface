@@ -4,6 +4,7 @@ import { Hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query
 import LocalStorageContextProvider, { Updater as LocalStorageContextUpdater } from '~/contexts/LocalStorage';
 import { useAnalytics } from '~/hooks';
 import '~/Theme/globals.css';
+import { WalletWrapper } from '~/components/WalletProvider';
 
 const setChakraMode = () => {
 	localStorage.setItem('chakra-ui-color-mode', 'dark');
@@ -27,7 +28,11 @@ function App({ Component, pageProps }) {
 				<ChakraProvider>
 					<LocalStorageContextProvider>
 						<LocalStorageContextUpdater />
-						{isMounted && <Component {...pageProps} />}
+						{isMounted && (
+							<WalletWrapper>
+								<Component {...pageProps} />
+							</WalletWrapper>
+						)}
 					</LocalStorageContextProvider>
 				</ChakraProvider>
 			</Hydrate>

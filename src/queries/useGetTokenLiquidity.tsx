@@ -39,7 +39,7 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, sli
 	[
 		string,
 		Array<{
-			price?: { amountReturned: string; name: string } | null;
+			price?: { amountReturned: string; name: string; estimatedGas: string; feeAmount: string } | null;
 			txData: any;
 			name: any;
 			airdrop: boolean;
