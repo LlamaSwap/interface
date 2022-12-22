@@ -36,7 +36,29 @@ export const chainNamesReplaced = {
 export const nativeAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowerCase();
 
 export const topTokens = {
-	ethereum: ['ETH', 'USDT', 'WBTC']
+	ethereum: ['ETH', 'USDT', 'WBTC'],
+	bsc: ['BNB', 'USDT', 'ETH'],
+	polygon: ['MATIC', 'USDT', 'WETH'],
+	optimism: ['WETH', 'USDT', 'WBTC'],
+	arbitrum: ['WETH', 'USDT', 'WBTC'],
+	avax: ['AVAX', 'USDT.e', 'WETH.e'],
+	gnosis: ['xDai', 'WETH', 'WBTC'],
+	fantom: ['FTM', 'USDC', 'ETH'],
+	klaytn: ['KLAY', 'KDAI', 'oETH'],
+	aurora: ['AETH', 'USDT', 'WBTC'],
+	celo: ['CELO', 'USDC', 'WETH'],
+	cronos: ['CRO', 'USDC', 'WETH'],
+	// dogechain: [],
+	moonriver: ['MOVR', 'USDC', 'WETH'],
+	bttc: ['BNB', 'BTC.b', 'BUSD.b'],
+	// oasis: []
+	velas: ['VLX', 'USDC', 'ETH'],
+	// heco: []
+	harmony: ['1BTC', '1INCH', 'AAVE'],
+	boba: ['BOBA', 'DAI', 'FRAX'],
+	okc: ['OKT', 'USDC', 'ETHK'],
+	fuse: ['FUSE', 'USDC', 'WETH'],
+	moonbeam: ['GLMR', 'USDC', 'ETH']
 };
 
 // amount and slippage to test liquidity of a token
