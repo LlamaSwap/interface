@@ -1,11 +1,12 @@
-import * as React from 'react'
-import { AggregatorContainer, getTokenList } from '~/components/Aggregator'
-import ConnectButton from '~/components/Aggregator/ConnectButton'
-import { WalletWrapper } from '~/components/WalletProvider'
-import Layout from '~/layout'
+import * as React from 'react';
+import { AggregatorContainer } from '~/components/Aggregator';
+import ConnectButton from '~/components/Aggregator/ConnectButton';
+import { getTokenList } from '~/components/Aggregator/getTokenList';
+import { WalletWrapper } from '~/components/WalletProvider';
+import Layout from '~/layout';
 
 export async function getStaticProps() {
-	return getTokenList()
+	return getTokenList();
 }
 
 export default function Aggregator(props) {
@@ -16,5 +17,5 @@ export default function Aggregator(props) {
 				<AggregatorContainer tokenlist={props.tokenlist} />
 			</Layout>
 		</WalletWrapper>
-	)
+	);
 }
