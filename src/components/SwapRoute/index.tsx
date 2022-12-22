@@ -119,11 +119,11 @@ const Route = ({
 						{' '}
 						<Badge colorScheme="green">Best Route</Badge>
 					</div>
-				) : (
+				) : Number.isFinite(lossPercent) ? (
 					<div style={{ marginLeft: 'auto', display: 'flex' }}>
 						<Badge colorScheme="red">-{Math.abs(100 - lossPercent * 100).toFixed(2)}%</Badge>
 					</div>
-				)}
+				) : null}
 			</RouteRow>
 		</RouteWrapper>
 	);
