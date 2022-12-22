@@ -12,7 +12,7 @@ interface IGetListRoutesProps {
 }
 
 interface IRoute {
-	price: { amountReturned: any; estimatedGas: any; tokenApprovalAddress: any; logo: string } | null;
+	price: { amountReturned: any; estimatedGas: any; tokenApprovalAddress: any; logo: string; feeAmount?: number } | null;
 	name: string;
 	airdrop: boolean;
 	fromAmount: string;

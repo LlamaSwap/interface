@@ -50,6 +50,7 @@ import TokenSelect from './TokenSelect';
 import { getSavedTokens } from '~/utils';
 import Tooltip from '../Tooltip';
 import type { IToken } from '~/types';
+import { sendSwapEvent } from './adapters/utils';
 
 /*
 Integrated:
@@ -438,6 +439,7 @@ export function AggregatorContainer({ tokenlist }) {
 			tokens: { toToken: IToken; fromToken: IToken };
 		}) => swap(params),
 		onSuccess: (data, variables) => {
+			let txUrl;
 			if (data.hash) {
 				addRecentTransaction({
 					hash: data.hash,
@@ -445,15 +447,29 @@ export function AggregatorContainer({ tokenlist }) {
 				});
 				const explorerUrl = chain.blockExplorers.default.url;
 				setTxModalOpen(true);
-
-				setTxUrl(`${explorerUrl}/tx/${data.hash}`);
+				txUrl = `${explorerUrl}/tx/${data.hash}`;
+				setTxUrl(txUrl);
 			} else {
 				setTxModalOpen(true);
-				setTxUrl(`https://explorer.cow.fi/orders/${data}`);
+				txUrl = `https://explorer.cow.fi/orders/${data}`;
+				setTxUrl(txUrl);
 			}
+
+			sendSwapEvent({
+				chain: selectedChain.value,
+				user: address,
+				from: variables.from,
+				to: variables.to,
+				aggregator: variables.adapter,
+				isError: false,
+				quote: variables.rawQuote,
+				txUrl,
+				amount: String(amount),
+				errorData: {}
+			});
 		},
-		onError: (err: { reason: string; code: string }) => {
-			if (err.code !== 'ACTION_REJECTED')
+		onError: (err: { reason: string; code: string }, variables) => {
+			if (err.code !== 'ACTION_REJECTED') {
 				toast({
 					title: 'Something went wrong.',
 					description: err.reason,
@@ -462,6 +478,19 @@ export function AggregatorContainer({ tokenlist }) {
 					isClosable: true,
 					position: 'top'
 				});
+				sendSwapEvent({
+					chain: selectedChain.value,
+					user: address,
+					from: variables.from,
+					to: variables.to,
+					aggregator: variables.adapter,
+					isError: true,
+					quote: variables.rawQuote,
+					txUrl: '',
+					amount: String(amount),
+					errorData: err
+				});
+			}
 		}
 	});
 
@@ -492,7 +521,8 @@ export function AggregatorContainer({ tokenlist }) {
 			toToken,
 			slippage,
 			selectedRoute: route?.name,
-			isPrivacyEnabled
+			isPrivacyEnabled,
+			setRoute
 		}
 	});
 
@@ -538,7 +568,13 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const normalizedRoutes = [...(routes || [])]
 		?.map((route) => {
-			const gasUsd = (gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+			let gasUsd = (gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+
+			// CowSwap native token swap
+			gasUsd =
+				route.price.feeAmount && fromToken.address === ethers.constants.AddressZero
+					? (route.price.feeAmount / 1e18) * gasTokenPrice
+					: gasUsd;
 			const amount = +route.price.amountReturned / 10 ** +toToken?.decimals;
 			const amountUsd = (amount * toTokenPrice).toFixed(2);
 			const netOut = +amountUsd - gasUsd;
@@ -685,7 +721,7 @@ export function AggregatorContainer({ tokenlist }) {
 							</Button>
 						) : null}
 					</SwapWrapper>
-					{priceImpact > 15 ? (
+					{priceImpact > 15 && !isLoading ? (
 						<Alert status="warning">
 							<AlertIcon />
 							High price impact! More than {priceImpact.toFixed(2)}% drop.
