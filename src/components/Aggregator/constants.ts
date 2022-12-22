@@ -41,6 +41,7 @@ export const topTokens = {
 
 // amount and slippage to test liquidity of a token
 export const liquidity = [
+	{ amount: 500, slippage: 0.01 },
 	{ amount: 1_000, slippage: 0.01 },
 	{ amount: 1_000_000, slippage: 0.1 },
 	{ amount: 10_000_000, slippage: 1 },

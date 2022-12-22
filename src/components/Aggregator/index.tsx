@@ -41,14 +41,15 @@ import { CrossIcon } from './Icons';
 import Loader from './Loader';
 import Search from './Search';
 import { useTokenApprove } from './hooks';
-import useGetRoutes from '~/queries/useGetRoutes';
-import useGetPrice from '~/queries/useGetPrice';
+import { useGetRoutes } from '~/queries/useGetRoutes';
+import { useGetPrice } from '~/queries/useGetPrice';
+import { useTokenBalances } from '~/queries/useTokenBalances';
 import { nativeTokens } from './nativeTokens';
 import { chainsMap, nativeAddress } from './constants';
 import TokenSelect from './TokenSelect';
 import { getSavedTokens } from '~/utils';
-import useTokenBalances from '~/queries/useTokenBalances';
 import Tooltip from '../Tooltip';
+import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 
 /*
@@ -239,27 +240,22 @@ export const CloseBtn = ({ onClick }) => {
 	);
 };
 
-export interface Token {
-	address: string;
-	logoURI: string;
-	symbol: string;
-	decimals: string;
-	name: string;
-	chainId: number;
-	amount?: string;
-	balanceUSD?: number;
-}
-
 export async function getTokenList() {
-	const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
-	const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
+	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
+	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
 	const oneInch = await Promise.all(
 		Object.values(oneInchChains).map(async (chainId) =>
 			fetch(`https://tokens.1inch.io/v1.1/${chainId}`).then((r) => r.json())
 		)
 	);
-	const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
-	const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
+	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
+	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
+
+	const [uniList, sushiList, lifiList] = await Promise.all([
+		await fetch('https://tokens.uniswap.org/').then((r) => r.json()),
+		await fetch('https://token-list.sushi.com/').then((r) => r.json()),
+		await fetch('https://li.quest/v1/tokens').then((r) => r.json())
+	]);
 
 	const oneInchList = Object.values(oneInchChains)
 		.map((chainId, i) =>
@@ -272,10 +268,10 @@ export async function getTokenList() {
 
 	const tokensByChain = mapValues(
 		merge(
-			groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...hecoList.tokens, ...nativeTokens], 'chainId'),
+			groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...nativeTokens], 'chainId'),
 			lifiList.tokens
 		),
-		(val) => uniqBy(val, (token: Token) => token.address.toLowerCase())
+		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
 	return {
@@ -440,7 +436,7 @@ export function AggregatorContainer({ tokenlist }) {
 			signer: ethers.Signer;
 			slippage: string;
 			rawQuote: any;
-			tokens: { toToken: Token; fromToken: Token };
+			tokens: { toToken: IToken; fromToken: IToken };
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
