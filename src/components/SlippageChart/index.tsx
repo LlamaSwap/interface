@@ -85,7 +85,7 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 					}
 				},
 				axisLabel: {
-					formatter: (value) => Number(value).toLocaleString() + ` ${fromTokenSymbol}`
+					formatter: (value) => '$' + Number(value).toLocaleString() + ` of ${fromTokenSymbol}`
 				}
 			},
 			yAxis: {
