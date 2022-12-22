@@ -6,8 +6,8 @@ import { providers } from '~/components/Aggregator/rpcs';
 import type { IToken } from '~/types';
 import { getAdapterRoutes } from './useGetRoutes';
 
-async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken }) {
-	if (!fromToken || !chain || !toToken) {
+async function getAdapterRoutesByLiquidity({ chain, fromToken, fromTokenPrice, toToken }) {
+	if (!fromToken || !chain || !toToken || !fromTokenPrice) {
 		return [];
 	}
 
@@ -21,6 +21,7 @@ async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken }) {
 					fromToken: { ...fromToken, value: fromToken.address, label: fromToken.symbol },
 					toToken,
 					amount,
+					fromTokenPrice,
 					slippage,
 					gasPriceData
 				})
@@ -35,7 +36,15 @@ async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken }) {
 	}
 }
 
-async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, slippage, gasPriceData }): Promise<
+async function getAdapterRoutesByAmount({
+	chain,
+	fromToken,
+	toToken,
+	amount,
+	fromTokenPrice,
+	slippage,
+	gasPriceData
+}): Promise<
 	[
 		string,
 		Array<{
@@ -48,7 +57,7 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, sli
 	]
 > {
 	try {
-		const amountWithDecimals = BigNumber(amount)
+		const amountWithDecimals = BigNumber(BigNumber(amount).times(BigNumber(1).div(fromTokenPrice)))
 			.times(10 ** (fromToken?.decimals || 18))
 			.toFixed(0);
 
@@ -86,16 +95,19 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, sli
 export const useGetTokenLiquidity = ({
 	chain,
 	fromToken,
+	fromTokenPrice,
 	toToken
 }: {
 	chain: string | null;
 	fromToken: IToken | null;
+	fromTokenPrice: number | null;
 	toToken: IToken | null;
 }) => {
-	return useQuery([chain, fromToken?.address, toToken?.address], () =>
+	return useQuery([chain, fromToken?.address, toToken?.address, fromTokenPrice], () =>
 		getAdapterRoutesByLiquidity({
 			chain: chain,
 			fromToken,
+			fromTokenPrice,
 			toToken
 		})
 	);

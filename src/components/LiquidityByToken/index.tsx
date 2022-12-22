@@ -30,9 +30,9 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 		chainId: chainsMap[chain]
 	});
 
-	const { gasTokenPrice = 0, toTokenPrice = 0 } = tokenPrices || {};
+	const { gasTokenPrice = 0, fromTokenPrice, toTokenPrice = 0 } = tokenPrices || {};
 
-	const { data, isLoading } = useGetTokenLiquidity({ fromToken, toToken, chain });
+	const { data, isLoading } = useGetTokenLiquidity({ fromToken, fromTokenPrice, toToken, chain });
 
 	const { topRoutes, chartData } = React.useMemo(() => {
 		const topRoutes =
@@ -146,16 +146,18 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 
 						return (
 							<tr key={toToken.address + liq.amount + liq.slippage}>
-								<td>{`${liq.amount.toLocaleString()} ${fromToken.symbol}`}</td>
+								<td>{`$${liq.amount.toLocaleString()} of ${fromToken.symbol}`}</td>
 								<td>
 									{isLoading ? (
 										<Skeleton height="16px" width="100%" maxWidth="24ch" margin="auto" />
 									) : (
 										<>
 											{topRoute?.price?.amountReturned
-												? `${BigNumber(topRoute?.price?.amountReturned ?? 0)
-														.div(10 ** Number(toToken.decimals || 18))
-														.toFixed(3)} ${toToken.symbol} via ${topRoute?.name}`
+												? `${Number(
+														BigNumber(topRoute?.price?.amountReturned ?? 0)
+															.div(10 ** Number(toToken.decimals || 18))
+															.toFixed(3)
+												  ).toLocaleString()} ${toToken.symbol} via ${topRoute?.name}`
 												: ''}
 										</>
 									)}

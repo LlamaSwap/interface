@@ -51,9 +51,9 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 				formatter: function (params: any) {
 					const trade =
 						'<li style="list-style:none">' +
-						'Trade: ' +
+						'Trade: $' +
 						Number(params[0].value[0]).toLocaleString() +
-						` ${fromTokenSymbol}` +
+						` of ${fromTokenSymbol}` +
 						'</li>';
 
 					const receive =
