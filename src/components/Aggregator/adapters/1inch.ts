@@ -46,8 +46,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	]);
 
 	return {
-		amountReturned: data.toTokenAmount,
-		estimatedGas: data.estimatedGas,
+		amountReturned: swapData?.toTokenAmount ?? data.toTokenAmount,
+		estimatedGas: swapData?.tx?.gas ?? data.estimatedGas,
 		tokenApprovalAddress,
 		rawQuote: swapData,
 		logo: 'https://defillama.com/_next/image?url=https%3A%2F%2Ficons.llama.fi%2F1inch-network.jpg&w=48&q=75'
