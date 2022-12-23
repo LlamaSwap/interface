@@ -39,7 +39,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}`
 	).then((r) => r.json());
 
-	const gas = data.estimate.gasCosts.reduce((acc, val) => +acc + val.estimate, 0);
+	const gas = data.estimate.gasCosts.reduce((acc, val) => acc + Number(val.estimate), 0);
 	return {
 		amountReturned: data.estimate.toAmount,
 		estimatedGas: gas,
