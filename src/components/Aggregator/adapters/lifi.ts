@@ -34,7 +34,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const data = await fetch(
 		`https://li.quest/v1/quote?fromChain=${chainToId[chain]}&toChain=${
 			chainToId[chain]
-		}&fromToken=${tokenFrom}&toToken=${tokenTo}&fromAmount=${amount}&fromAddress=${extra.userAddress}&slippage=${
+		}&fromToken=${tokenFrom}&toToken=${tokenTo}&fromAmount=${amount}&fromAddress=${
+			extra.userAddress === "0x0000000000000000000000000000000000000000"?"0x1000000000000000000000000000000000000001":extra.userAddress
+		}&slippage=${
 			+extra.slippage / 100 || '0.05'
 		}`
 	).then((r) => r.json());
