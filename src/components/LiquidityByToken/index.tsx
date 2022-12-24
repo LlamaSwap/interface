@@ -55,10 +55,11 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 		() =>
 			getChartData({
 				routes: [...(initialRoutes || []), ...(addlLiqRoutes || [])]?.sort((a, b) => a[0] - b[0]),
-				toTokenDecimals: toToken.decimals
+				toTokenDecimals: toToken.decimals,
+				price: fromToken.symbol === 'WBTC' ? 10000 : 500
 			}),
 
-		[initialRoutes, toToken.decimals, addlLiqRoutes]
+		[initialRoutes, toToken.decimals, fromToken.symbol, addlLiqRoutes]
 	);
 
 	const filteredNewliqValues = newLiquidityValues.filter((newliq) => !liquidity.includes(newliq));
@@ -103,7 +104,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 				</thead>
 				<tbody>
 					{initialLiquidity.map((liqAmount) => {
-						const topRoute = initialRoutes?.find((t) => t[0] === `${liqAmount}`)?.[1] ?? null;
+						const topRoute = initialRoutes?.find((t) => t[0] === liqAmount)?.[1] ?? null;
 
 						return (
 							<tr key={toToken.address + liqAmount}>

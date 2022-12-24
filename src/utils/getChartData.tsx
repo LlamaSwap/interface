@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js';
 import { initialLiquidity } from '~/components/Aggregator/constants';
 
-export function getChartData({ routes, toTokenDecimals }) {
+export function getChartData({ routes, price, toTokenDecimals }) {
 	// price at $500 liquidity
-	const currentPrice = routes?.[0]?.[1]?.price?.amountReturned ?? null;
+	const currentPrice = routes?.find((route) => route[0] === price || 500)?.[1]?.price?.amountReturned ?? null;
 
 	const chartData = [];
 

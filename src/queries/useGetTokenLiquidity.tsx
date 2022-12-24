@@ -42,7 +42,7 @@ async function getInitialLiquidityRoutes({
 
 				const topRoute = getTopRoute({ routes, gasPriceData, gasTokenPrice, fromToken, toToken, toTokenPrice });
 
-				topRoutes.push([liquidity, topRoute]);
+				topRoutes.push([Number(liquidity), topRoute]);
 			}
 		});
 

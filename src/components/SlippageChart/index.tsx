@@ -93,7 +93,8 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 						opacity: 0.1
 					}
 				},
-				min: 500
+				min: 500,
+				max: 500000000
 			},
 			yAxis: {
 				type: 'value',
@@ -125,8 +126,8 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 			},
 			dataZoom: {
 				type: 'inside',
-				start: 0,
-				end: 100
+				startValue: 500,
+				end: 500000000
 			},
 			series
 		});
