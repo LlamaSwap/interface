@@ -36,29 +36,29 @@ export const chainNamesReplaced = {
 export const nativeAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowerCase();
 
 export const topTokens = {
-	ethereum: ['ETH', 'USDT', 'WBTC'],
-	bsc: ['BNB', 'USDT', 'ETH'],
-	polygon: ['MATIC', 'USDT', 'WETH'],
-	optimism: ['WETH', 'USDT', 'WBTC'],
-	arbitrum: ['WETH', 'USDT', 'WBTC'],
-	avax: ['AVAX', 'USDT.e', 'WETH.e'],
-	gnosis: ['xDai', 'WETH', 'WBTC'],
-	fantom: ['FTM', 'USDC', 'ETH'],
-	klaytn: ['KLAY', 'KDAI', 'oETH'],
-	aurora: ['AETH', 'USDT', 'WBTC'],
-	celo: ['CELO', 'USDC', 'WETH'],
-	cronos: ['CRO', 'USDC', 'WETH'],
+	ethereum: ['ETH'],
+	bsc: ['BNB'],
+	polygon: ['MATIC'],
+	optimism: ['WETH'],
+	arbitrum: ['WETH'],
+	avax: ['AVAX'],
+	gnosis: ['xDai'],
+	fantom: ['FTM'],
+	klaytn: ['KLAY'],
+	aurora: ['AETH'],
+	celo: ['CELO'],
+	cronos: ['CRO'],
 	// dogechain: [],
-	moonriver: ['MOVR', 'USDC', 'WETH'],
-	bttc: ['BNB', 'BTC.b', 'BUSD.b'],
+	moonriver: ['MOVR'],
+	bttc: ['BNB'],
 	// oasis: []
-	velas: ['VLX', 'USDC', 'ETH'],
+	velas: ['VLX'],
 	// heco: []
-	harmony: ['1BTC', '1INCH', 'AAVE'],
-	boba: ['BOBA', 'DAI', 'FRAX'],
-	okc: ['OKT', 'USDC', 'ETHK'],
-	fuse: ['FUSE', 'USDC', 'WETH'],
-	moonbeam: ['GLMR', 'USDC', 'ETH']
+	harmony: ['1BTC'],
+	boba: ['BOBA'],
+	okc: ['OKT'],
+	fuse: ['FUSE'],
+	moonbeam: ['GLMR']
 };
 
 export const initialLiquidity = [500, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000, 500_000_000];
