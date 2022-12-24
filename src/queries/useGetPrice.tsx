@@ -14,7 +14,7 @@ interface IPrice {
 	toTokenPrice?: number;
 }
 
-async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
+export async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
 	if (!fromToken && !toToken) {
 		return { gasTokenPrice: 0, fromTokenPrice: 0, toTokenPrice: 0 };
 	}

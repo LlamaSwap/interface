@@ -1,11 +1,12 @@
 import * as echarts from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { LineChart } from 'echarts/charts';
-import { GridComponent, TooltipComponent } from 'echarts/components';
+import { GraphicComponent, GridComponent, TooltipComponent } from 'echarts/components';
 import { useCallback, useEffect, useMemo } from 'react';
 import { uniqueId } from 'lodash';
+import logoLight from '~/public/defillama-light-neutral.png';
 
-echarts.use([SVGRenderer, LineChart, GridComponent, TooltipComponent]);
+echarts.use([SVGRenderer, LineChart, GridComponent, TooltipComponent, GraphicComponent]);
 
 export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbol }) {
 	const id = useMemo(() => uniqueId(), []);
@@ -46,6 +47,17 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 				top: 40,
 				right: 64
 			},
+			graphic: {
+				type: 'image',
+				z: 0,
+				style: {
+					image: logoLight.src,
+					height: 40,
+					opacity: 0.3
+				},
+				top: '200px',
+				left: '45%'
+			},
 			tooltip: {
 				trigger: 'axis',
 				formatter: function (params: any) {
@@ -72,12 +84,6 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 			xAxis: {
 				type: 'category',
 				name: 'Tokens',
-				boundaryGap: false,
-				nameTextStyle: {
-					fontFamily: 'inter, sans-serif',
-					fontSize: 14,
-					fontWeight: 400
-				},
 				axisLine: {
 					lineStyle: {
 						color: 'rgba(255, 255, 255, 1)',
@@ -85,7 +91,19 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 					}
 				},
 				axisLabel: {
-					formatter: (value) => '$' + Number(value).toLocaleString() + ` of ${fromTokenSymbol}`
+					formatter: (value) => '$' + Number(value).toLocaleString()
+				},
+				boundaryGap: false,
+				nameTextStyle: {
+					fontFamily: 'inter, sans-serif',
+					fontSize: 14,
+					fontWeight: 400
+				},
+				splitLine: {
+					lineStyle: {
+						color: '#a1a1aa',
+						opacity: 0.1
+					}
 				}
 			},
 			yAxis: {
@@ -112,7 +130,9 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 						color: '#a1a1aa',
 						opacity: 0.1
 					}
-				}
+				},
+				min: 0,
+				max: 100
 			},
 			series
 		});

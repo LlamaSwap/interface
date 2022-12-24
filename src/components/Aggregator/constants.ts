@@ -61,13 +61,4 @@ export const topTokens = {
 	moonbeam: ['GLMR', 'USDC', 'ETH']
 };
 
-// amount and slippage to test liquidity of a token
-export const liquidity = [
-	{ amount: 500, slippage: 0.01 },
-	{ amount: 1_000, slippage: 0.01 },
-	{ amount: 1_000_000, slippage: 0.1 },
-	{ amount: 10_000_000, slippage: 1 },
-	{ amount: 50_000_000, slippage: 10 },
-	{ amount: 100_000_000, slippage: 30 },
-	{ amount: 500_000_000, slippage: 90 }
-];
+export const initialLiquidity = [500, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000, 500_000_000];

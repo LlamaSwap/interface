@@ -1,34 +1,50 @@
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
-import { liquidity } from '~/components/Aggregator/constants';
+import { initialLiquidity } from '~/components/Aggregator/constants';
 import { adapters } from '~/components/Aggregator/router';
 import { providers } from '~/components/Aggregator/rpcs';
 import type { IToken } from '~/types';
 import { getAdapterRoutes } from './useGetRoutes';
+import { getPrice } from './useGetPrice';
+import { getTopRoute } from '~/utils/getTopRoute';
 
-async function getAdapterRoutesByLiquidity({ chain, fromToken, fromTokenPrice, toToken }) {
-	if (!fromToken || !chain || !toToken || !fromTokenPrice) {
+async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken }) {
+	if (!fromToken || !chain || !toToken) {
 		return [];
 	}
 
 	try {
-		const gasPriceData = await providers[chain].getFeeData();
+		const [gasPriceData, { gasTokenPrice = 0, fromTokenPrice, toTokenPrice = 0 }] = await Promise.all([
+			providers[chain].getFeeData(),
+			getPrice({ chain, fromToken: fromToken.address, toToken: toToken.address })
+		]);
 
-		const data = await Promise.allSettled(
-			liquidity.map(({ amount, slippage }) =>
+		const res = await Promise.allSettled(
+			initialLiquidity.map((amount) =>
 				getAdapterRoutesByAmount({
 					chain,
 					fromToken: { ...fromToken, value: fromToken.address, label: fromToken.symbol },
 					toToken,
 					amount,
 					fromTokenPrice,
-					slippage,
 					gasPriceData
 				})
 			)
 		);
 
-		return data.map((route) => (route.status === 'fulfilled' ? route.value : null)).filter((route) => !!route);
+		const topRoutes = [];
+
+		res.forEach((item) => {
+			if (item.status === 'fulfilled') {
+				const [liquidity, routes] = item.value;
+
+				const topRoute = getTopRoute({ routes, gasPriceData, gasTokenPrice, fromToken, toToken, toTokenPrice });
+
+				topRoutes.push([liquidity, topRoute]);
+			}
+		});
+
+		return topRoutes;
 	} catch (error) {
 		console.log(error);
 
@@ -36,15 +52,7 @@ async function getAdapterRoutesByLiquidity({ chain, fromToken, fromTokenPrice, t
 	}
 }
 
-async function getAdapterRoutesByAmount({
-	chain,
-	fromToken,
-	toToken,
-	amount,
-	fromTokenPrice,
-	slippage,
-	gasPriceData
-}): Promise<
+async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, fromTokenPrice, gasPriceData }): Promise<
 	[
 		string,
 		Array<{
@@ -75,8 +83,7 @@ async function getAdapterRoutesByAmount({
 							gasPriceData,
 							amount: amount.toString(),
 							fromToken,
-							toToken,
-							slippage: slippage.toString()
+							toToken
 						}
 					})
 				)
@@ -84,30 +91,27 @@ async function getAdapterRoutesByAmount({
 
 		const data = res.map((route) => (route.status === 'fulfilled' ? route.value : null)).filter((route) => !!route);
 
-		return [`${amount.toString()}+${slippage.toString()}`, data];
+		return [`${amount.toString()}`, data];
 	} catch (error) {
 		console.log(error);
 
-		return [`${amount.toString()}+${slippage.toString()}`, []];
+		return [`${amount.toString()}`, []];
 	}
 }
 
 export const useGetTokenLiquidity = ({
 	chain,
 	fromToken,
-	fromTokenPrice,
 	toToken
 }: {
 	chain: string | null;
 	fromToken: IToken | null;
-	fromTokenPrice: number | null;
 	toToken: IToken | null;
 }) => {
-	return useQuery([chain, fromToken?.address, toToken?.address, fromTokenPrice], () =>
+	return useQuery(['initialLiquidity', chain, fromToken?.address, toToken?.address], () =>
 		getAdapterRoutesByLiquidity({
 			chain: chain,
 			fromToken,
-			fromTokenPrice,
 			toToken
 		})
 	);
