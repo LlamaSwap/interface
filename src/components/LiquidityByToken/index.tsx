@@ -130,7 +130,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 			</Table>
 
 			<Box height="400px">
-				{chartData.length && (
+				{chartData.length > 0 && (
 					<SlippageChart chartData={chartData} fromTokenSymbol={fromToken.symbol} toTokenSymbol={toToken.symbol} />
 				)}
 			</Box>
