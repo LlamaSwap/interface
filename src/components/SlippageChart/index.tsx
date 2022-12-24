@@ -4,7 +4,6 @@ import { LineChart } from 'echarts/charts';
 import { GraphicComponent, GridComponent, TooltipComponent } from 'echarts/components';
 import { useCallback, useEffect, useMemo } from 'react';
 import { uniqueId } from 'lodash';
-import logoLight from '~/public/defillama-light-neutral.png';
 
 echarts.use([SVGRenderer, LineChart, GridComponent, TooltipComponent, GraphicComponent]);
 
@@ -46,17 +45,6 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 				bottom: 0,
 				top: 40,
 				right: 64
-			},
-			graphic: {
-				type: 'image',
-				z: 0,
-				style: {
-					image: logoLight.src,
-					height: 40,
-					opacity: 0.3
-				},
-				top: '200px',
-				left: '45%'
 			},
 			tooltip: {
 				trigger: 'axis',

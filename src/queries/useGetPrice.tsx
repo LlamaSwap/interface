@@ -37,11 +37,14 @@ export async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
 }
 
 export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPriceProps) {
-	return useQuery<IPrice>(
-		['gasPrice', chain, fromToken, toToken],
-		() => getPrice({ chain, fromToken, toToken }),
-		!skipRefetch && {
-			refetchInterval: 20_000
-		}
-	);
+	return useQuery<IPrice>(['gasPrice', chain, fromToken, toToken], () => getPrice({ chain, fromToken, toToken }), {
+		...(skipRefetch
+			? {
+					refetchOnMount: false,
+					refetchInterval: 5 * 60 * 1000, // 5 minutes
+					refetchOnWindowFocus: false,
+					refetchOnReconnect: false
+			  }
+			: { refetchInterval: 20_000 })
+	});
 }
