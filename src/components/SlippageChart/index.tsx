@@ -1,11 +1,11 @@
 import * as echarts from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { LineChart } from 'echarts/charts';
-import { GraphicComponent, GridComponent, TooltipComponent } from 'echarts/components';
+import { DataZoomComponent, GraphicComponent, GridComponent, TooltipComponent } from 'echarts/components';
 import { useCallback, useEffect, useMemo } from 'react';
 import { uniqueId } from 'lodash';
 
-echarts.use([SVGRenderer, LineChart, GridComponent, TooltipComponent, GraphicComponent]);
+echarts.use([SVGRenderer, LineChart, GridComponent, TooltipComponent, GraphicComponent, DataZoomComponent]);
 
 export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbol }) {
 	const id = useMemo(() => uniqueId(), []);
@@ -70,7 +70,7 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 				}
 			},
 			xAxis: {
-				type: 'category',
+				type: 'log',
 				name: 'Tokens',
 				axisLine: {
 					lineStyle: {
@@ -92,7 +92,8 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 						color: '#a1a1aa',
 						opacity: 0.1
 					}
-				}
+				},
+				min: 500
 			},
 			yAxis: {
 				type: 'value',
@@ -121,6 +122,11 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 				},
 				min: 0,
 				max: 100
+			},
+			dataZoom: {
+				type: 'inside',
+				start: 0,
+				end: 100
 			},
 			series
 		});

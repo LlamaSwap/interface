@@ -27,7 +27,8 @@ export function getChartData({ routes, toTokenDecimals }) {
 						!newLiquidityValues.includes(newLiq) &&
 						!initialLiquidity.includes(newLiq) &&
 						newLiq > 500 &&
-						newLiq < 500_000_000
+						newLiq < 500_000_000 &&
+						routes.length <= 100
 					) {
 						newLiquidityValues.push(newLiq);
 					}
