@@ -1,24 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { initialLiquidity } from '~/components/Aggregator/constants';
 import { adapters } from '~/components/Aggregator/router';
-import { providers } from '~/components/Aggregator/rpcs';
 import type { IToken } from '~/types';
 import { getAdapterRoutes } from './useGetRoutes';
-import { getPrice } from './useGetPrice';
 import { getTopRoute } from '~/utils/getTopRoute';
+import { useMemo } from 'react';
 
-async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken }) {
-	if (!fromToken || !chain || !toToken) {
+async function getInitialLiquidityRoutes({
+	chain,
+	fromToken,
+	toToken,
+	gasPriceData,
+	fromTokenPrice,
+	toTokenPrice,
+	gasTokenPrice
+}) {
+	if (!fromToken || !chain || !toToken || !gasPriceData || !fromTokenPrice || !toTokenPrice || !gasTokenPrice) {
 		return [];
 	}
 
 	try {
-		const [gasPriceData, { gasTokenPrice = 0, fromTokenPrice, toTokenPrice = 0 }] = await Promise.all([
-			providers[chain].getFeeData(),
-			getPrice({ chain, fromToken: fromToken.address, toToken: toToken.address })
-		]);
-
 		const res = await Promise.allSettled(
 			initialLiquidity.map((amount) =>
 				getAdapterRoutesByAmount({
@@ -49,6 +51,48 @@ async function getAdapterRoutesByLiquidity({ chain, fromToken, toToken }) {
 		console.log(error);
 
 		return [];
+	}
+}
+
+async function getLiquidityRoutes({
+	chain,
+	fromToken,
+	toToken,
+	gasPriceData,
+	fromTokenPrice,
+	toTokenPrice,
+	gasTokenPrice,
+	amount
+}) {
+	try {
+		if (
+			!fromToken ||
+			!chain ||
+			!toToken ||
+			!gasPriceData ||
+			!fromTokenPrice ||
+			!toTokenPrice ||
+			!gasTokenPrice ||
+			!amount
+		) {
+			return [amount, null];
+		}
+
+		const [, routes] = await getAdapterRoutesByAmount({
+			chain,
+			fromToken: { ...fromToken, value: fromToken.address, label: fromToken.symbol },
+			toToken,
+			amount,
+			fromTokenPrice,
+			gasPriceData
+		});
+
+		const topRoute = getTopRoute({ routes, gasPriceData, gasTokenPrice, fromToken, toToken, toTokenPrice });
+
+		return [amount, topRoute];
+	} catch (error) {
+		console.log(error);
+		return [amount, null];
 	}
 }
 
@@ -99,20 +143,84 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, fro
 	}
 }
 
-export const useGetTokenLiquidity = ({
-	chain,
-	fromToken,
-	toToken
-}: {
+interface IGetInitialTokenLiquidity {
 	chain: string | null;
 	fromToken: IToken | null;
 	toToken: IToken | null;
-}) => {
-	return useQuery(['initialLiquidity', chain, fromToken?.address, toToken?.address], () =>
-		getAdapterRoutesByLiquidity({
-			chain: chain,
-			fromToken,
-			toToken
-		})
+	gasPriceData?: {};
+	gasTokenPrice?: number | null;
+	fromTokenPrice?: number | null;
+	toTokenPrice?: number | null;
+}
+
+export const useGetInitialTokenLiquidity = ({
+	chain,
+	fromToken,
+	toToken,
+	gasTokenPrice,
+	fromTokenPrice,
+	toTokenPrice,
+	gasPriceData
+}: IGetInitialTokenLiquidity) => {
+	return useQuery(
+		['initialLiquidity', chain, fromToken?.address, toToken?.address, gasTokenPrice, fromTokenPrice, toTokenPrice],
+		() =>
+			getInitialLiquidityRoutes({
+				chain: chain,
+				fromToken,
+				toToken,
+				gasTokenPrice,
+				fromTokenPrice,
+				toTokenPrice,
+				gasPriceData
+			})
 	);
+};
+
+interface ITokensLiquidity extends IGetInitialTokenLiquidity {
+	liquidity: Array<number>;
+}
+
+export const useGetTokensLiquidity = ({
+	chain,
+	fromToken,
+	toToken,
+	gasTokenPrice,
+	fromTokenPrice,
+	toTokenPrice,
+	gasPriceData,
+	liquidity
+}: ITokensLiquidity) => {
+	const res = useQueries({
+		queries: liquidity.map((liquidityAmount) => {
+			return {
+				queryKey: [
+					'liquidity',
+					liquidityAmount,
+					chain,
+					fromToken?.address,
+					toToken?.address,
+					gasTokenPrice,
+					fromTokenPrice,
+					toTokenPrice
+				],
+				queryFn: () =>
+					getLiquidityRoutes({
+						chain: chain,
+						fromToken,
+						toToken,
+						gasTokenPrice,
+						fromTokenPrice,
+						toTokenPrice,
+						gasPriceData,
+						amount: liquidityAmount
+					})
+			};
+		})
+	});
+
+	return {
+		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
+		data: useMemo(() => res?.filter((r) => r.status === 'success').map((r) => r.data) ?? [], [res])
+	};
 };

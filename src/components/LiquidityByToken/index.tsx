@@ -5,8 +5,10 @@ import { Box, Flex, Skeleton } from '@chakra-ui/react';
 import { ArrowRight } from 'react-feather';
 import { initialLiquidity } from '~/components/Aggregator/constants';
 import type { IToken } from '~/types';
-import { useGetTokenLiquidity } from '~/queries/useGetTokenLiquidity';
+import { useGetInitialTokenLiquidity, useGetTokensLiquidity } from '~/queries/useGetTokenLiquidity';
 import dynamic from 'next/dynamic';
+import { getChartData } from '~/utils/getChartData';
+import { useGetPrice } from '~/queries/useGetPrice';
 
 interface ISlippageChart {
 	chartData: Array<[number, number]>;
@@ -17,36 +19,53 @@ interface ISlippageChart {
 const SlippageChart = dynamic(() => import('../SlippageChart'), { ssr: false }) as React.FC<ISlippageChart>;
 
 export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: IToken; toToken: IToken; chain: string }) {
-	const { data: topRoutes, isLoading } = useGetTokenLiquidity({ fromToken, toToken, chain });
+	const { data: tokenAndGasPrices, isLoading: fetchingTokenPrices } = useGetPrice({
+		chain,
+		toToken: toToken?.address,
+		fromToken: fromToken?.address,
+		skipRefetch: true
+	});
 
-	const { chartData } = React.useMemo(() => {
-		// price at $500 liquidity
-		const currentPrice = topRoutes?.[0]?.[1]?.price?.amountReturned ?? null;
+	const { data: initialRoutes, isLoading: fetchingInitialTokenLiq } = useGetInitialTokenLiquidity({
+		fromToken,
+		toToken,
+		chain,
+		gasPriceData: tokenAndGasPrices?.gasPriceData,
+		gasTokenPrice: tokenAndGasPrices?.gasTokenPrice,
+		fromTokenPrice: tokenAndGasPrices?.fromTokenPrice,
+		toTokenPrice: tokenAndGasPrices?.toTokenPrice
+	});
 
-		const chartData = [];
+	const isLoading = fetchingTokenPrices || fetchingInitialTokenLiq;
 
-		if (currentPrice) {
-			topRoutes?.forEach(([nofOfTokensToSwap, { price }]) => {
-				const amountReturned = price?.amountReturned ?? null;
+	const [liquidity, setLiquidity] = React.useState([]);
 
-				if (amountReturned) {
-					const expectedPrice = Number(currentPrice) * (Number(nofOfTokensToSwap) / 500);
+	const { data: addlLiqRoutes } = useGetTokensLiquidity({
+		fromToken,
+		toToken,
+		chain,
+		gasPriceData: tokenAndGasPrices?.gasPriceData,
+		gasTokenPrice: tokenAndGasPrices?.gasTokenPrice,
+		fromTokenPrice: tokenAndGasPrices?.fromTokenPrice,
+		toTokenPrice: tokenAndGasPrices?.toTokenPrice,
+		liquidity
+	});
 
-					const slippage = ((Number(amountReturned) - expectedPrice) / expectedPrice) * 100;
+	const { chartData, newLiquidityValues } = React.useMemo(
+		() =>
+			getChartData({
+				routes: [...(initialRoutes || []), ...(addlLiqRoutes || [])]?.sort((a, b) => a[0] - b[0]),
+				toTokenDecimals: toToken.decimals
+			}),
 
-					chartData.push([
-						Number(nofOfTokensToSwap),
-						Number(Math.abs(slippage).toFixed(2)),
-						BigNumber(amountReturned)
-							.div(10 ** Number(toToken.decimals || 18))
-							.toFixed(3)
-					]);
-				}
-			});
-		}
+		[initialRoutes, toToken.decimals, addlLiqRoutes]
+	);
 
-		return { topRoutes, chartData };
-	}, [topRoutes, toToken.decimals]);
+	const filteredNewliqValues = newLiquidityValues.filter((newliq) => !liquidity.includes(newliq));
+
+	if (filteredNewliqValues.length) {
+		setLiquidity((prevLiq) => [...prevLiq, ...filteredNewliqValues].sort((a, b) => a - b));
+	}
 
 	return (
 		<Flex flexDir="column" gap="24px">
@@ -84,7 +103,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 				</thead>
 				<tbody>
 					{initialLiquidity.map((liqAmount) => {
-						const topRoute = topRoutes?.find((t) => t[0] === `${liqAmount}`)?.[1] ?? null;
+						const topRoute = initialRoutes?.find((t) => t[0] === `${liqAmount}`)?.[1] ?? null;
 
 						return (
 							<tr key={toToken.address + liqAmount}>

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { providers } from '~/components/Aggregator/rpcs';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -6,31 +7,41 @@ interface IGetPriceProps {
 	chain: string;
 	fromToken: string;
 	toToken: string;
+	skipRefetch?: boolean;
 }
 
 interface IPrice {
 	gasTokenPrice?: number;
 	fromTokenPrice?: number;
 	toTokenPrice?: number;
+	gasPriceData?: {};
 }
 
 export async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
 	if (!fromToken && !toToken) {
 		return { gasTokenPrice: 0, fromTokenPrice: 0, toTokenPrice: 0 };
 	}
-	const { coins } = await fetch(
-		`https://coins.llama.fi/prices/current/${chain}:${toToken},${chain}:${ZERO_ADDRESS},${chain}:${fromToken}`
-	).then((r) => r.json());
+	const [{ coins }, gasPriceData] = await Promise.all([
+		fetch(
+			`https://coins.llama.fi/prices/current/${chain}:${toToken},${chain}:${ZERO_ADDRESS},${chain}:${fromToken}`
+		).then((r) => r.json()),
+		providers[chain].getFeeData()
+	]);
 
 	return {
 		gasTokenPrice: coins[`${chain}:${ZERO_ADDRESS}`]?.price,
 		fromTokenPrice: coins[`${chain}:${fromToken}`]?.price,
-		toTokenPrice: coins[`${chain}:${toToken}`]?.price
+		toTokenPrice: coins[`${chain}:${toToken}`]?.price,
+		gasPriceData
 	};
 }
 
-export function useGetPrice({ chain, fromToken, toToken }: IGetPriceProps) {
-	return useQuery<IPrice>(['gasPrice', chain, fromToken, toToken], () => getPrice({ chain, fromToken, toToken }), {
-		refetchInterval: 20_000
-	});
+export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPriceProps) {
+	return useQuery<IPrice>(
+		['gasPrice', chain, fromToken, toToken],
+		() => getPrice({ chain, fromToken, toToken }),
+		!skipRefetch && {
+			refetchInterval: 20_000
+		}
+	);
 }
