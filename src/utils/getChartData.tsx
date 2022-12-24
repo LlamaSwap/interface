@@ -20,7 +20,7 @@ export function getChartData({ routes, toTokenDecimals }) {
 
 				const prevValue = chartData[index - 1];
 
-				if (chartData.length && slippage - prevValue[1] > 1) {
+				if (chartData.length && prevValue && slippage - prevValue[1] > 1) {
 					const newLiq = Math.round(Number(prevValue[0]) + Number(nofOfTokensToSwap) / 2);
 
 					if (
