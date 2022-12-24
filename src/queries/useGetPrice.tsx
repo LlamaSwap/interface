@@ -43,7 +43,8 @@ export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPric
 					refetchOnMount: false,
 					refetchInterval: 5 * 60 * 1000, // 5 minutes
 					refetchOnWindowFocus: false,
-					refetchOnReconnect: false
+					refetchOnReconnect: false,
+					refetchIntervalInBackground: false
 			  }
 			: { refetchInterval: 20_000 })
 	});
