@@ -32,6 +32,13 @@ const SlippageChart = dynamic(() => import('../SlippageChart'), { ssr: false }) 
 export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: IToken; toToken: IToken; chain: string }) {
 	const router = useRouter();
 
+	const { minSlippage, maxSlippage } = router.query;
+
+	const minimumSlippage =
+		typeof minSlippage === 'string' && !Number.isNaN(Number(minSlippage)) ? Number(minSlippage) : 0;
+	const maximumSlippage =
+		typeof maxSlippage === 'string' && !Number.isNaN(Number(maxSlippage)) ? Number(maxSlippage) : 0;
+
 	const { data: tokenAndGasPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain,
 		toToken: toToken?.address,
@@ -69,10 +76,21 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 			getChartData({
 				routes: [...(initialRoutes || []), ...(addlLiqRoutes || [])]?.sort((a, b) => a[0] - b[0]),
 				toTokenDecimals: toToken.decimals,
-				price: fromToken.symbol === 'WBTC' ? 10000 : 500
+				fromTokenDecimals: fromToken.decimals,
+				price: fromToken.symbol === 'WBTC' ? 10000 : 500,
+				minimumSlippage,
+				maximumSlippage
 			}),
 
-		[initialRoutes, toToken.decimals, fromToken.symbol, addlLiqRoutes]
+		[
+			initialRoutes,
+			toToken.decimals,
+			fromToken.decimals,
+			fromToken.symbol,
+			addlLiqRoutes,
+			minimumSlippage,
+			maximumSlippage
+		]
 	);
 
 	const filteredNewliqValues = newLiquidityValues.filter((newliq) => !liquidity.includes(newliq));
@@ -145,51 +163,55 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 				</tbody>
 			</Table>
 
-			<Box height="422px">
-				<Flex
-					as="form"
-					alignItems="center"
-					flexDir="row"
-					gap="20px"
-					margin="24px 32px -24px auto"
-					width="100%"
-					maxW="360px"
-				>
-					<Text as="label" whiteSpace="nowrap">
-						Slippage Range
-					</Text>
-					<RangeSlider
-						aria-label={['min slippage', 'max slippage']}
-						min={0}
-						max={100}
-						defaultValue={[0, 100]}
-						step={1}
-						onChange={(val) => setSliderValue(val)}
-						onChangeEnd={(val) => {
-							router.push(
-								{ pathname: router.pathname, query: { ...router.query, minSlippage: val[0], maxSlippage: val[1] } },
-								undefined,
-								{ shallow: true }
-							);
-						}}
-					>
-						<RangeSliderMark value={sliderValue[0]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
-							{sliderValue[0]}%
-						</RangeSliderMark>
-						<RangeSliderMark value={sliderValue[1]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
-							{sliderValue[1]}%
-						</RangeSliderMark>
-
-						<RangeSliderTrack>
-							<RangeSliderFilledTrack bg="#2563eb" />
-						</RangeSliderTrack>
-						<RangeSliderThumb index={0} />
-						<RangeSliderThumb index={1} />
-					</RangeSlider>
-				</Flex>
-
+			<Box minH="445px">
 				{chartData.length > 0 && (
-					<SlippageChart chartData={chartData} fromTokenSymbol={fromToken.symbol} toTokenSymbol={toToken.symbol} />
+					<>
+						<Flex
+							as="form"
+							alignItems="center"
+							flexDir="row"
+							gap="20px"
+							margin="24px 32px 0 auto"
+							width="100%"
+							maxW="360px"
+						>
+							<Text as="label" whiteSpace="nowrap">
+								Slippage Range
+							</Text>
+							<RangeSlider
+								aria-label={['min slippage', 'max slippage']}
+								min={0}
+								max={100}
+								defaultValue={[0, 100]}
+								step={1}
+								onChange={(val) => setSliderValue(val)}
+								onChangeEnd={(val) => {
+									router.push(
+										{ pathname: router.pathname, query: { ...router.query, minSlippage: val[0], maxSlippage: val[1] } },
+										undefined,
+										{ shallow: true }
+									);
+								}}
+							>
+								<RangeSliderMark value={sliderValue[0]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
+									{sliderValue[0]}%
+								</RangeSliderMark>
+								<RangeSliderMark value={sliderValue[1]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
+									{sliderValue[1]}%
+								</RangeSliderMark>
+
+								<RangeSliderTrack>
+									<RangeSliderFilledTrack bg="#2563eb" />
+								</RangeSliderTrack>
+								<RangeSliderThumb index={0} />
+								<RangeSliderThumb index={1} />
+							</RangeSlider>
+						</Flex>
+
+						<Box height="400px">
+							<SlippageChart chartData={chartData} fromTokenSymbol={fromToken.symbol} toTokenSymbol={toToken.symbol} />
+						</Box>
+					</>
 				)}
 			</Box>
 		</Flex>

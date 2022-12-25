@@ -47,16 +47,18 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 				formatter: function (params: any) {
 					const trade =
 						'<li style="list-style:none">' +
-						'Trade: $' +
-						Number(params[0].value[0]).toLocaleString() +
-						` of ${fromTokenSymbol}` +
+						'Trade: ' +
+						Number(params[0].value[4]).toLocaleString(undefined, { maximumFractionDigits: 2 }) +
+						` ${fromTokenSymbol} ($${Number(params[0].value[0]).toLocaleString(undefined, {
+							maximumFractionDigits: 2
+						})})` +
 						'</li>';
 
 					const receive =
 						'<li style="list-style:none">' +
 						'Receive: ' +
-						Number(params[0].value[2]).toLocaleString() +
-						` ${toTokenSymbol}` +
+						Number(params[0].value[2]).toLocaleString(undefined, { maximumFractionDigits: 2 }) +
+						` ${toTokenSymbol} via ${params[0].value[3]}` +
 						'</li>';
 
 					const slippage = '<li style="list-style:none">' + 'Slippage: ' + params[0].value[1] + '%';
@@ -96,9 +98,7 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 						color: '#a1a1aa',
 						opacity: 0.1
 					}
-				},
-				min: 500,
-				max: 500000000
+				}
 			},
 			yAxis: {
 				type: 'value',
@@ -238,7 +238,13 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 		// create instance
 		const chartInstance = createInstance();
 
-		chartInstance.setOption({ series: { data: chartData } });
+		chartInstance.setOption({
+			xAxis: {
+				min: chartData[0][0],
+				max: chartData[chartData.length - 1][0]
+			},
+			series: { data: chartData }
+		});
 	}, [chartData, createInstance]);
 
 	return <div id={id} style={{ height: '400px', margin: 'auto 0' }}></div>;
