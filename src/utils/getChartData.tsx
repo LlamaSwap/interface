@@ -2,8 +2,9 @@ import BigNumber from 'bignumber.js';
 import { initialLiquidity } from '~/components/Aggregator/constants';
 
 export function getChartData({ routes, price, fromTokenDecimals, toTokenDecimals, minimumSlippage, maximumSlippage }) {
+	const liquidityAt = price || 500;
 	// price at $500 liquidity
-	const currentPrice = routes?.find((route) => route[0] === price || 500)?.[1]?.price?.amountReturned ?? null;
+	const currentPrice = routes?.find((route) => route[0] === liquidityAt)?.[1]?.price?.amountReturned ?? null;
 
 	const chartData = [];
 
@@ -14,9 +15,12 @@ export function getChartData({ routes, price, fromTokenDecimals, toTokenDecimals
 			const amountReturned = price?.amountReturned ?? null;
 
 			if (amountReturned) {
-				const expectedPrice = Number(currentPrice) * (Number(netOutUSD) / (price || 500));
+				const expectedPrice = Number(currentPrice) * (Number(netOutUSD) / liquidityAt);
 
-				const slippage = Number(Math.abs(((Number(amountReturned) - expectedPrice) / expectedPrice) * 100).toFixed(2));
+				const slippage =
+					netOutUSD < liquidityAt
+						? 0
+						: Number(Math.abs(((Number(amountReturned) - expectedPrice) / expectedPrice) * 100).toFixed(2));
 
 				const prevValue = chartData[index - 1];
 
