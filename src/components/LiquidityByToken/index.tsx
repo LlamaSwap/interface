@@ -227,6 +227,10 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 								The chart will keep updating with more data as long as this window is open, so if you want your chart to
 								be more granular just wait for a bit, you'll notice how the chart adjust in real time.
 							</Text>
+							<Text as="p" fontSize="1rem">
+								There's currently a bug that causes spikes to be formed if you switch to a different tab while the chart
+								is being created, so please avoid doing that.
+							</Text>
 						</Flex>
 					</>
 				)}
