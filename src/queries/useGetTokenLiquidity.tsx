@@ -6,6 +6,7 @@ import type { IToken } from '~/types';
 import { getAdapterRoutes } from './useGetRoutes';
 import { getTopRoute } from '~/utils/getTopRoute';
 import { useMemo } from 'react';
+import { ethers } from 'ethers';
 
 async function getInitialLiquidityRoutes({
 	chain,
@@ -127,7 +128,8 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, fro
 							gasPriceData,
 							amount: amount.toString(),
 							fromToken,
-							toToken
+							toToken,
+							userAddress: ethers.constants.AddressZero,
 						}
 					})
 				)
