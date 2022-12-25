@@ -10,6 +10,7 @@ import {
 } from 'echarts/components';
 import { useCallback, useEffect, useMemo } from 'react';
 import { uniqueId } from 'lodash';
+import logo from '~/public/defillama-light-neutral.png';
 
 echarts.use([
 	SVGRenderer,
@@ -41,6 +42,17 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 				bottom: 60,
 				top: 40,
 				right: 100
+			},
+			graphic: {
+				type: 'image',
+				z: 0,
+				style: {
+					image: logo.src,
+					height: 40,
+					opacity: 0.3
+				},
+				left: '45%',
+				top: '130px'
 			},
 			tooltip: {
 				trigger: 'axis',

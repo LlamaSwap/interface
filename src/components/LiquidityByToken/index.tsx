@@ -211,6 +211,23 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 						<Box height="400px">
 							<SlippageChart chartData={chartData} fromTokenSymbol={fromToken.symbol} toTokenSymbol={toToken.symbol} />
 						</Box>
+
+						<Flex flexDir="column" gap="20px" marginY="36px">
+							<Text as="p" fontSize="1rem">
+								This tool gets price quotes on 10 different dex aggregators at different levels and displays the results
+								over a chart, so the resulting data aggregates all liquidity across the hundreds of dexs that all those
+								aggregators have integrated, including stuff like limit orders, thus we are quite confident that this
+								will accurately report all on-chain liquidity.
+							</Text>
+							<Text as="p" fontSize="1rem">
+								You can use this tool to find out how much needs to be sold to cause a price drop of 10%, 20%... or just
+								to see how deep the liquidity is for a given token. It'll be especially useful for defi risk teams.
+							</Text>
+							<Text as="p" fontSize="1rem">
+								The chart will keep updating with more data as long as this window is open, so if you want your chart to
+								be more granular just wait for a bit, you'll notice how the chart adjust in real time.
+							</Text>
+						</Flex>
 					</>
 				)}
 			</Box>
