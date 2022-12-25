@@ -1,32 +1,28 @@
 import * as echarts from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { LineChart } from 'echarts/charts';
-import { DataZoomComponent, GraphicComponent, GridComponent, TooltipComponent } from 'echarts/components';
+import {
+	DataZoomComponent,
+	GraphicComponent,
+	GridComponent,
+	ToolboxComponent,
+	TooltipComponent
+} from 'echarts/components';
 import { useCallback, useEffect, useMemo } from 'react';
 import { uniqueId } from 'lodash';
 
-echarts.use([SVGRenderer, LineChart, GridComponent, TooltipComponent, GraphicComponent, DataZoomComponent]);
+echarts.use([
+	SVGRenderer,
+	LineChart,
+	GridComponent,
+	TooltipComponent,
+	GraphicComponent,
+	DataZoomComponent,
+	ToolboxComponent
+]);
 
 export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbol }) {
 	const id = useMemo(() => uniqueId(), []);
-
-	const series = useMemo(() => {
-		return {
-			name: '',
-			type: 'line',
-			stack: 'value',
-			symbol: 'none',
-			itemStyle: {
-				color: '#14b8a6'
-			},
-			emphasis: {
-				focus: 'series',
-				shadowBlur: 10
-			},
-			animation: false,
-			data: chartData
-		};
-	}, [chartData]);
 
 	const createInstance = useCallback(() => {
 		const instance = echarts.getInstanceByDom(document.getElementById(id));
@@ -42,9 +38,9 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 			grid: {
 				left: 0,
 				containLabel: true,
-				bottom: 0,
+				bottom: 60,
 				top: 40,
-				right: 64
+				right: 100
 			},
 			tooltip: {
 				trigger: 'axis',
@@ -67,6 +63,14 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 					('</li>');
 
 					return trade + receive + slippage;
+				}
+			},
+			toolbox: {
+				feature: {
+					restore: {}
+				},
+				iconStyle: {
+					borderColor: 'white'
 				}
 			},
 			xAxis: {
@@ -124,12 +128,98 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 				min: 0,
 				max: 100
 			},
-			dataZoom: {
-				type: 'inside',
-				startValue: 500,
-				end: 500000000
-			},
-			series
+			dataZoom: [
+				{
+					type: 'inside',
+					start: 0,
+					end: 100
+				},
+				{
+					start: 0,
+					end: 100,
+					textStyle: {
+						color: 'rgba(255, 255, 255, 1)'
+					},
+					borderColor: 'rgba(255, 255, 255, 0.4)',
+					handleStyle: {
+						borderColor: 'rgba(255, 255, 255, 0.9)',
+						color: 'rgba(0, 0, 0, 0.4)'
+					},
+					moveHandleStyle: {
+						color: 'rgba(255, 255, 255, 0.4)'
+					},
+					selectedDataBackground: {
+						lineStyle: {
+							color: '#14b8a6'
+						},
+						areaStyle: {
+							color: '#14b8a6'
+						}
+					},
+					emphasis: {
+						handleStyle: {
+							borderColor: 'rgba(255, 255, 255, 1)',
+							color: 'rgba(255, 255, 255, 0.9)'
+						},
+						moveHandleStyle: {
+							borderColor: 'rgba(255, 255, 255, 1)',
+							color: 'rgba(255, 255, 255, 0.2)'
+						}
+					},
+					fillerColor: 'rgba(0, 0, 0, 0.1)',
+					labelFormatter: (value) => '$' + Number(value).toLocaleString()
+				},
+				{
+					start: 0,
+					end: 100,
+					orient: 'vertical',
+					textStyle: {
+						color: 'rgba(255, 255, 255, 1)'
+					},
+					borderColor: 'rgba(255, 255, 255, 0.4)',
+					handleStyle: {
+						borderColor: 'rgba(255, 255, 255, 0.9)',
+						color: 'rgba(0, 0, 0, 0.4)'
+					},
+					moveHandleStyle: {
+						color: 'rgba(255, 255, 255, 0.4)'
+					},
+					selectedDataBackground: {
+						lineStyle: {
+							color: '#14b8a6'
+						},
+						areaStyle: {
+							color: '#14b8a6'
+						}
+					},
+					emphasis: {
+						handleStyle: {
+							borderColor: 'rgba(255, 255, 255, 1)',
+							color: 'rgba(255, 255, 255, 0.9)'
+						},
+						moveHandleStyle: {
+							borderColor: 'rgba(255, 255, 255, 1)',
+							color: 'rgba(255, 255, 255, 0.2)'
+						}
+					},
+					fillerColor: 'rgba(0, 0, 0, 0.1)',
+					labelFormatter: (value) => value.toFixed(2) + '%'
+				}
+			],
+			series: {
+				name: '',
+				type: 'line',
+				stack: 'value',
+				symbol: 'none',
+				itemStyle: {
+					color: '#14b8a6'
+				},
+				emphasis: {
+					focus: 'series',
+					shadowBlur: 10
+				},
+				animation: false
+			}
 		});
 
 		function resize() {
@@ -142,7 +232,14 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 			window.removeEventListener('resize', resize);
 			chartInstance.dispose();
 		};
-	}, [createInstance, series, fromTokenSymbol, toTokenSymbol]);
+	}, [createInstance, fromTokenSymbol, toTokenSymbol]);
+
+	useEffect(() => {
+		// create instance
+		const chartInstance = createInstance();
+
+		chartInstance.setOption({ series: { data: chartData } });
+	}, [chartData, createInstance]);
 
 	return <div id={id} style={{ height: '400px', margin: 'auto 0' }}></div>;
 }

@@ -21,7 +21,7 @@ export function getChartData({ routes, price, toTokenDecimals }) {
 				const prevValue = chartData[index - 1];
 
 				if (chartData.length && prevValue && slippage - prevValue[1] > 1) {
-					const newLiq = Math.round(Number(prevValue[0]) + Number(nofOfTokensToSwap) / 2);
+					const newLiq = Math.round((Number(prevValue[0]) + Number(nofOfTokensToSwap)) / 2);
 
 					if (
 						!newLiquidityValues.includes(newLiq) &&
@@ -37,12 +37,15 @@ export function getChartData({ routes, price, toTokenDecimals }) {
 				chartData.push([
 					Number(nofOfTokensToSwap),
 					slippage,
-					BigNumber(amountReturned)
-						.div(10 ** Number(toTokenDecimals || 18))
-						.toFixed(3)
+					Number(
+						BigNumber(amountReturned)
+							.div(10 ** Number(toTokenDecimals || 18))
+							.toFixed(3)
+					)
 				]);
 			}
 		});
 	}
+
 	return { chartData, newLiquidityValues: newLiquidityValues.sort((a, b) => a - b) };
 }
