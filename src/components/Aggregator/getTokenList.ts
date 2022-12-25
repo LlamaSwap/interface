@@ -29,7 +29,6 @@ export async function getTokenList() {
 		)
 	);
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
-	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
 	const [uniList, sushiList, lifiList] = await Promise.all([
 		await fetch('https://tokens.uniswap.org/').then((r) => r.json()),
