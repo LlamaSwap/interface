@@ -240,8 +240,7 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 
 		chartInstance.setOption({
 			xAxis: {
-				min: chartData[0][0],
-				max: chartData[chartData.length - 1][0]
+				min: chartData[0][0]
 			},
 			series: { data: chartData }
 		});
