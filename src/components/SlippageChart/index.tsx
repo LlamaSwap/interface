@@ -1,26 +1,12 @@
 import * as echarts from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { LineChart } from 'echarts/charts';
-import {
-	DataZoomComponent,
-	GraphicComponent,
-	GridComponent,
-	ToolboxComponent,
-	TooltipComponent
-} from 'echarts/components';
+import { DataZoomComponent, GraphicComponent, GridComponent, TooltipComponent } from 'echarts/components';
 import { useCallback, useEffect, useMemo } from 'react';
 import { uniqueId } from 'lodash';
 import logo from '~/public/defillama-light-neutral.png';
 
-echarts.use([
-	SVGRenderer,
-	LineChart,
-	GridComponent,
-	TooltipComponent,
-	GraphicComponent,
-	DataZoomComponent,
-	ToolboxComponent
-]);
+echarts.use([SVGRenderer, LineChart, GridComponent, TooltipComponent, GraphicComponent, DataZoomComponent]);
 
 export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbol }) {
 	const id = useMemo(() => uniqueId(), []);
@@ -79,14 +65,14 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 					return trade + receive + slippage;
 				}
 			},
-			toolbox: {
-				feature: {
-					restore: {}
-				},
-				iconStyle: {
-					borderColor: 'white'
-				}
-			},
+			// toolbox: {
+			// 	feature: {
+			// 		restore: {}
+			// 	},
+			// 	iconStyle: {
+			// 		borderColor: 'white'
+			// 	}
+			// },
 			xAxis: {
 				type: 'log',
 				name: 'Tokens',
