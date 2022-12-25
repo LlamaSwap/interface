@@ -20,7 +20,7 @@ export default function TokenLiquidity({ tokenlist }) {
 
 	const { chain, token } = router.query;
 
-	const chainName = typeof chain === 'string' ? chain.toLowerCase() : null;
+	const chainName = typeof chain === 'string' ? chain.toLowerCase() : "ethereum";
 
 	const fromTokenSymbol = typeof token === 'string' ? token.toLowerCase() : null;
 
