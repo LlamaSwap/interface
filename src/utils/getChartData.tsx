@@ -14,7 +14,7 @@ export function getChartData({ routes, price, fromTokenDecimals, toTokenDecimals
 			const amountReturned = price?.amountReturned ?? null;
 
 			if (amountReturned) {
-				const expectedPrice = Number(currentPrice) * (Number(netOutUSD) / 500);
+				const expectedPrice = Number(currentPrice) * (Number(netOutUSD) / (price || 500));
 
 				const slippage = Number(Math.abs(((Number(amountReturned) - expectedPrice) / expectedPrice) * 100).toFixed(2));
 

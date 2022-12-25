@@ -173,7 +173,14 @@ export const useGetInitialTokenLiquidity = ({
 				fromTokenPrice,
 				toTokenPrice,
 				gasPriceData
-			})
+			}),
+		{
+			refetchOnMount: false,
+			refetchInterval: 5 * 60 * 1000, // 5 minutes
+			refetchOnWindowFocus: false,
+			refetchOnReconnect: false,
+			refetchIntervalInBackground: false
+		}
 	);
 };
 
@@ -214,7 +221,12 @@ export const useGetTokensLiquidity = ({
 						toTokenPrice,
 						gasPriceData,
 						amount: liquidityAmount
-					})
+					}),
+				refetchOnMount: false,
+				refetchInterval: 5 * 60 * 1000, // 5 minutes
+				refetchOnWindowFocus: false,
+				refetchOnReconnect: false,
+				refetchIntervalInBackground: false
 			};
 		})
 	});
