@@ -60,8 +60,12 @@ export function getChartData({ routes, price, fromTokenDecimals, toTokenDecimals
 	const minIndex = getMinIndexRoute(chartData, minimumSlippage || 0);
 	const maxIndex = getMaxIndexRoute(chartData, maximumSlippage || 100);
 
+	const dataInRange = chartData.slice(minIndex, maxIndex + 1);
+
 	return {
-		chartData: chartData.slice(minIndex, maxIndex + 1),
+		chartData: dataInRange.filter((values, index) =>
+			dataInRange[index + 1] ? values[1] < dataInRange[index + 1][1] : true
+		),
 		newLiquidityValues: newLiquidityValues.sort((a, b) => a - b)
 	};
 }

@@ -226,7 +226,9 @@ export const useGetTokensLiquidity = ({
 				refetchInterval: 5 * 60 * 1000, // 5 minutes
 				refetchOnWindowFocus: false,
 				refetchOnReconnect: false,
-				refetchIntervalInBackground: false
+				refetchIntervalInBackground: false,
+				retry: 0,
+				retryOnMount: false
 			};
 		})
 	});
