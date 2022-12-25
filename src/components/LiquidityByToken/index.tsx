@@ -1,14 +1,25 @@
 import * as React from 'react';
+import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import BigNumber from 'bignumber.js';
-import { Box, Flex, Skeleton } from '@chakra-ui/react';
+import {
+	Box,
+	Flex,
+	RangeSlider,
+	RangeSliderFilledTrack,
+	RangeSliderMark,
+	RangeSliderThumb,
+	RangeSliderTrack,
+	Skeleton,
+	Text
+} from '@chakra-ui/react';
 import { ArrowRight } from 'react-feather';
 import { initialLiquidity } from '~/components/Aggregator/constants';
-import type { IToken } from '~/types';
 import { useGetInitialTokenLiquidity, useGetTokensLiquidity } from '~/queries/useGetTokenLiquidity';
-import dynamic from 'next/dynamic';
-import { getChartData } from '~/utils/getChartData';
 import { useGetPrice } from '~/queries/useGetPrice';
+import { getChartData } from '~/utils/getChartData';
+import type { IToken } from '~/types';
+import { useRouter } from 'next/router';
 
 interface ISlippageChart {
 	chartData: Array<[number, number]>;
@@ -19,6 +30,8 @@ interface ISlippageChart {
 const SlippageChart = dynamic(() => import('../SlippageChart'), { ssr: false }) as React.FC<ISlippageChart>;
 
 export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: IToken; toToken: IToken; chain: string }) {
+	const router = useRouter();
+
 	const { data: tokenAndGasPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain,
 		toToken: toToken?.address,
@@ -67,6 +80,8 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 	if (filteredNewliqValues.length) {
 		setLiquidity((prevLiq) => [...prevLiq, ...filteredNewliqValues].sort((a, b) => a - b));
 	}
+
+	const [sliderValue, setSliderValue] = React.useState([0, 100]);
 
 	return (
 		<Flex flexDir="column" gap="24px">
@@ -130,7 +145,49 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 				</tbody>
 			</Table>
 
-			<Box height="400px">
+			<Flex
+				as="form"
+				alignItems="center"
+				flexDir="row"
+				gap="20px"
+				margin="24px 32px -24px auto"
+				width="100%"
+				maxW="360px"
+			>
+				<Text as="label" whiteSpace="nowrap">
+					Slippage Range
+				</Text>
+				<RangeSlider
+					aria-label={['min slippage', 'max slippage']}
+					min={0}
+					max={100}
+					defaultValue={[0, 100]}
+					step={1}
+					onChange={(val) => setSliderValue(val)}
+					onChangeEnd={(val) => {
+						router.push(
+							{ pathname: router.pathname, query: { ...router.query, minSlippage: val[0], maxSlippage: val[1] } },
+							undefined,
+							{ shallow: true }
+						);
+					}}
+				>
+					<RangeSliderMark value={sliderValue[0]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
+						{sliderValue[0]}%
+					</RangeSliderMark>
+					<RangeSliderMark value={sliderValue[1]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
+						{sliderValue[1]}%
+					</RangeSliderMark>
+
+					<RangeSliderTrack>
+						<RangeSliderFilledTrack bg="#2563eb" />
+					</RangeSliderTrack>
+					<RangeSliderThumb index={0} />
+					<RangeSliderThumb index={1} />
+				</RangeSlider>
+			</Flex>
+
+			<Box height="422px">
 				{chartData.length > 0 && (
 					<SlippageChart chartData={chartData} fromTokenSymbol={fromToken.symbol} toTokenSymbol={toToken.symbol} />
 				)}
