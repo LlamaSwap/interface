@@ -63,20 +63,9 @@ export function getChartData({ routes, price, fromTokenDecimals, toTokenDecimals
 	const dataInRange = chartData.slice(minIndex, maxIndex + 1);
 
 	return {
-		chartData: dataInRange.filter((values, index) => {
-			let tofilter = true;
-			// avoid spikes on chart
-
-			let i = 1;
-
-			do {
-				if (dataInRange[index + i] && values[1] > dataInRange[index + i][1]) {
-					tofilter = false;
-				}
-			} while (i <= 5);
-
-			return tofilter;
-		}),
+		chartData: dataInRange.filter((values, index) =>
+			dataInRange[index + 1] ? values[1] < dataInRange[index + 1][1] : true
+		),
 		newLiquidityValues: newLiquidityValues.sort((a, b) => a - b)
 	};
 }
