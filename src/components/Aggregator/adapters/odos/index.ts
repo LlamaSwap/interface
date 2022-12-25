@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { ABI } from './abi';
 
@@ -32,10 +33,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			body: JSON.stringify(extra)
 		}
 	).then((res) => res.json());
+
 	return {
 		...data,
 		tokenApprovalAddress: routers[chain],
-		amountReturned: data.amountReturned * 10 ** extra.toToken.decimals
+		amountReturned: BigNumber(data.amountReturned).multipliedBy(BigNumber(10).pow(extra.toToken.decimals)).toFixed(0, 1)
 	};
 }
 

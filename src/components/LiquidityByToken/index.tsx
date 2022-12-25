@@ -145,49 +145,49 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 				</tbody>
 			</Table>
 
-			<Flex
-				as="form"
-				alignItems="center"
-				flexDir="row"
-				gap="20px"
-				margin="24px 32px -24px auto"
-				width="100%"
-				maxW="360px"
-			>
-				<Text as="label" whiteSpace="nowrap">
-					Slippage Range
-				</Text>
-				<RangeSlider
-					aria-label={['min slippage', 'max slippage']}
-					min={0}
-					max={100}
-					defaultValue={[0, 100]}
-					step={1}
-					onChange={(val) => setSliderValue(val)}
-					onChangeEnd={(val) => {
-						router.push(
-							{ pathname: router.pathname, query: { ...router.query, minSlippage: val[0], maxSlippage: val[1] } },
-							undefined,
-							{ shallow: true }
-						);
-					}}
-				>
-					<RangeSliderMark value={sliderValue[0]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
-						{sliderValue[0]}%
-					</RangeSliderMark>
-					<RangeSliderMark value={sliderValue[1]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
-						{sliderValue[1]}%
-					</RangeSliderMark>
-
-					<RangeSliderTrack>
-						<RangeSliderFilledTrack bg="#2563eb" />
-					</RangeSliderTrack>
-					<RangeSliderThumb index={0} />
-					<RangeSliderThumb index={1} />
-				</RangeSlider>
-			</Flex>
-
 			<Box height="422px">
+				<Flex
+					as="form"
+					alignItems="center"
+					flexDir="row"
+					gap="20px"
+					margin="24px 32px -24px auto"
+					width="100%"
+					maxW="360px"
+				>
+					<Text as="label" whiteSpace="nowrap">
+						Slippage Range
+					</Text>
+					<RangeSlider
+						aria-label={['min slippage', 'max slippage']}
+						min={0}
+						max={100}
+						defaultValue={[0, 100]}
+						step={1}
+						onChange={(val) => setSliderValue(val)}
+						onChangeEnd={(val) => {
+							router.push(
+								{ pathname: router.pathname, query: { ...router.query, minSlippage: val[0], maxSlippage: val[1] } },
+								undefined,
+								{ shallow: true }
+							);
+						}}
+					>
+						<RangeSliderMark value={sliderValue[0]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
+							{sliderValue[0]}%
+						</RangeSliderMark>
+						<RangeSliderMark value={sliderValue[1]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
+							{sliderValue[1]}%
+						</RangeSliderMark>
+
+						<RangeSliderTrack>
+							<RangeSliderFilledTrack bg="#2563eb" />
+						</RangeSliderTrack>
+						<RangeSliderThumb index={0} />
+						<RangeSliderThumb index={1} />
+					</RangeSlider>
+				</Flex>
+
 				{chartData.length > 0 && (
 					<SlippageChart chartData={chartData} fromTokenSymbol={fromToken.symbol} toTokenSymbol={toToken.symbol} />
 				)}
