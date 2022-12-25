@@ -25,7 +25,7 @@ export default function TokenLiquidity({ tokenlist }) {
 	const fromTokenSymbol = typeof token === 'string' ? token.toLowerCase() : null;
 
 	const { selectedChain, selectedToken, chainTokenList, topTokensOfChain } = React.useMemo(() => {
-		const chainTokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainsMap[chainName]] : null;
+		const chainTokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainsMap[chainName]] || [] : null;
 		const tokenList = chainTokenList ? chainTokenList.map((t) => ({ ...t, label: t.symbol, value: t.address })) : null;
 
 		const selectedChain = chains.find((c) => c.value === chainName);

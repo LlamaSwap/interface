@@ -351,19 +351,20 @@ export function AggregatorContainer({ tokenlist }) {
 		chainId: chainsMap[selectedChain.value]
 	});
 
-	const tokensInChain = tokenlist[chainsMap[selectedChain.value]]
-		?.map((token) => ({
-			...token,
-			value: token.address,
-			label: token.symbol
-		}))
-		.concat(savedTokens[chain?.id] || [])
-		.map((token) => ({
-			...token,
-			amount: tokenBalances?.[chain?.id]?.[token.address.toLowerCase()]?.amount || 0,
-			balanceUSD: tokenBalances?.[chain?.id]?.[token.address.toLowerCase()]?.balanceUSD || 0
-		}))
-		.sort((a, b) => b.balanceUSD - a.balanceUSD);
+	const tokensInChain =
+		tokenlist[chainsMap[selectedChain.value]]
+			?.map((token) => ({
+				...token,
+				value: token.address,
+				label: token.symbol
+			}))
+			.concat(savedTokens[chain?.id] || [])
+			.map((token) => ({
+				...token,
+				amount: tokenBalances?.[chain?.id]?.[token.address.toLowerCase()]?.amount || 0,
+				balanceUSD: tokenBalances?.[chain?.id]?.[token.address.toLowerCase()]?.balanceUSD || 0
+			}))
+			.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? [];
 
 	const setTokens = (tokens) => {
 		setFromToken(tokens.token0);
