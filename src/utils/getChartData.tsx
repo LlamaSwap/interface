@@ -53,8 +53,8 @@ export function getChartData({ routes, price, fromTokenDecimals, toTokenDecimals
 		});
 	}
 
-	const minIndex = getMinIndexRoute(chartData, minimumSlippage);
-	const maxIndex = getMaxIndexRoute(chartData, maximumSlippage);
+	const minIndex = getMinIndexRoute(chartData, minimumSlippage || 0);
+	const maxIndex = getMaxIndexRoute(chartData, maximumSlippage || 100);
 
 	return {
 		chartData: chartData.slice(minIndex, maxIndex + 1),
