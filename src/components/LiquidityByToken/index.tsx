@@ -163,7 +163,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 				</tbody>
 			</Table>
 
-			<Box minH="445px">
+			<Box minH="745px">
 				{chartData.length > 0 && (
 					<>
 						<Flex
