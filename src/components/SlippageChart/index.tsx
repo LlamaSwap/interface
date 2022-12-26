@@ -27,7 +27,7 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 				containLabel: true,
 				bottom: 60,
 				top: 40,
-				right: 100
+				right: 64
 			},
 			graphic: {
 				type: 'image',
@@ -65,14 +65,6 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 					return trade + receive + slippage;
 				}
 			},
-			// toolbox: {
-			// 	feature: {
-			// 		restore: {}
-			// 	},
-			// 	iconStyle: {
-			// 		borderColor: 'white'
-			// 	}
-			// },
 			xAxis: {
 				type: 'log',
 				name: 'Tokens',
@@ -83,7 +75,8 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 					}
 				},
 				axisLabel: {
-					formatter: (value) => '$' + Number(value).toLocaleString()
+					formatter: (value) => '$' + Number(value).toLocaleString(),
+					hideOverlap: true
 				},
 				boundaryGap: false,
 				nameTextStyle: {
@@ -166,42 +159,6 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 					},
 					fillerColor: 'rgba(0, 0, 0, 0.1)',
 					labelFormatter: (value) => '$' + Number(value).toLocaleString()
-				},
-				{
-					start: 0,
-					end: 100,
-					orient: 'vertical',
-					textStyle: {
-						color: 'rgba(255, 255, 255, 1)'
-					},
-					borderColor: 'rgba(255, 255, 255, 0.4)',
-					handleStyle: {
-						borderColor: 'rgba(255, 255, 255, 0.9)',
-						color: 'rgba(0, 0, 0, 0.4)'
-					},
-					moveHandleStyle: {
-						color: 'rgba(255, 255, 255, 0.4)'
-					},
-					selectedDataBackground: {
-						lineStyle: {
-							color: '#14b8a6'
-						},
-						areaStyle: {
-							color: '#14b8a6'
-						}
-					},
-					emphasis: {
-						handleStyle: {
-							borderColor: 'rgba(255, 255, 255, 1)',
-							color: 'rgba(255, 255, 255, 0.9)'
-						},
-						moveHandleStyle: {
-							borderColor: 'rgba(255, 255, 255, 1)',
-							color: 'rgba(255, 255, 255, 0.2)'
-						}
-					},
-					fillerColor: 'rgba(0, 0, 0, 0.1)',
-					labelFormatter: (value) => value.toFixed(2) + '%'
 				}
 			],
 			series: {

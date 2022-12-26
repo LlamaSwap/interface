@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork } from 'wagmi';
-import { groupBy, mapValues, merge, uniqBy } from 'lodash';
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
@@ -44,7 +43,6 @@ import { useTokenApprove } from './hooks';
 import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
-import { nativeTokens } from './nativeTokens';
 import { chainsMap, nativeAddress } from './constants';
 import TokenSelect from './TokenSelect';
 import { getSavedTokens } from '~/utils';
@@ -340,11 +338,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	useEffect(() => {
 		const nativeToken = tokenlist[chainsMap[selectedChain.value]]?.[0] || {};
-		setFromToken({
-			...nativeToken,
-			value: nativeToken.address,
-			label: nativeToken.symbol
-		});
+		setFromToken(nativeToken);
 	}, [selectedChain, tokenlist]);
 
 	const { data: gasPriceData } = useFeeData({
@@ -353,12 +347,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const tokensInChain =
 		tokenlist[chainsMap[selectedChain.value]]
-			?.map((token) => ({
-				...token,
-				value: token.address,
-				label: token.symbol
-			}))
-			.concat(savedTokens[chain?.id] || [])
+			?.concat(savedTokens[chain?.id] || [])
 			.map((token) => ({
 				...token,
 				amount: tokenBalances?.[chain?.id]?.[token.address.toLowerCase()]?.amount || 0,
@@ -593,6 +582,7 @@ export function AggregatorContainer({ tokenlist }) {
 									}}
 								/>
 							</div>
+
 							<TokenSelect tokens={tokensInChain} token={toToken} onClick={setToToken} />
 						</TokenSelectBody>
 						<div style={{ textAlign: 'center', margin: ' 8px 16px' }}>

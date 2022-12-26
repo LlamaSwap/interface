@@ -58,9 +58,15 @@ export async function getTokenList() {
 		return val.filter((token) => !tokensToRemove[key]?.[token.address.toLowerCase()]);
 	});
 
+	const tokenlist = {};
+
+	for (const chain in tokensFiltered) {
+		tokenlist[chain] = tokensFiltered[chain].map((t) => ({ ...t, label: t.symbol, value: t.address }));
+	}
+
 	return {
 		props: {
-			tokenlist: tokensFiltered
+			tokenlist: tokenlist
 		},
 		revalidate: 5 * 60 // 5 minutes
 	};

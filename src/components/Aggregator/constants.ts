@@ -35,30 +35,4 @@ export const chainNamesReplaced = {
 
 export const nativeAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowerCase();
 
-export const topTokens = {
-	ethereum: ['ETH'],
-	bsc: ['BNB'],
-	polygon: ['MATIC'],
-	optimism: ['WETH'],
-	arbitrum: ['WETH'],
-	avax: ['AVAX'],
-	gnosis: ['xDai'],
-	fantom: ['FTM'],
-	klaytn: ['KLAY'],
-	aurora: ['AETH'],
-	celo: ['CELO'],
-	cronos: ['CRO'],
-	// dogechain: [],
-	moonriver: ['MOVR'],
-	bttc: ['BNB'],
-	// oasis: []
-	velas: ['VLX'],
-	// heco: []
-	harmony: ['1BTC'],
-	boba: ['BOBA'],
-	okc: ['OKT'],
-	fuse: ['FUSE'],
-	moonbeam: ['GLMR']
-};
-
 export const initialLiquidity = [500, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000, 500_000_000];
