@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork } from 'wagmi';
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
@@ -19,7 +19,8 @@ import {
 	Box,
 	Spacer,
 	IconButton,
-	Text
+	Text,
+	ToastId
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
@@ -191,6 +192,7 @@ const Routes = styled.div`
 		}
 	}
 `;
+
 const BodyWrapper = styled.div`
 	display: flex;
 	flex-direction: column;
@@ -327,6 +329,8 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const [route, setRoute] = useState(null);
 
+	const confirmingTxToastRef = useRef<ToastId>();
+
 	const swapMutation = useMutation({
 		mutationFn: (params: {
 			chain: string;
@@ -356,6 +360,80 @@ export function AggregatorContainer({ tokenlist }) {
 				setTxUrl(txUrl);
 			}
 
+			confirmingTxToastRef.current = toast({
+				title: 'Confirming Transaction',
+				description: '',
+				status: 'loading',
+				isClosable: true,
+				position: 'top-right'
+			});
+
+			data
+				.wait?.()
+				?.then((final) => {
+					if (final.status === 1) {
+						if (confirmingTxToastRef.current) {
+							toast.close(confirmingTxToastRef.current);
+						}
+
+						const fromToken = variables.tokens.fromToken;
+						const toToken = variables.tokens.toToken;
+
+						const inAmount = variables.rawQuote?.inAmount ?? variables.rawQuote?.inputAmount;
+						const outAmount = variables.rawQuote?.outAmount ?? variables.rawQuote?.outputAmount;
+
+						toast({
+							title: 'Transaction Success',
+							description: `Swapped ${
+								inAmount
+									? BigNumber(inAmount)
+											.div(10 ** Number(fromToken.decimals || 18))
+											.toFixed(3)
+									: ''
+							} ${fromToken.symbol} for ${
+								outAmount
+									? BigNumber(outAmount)
+											.div(10 ** Number(toToken.decimals || 18))
+											.toFixed(3)
+									: ''
+							} ${toToken.symbol} via ${variables.adapter}`,
+							status: 'success',
+							duration: 10000,
+							isClosable: true,
+							position: 'top-right',
+							containerStyle: {
+								width: '100%',
+								maxWidth: '300px'
+							}
+						});
+					} else {
+						toast({
+							title: 'Transaction Failed',
+							status: 'error',
+							duration: 10000,
+							isClosable: true,
+							position: 'top-right',
+							containerStyle: {
+								width: '100%',
+								maxWidth: '300px'
+							}
+						});
+					}
+				})
+				.catch(() => {
+					toast({
+						title: 'Transaction Failed',
+						status: 'error',
+						duration: 10000,
+						isClosable: true,
+						position: 'top-right',
+						containerStyle: {
+							width: '100%',
+							maxWidth: '300px'
+						}
+					});
+				});
+
 			sendSwapEvent({
 				chain: selectedChain.value,
 				user: address,
@@ -370,15 +448,20 @@ export function AggregatorContainer({ tokenlist }) {
 			});
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
-			if (err.code !== 'ACTION_REJECTED') {
+			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
 				toast({
 					title: 'Something went wrong.',
 					description: err.reason,
 					status: 'error',
-					duration: 9000,
+					duration: 10000,
 					isClosable: true,
-					position: 'top'
+					position: 'top-right',
+					containerStyle: {
+						width: '100%',
+						maxWidth: '300px'
+					}
 				});
+
 				sendSwapEvent({
 					chain: selectedChain.value,
 					user: address,
@@ -499,6 +582,7 @@ export function AggregatorContainer({ tokenlist }) {
 		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
+
 	const priceImpact =
 		fromTokenPrice && route?.route?.amountUsd > 0
 			? 100 - (route?.route?.amountUsd / (+fromTokenPrice * +amount)) * 100
@@ -508,7 +592,7 @@ export function AggregatorContainer({ tokenlist }) {
 		<Wrapper>
 			<Heading>Meta-Aggregator</Heading>
 
-			<Text>
+			<Text fontSize="1rem" fontWeight="500">
 				This product is still WIP and not ready for public release yet. Please expect things to break and if you find
 				anything broken please let us know in the{' '}
 				<a style={{ textDecoration: 'underline' }} href="https://discord.defillama.com/">
