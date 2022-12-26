@@ -46,9 +46,17 @@ export async function swap({ chain, from, to, signer, rawQuote }) {
 
 	const router = new ethers.Contract(routers[chain], ABI.odosRouter, signer);
 	const decimalsIn = rawQuote.path.nodes[0].decimals;
-	const amountIn = +rawQuote.inAmounts[0].toFixed(decimalsIn) * 10 ** decimalsIn;
+
+	const amountIn = BigNumber(rawQuote.inAmounts[0])
+		.multipliedBy(10 ** decimalsIn)
+		.toFixed(0, 1);
+
 	const decimalsOut = rawQuote.path.nodes[rawQuote.path.nodes.length - 1].decimals;
-	const amountOut = (+rawQuote.outAmounts[0].toFixed(decimalsOut) * 10 ** decimalsOut).toFixed(0);
+
+	const amountOut = BigNumber(rawQuote.outAmounts[0])
+		.multipliedBy(10 ** decimalsOut)
+		.toFixed(0, 1);
+
 	const amountSlippage = ((+amountOut / 100) * 99).toFixed(0);
 	const executor = rawQuote.inputDests[0];
 	const pathBytes = rawQuote.pathDefBytes;
