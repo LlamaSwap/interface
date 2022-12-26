@@ -2,14 +2,13 @@ import { ethers } from 'ethers';
 import { useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { QuestionIcon } from '@chakra-ui/icons';
-
 import { TYPE } from '~/Theme';
-import { CloseBtn } from '.';
 import ReactSelect from '../MultiSelect';
 import { Header, IconImage, IconWrapper, ModalWrapper, PairRow } from './Search';
 import { Input } from './TokenInput';
 import { useNetwork, useToken } from 'wagmi';
 import { Button } from '@chakra-ui/react';
+import { CloseBtn } from '../CloseBtn';
 
 const Row = ({ data: { data, onClick }, index, style }) => {
 	const token = data[index];

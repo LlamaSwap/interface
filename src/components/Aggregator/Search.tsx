@@ -3,7 +3,7 @@ import { FixedSizeList as List } from 'react-window';
 import { Input } from './TokenInput';
 import styled from 'styled-components';
 import { TYPE } from '~/Theme';
-import { CloseBtn } from '.';
+import { CloseBtn } from '../CloseBtn';
 
 interface Props {
 	tokens: Array<{ symbol: string; address: string }>;

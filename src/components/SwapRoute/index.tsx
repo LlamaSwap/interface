@@ -2,10 +2,10 @@ import styled from 'styled-components';
 import { TYPE } from '~/Theme';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
-import { GasIcon } from '../Aggregator/Icons';
 import { Badge } from '@chakra-ui/react';
 import { Gift, Unlock } from 'react-feather';
 import { useOptimismFees } from '../Aggregator/hooks/useOptimismFees';
+import { GasIcon } from '../Icons';
 
 interface IToken {
 	address: string;

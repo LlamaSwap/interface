@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork } from 'wagmi';
-import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
+import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
 import { ArrowRight } from 'react-feather';
@@ -14,7 +14,6 @@ import {
 	ModalHeader,
 	ModalOverlay,
 	Image,
-	Link,
 	ModalFooter,
 	Heading,
 	useToast,
@@ -26,17 +25,18 @@ import {
 	Switch,
 	Flex,
 	Box,
-	Spacer
+	Spacer,
+	IconButton,
+	Text,
+	Link as ChakraLink
 } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import txImg from '~/public/llamanote.png';
-import { TYPE } from '~/Theme';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import Route from '~/components/SwapRoute';
 import { getAllChains, swap } from './router';
 import { Input, TokenInput } from './TokenInput';
-import { CrossIcon } from './Icons';
 import Loader from './Loader';
 import Search from './Search';
 import { useTokenApprove } from './hooks';
@@ -49,6 +49,8 @@ import { getSavedTokens } from '~/utils';
 import Tooltip from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
+import { useRouter } from 'next/router';
+import { CloseBtn } from '../CloseBtn';
 
 /*
 Integrated:
@@ -218,14 +220,6 @@ const TokenSelectBody = styled.div`
 	grid-template-columns: 5fr 1fr 5fr;
 `;
 
-export const CloseBtn = ({ onClick }) => {
-	return (
-		<Close onClick={onClick}>
-			<CrossIcon />
-		</Close>
-	);
-};
-
 const TransactionModal = ({ open, setOpen, link }) => {
 	return (
 		<Modal closeOnOverlayClick={true} isOpen={open} onClose={() => setOpen(false)}>
@@ -237,9 +231,9 @@ const TransactionModal = ({ open, setOpen, link }) => {
 					<Image src={txImg.src} alt="" />
 				</ModalBody>
 				<ModalFooter justifyContent={'center'}>
-					<Link href={link} isExternal fontSize={'lg'} textAlign={'center'}>
+					<ChakraLink href={link} isExternal fontSize={'lg'} textAlign={'center'}>
 						View in explorer <ExternalLinkIcon mx="2px" />
-					</Link>
+					</ChakraLink>
 				</ModalFooter>
 			</ModalContent>
 		</Modal>
@@ -260,12 +254,6 @@ const SelectWrapper = styled.div`
 	padding-bottom: 16px;
 `;
 
-const Close = styled.span`
-	position: absolute;
-	right: 16px;
-	cursor: pointer;
-`;
-
 const SwapWrapper = styled.div`
 	width: 100%;
 	display: flex;
@@ -284,11 +272,9 @@ const chains = getAllChains();
 
 export function AggregatorContainer({ tokenlist }) {
 	const { data: signer } = useSigner();
-	const { address } = useAccount();
-	const { chain } = useNetwork();
-	const [selectedChain, setSelectedChain] = useState(chains[0]);
-	const [fromToken, setFromToken] = useState(null);
-	const [toToken, setToToken] = useState(null);
+	const { address, isConnected } = useAccount();
+	const { chain: chainOnWallet } = useNetwork();
+
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useState(false);
 	const toast = useToast();
 	const savedTokens = getSavedTokens();
@@ -298,67 +284,77 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const addRecentTransaction = useAddRecentTransaction();
 
-	const { switchNetworkAsync } = useSwitchNetwork();
+	const { switchNetwork } = useSwitchNetwork();
+	const { openConnectModal } = useConnectModal();
+
+	const router = useRouter();
+
+	const { chain: chainOnURL, from: fromToken, to: toToken } = router.query;
+
+	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
+	const fromTokenSymbol = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
+	const toTokenSymbol = typeof toToken === 'string' ? toToken.toLowerCase() : null;
+
+	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useMemo(() => {
+		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainsMap[chainName]] || [] : null;
+
+		const selectedChain = chains.find((c) => c.value === chainName);
+
+		const selectedFromToken = tokenList?.find(
+			(t) => t.symbol.toLowerCase() === fromTokenSymbol || t.address.toLowerCase() === fromTokenSymbol
+		);
+
+		const selectedToToken = tokenList?.find(
+			(t) => t.symbol.toLowerCase() === toTokenSymbol || t.address.toLowerCase() === toTokenSymbol
+		);
+
+		return {
+			selectedChain: selectedChain ? { ...selectedChain, id: chainsMap[selectedChain.value] } : null,
+			selectedFromToken: selectedFromToken
+				? { ...selectedFromToken, label: selectedFromToken.symbol, value: selectedFromToken.address }
+				: null,
+			selectedToToken: selectedToToken
+				? { ...selectedToToken, label: selectedToToken.symbol, value: selectedToToken.address }
+				: null,
+			chainTokenList: tokenList
+		};
+	}, [chainName, fromTokenSymbol, toTokenSymbol, tokenlist]);
 
 	const [amount, setAmount] = useState<number | string>('10');
 	const [txModalOpen, setTxModalOpen] = useState(false);
 	const [txUrl, setTxUrl] = useState('');
 
 	const amountWithDecimals = BigNumber(amount)
-		.times(10 ** (fromToken?.decimals || 18))
+		.times(BigNumber(10).pow(selectedFromToken?.decimals || 18))
 		.toFixed(0);
+
+	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 
 	const balance = useBalance({
 		addressOrName: address,
-		token: [ethers.constants.AddressZero, nativeAddress.toLowerCase()].includes(fromToken?.address?.toLowerCase())
+		token: [ethers.constants.AddressZero, nativeAddress.toLowerCase()].includes(
+			selectedFromToken?.address?.toLowerCase()
+		)
 			? undefined
-			: fromToken?.address,
-		watch: true
+			: (selectedFromToken?.address as `0x${string}`),
+		watch: true,
+		enabled: isValidSelectedChain
 	});
 
-	const currentChainId = chain?.id;
-
-	const isValidSelectedChain = chains.find(
-		({ value }) => selectedChain.value === value && chainsMap[value] === currentChainId
-	);
-
-	const cleanState = () => {
-		setFromToken(null);
-		setToToken(null);
-		setRoute(null);
-		setTxUrl('');
-	};
-
-	useEffect(() => {
-		if (!isValidSelectedChain) {
-			setSelectedChain(chains.find(({ value }) => chainsMap[value] === currentChainId) ?? chains[0]);
-			cleanState();
-		}
-	}, [isValidSelectedChain, currentChainId]);
-
-	useEffect(() => {
-		const nativeToken = tokenlist[chainsMap[selectedChain.value]]?.[0] || {};
-		setFromToken(nativeToken);
-	}, [selectedChain, tokenlist]);
-
 	const { data: gasPriceData } = useFeeData({
-		chainId: chainsMap[selectedChain.value]
+		chainId: selectedChain?.id,
+		enabled: selectedChain ? true : false
 	});
 
 	const tokensInChain =
-		tokenlist[chainsMap[selectedChain.value]]
-			?.concat(savedTokens[chain?.id] || [])
+		chainTokenList
+			?.concat(savedTokens[chainOnWallet?.id] || [])
 			.map((token) => ({
 				...token,
-				amount: tokenBalances?.[chain?.id]?.[token.address.toLowerCase()]?.amount || 0,
-				balanceUSD: tokenBalances?.[chain?.id]?.[token.address.toLowerCase()]?.balanceUSD || 0
+				amount: tokenBalances?.[chainOnWallet?.id]?.[token.address.toLowerCase()]?.amount || 0,
+				balanceUSD: tokenBalances?.[chainOnWallet?.id]?.[token.address.toLowerCase()]?.balanceUSD || 0
 			}))
 			.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? [];
-
-	const setTokens = (tokens) => {
-		setFromToken(tokens.token0);
-		setToToken(tokens.token1);
-	};
 
 	const [route, setRoute] = useState(null);
 
@@ -381,7 +377,7 @@ export function AggregatorContainer({ tokenlist }) {
 					hash: data.hash,
 					description: `Swap transaction using ${variables.adapter} is sent.`
 				});
-				const explorerUrl = chain.blockExplorers.default.url;
+				const explorerUrl = chainOnWallet.blockExplorers.default.url;
 				setTxModalOpen(true);
 				txUrl = `${explorerUrl}/tx/${data.hash}`;
 				setTxUrl(txUrl);
@@ -433,28 +429,28 @@ export function AggregatorContainer({ tokenlist }) {
 	const handleSwap = () => {
 		swapMutation.mutate({
 			chain: selectedChain.value,
-			from: fromToken.value,
-			to: toToken.value,
+			from: selectedFromToken.value,
+			to: selectedToToken.value,
 			amount: amountWithDecimals,
 			signer,
 			slippage,
 			adapter: route.name,
 			rawQuote: route?.price?.rawQuote,
-			tokens: { fromToken, toToken }
+			tokens: { fromToken: selectedFromToken, toToken: selectedToToken }
 		});
 	};
 
 	const { data: routes = [], isLoading } = useGetRoutes({
-		chain: selectedChain.value,
-		from: fromToken?.value,
-		to: toToken?.value,
+		chain: selectedChain?.value,
+		from: selectedFromToken?.value,
+		to: selectedToToken?.value,
 		amount: amountWithDecimals,
 		extra: {
 			gasPriceData,
 			userAddress: address || ethers.constants.AddressZero,
 			amount,
-			fromToken,
-			toToken,
+			fromToken: selectedFromToken,
+			toToken: selectedToToken,
 			slippage,
 			selectedRoute: route?.name,
 			isPrivacyEnabled,
@@ -463,9 +459,9 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 
 	const { data: tokenPrices } = useGetPrice({
-		chain: selectedChain.value,
-		toToken: toToken?.address,
-		fromToken: fromToken?.address
+		chain: selectedChain?.value,
+		toToken: selectedToToken?.address,
+		fromToken: selectedFromToken?.address
 	});
 
 	const { gasTokenPrice = 0, toTokenPrice = 0, fromTokenPrice = 0 } = tokenPrices || {};
@@ -475,11 +471,11 @@ export function AggregatorContainer({ tokenlist }) {
 		approve,
 		approveInfinite,
 		isLoading: isApproveLoading
-	} = useTokenApprove(fromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
+	} = useTokenApprove(selectedFromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
 
 	const onMaxClick = () => {
 		if (balance?.data?.formatted) {
-			if (route && fromToken?.address === ethers.constants.AddressZero) {
+			if (route && selectedFromToken?.address === ethers.constants.AddressZero) {
 				const gas = (+route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
 
 				const amountWithoutGas = +balance?.data?.formatted - gas;
@@ -491,15 +487,29 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const onChainChange = (newChain) => {
-		if (switchNetworkAsync === undefined) {
-			cleanState();
-			setSelectedChain(newChain);
-		} else {
-			switchNetworkAsync(chainsMap[newChain.value]).then((chain) => {
-				cleanState();
-				setSelectedChain(chains.find(({ value }) => chainsMap[value] === chain?.id));
-			});
-		}
+		router.push({ pathname: '/', query: { chain: newChain.label } }, undefined, { shallow: true });
+	};
+
+	const onFromTokenChange = (token) => {
+		router.push({ pathname: router.pathname, query: { ...router.query, from: token.symbol } }, undefined, {
+			shallow: true
+		});
+	};
+
+	const onToTokenChange = (token) => {
+		router.push({ pathname: router.pathname, query: { ...router.query, to: token.symbol } }, undefined, {
+			shallow: true
+		});
+	};
+
+	const setTokens = (tokens) => {
+		router.push(
+			{ pathname: router.pathname, query: { ...router.query, from: tokens.token0.symbol, to: tokens.token1.symbol } },
+			undefined,
+			{
+				shallow: true
+			}
+		);
 	};
 
 	const normalizedRoutes = [...(routes || [])]
@@ -508,10 +518,10 @@ export function AggregatorContainer({ tokenlist }) {
 
 			// CowSwap native token swap
 			gasUsd =
-				route.price.feeAmount && fromToken.address === ethers.constants.AddressZero
+				route.price.feeAmount && selectedFromToken.address === ethers.constants.AddressZero
 					? (route.price.feeAmount / 1e18) * gasTokenPrice
 					: gasUsd;
-			const amount = +route.price.amountReturned / 10 ** +toToken?.decimals;
+			const amount = +route.price.amountReturned / 10 ** +selectedToToken?.decimals;
 			const amountUsd = (amount * toTokenPrice).toFixed(2);
 			const netOut = +amountUsd - gasUsd;
 
@@ -529,16 +539,16 @@ export function AggregatorContainer({ tokenlist }) {
 		<Wrapper>
 			<Heading>Meta-Aggregator</Heading>
 
-			<TYPE.heading>
+			<Text>
 				This product is still WIP and not ready for public release yet. Please expect things to break and if you find
 				anything broken please let us know in the{' '}
 				<a style={{ textDecoration: 'underline' }} href="https://discord.defillama.com/">
 					defillama discord
 				</a>
-			</TYPE.heading>
+			</Text>
 
 			<BodyWrapper>
-				<Body showRoutes={fromToken && toToken}>
+				<Body showRoutes={selectedFromToken && selectedToToken ? true : false}>
 					<div>
 						<FormHeader>
 							<Flex>
@@ -564,30 +574,32 @@ export function AggregatorContainer({ tokenlist }) {
 					<SelectWrapper>
 						<FormHeader>Select Tokens</FormHeader>
 						<TokenSelectBody>
-							<TokenSelect tokens={tokensInChain} token={fromToken} onClick={setFromToken} />
+							<TokenSelect tokens={chainTokenList} token={selectedFromToken} onClick={onFromTokenChange} />
 
-							<div>
-								<ArrowRight
-									width={24}
-									height={24}
-									display="block"
-									style={{
-										marginTop: 8,
-										marginLeft: 8,
-										cursor: 'pointer'
-									}}
-									onClick={() => {
-										setFromToken(toToken);
-										setToToken(fromToken);
-									}}
-								/>
-							</div>
+							<IconButton
+								onClick={() =>
+									router.push(
+										{
+											pathname: router.pathname,
+											query: { ...router.query, to: fromToken, from: toToken }
+										},
+										undefined,
+										{ shallow: true }
+									)
+								}
+								bg="none"
+								icon={<ArrowRight />}
+								aria-label="Switch Tokens"
+								marginTop="auto"
+							/>
 
-							<TokenSelect tokens={tokensInChain} token={toToken} onClick={setToToken} />
+							<TokenSelect tokens={chainTokenList} token={selectedToToken} onClick={onToTokenChange} />
 						</TokenSelectBody>
-						<div style={{ textAlign: 'center', margin: ' 8px 16px' }}>
-							<TYPE.heading>OR</TYPE.heading>
-						</div>
+
+						<Text textAlign="center" margin="8px 16px">
+							OR
+						</Text>
+
 						<Search tokens={tokensInChain} setTokens={setTokens} />
 					</SelectWrapper>
 
@@ -630,33 +642,45 @@ export function AggregatorContainer({ tokenlist }) {
 						</InputFooter>
 					</div>
 					<SwapWrapper>
-						{route && address ? (
-							<Button
-								isLoading={swapMutation.isLoading || isApproveLoading}
-								loadingText="Preparing transaction"
-								colorScheme={'messenger'}
-								onClick={() => {
-									if (approve) approve();
+						{!isConnected ? (
+							<Button colorScheme={'messenger'} onClick={() => openConnectModal()}>
+								Connect Wallet
+							</Button>
+						) : !isValidSelectedChain ? (
+							<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
+								Switch Network
+							</Button>
+						) : (
+							<>
+								{route && address ? (
+									<Button
+										isLoading={swapMutation.isLoading || isApproveLoading}
+										loadingText="Preparing transaction"
+										colorScheme={'messenger'}
+										onClick={() => {
+											if (approve) approve();
 
-									if (+amount > +balance?.data?.formatted) return;
-									if (isApproved) handleSwap();
-								}}
-							>
-								{isApproved ? 'Swap' : 'Approve'}
-							</Button>
-						) : null}
-						{route && address && !isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) ? (
-							<Button
-								colorScheme={'messenger'}
-								loadingText="Preparing transaction"
-								isLoading={isApproveLoading}
-								onClick={() => {
-									if (approveInfinite) approveInfinite();
-								}}
-							>
-								{'Approve Infinite'}
-							</Button>
-						) : null}
+											if (+amount > +balance?.data?.formatted) return;
+											if (isApproved) handleSwap();
+										}}
+									>
+										{isApproved ? 'Swap' : 'Approve'}
+									</Button>
+								) : null}
+								{route && address && !isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) ? (
+									<Button
+										colorScheme={'messenger'}
+										loadingText="Preparing transaction"
+										isLoading={isApproveLoading}
+										onClick={() => {
+											if (approveInfinite) approveInfinite();
+										}}
+									>
+										{'Approve Infinite'}
+									</Button>
+								) : null}
+							</>
+						)}
 					</SwapWrapper>
 					{priceImpact > 15 && !isLoading ? (
 						<Alert status="warning">
@@ -666,11 +690,15 @@ export function AggregatorContainer({ tokenlist }) {
 					) : null}
 				</Body>
 
-				{fromToken && toToken && (
+				{selectedFromToken && selectedToToken && (
 					<Routes>
 						<FormHeader>
 							Routes
-							<CloseBtn onClick={cleanState} />{' '}
+							<CloseBtn
+								right="4px"
+								top="6px"
+								onClick={() => router.push({ pathname: '/' }, undefined, { shallow: true })}
+							/>
 						</FormHeader>
 
 						{isLoading ? <Loader loaded={!isLoading} /> : null}
@@ -681,12 +709,19 @@ export function AggregatorContainer({ tokenlist }) {
 								index={i}
 								selected={route?.name === r.name}
 								setRoute={() => setRoute({ ...r.route, route: r })}
-								toToken={toToken}
+								toToken={selectedToToken}
 								amountFrom={amountWithDecimals}
-								fromToken={fromToken}
+								fromToken={selectedFromToken}
 								selectedChain={selectedChain.label}
 								gasTokenPrice={gasTokenPrice}
-								key={i}
+								key={
+									selectedChain.label +
+									selectedFromToken.label +
+									selectedToToken.label +
+									amountWithDecimals +
+									gasPriceData.formatted.gasPrice +
+									r.name
+								}
 							/>
 						))}
 					</Routes>
@@ -694,6 +729,7 @@ export function AggregatorContainer({ tokenlist }) {
 			</BodyWrapper>
 
 			<FAQs />
+
 			<TransactionModal open={txModalOpen} setOpen={setTxModalOpen} link={txUrl} />
 		</Wrapper>
 	);

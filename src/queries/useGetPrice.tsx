@@ -18,7 +18,7 @@ interface IPrice {
 }
 
 export async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
-	if (!fromToken && !toToken) {
+	if (!fromToken || !toToken || !chain) {
 		return { gasTokenPrice: 0, fromTokenPrice: 0, toTokenPrice: 0 };
 	}
 	const [{ coins }, gasPriceData] = await Promise.all([
