@@ -52,7 +52,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 		chain,
 		gasPriceData: tokenAndGasPrices?.gasPriceData,
 		gasTokenPrice: tokenAndGasPrices?.gasTokenPrice,
-		fromTokenPrice: tokenAndGasPrices?.fromTokenPrice,
+		fromTokenPrice: tokenAndGasPrices?.fromTokenPrice ?? 0,
 		toTokenPrice: tokenAndGasPrices?.toTokenPrice
 	});
 

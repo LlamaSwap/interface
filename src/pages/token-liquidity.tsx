@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useRouter } from 'next/router';
-import { Button, Flex, FormControl, FormLabel, Heading, IconButton } from '@chakra-ui/react';
+import { Flex, FormControl, FormLabel, Heading, IconButton } from '@chakra-ui/react';
 import Layout from '~/layout';
 import { getTokenList } from '~/components/Aggregator/getTokenList';
 import { chainsMap } from '~/components/Aggregator/constants';

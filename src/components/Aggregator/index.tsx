@@ -1,20 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork } from 'wagmi';
-import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
+import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
 import { ArrowRight } from 'react-feather';
 import styled from 'styled-components';
 import {
-	Modal,
-	ModalBody,
-	ModalCloseButton,
-	ModalContent,
-	ModalHeader,
-	ModalOverlay,
-	Image,
-	ModalFooter,
 	Heading,
 	useToast,
 	Button,
@@ -27,11 +19,8 @@ import {
 	Box,
 	Spacer,
 	IconButton,
-	Text,
-	Link as ChakraLink
+	Text
 } from '@chakra-ui/react';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
-import txImg from '~/public/llamanote.png';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import Route from '~/components/SwapRoute';
@@ -51,6 +40,7 @@ import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
 import { CloseBtn } from '../CloseBtn';
+import { TransactionModal } from '../TransactionModal';
 
 /*
 Integrated:
@@ -220,26 +210,6 @@ const TokenSelectBody = styled.div`
 	grid-template-columns: 5fr 1fr 5fr;
 `;
 
-const TransactionModal = ({ open, setOpen, link }) => {
-	return (
-		<Modal closeOnOverlayClick={true} isOpen={open} onClose={() => setOpen(false)}>
-			<ModalOverlay />
-			<ModalContent>
-				<ModalHeader textAlign={'center'}>Transaction submitted</ModalHeader>
-				<ModalCloseButton />
-				<ModalBody pb={6}>
-					<Image src={txImg.src} alt="" />
-				</ModalBody>
-				<ModalFooter justifyContent={'center'}>
-					<ChakraLink href={link} isExternal fontSize={'lg'} textAlign={'center'}>
-						View in explorer <ExternalLinkIcon mx="2px" />
-					</ChakraLink>
-				</ModalFooter>
-			</ModalContent>
-		</Modal>
-	);
-};
-
 const FormHeader = styled.div`
 	font-weight: bold;
 	font-size: 16px;
@@ -285,7 +255,6 @@ export function AggregatorContainer({ tokenlist }) {
 	const addRecentTransaction = useAddRecentTransaction();
 
 	const { switchNetwork } = useSwitchNetwork();
-	const { openConnectModal } = useConnectModal();
 
 	const router = useRouter();
 
@@ -643,9 +612,10 @@ export function AggregatorContainer({ tokenlist }) {
 					</div>
 					<SwapWrapper>
 						{!isConnected ? (
-							<Button colorScheme={'messenger'} onClick={() => openConnectModal()}>
-								Connect Wallet
-							</Button>
+							// <Button colorScheme={'messenger'} onClick={() => openConnectModal()}>
+							// 	Connect Wallet
+							// </Button>
+							<></>
 						) : !isValidSelectedChain ? (
 							<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
 								Switch Network
