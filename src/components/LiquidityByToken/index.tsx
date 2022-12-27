@@ -5,12 +5,15 @@ import BigNumber from 'bignumber.js';
 import {
 	Box,
 	Flex,
+	FormControl,
+	FormLabel,
 	RangeSlider,
 	RangeSliderFilledTrack,
 	RangeSliderMark,
 	RangeSliderThumb,
 	RangeSliderTrack,
 	Skeleton,
+	Switch,
 	Text
 } from '@chakra-ui/react';
 import { ArrowRight } from 'react-feather';
@@ -20,11 +23,13 @@ import { useGetPrice } from '~/queries/useGetPrice';
 import { getChartData } from '~/utils/getChartData';
 import type { IToken } from '~/types';
 import { useRouter } from 'next/router';
+import { useGetMcap } from '~/queries/useGetMCap';
 
 interface ISlippageChart {
 	chartData: Array<[number, number]>;
 	fromTokenSymbol: string;
 	toTokenSymbol: string;
+	mcap: number | null;
 }
 
 const SlippageChart = dynamic(() => import('../SlippageChart'), { ssr: false }) as React.FC<ISlippageChart>;
@@ -32,12 +37,14 @@ const SlippageChart = dynamic(() => import('../SlippageChart'), { ssr: false }) 
 export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: IToken; toToken: IToken; chain: string }) {
 	const router = useRouter();
 
-	const { minSlippage, maxSlippage } = router.query;
+	const { minSlippage, maxSlippage, showTokenMcap } = router.query;
 
 	const minimumSlippage =
 		typeof minSlippage === 'string' && !Number.isNaN(Number(minSlippage)) ? Number(minSlippage) : 0;
 	const maximumSlippage =
 		typeof maxSlippage === 'string' && !Number.isNaN(Number(maxSlippage)) ? Number(maxSlippage) : 0;
+
+	const fromTokenMCapPercentage = showTokenMcap === 'true';
 
 	const { data: tokenAndGasPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain,
@@ -100,6 +107,10 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 	}
 
 	const [sliderValue, setSliderValue] = React.useState([0, 100]);
+
+	const { data: fromTokenMcap } = useGetMcap({ id: fromToken.geckoId });
+
+	const mcap = fromTokenMcap && fromTokenMCapPercentage ? Math.round(fromTokenMcap) : null;
 
 	return (
 		<Flex flexDir="column" gap="24px">
@@ -167,49 +178,80 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 				{chartData.length > 0 && (
 					<>
 						<Flex
-							as="form"
 							alignItems="center"
-							flexDir="row"
-							gap="20px"
-							margin="24px 32px 0 auto"
-							width="100%"
-							maxW="360px"
+							justifyContent="space-between"
+							gap="16px"
+							flexWrap="wrap"
+							margin="24px 32px 24px auto"
+							w="full"
 						>
-							<Text as="label" whiteSpace="nowrap">
-								Slippage Range
-							</Text>
-							<RangeSlider
-								aria-label={['min slippage', 'max slippage']}
-								min={0}
-								max={100}
-								defaultValue={[0, 100]}
-								step={1}
-								onChange={(val) => setSliderValue(val)}
-								onChangeEnd={(val) => {
-									router.push(
-										{ pathname: router.pathname, query: { ...router.query, minSlippage: val[0], maxSlippage: val[1] } },
-										undefined,
-										{ shallow: true }
-									);
-								}}
-							>
-								<RangeSliderMark value={sliderValue[0]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
-									{sliderValue[0]}%
-								</RangeSliderMark>
-								<RangeSliderMark value={sliderValue[1]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
-									{sliderValue[1]}%
-								</RangeSliderMark>
+							<FormControl display="flex" alignItems="center" gap="8px" w="fit-content">
+								{fromToken.geckoId && (
+									<Switch
+										id="coinMcap"
+										checked={fromTokenMCapPercentage}
+										onChange={() => {
+											router.push(
+												{
+													pathname: router.pathname,
+													query: { ...router.query, showTokenMcap: !fromTokenMCapPercentage }
+												},
+												undefined,
+												{ shallow: true }
+											);
+										}}
+									/>
+								)}
+								<FormLabel htmlFor="coinMcap" mb="0">
+									{`Show % of ${fromToken.symbol} Mcap`}
+								</FormLabel>
+							</FormControl>
 
-								<RangeSliderTrack>
-									<RangeSliderFilledTrack bg="#2563eb" />
-								</RangeSliderTrack>
-								<RangeSliderThumb index={0} />
-								<RangeSliderThumb index={1} />
-							</RangeSlider>
+							<Flex as="form" alignItems="center" flexDir="row" gap="20px" width="100%" maxW="360px">
+								<Text as="label" whiteSpace="nowrap">
+									Slippage Range
+								</Text>
+								<RangeSlider
+									aria-label={['min slippage', 'max slippage']}
+									min={0}
+									max={100}
+									defaultValue={[0, 100]}
+									step={1}
+									onChange={(val) => setSliderValue(val)}
+									onChangeEnd={(val) => {
+										router.push(
+											{
+												pathname: router.pathname,
+												query: { ...router.query, minSlippage: val[0], maxSlippage: val[1] }
+											},
+											undefined,
+											{ shallow: true }
+										);
+									}}
+								>
+									<RangeSliderMark value={sliderValue[0]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
+										{sliderValue[0]}%
+									</RangeSliderMark>
+									<RangeSliderMark value={sliderValue[1]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
+										{sliderValue[1]}%
+									</RangeSliderMark>
+
+									<RangeSliderTrack>
+										<RangeSliderFilledTrack bg="#2563eb" />
+									</RangeSliderTrack>
+									<RangeSliderThumb index={0} />
+									<RangeSliderThumb index={1} />
+								</RangeSlider>
+							</Flex>
 						</Flex>
 
 						<Box height="400px">
-							<SlippageChart chartData={chartData} fromTokenSymbol={fromToken.symbol} toTokenSymbol={toToken.symbol} />
+							<SlippageChart
+								chartData={chartData}
+								fromTokenSymbol={fromToken.symbol}
+								toTokenSymbol={toToken.symbol}
+								mcap={mcap}
+							/>
 						</Box>
 
 						<Flex flexDir="column" gap="20px" marginY="36px">

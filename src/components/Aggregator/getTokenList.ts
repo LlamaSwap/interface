@@ -31,10 +31,11 @@ export async function getTokenList() {
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
-	const [uniList, sushiList, lifiList] = await Promise.all([
-		await fetch('https://tokens.uniswap.org/').then((r) => r.json()),
-		await fetch('https://token-list.sushi.com/').then((r) => r.json()),
-		await fetch('https://li.quest/v1/tokens').then((r) => r.json())
+	const [uniList, sushiList, lifiList, geckoList] = await Promise.all([
+		fetch('https://tokens.uniswap.org/').then((r) => r.json()),
+		fetch('https://token-list.sushi.com/').then((r) => r.json()),
+		fetch('https://li.quest/v1/tokens').then((r) => r.json()),
+		fetch('https://api.coingecko.com/api/v3/coins/list?include_platform=false').then((res) => res.json())
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -61,12 +62,17 @@ export async function getTokenList() {
 	const tokenlist = {};
 
 	for (const chain in tokensFiltered) {
-		tokenlist[chain] = tokensFiltered[chain].map((t) => ({ ...t, label: t.symbol, value: t.address }));
+		tokenlist[chain] = tokensFiltered[chain].map((t) => ({
+			...t,
+			label: t.symbol,
+			value: t.address,
+			geckoId: geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol.toLowerCase())?.id ?? null
+		}));
 	}
 
 	return {
 		props: {
-			tokenlist: tokenlist
+			tokenlist
 		},
 		revalidate: 5 * 60 // 5 minutes
 	};

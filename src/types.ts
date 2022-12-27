@@ -7,4 +7,5 @@ export interface IToken {
 	chainId: number;
 	amount?: string;
 	balanceUSD?: number;
+	geckoId: string | null;
 }

@@ -8,7 +8,7 @@ import logo from '~/public/defillama-light-neutral.png';
 
 echarts.use([SVGRenderer, LineChart, GridComponent, TooltipComponent, GraphicComponent, DataZoomComponent]);
 
-export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbol }) {
+export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbol, mcap }) {
 	const id = useMemo(() => uniqueId(), []);
 
 	const createInstance = useCallback(() => {
@@ -43,13 +43,17 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 			tooltip: {
 				trigger: 'axis',
 				formatter: function (params: any) {
+					const tradeInfo = mcap
+						? `${((Number(params[0].value[0]) / mcap) * 100).toFixed(2)} % of Mcap`
+						: `$${Number(params[0].value[0]).toLocaleString(undefined, {
+								maximumFractionDigits: 2
+						  })})`;
+
 					const trade =
 						'<li style="list-style:none">' +
 						'Trade: ' +
 						Number(params[0].value[4]).toLocaleString(undefined, { maximumFractionDigits: 2 }) +
-						` ${fromTokenSymbol} ($${Number(params[0].value[0]).toLocaleString(undefined, {
-							maximumFractionDigits: 2
-						})})` +
+						` ${fromTokenSymbol} (${tradeInfo})` +
 						'</li>';
 
 					const receive =
@@ -75,7 +79,8 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 					}
 				},
 				axisLabel: {
-					formatter: (value) => '$' + Number(value).toLocaleString(),
+					formatter: (value) =>
+						mcap ? `${((value / mcap) * 100).toFixed(2)} % of Mcap` : '$' + Number(value).toLocaleString(),
 					hideOverlap: true
 				},
 				boundaryGap: false,
@@ -187,7 +192,7 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 			window.removeEventListener('resize', resize);
 			chartInstance.dispose();
 		};
-	}, [createInstance, fromTokenSymbol, toTokenSymbol]);
+	}, [createInstance, fromTokenSymbol, toTokenSymbol, mcap]);
 
 	useEffect(() => {
 		// create instance
