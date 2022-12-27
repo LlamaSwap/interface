@@ -522,7 +522,8 @@ export function AggregatorContainer({ tokenlist }) {
 		isApproved,
 		approve,
 		approveInfinite,
-		isLoading: isApproveLoading
+		isLoading: isApproveLoading,
+		isInfiniteLoading: isApproveInfiniteLoading
 	} = useTokenApprove(selectedFromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
 
 	const onMaxClick = () => {
@@ -725,7 +726,7 @@ export function AggregatorContainer({ tokenlist }) {
 									<Button
 										colorScheme={'messenger'}
 										loadingText="Preparing transaction"
-										isLoading={isApproveLoading}
+										isLoading={isApproveInfiniteLoading}
 										onClick={() => {
 											if (approveInfinite) approveInfinite();
 										}}

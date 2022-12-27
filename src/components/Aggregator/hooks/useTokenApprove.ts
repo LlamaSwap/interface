@@ -60,5 +60,5 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount) =
 
 	if (normalizedAmount && allowance.gte(BigNumber.from(normalizedAmount))) return { isApproved: true };
 
-	return { isApproved: false, approve, approveInfinite, isLoading: isLoading || isInfiniteLoading };
+	return { isApproved: false, approve, approveInfinite, isLoading, isInfiniteLoading };
 };
