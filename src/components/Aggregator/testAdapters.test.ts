@@ -70,7 +70,7 @@ export async function testAdapters(addTest: (test: any) => void) {
                     slippage: 1,
                     isPrivacyEnabled: false,
                 }
-                const prices = await Promise.all(adapters
+                const prices = (await Promise.all(adapters
                     .filter((adap) => adap.chainToId[chain] !== undefined)
                     .map(async adapter => {
                         const testParams = { 
@@ -90,15 +90,31 @@ export async function testAdapters(addTest: (test: any) => void) {
                                     ...extra
                                 });
                             }
-                            addTest({...testParams, success: true})
-                            return { price, adapter: adapter.name }
+                            if(Number(price.estimatedGas)<1000 && adapter.name !== "CowSwap"){
+                                addTest({...testParams, price, success: "gas"})
+                            }
+                            return { price, adapter: adapter.name, testParams }
                         } catch (e) {
-                            addTest({...testParams, success: false})
+                            addTest({...testParams, success: "x"})
                             console.error(`Failed to get data for ${adapter.name} on ${chain}`)
                         }
                     })
-                )
-                console.log("prices", prices)
+                )).filter(p=>p!==undefined)
+                const reportUnder = (property:string)=>{
+                    if(prices.length<2) return
+                    const sorted = prices.sort((a,b)=>b.price[property] - a.price[property])
+                    const mid = Math.round(prices.length/2)
+                    const median = Number(sorted[mid].price[property])
+                    prices.forEach(p=>{
+                        if(property === "estimatedGas" && p.adapter === "CowSwap") return
+                        const value = Number(p.price[property])
+                        if(value < 0.8 * median){
+                            addTest({...p.testParams, success: property, value, median, drop: 100*(median-value)/median})
+                        }
+                    })
+                }
+                reportUnder("amountReturned")
+                reportUnder("estimatedGas")
                 releaseLock()
             }))
         }))

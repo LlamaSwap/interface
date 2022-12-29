@@ -21,18 +21,21 @@ export default function Aggregator(props) {
 		<Table>
 			<thead>
 				<tr>
-					{["Adapter", "Chain", "Connected", "From", "To", "Failure"].map(name=><th key={name}>{name}</th>)}
+					{["Adapter", "Chain", "Connected", "From", "To", "Failure", "Value", "Median", "Drop"].map(name=><th key={name}>{name}</th>)}
 				</tr>
 			</thead>
 			<tbody>
-				{tests.map(({ adapter, chain, userAddress, from, to, success }, idx) =>
+				{tests.map(({ adapter, chain, userAddress, from, to, success, value, median, drop }, idx) =>
 					<tr key={idx}>
 						<td>{adapter}</td>
 						<td>{chain}</td>
 						<td>{userAddress?"yes":"x"}</td>
 						<td>{from}</td>
 						<td>{to}</td>
-						<td>{success?"":"x"}</td>
+						<td>{success}</td>
+						<td>{value}</td>
+						<td>{median}</td>
+						<td>{drop}</td>
 					</tr>
 				)}
 			</tbody>
