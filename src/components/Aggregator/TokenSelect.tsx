@@ -42,7 +42,7 @@ const AddToken = ({ address, onClick }) => {
 
 	const onTokenClick = () => {
 		saveToken({ address, ...(data || {}), label: data?.symbol, value: address, chainId: chain?.id });
-		onClick({ address, ...(data || {}), label: data?.symbol, value: address });
+		onClick({ address, label: data?.symbol, value: address });
 	};
 
 	return (
