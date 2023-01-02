@@ -116,7 +116,7 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, fro
 
 		const res = await Promise.allSettled(
 			adapters
-				.filter((adap) => adap.chainToId[chain] && adap.name !== 'Odos')
+				.filter((adap) => adap.chainToId[chain])
 				.map((adapter) =>
 					getAdapterRoutes({
 						adapter,
@@ -129,7 +129,7 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, fro
 							amount: amount.toString(),
 							fromToken,
 							toToken,
-							userAddress: ethers.constants.AddressZero,
+							userAddress: ethers.constants.AddressZero
 						}
 					})
 				)

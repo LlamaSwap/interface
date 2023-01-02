@@ -540,7 +540,7 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const onChainChange = (newChain) => {
-		router.push({ pathname: '/', query: { chain: newChain.label } }, undefined, { shallow: true });
+		router.push({ pathname: '/', query: { chain: newChain.value } }, undefined, { shallow: true });
 	};
 
 	const onFromTokenChange = (token) => {
@@ -565,24 +565,32 @@ export function AggregatorContainer({ tokenlist }) {
 		);
 	};
 
-	const normalizedRoutes = [...(routes || [])]
+	let normalizedRoutes = [...(routes || [])]
 		?.map((route) => {
-			let gasUsd = (gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+			let gasUsd: number | string =
+				(gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
 			// CowSwap native token swap
 			gasUsd =
 				route.price.feeAmount && selectedFromToken.address === ethers.constants.AddressZero
 					? (route.price.feeAmount / 1e18) * gasTokenPrice
 					: gasUsd;
+
+			gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
+			gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
 			const amount = +route.price.amountReturned / 10 ** +selectedToToken?.decimals;
 			const amountUsd = (amount * toTokenPrice).toFixed(2);
-			const netOut = +amountUsd - gasUsd;
+			const netOut = route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd;
 
 			return { route, gasUsd, amountUsd, amount, netOut, ...route };
 		})
 		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
+
+	normalizedRoutes = normalizedRoutes
+		.filter((r) => r.gasUsd !== 'Unknown')
+		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
 
 	const priceImpact =
 		fromTokenPrice && route?.route?.amountUsd > 0

@@ -4,7 +4,6 @@ import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
 import { Badge } from '@chakra-ui/react';
 import { Gift, Unlock } from 'react-feather';
-import { useOptimismFees } from '../Aggregator/hooks/useOptimismFees';
 import { GasIcon } from '../Icons';
 
 interface IToken {
@@ -30,7 +29,7 @@ interface IRoute {
 	setRoute: () => void;
 	selected: boolean;
 	index: number;
-	gasUsd: number;
+	gasUsd: number | string;
 	amountUsd: string;
 	airdrop: boolean;
 	amountFrom: string;
@@ -51,17 +50,11 @@ const Route = ({
 	airdrop,
 	fromToken,
 	amountFrom,
-	lossPercent,
-	txData,
-	gasTokenPrice
+	lossPercent
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
-	const l1FeeUsd = useOptimismFees(txData, gasTokenPrice);
-
-	const gas = l1FeeUsd ? l1FeeUsd + gasUsd : gasUsd;
-
-	if (!price.amountReturned || (Number(gas) === 0 && name !== 'CowSwap')) return null;
+	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap')) return null;
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
@@ -90,7 +83,11 @@ const Route = ({
 						<>
 							<GasIcon />{' '}
 							<div style={{ marginLeft: 8 }}>
-								${gas.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+								{gasUsd === 'Unknown' ? (
+									gasUsd
+								) : (
+									<>${gasUsd.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</>
+								)}
 							</div>
 						</>
 					)}

@@ -1,6 +1,7 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
 import { omit } from 'lodash';
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
+import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
 import { adapters } from '~/components/Aggregator/router';
 
 interface IGetListRoutesProps {
@@ -17,6 +18,7 @@ interface IRoute {
 	airdrop: boolean;
 	fromAmount: string;
 	txData: string;
+	l1Gas: number | 'Unknown';
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
@@ -25,7 +27,7 @@ interface IGetAdapterRouteProps extends IGetListRoutesProps {
 
 export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
 	if (!chain || !from || !to || !amount || amount === '0') {
-		return { price: null, name: adapter.name, airdrop: !adapter.token, fromAmount: amount, txData: '' };
+		return { price: null, name: adapter.name, airdrop: !adapter.token, fromAmount: amount, txData: '', l1Gas: 0 };
 	}
 
 	try {
@@ -38,9 +40,17 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			});
 		}
 
+		const txData = adapter?.getTxData?.(price) ?? '';
+		let l1Gas: number | 'Unknown' = 0;
+
+		if (chain === 'optimism') {
+			l1Gas = await getOptimismFee(txData);
+		}
+
 		const res = {
 			price,
-			txData: adapter?.getTxData?.(price) ?? '',
+			l1Gas,
+			txData,
 			name: adapter.name,
 			airdrop: !adapter.token,
 			fromAmount: amount
@@ -51,6 +61,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 		console.error(e);
 		return {
 			price: null,
+			l1Gas: 0,
 			name: adapter.name,
 			airdrop: !adapter.token,
 			fromAmount: amount,
