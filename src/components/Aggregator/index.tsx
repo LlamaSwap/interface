@@ -298,7 +298,7 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 
 	const { data: toToken2 } = useToken({
-		address: fromToken as `0x${string}`,
+		address: toToken as `0x${string}`,
 		chainId: selectedChain.id,
 		enabled: typeof toToken === 'string' && toToken.length === 42 && selectedChain ? true : false
 	});
