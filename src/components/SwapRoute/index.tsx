@@ -10,7 +10,7 @@ interface IToken {
 	address: string;
 	logoURI: string;
 	symbol: string;
-	decimals: string;
+	decimals: number;
 }
 
 interface IPrice {

@@ -2,7 +2,7 @@ export interface IToken {
 	address: string;
 	logoURI: string;
 	symbol: string;
-	decimals: string;
+	decimals: number;
 	name: string;
 	chainId: number;
 	amount?: string;

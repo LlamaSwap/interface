@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork } from 'wagmi';
+import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
@@ -291,12 +291,48 @@ export function AggregatorContainer({ tokenlist }) {
 		};
 	}, [chainName, fromTokenSymbol, toTokenSymbol, tokenlist]);
 
+	const { data: fromToken2 } = useToken({
+		address: fromToken as `0x${string}`,
+		chainId: selectedChain.id,
+		enabled: typeof fromToken === 'string' && fromToken.length === 42 && selectedChain ? true : false
+	});
+
+	const { data: toToken2 } = useToken({
+		address: fromToken as `0x${string}`,
+		chainId: selectedChain.id,
+		enabled: typeof toToken === 'string' && toToken.length === 42 && selectedChain ? true : false
+	});
+
+	const finalSelectedFromToken =
+		!selectedFromToken && fromToken2
+			? {
+					...fromToken2,
+					label: toToken2.symbol,
+					value: fromToken2.address,
+					logoURI: '',
+					chainId: selectedChain.id ?? 1,
+					geckoId: null
+			  }
+			: selectedFromToken;
+
+	const finalSelectedToToken =
+		!selectedToToken && toToken2
+			? {
+					...toToken2,
+					label: toToken2.symbol,
+					value: toToken2.address,
+					logoURI: '',
+					chainId: selectedChain.id ?? 1,
+					geckoId: null
+			  }
+			: selectedToToken;
+
 	const [amount, setAmount] = useState<number | string>('10');
 	const [txModalOpen, setTxModalOpen] = useState(false);
 	const [txUrl, setTxUrl] = useState('');
 
 	const amountWithDecimals = BigNumber(amount)
-		.times(BigNumber(10).pow(selectedFromToken?.decimals || 18))
+		.times(BigNumber(10).pow(finalSelectedFromToken?.decimals || 18))
 		.toFixed(0);
 
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
@@ -304,10 +340,10 @@ export function AggregatorContainer({ tokenlist }) {
 	const balance = useBalance({
 		addressOrName: address,
 		token: [ethers.constants.AddressZero, nativeAddress.toLowerCase()].includes(
-			selectedFromToken?.address?.toLowerCase()
+			finalSelectedFromToken?.address?.toLowerCase()
 		)
 			? undefined
-			: (selectedFromToken?.address as `0x${string}`),
+			: (finalSelectedFromToken?.address as `0x${string}`),
 		watch: true,
 		enabled: isValidSelectedChain
 	});
@@ -481,28 +517,28 @@ export function AggregatorContainer({ tokenlist }) {
 	const handleSwap = () => {
 		swapMutation.mutate({
 			chain: selectedChain.value,
-			from: selectedFromToken.value,
-			to: selectedToToken.value,
+			from: finalSelectedFromToken.value,
+			to: finalSelectedToToken.value,
 			amount: amountWithDecimals,
 			signer,
 			slippage,
 			adapter: route.name,
 			rawQuote: route?.price?.rawQuote,
-			tokens: { fromToken: selectedFromToken, toToken: selectedToToken }
+			tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken }
 		});
 	};
 
 	const { data: routes = [], isLoading } = useGetRoutes({
 		chain: selectedChain?.value,
-		from: selectedFromToken?.value,
-		to: selectedToToken?.value,
+		from: finalSelectedFromToken?.value,
+		to: finalSelectedToToken?.value,
 		amount: amountWithDecimals,
 		extra: {
 			gasPriceData,
 			userAddress: address || ethers.constants.AddressZero,
 			amount,
-			fromToken: selectedFromToken,
-			toToken: selectedToToken,
+			fromToken: finalSelectedFromToken,
+			toToken: finalSelectedToToken,
 			slippage,
 			selectedRoute: route?.name,
 			isPrivacyEnabled,
@@ -512,8 +548,8 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const { data: tokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
-		toToken: selectedToToken?.address,
-		fromToken: selectedFromToken?.address
+		toToken: finalSelectedToToken?.address,
+		fromToken: finalSelectedFromToken?.address
 	});
 
 	const { gasTokenPrice = 0, toTokenPrice = 0, fromTokenPrice = 0 } = tokenPrices || {};
@@ -524,11 +560,11 @@ export function AggregatorContainer({ tokenlist }) {
 		approveInfinite,
 		isLoading: isApproveLoading,
 		isInfiniteLoading: isApproveInfiniteLoading
-	} = useTokenApprove(selectedFromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
+	} = useTokenApprove(finalSelectedFromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
 
 	const onMaxClick = () => {
 		if (balance?.data?.formatted) {
-			if (route && selectedFromToken?.address === ethers.constants.AddressZero) {
+			if (route && finalSelectedFromToken?.address === ethers.constants.AddressZero) {
 				const gas = (+route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
 
 				const amountWithoutGas = +balance?.data?.formatted - gas;
@@ -580,13 +616,13 @@ export function AggregatorContainer({ tokenlist }) {
 
 			// CowSwap native token swap
 			gasUsd =
-				route.price.feeAmount && selectedFromToken.address === ethers.constants.AddressZero
+				route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
 					? (route.price.feeAmount / 1e18) * gasTokenPrice
 					: gasUsd;
 
 			gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
 			gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
-			const amount = +route.price.amountReturned / 10 ** +selectedToToken?.decimals;
+			const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
 			const amountUsd = (amount * toTokenPrice).toFixed(2);
 			const netOut = route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd;
 
@@ -617,7 +653,7 @@ export function AggregatorContainer({ tokenlist }) {
 			</Text>
 
 			<BodyWrapper>
-				<Body showRoutes={selectedFromToken && selectedToToken ? true : false}>
+				<Body showRoutes={finalSelectedFromToken && finalSelectedToToken ? true : false}>
 					<div>
 						<FormHeader>
 							<Flex>
@@ -643,7 +679,7 @@ export function AggregatorContainer({ tokenlist }) {
 					<SelectWrapper>
 						<FormHeader>Select Tokens</FormHeader>
 						<TokenSelectBody>
-							<TokenSelect tokens={chainTokenList} token={selectedFromToken} onClick={onFromTokenChange} />
+							<TokenSelect tokens={chainTokenList} token={finalSelectedFromToken} onClick={onFromTokenChange} />
 
 							<IconButton
 								onClick={() =>
@@ -662,7 +698,7 @@ export function AggregatorContainer({ tokenlist }) {
 								marginTop="auto"
 							/>
 
-							<TokenSelect tokens={chainTokenList} token={selectedToToken} onClick={onToTokenChange} />
+							<TokenSelect tokens={chainTokenList} token={finalSelectedToToken} onClick={onToTokenChange} />
 						</TokenSelectBody>
 
 						<Text textAlign="center" margin="8px 16px">
@@ -760,7 +796,7 @@ export function AggregatorContainer({ tokenlist }) {
 					) : null}
 				</Body>
 
-				{selectedFromToken && selectedToToken && (
+				{finalSelectedFromToken && finalSelectedToToken && (
 					<Routes>
 						<FormHeader>
 							Routes
@@ -779,15 +815,15 @@ export function AggregatorContainer({ tokenlist }) {
 								index={i}
 								selected={route?.name === r.name}
 								setRoute={() => setRoute({ ...r.route, route: r })}
-								toToken={selectedToToken}
+								toToken={finalSelectedToToken}
 								amountFrom={amountWithDecimals}
-								fromToken={selectedFromToken}
+								fromToken={finalSelectedFromToken}
 								selectedChain={selectedChain.label}
 								gasTokenPrice={gasTokenPrice}
 								key={
 									selectedChain.label +
-									selectedFromToken.label +
-									selectedToToken.label +
+									finalSelectedFromToken.label +
+									finalSelectedToToken.label +
 									amountWithDecimals +
 									gasPriceData.formatted.gasPrice +
 									r.name
