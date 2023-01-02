@@ -6,18 +6,18 @@ import * as kyberswap from './adapters/kyberswap';
 import * as openocean from './adapters/openocean';
 import * as paraswap from './adapters/paraswap';
 import * as lifi from './adapters/lifi';
-import * as rango from './adapters/rango';
+// import * as rango from './adapters/rango';
 
 // import * as unidex from "./adapters/unidex" - disabled, their api is broken
 // import * as airswap from './adapters/airswap' cors
-import * as odos from './adapters/odos';
+// import * as odos from './adapters/odos';
 import * as yieldyak from './adapters/yieldyak';
 import { capitalizeFirstLetter } from '~/utils';
 import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, kyberswap, openocean, paraswap, yieldyak, lifi, rango, odos];
+export const adapters = [matcha, inch, cowswap, kyberswap, openocean, paraswap, yieldyak, lifi];
 
 const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
 

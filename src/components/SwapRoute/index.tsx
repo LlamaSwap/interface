@@ -61,7 +61,7 @@ const Route = ({
 
 	const gas = l1FeeUsd ? l1FeeUsd + gasUsd : gasUsd;
 
-	if (!price.amountReturned) return null;
+	if (!price.amountReturned || (Number(gas) === 0 && name !== 'CowSwap')) return null;
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
