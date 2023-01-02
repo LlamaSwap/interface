@@ -602,10 +602,9 @@ export function AggregatorContainer({ tokenlist }) {
 			<Heading>Meta-Aggregator</Heading>
 
 			<Text fontSize="1rem" fontWeight="500">
-				This product is still WIP and not ready for public release yet. Please expect things to break and if you find
-				anything broken please let us know in the{' '}
-				<a style={{ textDecoration: 'underline' }} href="https://discord.defillama.com/">
-					defillama discord
+				This product is still in beta. If you run into any issue please let us know in our{' '}
+				<a style={{ textDecoration: 'underline' }} href="https://discord.gg/j54NuUt5nW">
+					discord server
 				</a>
 			</Text>
 
