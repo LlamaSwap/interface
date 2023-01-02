@@ -17,7 +17,7 @@ import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, lifi];
+export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak];
 
 const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
 
