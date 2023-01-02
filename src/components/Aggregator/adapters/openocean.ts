@@ -13,7 +13,9 @@ export const chainToId = {
 	heco: 128,
 	harmony: 1666600000,
 	boba: 288,
-	okexchain: 66
+	okexchain: 66,
+	cronos: 25,
+	moonriver: 1285,
 };
 
 export const name = 'OpenOcean';
