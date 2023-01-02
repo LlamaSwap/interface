@@ -306,9 +306,12 @@ export function AggregatorContainer({ tokenlist }) {
 	const finalSelectedFromToken =
 		!selectedFromToken && fromToken2
 			? {
-					...fromToken2,
-					label: toToken2.symbol,
+					name: fromToken2.name || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
+					label: fromToken2.symbol || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
+					symbol: fromToken2.symbol || '',
+					address: fromToken2.address,
 					value: fromToken2.address,
+					decimals: fromToken2.decimals,
 					logoURI: '',
 					chainId: selectedChain.id ?? 1,
 					geckoId: null
@@ -318,9 +321,12 @@ export function AggregatorContainer({ tokenlist }) {
 	const finalSelectedToToken =
 		!selectedToToken && toToken2
 			? {
-					...toToken2,
-					label: toToken2.symbol,
+					name: toToken2.name || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
+					label: toToken2.symbol || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
+					symbol: toToken2.symbol || '',
+					address: toToken2.address,
 					value: toToken2.address,
+					decimals: toToken2.decimals,
 					logoURI: '',
 					chainId: selectedChain.id ?? 1,
 					geckoId: null
@@ -701,11 +707,11 @@ export function AggregatorContainer({ tokenlist }) {
 							<TokenSelect tokens={chainTokenList} token={finalSelectedToToken} onClick={onToTokenChange} />
 						</TokenSelectBody>
 
-						<Text textAlign="center" margin="8px 16px">
+						{/* <Text textAlign="center" margin="8px 16px">
 							OR
 						</Text>
 
-						<Search tokens={tokensInChain} setTokens={setTokens} />
+						<Search tokens={tokensInChain} setTokens={setTokens} /> */}
 					</SelectWrapper>
 
 					<div>
