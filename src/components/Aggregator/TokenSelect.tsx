@@ -41,19 +41,17 @@ const AddToken = ({ address, onClick }) => {
 	const { chain } = useNetwork();
 
 	const onTokenClick = () => {
+		saveToken({ address, ...(data || {}), label: data?.symbol, value: address, chainId: chain?.id });
 		onClick({ address, ...(data || {}), label: data?.symbol, value: address });
 	};
 
-	const onAddClick = () => {
-		saveToken({ address, ...(data || {}), label: data?.symbol, value: address, chainId: chain?.id });
-	};
 	return (
 		<PairRow key={address} style={{ lineHeight: '38px' }} hover={false} onClick={onTokenClick}>
 			<IconWrapper>
 				<QuestionIcon height="20px" width="20px" marginTop={'10px'} />
 			</IconWrapper>
 			<TYPE.heading>{data?.symbol || 'Loading...'}</TYPE.heading>
-			<Button height={38} marginLeft="auto" onClick={onAddClick}>
+			<Button height={38} marginLeft="auto" onClick={onTokenClick}>
 				Add token
 			</Button>
 		</PairRow>

@@ -544,15 +544,23 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const onFromTokenChange = (token) => {
-		router.push({ pathname: router.pathname, query: { ...router.query, from: token.symbol } }, undefined, {
-			shallow: true
-		});
+		router.push(
+			{ pathname: router.pathname, query: { ...router.query, from: token.symbol || token.address } },
+			undefined,
+			{
+				shallow: true
+			}
+		);
 	};
 
 	const onToTokenChange = (token) => {
-		router.push({ pathname: router.pathname, query: { ...router.query, to: token.symbol } }, undefined, {
-			shallow: true
-		});
+		router.push(
+			{ pathname: router.pathname, query: { ...router.query, to: token.symbol || token.address } },
+			undefined,
+			{
+				shallow: true
+			}
+		);
 	};
 
 	const setTokens = (tokens) => {
