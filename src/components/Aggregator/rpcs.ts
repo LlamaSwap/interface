@@ -43,7 +43,7 @@ export const providers = {
   harmony: createProvider("harmony", "https://harmony-0-rpc.gateway.pokt.network,https://api.harmony.one,https://api.s0.t.hmny.io", 1666600000),
   thundercore: createProvider("thundercore", "https://mainnet-rpc.thundercore.com", 108),
   okexchain: createProvider("okexchain", "https://exchainrpc.okex.org", 66),
-  optimism: createProvider("optimism", "https://mainnet.optimism.io/", 10),
+  optimism: createProvider("optimism", "https://optimism-mainnet.public.blastapi.io/", 10),
   arbitrum: createProvider("arbitrum", "https://arb1.arbitrum.io/rpc", 42161),
   kcc: createProvider("kcc", "https://rpc-mainnet.kcc.network", 321),
   celo: createProvider("celo", "https://forno.celo.org", 42220),
