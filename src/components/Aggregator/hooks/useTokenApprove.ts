@@ -1,4 +1,5 @@
 import { BigNumber, ethers } from 'ethers';
+import { useState } from 'react';
 import { erc20ABI, useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
 import { nativeAddress } from '../constants';
 
@@ -10,11 +11,16 @@ const oldErc = [
 	'0xdAC17F958D2ee523a2206206994597C13D831ec7'.toLowerCase() // USDT
 ];
 
-export const useTokenApprove = (token: string, spender: `0x${string}`, amount: string) => {
+export const useGetAllowance = (token: string, spender: `0x${string}`, amount: string) => {
 	const { address, isConnected } = useAccount();
+
 	const isOld = oldErc.includes(token?.toLowerCase());
 
-	const { data: allowance } = useContractRead({
+	const {
+		data: allowance,
+		refetch,
+		isRefetching
+	} = useContractRead({
 		address: token,
 		abi: erc20ABI,
 		functionName: 'allowance',
@@ -26,19 +32,25 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 	const shouldRemoveApproval =
 		isOld && allowance && amount && !Number.isNaN(amount) && allowance.lt(BigNumber.from(amount)) && !allowance.eq(0);
 
+	return { allowance, shouldRemoveApproval, refetch, isRefetching };
+};
+
+export const useTokenApprove = (token: string, spender: `0x${string}`, amount: string) => {
+	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
+	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
+	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);
+
+	const { address, isConnected } = useAccount();
+
+	const { allowance, shouldRemoveApproval, refetch } = useGetAllowance(token, spender, amount);
+
 	const normalizedAmount = Number(amount) ? amount : '0';
+
 	const { config } = usePrepareContractWrite({
 		address: token,
 		abi: erc20ABI,
 		functionName: 'approve',
-		args: [
-			spender,
-			shouldRemoveApproval
-				? BigNumber.from('0')
-				: normalizedAmount
-				? BigNumber.from(normalizedAmount)
-				: ethers.constants.MaxUint256
-		],
+		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token
 	});
 
@@ -46,20 +58,90 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		address: token,
 		abi: erc20ABI,
 		functionName: 'approve',
-		args: [spender, shouldRemoveApproval ? BigNumber.from('0') : ethers.constants.MaxUint256],
+		args: [spender, ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token
 	});
 
-	const { write: approve, isLoading } = useContractWrite(config);
-	const { write: approveInfinite, isLoading: isInfiniteLoading } = useContractWrite(configInfinite);
+	const { config: configReset } = usePrepareContractWrite({
+		address: token,
+		abi: erc20ABI,
+		functionName: 'approve',
+		args: [spender, BigNumber.from('0')],
+		enabled: isConnected && !!spender && !!token && shouldRemoveApproval
+	});
+
+	const { write: approve, isLoading } = useContractWrite({
+		...config,
+		onSuccess: (data) => {
+			setIsConfirmingApproval(true);
+
+			data
+				.wait()
+				.then(() => {
+					refetch();
+				})
+				.catch((err) => console.log(err))
+				.finally(() => {
+					setIsConfirmingApproval(false);
+				});
+		}
+	});
+
+	const { write: approveInfinite, isLoading: isInfiniteLoading } = useContractWrite({
+		...configInfinite,
+		onSuccess: (data) => {
+			setIsConfirmingInfiniteApproval(true);
+
+			data
+				.wait()
+				.then(() => {
+					refetch();
+				})
+				.catch((err) => console.log(err))
+				.finally(() => {
+					setIsConfirmingInfiniteApproval(false);
+				});
+		}
+	});
+
+	const { write: approveReset, isLoading: isResetLoading } = useContractWrite({
+		...configReset,
+		onSuccess: (data) => {
+			setIsConfirmingResetApproval(true);
+
+			data
+				.wait()
+				.then(() => {
+					refetch();
+				})
+				.catch((err) => console.log(err))
+				.finally(() => {
+					setIsConfirmingResetApproval(false);
+				});
+		}
+	});
 
 	if (token === ethers.constants.AddressZero || token?.toLowerCase() === nativeAddress.toLowerCase())
 		return { isApproved: true };
 
 	if (!address || !allowance) return { isApproved: false };
+
 	if (allowance.toString() === ethers.constants.MaxUint256.toString()) return { isApproved: true };
 
 	if (normalizedAmount && allowance.gte(BigNumber.from(normalizedAmount))) return { isApproved: true };
 
-	return { isApproved: false, approve, approveInfinite, isLoading, isInfiniteLoading };
+	return {
+		isApproved: false,
+		approve,
+		approveInfinite,
+		approveReset,
+		isLoading: isLoading || isConfirmingApproval,
+		isConfirmingApproval,
+		isInfiniteLoading: isInfiniteLoading || isConfirmingInfiniteApproval,
+		isConfirmingInfiniteApproval,
+		isResetLoading: isResetLoading || isConfirmingResetApproval,
+		isConfirmingResetApproval,
+		allowance,
+		shouldRemoveApproval
+	};
 };

@@ -589,8 +589,15 @@ export function AggregatorContainer({ tokenlist }) {
 		isApproved,
 		approve,
 		approveInfinite,
+		approveReset,
 		isLoading: isApproveLoading,
-		isInfiniteLoading: isApproveInfiniteLoading
+		isInfiniteLoading: isApproveInfiniteLoading,
+		isResetLoading: isApproveResetLoading,
+		isConfirmingApproval,
+		isConfirmingInfiniteApproval,
+		isConfirmingResetApproval,
+		shouldRemoveApproval,
+		allowance
 	} = useTokenApprove(finalSelectedFromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
 
 	const onMaxClick = () => {
@@ -673,6 +680,9 @@ export function AggregatorContainer({ tokenlist }) {
 		fromTokenPrice && toTokenPrice && route?.route?.amountUsd > 0
 			? 100 - (route?.route?.amountUsd / (+fromTokenPrice * +amount)) * 100
 			: 0;
+
+	const isUSDTNotApprovedOnEthereum =
+		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
 
 	return (
 		<Wrapper>
@@ -801,33 +811,76 @@ export function AggregatorContainer({ tokenlist }) {
 							</Button>
 						) : (
 							<>
-								{route && address ? (
-									<Button
-										isLoading={swapMutation.isLoading || isApproveLoading}
-										loadingText="Preparing transaction"
-										colorScheme={'messenger'}
-										onClick={() => {
-											if (approve) approve();
+								{router && address && (
+									<>
+										<>
+											{isUSDTNotApprovedOnEthereum && (
+												<Flex flexDir="column" gap="4px" w="100%">
+													<Text fontSize="0.75rem" fontWeight={400}>
+														{`USDT uses an old token implementation that requires resetting approvals if there's a
+														previous approval, and you currently have an approval for ${(
+															Number(allowance) /
+															10 ** finalSelectedFromToken.decimals
+														).toFixed(2)} USDT for this contract, you
+														need to reset your approval and approve again`}
+													</Text>
+													<Button
+														isLoading={isApproveResetLoading}
+														loadingText={isConfirmingResetApproval ? 'Confirming' : 'Preparing transaction'}
+														colorScheme={'messenger'}
+														onClick={() => {
+															if (approveReset) approveReset();
+														}}
+														disabled={isApproveResetLoading}
+													>
+														Reset Approval
+													</Button>
+												</Flex>
+											)}
 
-											if (+amount > +balance?.data?.formatted) return;
-											if (isApproved) handleSwap();
-										}}
-									>
-										{isApproved ? 'Swap' : 'Approve'}
-									</Button>
-								) : null}
-								{route && address && !isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) ? (
-									<Button
-										colorScheme={'messenger'}
-										loadingText="Preparing transaction"
-										isLoading={isApproveInfiniteLoading}
-										onClick={() => {
-											if (approveInfinite) approveInfinite();
-										}}
-									>
-										{'Approve Infinite'}
-									</Button>
-								) : null}
+											<Button
+												isLoading={swapMutation.isLoading || isApproveLoading}
+												loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+												colorScheme={'messenger'}
+												onClick={() => {
+													if (approve) approve();
+
+													if (+amount > +balance?.data?.formatted) return;
+
+													if (isApproved) handleSwap();
+												}}
+												disabled={
+													isUSDTNotApprovedOnEthereum ||
+													swapMutation.isLoading ||
+													isApproveLoading ||
+													isApproveResetLoading
+												}
+											>
+												{isApproved ? 'Swap' : 'Approve'}
+											</Button>
+
+											{!isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
+												<Button
+													colorScheme={'messenger'}
+													loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+													isLoading={isApproveInfiniteLoading}
+													onClick={() => {
+														if (approveInfinite) approveInfinite();
+													}}
+													disabled={
+														isUSDTNotApprovedOnEthereum ||
+														swapMutation.isLoading ||
+														isApproveLoading ||
+														isApproveResetLoading ||
+														isApproveInfiniteLoading
+													}
+												>
+													{'Approve Infinite'}
+												</Button>
+											)}
+										</>
+									</>
+								)}
 							</>
 						)}
 					</SwapWrapper>
