@@ -3,26 +3,19 @@ import type { IToken } from '~/types';
 
 type ChainId = number | string;
 type Address = string;
-type Balances = Record<ChainId, Record<Address, IToken>>;
+type Balances = Record<ChainId, Array<IToken>>;
 
 const getBalances = async (address) => {
 	if (!address) return {};
+
 	const balances = await fetch(
 		`https://js3czchveb.execute-api.eu-central-1.amazonaws.com/balances/${address}/tokens`
 	).then((r) => r.json());
 
-	const balancesByChain: Balances = balances.chains.reduce(
-		(acc, chainBalances) => ({
-			...acc,
-			[chainBalances.chainId]: chainBalances.balances.reduce((inAcc, token) => ({
-				...inAcc,
-				[token.address.toLowerCase()]: token
-			}))
-		}),
-		{}
-	);
-
-	return balancesByChain;
+	return balances.chains.reduce((acc, chain) => {
+		acc = { ...acc, [chain.chainId]: chain.balances };
+		return acc;
+	}, {});
 };
 
 export const useTokenBalances = (address) => {

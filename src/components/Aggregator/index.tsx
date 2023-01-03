@@ -97,10 +97,9 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	justify-content: space-between;
 	padding: 16px;
-
 	width: 100%;
+	min-height: 420px;
 	max-width: 30rem;
 
 	box-shadow: ${({ theme }) =>
@@ -126,6 +125,7 @@ const Body = styled.div<{ showRoutes: boolean }>`
 
 const Wrapper = styled.div`
 	width: 100%;
+	height: 100%;
 	text-align: center;
 	display: grid;
 	grid-row-gap: 36px;
@@ -151,14 +151,21 @@ const Balance = styled.div`
 `;
 
 const Routes = styled.div`
+	display: flex;
+	flex-direction: column;
 	padding: 16px;
 	border-radius: 16px;
 	text-align: left;
 	overflow-y: scroll;
 	min-width: 360px;
-	max-height: 482px;
+	height: 100%;
+	max-height: 420px;
 	min-width: 26rem;
 	animation: tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+
+	& > *:first-child {
+		margin-bottom: -6px;
+	}
 
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
@@ -228,6 +235,7 @@ const SelectWrapper = styled.div`
 `;
 
 const SwapWrapper = styled.div`
+	margin-top: auto;
 	min-height: 40px;
 	width: 100%;
 	display: flex;
@@ -254,7 +262,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useState(false);
 	const toast = useToast();
-	const savedTokens = getSavedTokens();
+
 	const { data: tokenBalances } = useTokenBalances(address);
 
 	const [slippage, setSlippage] = useState('0.1');
@@ -365,15 +373,24 @@ export function AggregatorContainer({ tokenlist }) {
 		enabled: selectedChain ? true : false
 	});
 
-	const tokensInChain =
-		chainTokenList
-			?.concat(savedTokens[chainOnWallet?.id] || [])
-			.map((token) => ({
-				...token,
-				amount: tokenBalances?.[chainOnWallet?.id]?.[token.address.toLowerCase()]?.amount || 0,
-				balanceUSD: tokenBalances?.[chainOnWallet?.id]?.[token.address.toLowerCase()]?.balanceUSD || 0
-			}))
-			.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? [];
+	const tokensInChain = useMemo(() => {
+		const savedTokens = getSavedTokens();
+
+		return (
+			chainTokenList
+				?.concat(savedTokens[selectedChain?.id] || [])
+				.map((token) => ({
+					...token,
+					amount:
+						tokenBalances?.[selectedChain?.id]?.find((t) => t.address.toLowerCase() === token.address.toLowerCase())
+							?.amount ?? 0,
+					balanceUSD:
+						tokenBalances?.[selectedChain?.id]?.find((t) => t.address.toLowerCase() === token.address.toLowerCase())
+							?.balanceUSD ?? 0
+				}))
+				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
+		);
+	}, [chainTokenList, selectedChain?.id, tokenBalances]);
 
 	const [route, setRoute] = useState(null);
 
@@ -696,7 +713,7 @@ export function AggregatorContainer({ tokenlist }) {
 						<FormHeader>Select Tokens</FormHeader>
 						<TokenSelectBody>
 							<TokenSelect
-								tokens={chainTokenList}
+								tokens={tokensInChain}
 								token={finalSelectedFromToken}
 								onClick={onFromTokenChange}
 								selectedChain={selectedChain}
@@ -720,7 +737,7 @@ export function AggregatorContainer({ tokenlist }) {
 							/>
 
 							<TokenSelect
-								tokens={chainTokenList}
+								tokens={tokensInChain}
 								token={finalSelectedToToken}
 								onClick={onToTokenChange}
 								selectedChain={selectedChain}
