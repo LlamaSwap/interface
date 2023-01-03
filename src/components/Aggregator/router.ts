@@ -31,6 +31,7 @@ export function getAllChains() {
 	const chainsOptions = chainsArr.map((c) => ({
 		value: c,
 		label: chainNamesReplaced[c] ?? capitalizeFirstLetter(c),
+		chainId: chainsMap[c],
 		logoURI: allChains.find(({ id }) => id === chainsMap[c])?.iconUrl
 	}));
 
