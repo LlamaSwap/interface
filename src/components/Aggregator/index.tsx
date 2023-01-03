@@ -486,7 +486,8 @@ export function AggregatorContainer({ tokenlist }) {
 				quote: variables.rawQuote,
 				txUrl,
 				amount: String(amount),
-				errorData: {}
+				errorData: {},
+				amountUsd: +fromTokenPrice * +amount || 0
 			});
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
@@ -514,7 +515,8 @@ export function AggregatorContainer({ tokenlist }) {
 					quote: variables.rawQuote,
 					txUrl: '',
 					amount: String(amount),
-					errorData: err
+					errorData: err,
+					amountUsd: fromTokenPrice * +amount || 0
 				});
 			}
 		}

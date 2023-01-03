@@ -28,6 +28,7 @@ interface SwapEvent {
 	txUrl: string;
 	amount: string;
 	errorData: any;
+	amountUsd: number;
 }
 
 export const sendSwapEvent = async (event: SwapEvent) => {
