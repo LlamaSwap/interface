@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { defillamaReferrerAddress } from '../constants';
 
@@ -34,23 +35,27 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			extra.slippage / 100 || 1
 		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false`
 	).then((r) => r.json());
+
+	const gas = chain === 'optimism' ? BigNumber(1.25).times(data.gas).toFixed(0, 1) : data.gas;
+
 	return {
 		amountReturned: data.buyAmount,
-		estimatedGas: data.gas,
+		estimatedGas: gas,
 		tokenApprovalAddress: data.to,
-		rawQuote: data,
+		rawQuote: { ...data, gas },
 		logo: 'https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F1690203644-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FKX9pG8rH3DbKDOvV7di7%252Ficon%252F1nKfBhLbPxd2KuXchHET%252F0x%2520logo.png%3Falt%3Dmedia%26token%3D25a85a3e-7f72-47ea-a8b2-e28c0d24074b'
 	};
 }
 
-export async function swap({ signer, rawQuote }) {
+export async function swap({ signer, rawQuote, chain }) {
 	const fromAddress = await signer.getAddress();
 
 	const tx = await signer.sendTransaction({
 		from: fromAddress,
 		to: rawQuote.to,
 		data: rawQuote.data,
-		value: rawQuote.value
+		value: rawQuote.value,
+		...(chain === 'optimism' && { gasLimit: rawQuote.gas })
 	});
 
 	return tx;

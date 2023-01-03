@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { ExtraData } from '../types';
 
@@ -42,22 +43,26 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			}
 		}
 	).then((r) => r.json());
+
+	const totalGas = chain === 'optimism' ? BigNumber(1.25).times(data.totalGas).toFixed(0, 1) : data.totalGas;
+
 	return {
 		amountReturned: data.outputAmount,
 		estimatedGas: data.totalGas,
 		tokenApprovalAddress: data.routerAddress,
-		rawQuote: data,
+		rawQuote: { ...data, totalGas },
 		logo: 'https://assets.coingecko.com/coins/images/14899/small/RwdVsGcw_400x400.jpg?1618923851'
 	};
 }
 
-export async function swap({ signer, from, rawQuote }) {
+export async function swap({ signer, from, rawQuote, chain }) {
 	const fromAddress = await signer.getAddress();
 
 	const transactionOption: Record<string, string> = {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
-		data: rawQuote.encodedSwapData
+		data: rawQuote.encodedSwapData,
+		...(chain === 'optimism' && { gasLimit: rawQuote.totalGas })
 	};
 
 	if (from === ethers.constants.AddressZero) transactionOption.value = rawQuote.inputAmount;

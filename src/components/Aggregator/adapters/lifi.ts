@@ -1,5 +1,6 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { ExtraData } from '../types';
 
@@ -35,28 +36,32 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		`https://li.quest/v1/quote?fromChain=${chainToId[chain]}&toChain=${
 			chainToId[chain]
 		}&fromToken=${tokenFrom}&toToken=${tokenTo}&fromAmount=${amount}&fromAddress=${
-			extra.userAddress === "0x0000000000000000000000000000000000000000"?"0x1000000000000000000000000000000000000001":extra.userAddress
-		}&slippage=${
-			+extra.slippage / 100 || '0.05'
-		}`
+			extra.userAddress === '0x0000000000000000000000000000000000000000'
+				? '0x1000000000000000000000000000000000000001'
+				: extra.userAddress
+		}&slippage=${+extra.slippage / 100 || '0.05'}`
 	).then((r) => r.json());
 
 	const gas = data.estimate.gasCosts.reduce((acc, val) => acc + Number(val.estimate), 0);
+
+	const estimatedGas = chain === 'optimism' ? BigNumber(1.25).times(gas).toFixed(0, 1) : gas;
+
 	return {
 		amountReturned: data.estimate.toAmount,
-		estimatedGas: gas,
+		estimatedGas,
 		tokenApprovalAddress: data.estimate.approvalAddress,
 		logo: '',
-		rawQuote: data
+		rawQuote: { ...data, estimatedGas }
 	};
 }
 
-export async function swap({ signer, rawQuote }) {
+export async function swap({ signer, rawQuote, chain }) {
 	const tx = await signer.sendTransaction({
 		from: rawQuote.transactionRequest.from,
 		to: rawQuote.transactionRequest.to,
 		data: rawQuote.transactionRequest.data,
-		value: rawQuote.transactionRequest.value
+		value: rawQuote.transactionRequest.value,
+		...(chain === 'optimism' && { gasLimit: rawQuote.estimatedGas })
 	});
 	return tx;
 }

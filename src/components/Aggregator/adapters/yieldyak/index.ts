@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { providers } from '../../rpcs';
 import { ABI } from './abi';
@@ -23,10 +24,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const gasPrice = extra.gasPriceData.gasPrice.toNumber();
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
 
+	const gasEstimate = chain === 'optimism' ? BigNumber(1.25).times(data.gasEstimate).toFixed(0, 1) : data.gasEstimate;
+
 	return {
 		amountReturned: data.amounts[data.amounts.length - 1],
-		estimatedGas: data.gasEstimate, // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic, nor tx-gas-cost.
-		rawQuote: data,
+		estimatedGas: gasEstimate, // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic, nor tx-gas-cost.
+		rawQuote: { ...data, gasEstimate },
 		tokenApprovalAddress: '0xC4729E56b831d74bBc18797e0e17A295fA77488c',
 		logo: 'https://assets.coingecko.com/coins/images/17654/small/yieldyak.png?1665824438'
 	};
@@ -36,6 +39,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 	const fromAddress = await signer.getAddress();
 
 	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, signer);
+
 	const swapFunc = (() => {
 		if (from === ethers.constants.AddressZero) return routerContract.swapNoSplitFromAVAX;
 		if (to === ethers.constants.AddressZero) return routerContract.swapNoSplitToAVAX;

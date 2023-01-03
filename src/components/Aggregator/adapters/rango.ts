@@ -61,23 +61,27 @@ export async function getQuote(
 		estimatedGas = BigNumber(data?.tx?.gasLimit).toString();
 	}
 
+	const gasPrice =
+		chain === 'optimism' && estimatedGas ? BigNumber(1.25).times(estimatedGas).toFixed(0, 1) : estimatedGas;
+
 	return {
 		amountReturned: data?.route?.outputAmount,
-		estimatedGas,
+		estimatedGas: gasPrice,
 		tokenApprovalAddress: data?.tx?.txTo,
-		rawQuote: data,
+		rawQuote: { ...data, estimatedGas },
 		logo: ''
 	};
 }
 
-export async function swap({ signer, rawQuote }) {
+export async function swap({ signer, rawQuote, chain }) {
 	const fromAddress = await signer.getAddress();
 
 	const tx = await signer.sendTransaction({
 		from: fromAddress,
 		to: rawQuote?.tx?.txTo,
 		data: rawQuote?.tx?.txData,
-		value: rawQuote?.tx?.value
+		value: rawQuote?.tx?.value,
+		...(chain === 'optimism' && { gasLimit: rawQuote.estimatedGas })
 	});
 
 	return tx;

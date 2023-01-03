@@ -1,6 +1,7 @@
 // Source: https://developers.paraswap.network/api/master
 
-import { ethers, Signer } from 'ethers';
+import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
@@ -10,7 +11,7 @@ export const chainToId = {
 	avax: 43114,
 	arbitrum: 42161,
 	fantom: 250,
-	optimism: 10,
+	optimism: 10
 };
 
 export const name = 'ParaSwap';
@@ -50,7 +51,7 @@ export async function getQuote(
 						userAddress: userAddress,
 						//txOrigin: userAddress,
 						//deadline: Math.floor(Date.now() / 1000) + 300,
-						partner: "llamaswap",
+						partner: 'llamaswap',
 						priceRoute: data.priceRoute
 					}),
 					headers: {
@@ -58,22 +59,25 @@ export async function getQuote(
 					}
 			  }).then((r) => r.json())
 			: null;
+
+	const gasPrice = chain === 'optimism' ? BigNumber(1.25).times(dataSwap.gasPrice).toFixed(0, 1) : dataSwap.gasPrice;
+
 	return {
 		amountReturned: data.priceRoute.destAmount,
 		estimatedGas: data.priceRoute.gasCost,
 		tokenApprovalAddress: data.priceRoute.tokenTransferProxy,
-		rawQuote: dataSwap,
+		rawQuote: { ...dataSwap, gasPrice },
 		logo: 'https://assets.coingecko.com/coins/images/20403/small/ep7GqM19_400x400.jpg?1636979120'
 	};
 }
 
-export async function swap({ signer, rawQuote }) {
+export async function swap({ signer, rawQuote, chain }) {
 	const tx = await signer.sendTransaction({
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		gasPrice: rawQuote.gasPrice
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasPrice })
 	});
 	return tx;
 }

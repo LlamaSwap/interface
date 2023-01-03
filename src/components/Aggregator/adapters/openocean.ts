@@ -1,4 +1,5 @@
-import { ethers, Signer } from 'ethers';
+import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
 
 export const chainToId = {
 	ethereum: 1,
@@ -15,7 +16,7 @@ export const chainToId = {
 	boba: 288,
 	okexchain: 66,
 	cronos: 25,
-	moonriver: 1285,
+	moonriver: 1285
 };
 
 export const name = 'OpenOcean';
@@ -42,21 +43,24 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}&slippage=${+slippage * 100 || 100}&account=${userAddress || ethers.constants.AddressZero}`
 	).then((r) => r.json());
 
+	const estimatedGas = chain === 'optimism' ? BigNumber(2).times(data.estimatedGas).toFixed(0, 1) : data.estimatedGas;
+
 	return {
 		amountReturned: data.outAmount,
-		estimatedGas: data.estimatedGas,
+		estimatedGas: estimatedGas,
 		tokenApprovalAddress: '0x6352a56caadc4f1e25cd6c75970fa768a3304e64',
-		rawQuote: data,
+		rawQuote: { ...data, estimatedGas },
 		logo: 'https://assets.coingecko.com/coins/images/17014/small/ooe_log.png?1626074195'
 	};
 }
 
-export async function swap({ signer, rawQuote }) {
+export async function swap({ signer, rawQuote, chain }) {
 	const tx = await signer.sendTransaction({
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
-		value: rawQuote.value
+		value: rawQuote.value,
+		...(chain === 'optimism' && { gasLimit: rawQuote.estimatedGas })
 	});
 	return tx;
 }
