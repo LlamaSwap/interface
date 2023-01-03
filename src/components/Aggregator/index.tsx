@@ -573,10 +573,15 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const onMaxClick = () => {
 		if (balance?.data?.formatted) {
-			if (route && finalSelectedFromToken?.address === ethers.constants.AddressZero) {
+			if (
+				route?.price?.estimatedGas &&
+				gasPriceData?.formatted?.gasPrice &&
+				finalSelectedFromToken?.address === ethers.constants.AddressZero
+			) {
 				const gas = (+route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
 
 				const amountWithoutGas = +balance?.data?.formatted - gas;
+
 				setAmount(amountWithoutGas);
 			} else {
 				setAmount(balance?.data?.formatted);
