@@ -20,8 +20,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		`https://unidexmirai.org/swap/v1/quote?sellToken=${from}&buyToken=${to}&sellAmount=${amount}`
 	).then((r) => r.json());
 
-	const estimatedGas =
-		chain === 'optimism' ? BigNumber(1.25).times(data.estimatedGas).toFixed(0, 1) : data.estimatedGas;
+	const estimatedGas = chain === 'optimism' ? BigNumber(1.5).times(data.estimatedGas).toFixed(0, 1) : data.estimatedGas;
 
 	return {
 		amountReturned: data.buyAmount,

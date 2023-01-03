@@ -24,7 +24,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const gasPrice = extra.gasPriceData.gasPrice.toNumber();
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
 
-	const gasEstimate = chain === 'optimism' ? BigNumber(1.25).times(data.gasEstimate).toFixed(0, 1) : data.gasEstimate;
+	const gasEstimate = chain === 'optimism' ? BigNumber(1.5).times(data.gasEstimate).toFixed(0, 1) : data.gasEstimate;
 
 	return {
 		amountReturned: data.amounts[data.amounts.length - 1],
