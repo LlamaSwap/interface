@@ -70,6 +70,8 @@ export async function getTokenList() {
 		}));
 	}
 
+	tokenlist[66][0].logoURI = tokenlist[66][1].logoURI;
+
 	return {
 		props: {
 			tokenlist

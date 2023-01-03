@@ -586,7 +586,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const onChainChange = (newChain) => {
 		router.push({ pathname: '/', query: { chain: newChain.value } }, undefined, { shallow: true }).then(() => {
-			switchNetwork(newChain.chainId);
+			if (switchNetwork) switchNetwork(newChain.chainId);
 		});
 	};
 
