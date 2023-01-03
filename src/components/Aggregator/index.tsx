@@ -4,7 +4,7 @@ import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNet
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
-import { ArrowRight } from 'react-feather';
+import { Repeat } from 'react-feather';
 import styled from 'styled-components';
 import {
 	Heading,
@@ -350,7 +350,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const [txModalOpen, setTxModalOpen] = useState(false);
 	const [txUrl, setTxUrl] = useState('');
 
-	const amountWithDecimals = BigNumber(amount)
+	const amountWithDecimals = BigNumber(amount && amount !== '' ? amount : '0')
 		.times(BigNumber(10).pow(finalSelectedFromToken?.decimals || 18))
 		.toFixed(0);
 
@@ -731,7 +731,7 @@ export function AggregatorContainer({ tokenlist }) {
 									)
 								}
 								bg="none"
-								icon={<ArrowRight />}
+								icon={<Repeat size={16} />}
 								aria-label="Switch Tokens"
 								marginTop="auto"
 							/>
