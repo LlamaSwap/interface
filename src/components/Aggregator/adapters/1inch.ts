@@ -1,5 +1,6 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { defillamaReferrerAddress } from '../constants';
 
@@ -45,11 +46,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			: null
 	]);
 
+	const estimatedGas = swapData?.tx?.gas ?? data.estimatedGas;
+
+	const gas = chain === 'optimism' ? BigNumber(1.25).times(estimatedGas).toFixed(0, 1) : estimatedGas;
+
 	return {
 		amountReturned: swapData?.toTokenAmount ?? data.toTokenAmount,
-		estimatedGas: swapData?.tx?.gas ?? data.estimatedGas,
+		estimatedGas: gas,
 		tokenApprovalAddress,
-		rawQuote: swapData,
+		rawQuote: { ...(swapData || {}), tx: { ...(swapData.tx ?? {}), gas } },
 		logo: 'https://defillama.com/_next/image?url=https%3A%2F%2Ficons.llama.fi%2F1inch-network.jpg&w=48&q=75'
 	};
 }

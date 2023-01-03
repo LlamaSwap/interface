@@ -1,6 +1,7 @@
 // Source: https://developers.paraswap.network/api/master
 
-import { ethers, Signer } from 'ethers';
+import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
@@ -56,11 +57,14 @@ export async function getQuote(
 					}
 			  }).then((r) => r.json())
 			: null;
+
+	const gasPrice = chain === 'optimism' ? BigNumber(1.25).times(dataSwap.gasPrice).toFixed(0, 1) : dataSwap.gasPrice;
+
 	return {
 		amountReturned: data.priceRoute.destAmount,
 		estimatedGas: data.priceRoute.gasCost,
 		tokenApprovalAddress: data.priceRoute.tokenTransferProxy,
-		rawQuote: dataSwap,
+		rawQuote: { ...dataSwap, gasPrice },
 		logo: 'https://assets.coingecko.com/coins/images/20403/small/ep7GqM19_400x400.jpg?1636979120'
 	};
 }
