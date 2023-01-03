@@ -351,7 +351,8 @@ export function AggregatorContainer({ tokenlist }) {
 			? undefined
 			: (finalSelectedFromToken?.address as `0x${string}`),
 		watch: true,
-		enabled: isValidSelectedChain
+		chainId: selectedChain.id,
+		enabled: selectedChain && isConnected
 	});
 
 	const { data: gasPriceData } = useFeeData({
