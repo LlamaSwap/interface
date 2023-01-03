@@ -4,7 +4,7 @@ import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNet
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
-import { Repeat } from 'react-feather';
+import { ArrowRight } from 'react-feather';
 import styled from 'styled-components';
 import {
 	Heading,
@@ -731,7 +731,7 @@ export function AggregatorContainer({ tokenlist }) {
 									)
 								}
 								bg="none"
-								icon={<Repeat size={16} />}
+								icon={<ArrowRight size={16} />}
 								aria-label="Switch Tokens"
 								marginTop="auto"
 							/>
