@@ -23,7 +23,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount) =
 		enabled: isConnected && !!spender && token !== ethers.constants.AddressZero
 	});
 
-	const shouldRemoveApproval = isOld && allowance && allowance.lt(BigNumber.from(amount));
+	const shouldRemoveApproval = isOld && allowance && allowance.lt(BigNumber.from(amount)) && !allowance.eq(0);
 
 	const normalizedAmount = Number(amount) ? amount : '0';
 	const { config } = usePrepareContractWrite({
