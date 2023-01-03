@@ -1,13 +1,9 @@
-import * as React from 'react'
-import styled, { ThemeProvider as StyledComponentsThemeProvider, createGlobalStyle } from 'styled-components'
-import { Text } from 'rebass'
-import { useDarkModeManager } from '~/contexts/LocalStorage'
-import { sm, med, lg, xl, twoXl } from '~/constants/breakpoints'
+import * as React from 'react';
+import { ThemeProvider as StyledComponentsThemeProvider, createGlobalStyle } from 'styled-components';
+import { sm, med, lg, xl, twoXl } from '~/constants/breakpoints';
 
 export default function ThemeProvider({ children }) {
-	const [darkMode] = useDarkModeManager()
-
-	return <StyledComponentsThemeProvider theme={theme(darkMode)}>{children}</StyledComponentsThemeProvider>
+	return <StyledComponentsThemeProvider theme={theme('dark')}>{children}</StyledComponentsThemeProvider>;
 }
 
 const theme = (darkMode) => ({
@@ -70,36 +66,7 @@ const theme = (darkMode) => ({
 	min2Xl: `@media screen and (min-width: ${twoXl}rem)`,
 
 	breakpoints: [`${sm}rem`, `${med}rem`, `${lg}rem`, `${xl}rem`]
-})
-
-const TextWrapper = styled(Text)`
-	color: ${({ color, theme }) => theme[color]};
-`
-
-export const TYPE = {
-	heading(props) {
-		return <TextWrapper fontWeight={500} fontSize={16} color={'text1'} {...props} />
-	},
-
-	main(props) {
-		return <TextWrapper fontWeight={500} fontSize={14} color={'text1'} {...props} />
-	},
-
-	body(props) {
-		return <TextWrapper fontWeight={400} fontSize={14} color={'text1'} {...props} />
-	},
-
-	largeHeader(props) {
-		return <TextWrapper fontWeight={500} color={'text1'} fontSize={24} {...props} />
-	}
-}
-
-export const Header = styled.h1`
-	color: ${({ theme }) => theme['text1']};
-	font-size: 24px;
-	font-weight: 500;
-	margin: 0 0 -20px;
-`
+});
 
 export const GlobalStyle = createGlobalStyle`
 	body, #__next {
@@ -152,4 +119,4 @@ export const GlobalStyle = createGlobalStyle`
 	.tooltip-trigger a {
 		display: flex;
 	}
-`
+`;

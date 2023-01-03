@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 import { useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { QuestionIcon } from '@chakra-ui/icons';
-import { TYPE } from '~/Theme';
 import ReactSelect from '../MultiSelect';
 import { Header, IconImage, ModalWrapper, PairRow } from './Search';
 import { Input } from './TokenInput';
@@ -82,7 +81,9 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 	return (
 		<ModalWrapper>
 			<Header>
-				<TYPE.largeHeader fontSize={20}>Select Token</TYPE.largeHeader>
+				<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
+					Select Token
+				</Text>
 				<CloseBtn onClick={close} />
 			</Header>
 			<div>

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { Input } from './TokenInput';
 import styled from 'styled-components';
-import { TYPE } from '~/Theme';
 import { CloseBtn } from '../CloseBtn';
 import { Text } from '@chakra-ui/react';
 
@@ -105,7 +104,9 @@ const Modal = ({ close, onInputChange, data, onClick }) => {
 	return (
 		<ModalWrapper>
 			<Header>
-				<TYPE.largeHeader fontSize={20}>Search</TYPE.largeHeader>
+				<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
+					Search
+				</Text>
 				<CloseBtn onClick={close} />
 			</Header>
 			<div>

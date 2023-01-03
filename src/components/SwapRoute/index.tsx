@@ -1,8 +1,7 @@
 import styled from 'styled-components';
-import { TYPE } from '~/Theme';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
-import { Badge } from '@chakra-ui/react';
+import { Badge, Text } from '@chakra-ui/react';
 import { Gift, Unlock } from 'react-feather';
 import { GasIcon } from '../Icons';
 
@@ -62,7 +61,7 @@ const Route = ({
 		<RouteWrapper onClick={setRoute} selected={selected} best={index === 0}>
 			<RouteRow>
 				<img src={toToken?.logoURI} alt="" style={{ marginRight: 4 }} />
-				<TYPE.heading>
+				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 					{amount.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}{' '}
 					{amountUsd && Number.isFinite(Number(amountUsd))
 						? `($${Number(amountUsd).toLocaleString(undefined, {
@@ -70,7 +69,7 @@ const Route = ({
 								maximumFractionDigits: 3
 						  })})`
 						: null}
-				</TYPE.heading>
+				</Text>
 				<div style={{ marginLeft: 'auto', display: 'flex' }}>
 					{name === 'CowSwap' ? (
 						<Tooltip content="Gas is taken from output amount">

@@ -1,10 +1,11 @@
-import { Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box } from '@chakra-ui/react';
-import { TYPE } from '~/Theme';
+import { Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Text } from '@chakra-ui/react';
 
 export default function FaqWrapper() {
 	return (
 		<>
-			<TYPE.largeHeader>FAQ</TYPE.largeHeader>
+			<Text fontWeight={500} color={'#FAFAFA'} fontSize={24}>
+				FAQ
+			</Text>
 			<Accordion allowMultiple margin={'0 auto'} style={{ width: '100%', maxWidth: '600px' }}>
 				<AccordionItem>
 					<h2>
