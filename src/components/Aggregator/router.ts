@@ -40,6 +40,7 @@ export function getAllChains() {
 
 export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
 	const aggregator = adaptersMap[adapter];
+
 	try {
 		const res = await aggregator.swap({
 			chain,

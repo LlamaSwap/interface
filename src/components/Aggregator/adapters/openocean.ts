@@ -43,7 +43,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}&slippage=${+slippage * 100 || 100}&account=${userAddress || ethers.constants.AddressZero}`
 	).then((r) => r.json());
 
-	const estimatedGas = chain === 'optimism' ? BigNumber(1.5).times(data.estimatedGas).toFixed(0, 1) : data.estimatedGas;
+	const estimatedGas =
+		chain === 'optimism' ? BigNumber(1.25).times(data.estimatedGas).toFixed(0, 1) : data.estimatedGas;
 
 	return {
 		amountReturned: data.outAmount,
@@ -54,12 +55,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ signer, rawQuote }) {
+export async function swap({ signer, rawQuote, chain }) {
 	const tx = await signer.sendTransaction({
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
-		value: rawQuote.value
+		value: rawQuote.value,
+		...(chain === 'optimism' && { gasLimit: rawQuote.estimatedGas })
 	});
 	return tx;
 }

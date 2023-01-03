@@ -11,7 +11,7 @@ export const chainToId = {
 	avax: 43114,
 	arbitrum: 42161,
 	fantom: 250,
-	optimism: 10,
+	optimism: 10
 };
 
 export const name = 'ParaSwap';
@@ -51,7 +51,7 @@ export async function getQuote(
 						userAddress: userAddress,
 						//txOrigin: userAddress,
 						//deadline: Math.floor(Date.now() / 1000) + 300,
-						partner: "llamaswap",
+						partner: 'llamaswap',
 						priceRoute: data.priceRoute
 					}),
 					headers: {
@@ -60,7 +60,7 @@ export async function getQuote(
 			  }).then((r) => r.json())
 			: null;
 
-	const gasPrice = chain === 'optimism' ? BigNumber(1.5).times(dataSwap.gasPrice).toFixed(0, 1) : dataSwap.gasPrice;
+	const gasPrice = chain === 'optimism' ? BigNumber(1.25).times(dataSwap.gasPrice).toFixed(0, 1) : dataSwap.gasPrice;
 
 	return {
 		amountReturned: data.priceRoute.destAmount,
@@ -71,13 +71,13 @@ export async function getQuote(
 	};
 }
 
-export async function swap({ signer, rawQuote }) {
+export async function swap({ signer, rawQuote, chain }) {
 	const tx = await signer.sendTransaction({
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		gasPrice: rawQuote.gasPrice
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasPrice })
 	});
 	return tx;
 }
