@@ -658,6 +658,7 @@ export function AggregatorContainer({ tokenlist }) {
 					: gasUsd;
 
 			gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
+
 			gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
 
 			const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
@@ -853,7 +854,8 @@ export function AggregatorContainer({ tokenlist }) {
 													isUSDTNotApprovedOnEthereum ||
 													swapMutation.isLoading ||
 													isApproveLoading ||
-													isApproveResetLoading
+													isApproveResetLoading ||
+													!route
 												}
 											>
 												{isApproved ? 'Swap' : 'Approve'}
