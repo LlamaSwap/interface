@@ -8,7 +8,7 @@ type Balances = Record<ChainId, Record<Address, IToken>>;
 const getBalances = async (address) => {
 	if (!address) return {};
 	const balances = await fetch(
-		`https://rifcoe52qb.execute-api.eu-central-1.amazonaws.com/balances/${address}/tokens`
+		`https://js3czchveb.execute-api.eu-central-1.amazonaws.com/balances/${address}/tokens`
 	).then((r) => r.json());
 
 	const balancesByChain: Balances = balances.chains.reduce(
