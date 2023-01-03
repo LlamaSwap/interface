@@ -252,7 +252,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const savedTokens = getSavedTokens();
 	const { data: tokenBalances } = useTokenBalances(address);
 
-	const [slippage, setSlippage] = useState('1');
+	const [slippage, setSlippage] = useState('0.1');
 
 	const addRecentTransaction = useAddRecentTransaction();
 
@@ -561,7 +561,7 @@ export function AggregatorContainer({ tokenlist }) {
 		fromToken: finalSelectedFromToken?.address
 	});
 
-	const { gasTokenPrice = 0, toTokenPrice = 0, fromTokenPrice = 0 } = tokenPrices || {};
+	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
 
 	const {
 		isApproved,
@@ -625,9 +625,12 @@ export function AggregatorContainer({ tokenlist }) {
 
 			gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
 			gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
+
 			const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
-			const amountUsd = (amount * toTokenPrice).toFixed(2);
-			const netOut = route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd;
+
+			const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
+
+			const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
 
 			return { route, gasUsd, amountUsd, amount, netOut, ...route };
 		})
@@ -640,7 +643,7 @@ export function AggregatorContainer({ tokenlist }) {
 		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
 
 	const priceImpact =
-		fromTokenPrice && route?.route?.amountUsd > 0
+		fromTokenPrice && toTokenPrice && route?.route?.amountUsd > 0
 			? 100 - (route?.route?.amountUsd / (+fromTokenPrice * +amount)) * 100
 			: 0;
 

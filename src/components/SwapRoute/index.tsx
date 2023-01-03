@@ -64,7 +64,7 @@ const Route = ({
 				<img src={toToken?.logoURI} alt="" style={{ marginRight: 4 }} />
 				<TYPE.heading>
 					{amount.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}{' '}
-					{Number.isFinite(+amountUsd)
+					{amountUsd && Number.isFinite(Number(amountUsd))
 						? `($${Number(amountUsd).toLocaleString(undefined, {
 								minimumFractionDigits: 3,
 								maximumFractionDigits: 3
