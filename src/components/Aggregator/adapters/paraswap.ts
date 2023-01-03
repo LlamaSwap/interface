@@ -9,7 +9,8 @@ export const chainToId = {
 	polygon: 137,
 	avax: 43114,
 	arbitrum: 42161,
-	fantom: 250
+	fantom: 250,
+	optimism: 10,
 };
 
 export const name = 'ParaSwap';
@@ -24,7 +25,7 @@ export async function getQuote(
 	from: string,
 	to: string,
 	amount: string,
-	{ fromToken, toToken, userAddress }
+	{ fromToken, toToken, userAddress, slippage }
 ) {
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
@@ -45,10 +46,11 @@ export async function getQuote(
 						destToken: data.priceRoute.destToken,
 						destDecimals: data.priceRoute.destDecimals,
 						srcAmount: data.priceRoute.srcAmount,
-						destAmount: data.priceRoute.destAmount,
+						slippage: slippage * 100,
 						userAddress: userAddress,
-						txOrigin: userAddress,
-						deadline: Math.floor(Date.now() / 1000) + 300,
+						//txOrigin: userAddress,
+						//deadline: Math.floor(Date.now() / 1000) + 300,
+						partner: "llamaswap",
 						priceRoute: data.priceRoute
 					}),
 					headers: {
