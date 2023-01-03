@@ -7,7 +7,7 @@ import ReactSelect from '../MultiSelect';
 import { Header, IconImage, IconWrapper, ModalWrapper, PairRow } from './Search';
 import { Input } from './TokenInput';
 import { useNetwork, useToken } from 'wagmi';
-import { Button } from '@chakra-ui/react';
+import { Button, Text } from '@chakra-ui/react';
 import { CloseBtn } from '../CloseBtn';
 
 const Row = ({ data: { data, onClick }, index, style }) => {
@@ -18,7 +18,7 @@ const Row = ({ data: { data, onClick }, index, style }) => {
 			<IconWrapper>
 				<IconImage src={token.logoURI} />
 			</IconWrapper>
-			<TYPE.heading>{`${token.name} (${token.symbol})`}</TYPE.heading>
+			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">{`${token.name} (${token.symbol})`}</Text>
 			{token.balanceUSD ? (
 				<div style={{ marginRight: 0, marginLeft: 'auto' }}>
 					{(token.amount / 10 ** token.decimals).toFixed(3)}
