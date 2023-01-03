@@ -687,7 +687,12 @@ export function AggregatorContainer({ tokenlist }) {
 					<SelectWrapper>
 						<FormHeader>Select Tokens</FormHeader>
 						<TokenSelectBody>
-							<TokenSelect tokens={chainTokenList} token={finalSelectedFromToken} onClick={onFromTokenChange} />
+							<TokenSelect
+								tokens={chainTokenList}
+								token={finalSelectedFromToken}
+								onClick={onFromTokenChange}
+								selectedChain={selectedChain}
+							/>
 
 							<IconButton
 								onClick={() =>
@@ -706,7 +711,12 @@ export function AggregatorContainer({ tokenlist }) {
 								marginTop="auto"
 							/>
 
-							<TokenSelect tokens={chainTokenList} token={finalSelectedToToken} onClick={onToTokenChange} />
+							<TokenSelect
+								tokens={chainTokenList}
+								token={finalSelectedToToken}
+								onClick={onToTokenChange}
+								selectedChain={selectedChain}
+							/>
 						</TokenSelectBody>
 
 						{/* <Text textAlign="center" margin="8px 16px">

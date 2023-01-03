@@ -18,7 +18,7 @@ const Row = ({ data: { data, onClick }, index, style }) => {
 			<IconWrapper>
 				<IconImage src={token.logoURI} />
 			</IconWrapper>
-			<TYPE.heading>{token.label}</TYPE.heading>
+			<TYPE.heading>{`${token.name} (${token.symbol})`}</TYPE.heading>
 			{token.balanceUSD ? (
 				<div style={{ marginRight: 0, marginLeft: 'auto' }}>
 					{(token.amount / 10 ** token.decimals).toFixed(3)}
@@ -36,8 +36,12 @@ const saveToken = (token) => {
 	localStorage.setItem('savedTokens', JSON.stringify(newTokens));
 };
 
-const AddToken = ({ address, onClick }) => {
-	const { data } = useToken({ address });
+const AddToken = ({ address, selectedChain, onClick }) => {
+	const { data, isLoading } = useToken({
+		address: address as `0x${string}`,
+		chainId: selectedChain.id,
+		enabled: typeof address === 'string' && address.length === 42 && selectedChain ? true : false
+	});
 	const { chain } = useNetwork();
 
 	const onTokenClick = () => {
@@ -50,7 +54,13 @@ const AddToken = ({ address, onClick }) => {
 			<IconWrapper>
 				<QuestionIcon height="20px" width="20px" marginTop={'10px'} />
 			</IconWrapper>
-			<TYPE.heading>{data?.symbol || 'Loading...'}</TYPE.heading>
+			<TYPE.heading>
+				{isLoading
+					? 'Loading...'
+					: data?.name
+					? `${data.name} (${data.symbol})`
+					: address.slice(0, 4) + '...' + address.slice(-4)}
+			</TYPE.heading>
 			<Button height={38} marginLeft="auto" onClick={onTokenClick}>
 				Add token
 			</Button>
@@ -58,7 +68,7 @@ const AddToken = ({ address, onClick }) => {
 	);
 };
 
-const SelectModal = ({ close, data, onClick }) => {
+const SelectModal = ({ close, data, onClick, selectedChain }) => {
 	const [input, setInput] = useState('');
 	const onInputChange = (e) => {
 		setInput(e?.target?.value);
@@ -75,7 +85,9 @@ const SelectModal = ({ close, data, onClick }) => {
 			<div>
 				<Input placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
 			</div>
-			{ethers.utils.isAddress(input) ? <AddToken address={input} onClick={onClick} /> : null}
+			{ethers.utils.isAddress(input) ? (
+				<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
+			) : null}
 			<List height={390} itemCount={filteredData.length} itemSize={38} itemData={{ data: filteredData, onClick }}>
 				{Row}
 			</List>
@@ -83,7 +95,7 @@ const SelectModal = ({ close, data, onClick }) => {
 	);
 };
 
-const TokenSelect = ({ tokens, onClick, token }) => {
+const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 	const [isOpen, setOpen] = useState(false);
 
 	const onTokenClick = (token) => {
@@ -96,7 +108,9 @@ const TokenSelect = ({ tokens, onClick, token }) => {
 			<span style={{ cursor: 'pointer' }} onClick={() => setOpen(true)}>
 				<ReactSelect openMenuOnClick={false} value={token} isDisabled />
 			</span>
-			{isOpen ? <SelectModal close={() => setOpen(false)} data={tokens} onClick={onTokenClick} /> : null}
+			{isOpen ? (
+				<SelectModal close={() => setOpen(false)} data={tokens} onClick={onTokenClick} selectedChain={selectedChain} />
+			) : null}
 		</>
 	);
 };
