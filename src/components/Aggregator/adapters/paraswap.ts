@@ -60,7 +60,7 @@ export async function getQuote(
 			  }).then((r) => r.json())
 			: null;
 
-	const gasPrice = chain === 'optimism' ? BigNumber(1.25).times(dataSwap.gasPrice).toFixed(0, 1) : dataSwap.gasPrice;
+	const gasPrice = chain === 'optimism' ? BigNumber(1.25).times(dataSwap?.gasPrice).toFixed(0, 1) : dataSwap?.gasPrice;
 
 	return {
 		amountReturned: data.priceRoute.destAmount,
