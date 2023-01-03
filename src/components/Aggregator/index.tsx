@@ -94,9 +94,11 @@ cant integrate:
 */
 
 const Body = styled.div<{ showRoutes: boolean }>`
-	display: grid;
-	grid-row-gap: 16px;
-	padding-bottom: 4px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	justify-content: space-between;
+	padding: 16px;
 
 	width: 100%;
 	max-width: 30rem;
@@ -105,7 +107,7 @@ const Body = styled.div<{ showRoutes: boolean }>`
 		theme.mode === 'dark'
 			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
 			: '10px 0px 50px 10px rgba(211, 211, 211, 0.9);;'};
-	padding: 16px;
+
 	border-radius: 16px;
 	text-align: left;
 	transition: all 0.66s ease-out;
@@ -207,8 +209,6 @@ const BodyWrapper = styled.div`
 const TokenSelectBody = styled.div`
 	display: grid;
 	grid-column-gap: 8px;
-	margin-top: 16px;
-	margin-bottom: 8px;
 	grid-template-columns: 5fr 1fr 5fr;
 `;
 
@@ -216,27 +216,32 @@ const FormHeader = styled.div`
 	font-weight: bold;
 	font-size: 16px;
 	margin-bottom: 4px;
-	padding-left: 4px;
+	margin-left: 4px;
 `;
 
 const SelectWrapper = styled.div`
 	border: ${({ theme }) => (theme.mode === 'dark' ? '2px solid #373944;' : '2px solid #c6cae0;')};
 	border-radius: 16px;
-	padding: 8px;
-	padding-bottom: 16px;
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
 `;
 
 const SwapWrapper = styled.div`
+	min-height: 40px;
 	width: 100%;
 	display: flex;
+	gap: 4px;
+	flex-wrap: wrap;
+
 	& > button {
-		width: 100%;
-		margin-right: 4px;
+		flex: 1;
 	}
 `;
 
 const InputFooter = styled.div`
 	display: flex;
+	align-items: center;
 	justify-content: space-between;
 `;
 
@@ -671,8 +676,8 @@ export function AggregatorContainer({ tokenlist }) {
 								<Box>Chain</Box>
 								<Spacer />
 								<Tooltip content="Redirect requests through the DefiLlama Server to hide your IP address">
-									<FormControl display="flex" justifyContent={'center'}>
-										<FormLabel htmlFor="privacy-switch" pb="0" lineHeight={1}>
+									<FormControl display="flex" alignItems="center" gap="4px" justifyContent={'center'}>
+										<FormLabel htmlFor="privacy-switch" margin={0}>
 											Private mode
 										</FormLabel>
 										<Switch
