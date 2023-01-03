@@ -260,6 +260,8 @@ export function AggregatorContainer({ tokenlist }) {
 	const { address, isConnected } = useAccount();
 	const { chain: chainOnWallet } = useNetwork();
 
+	const [route, setRoute] = useState(null);
+
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useState(false);
 	const toast = useToast();
 
@@ -391,8 +393,6 @@ export function AggregatorContainer({ tokenlist }) {
 				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
 		);
 	}, [chainTokenList, selectedChain?.id, tokenBalances]);
-
-	const [route, setRoute] = useState(null);
 
 	const confirmingTxToastRef = useRef<ToastId>();
 
@@ -619,24 +619,28 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const onChainChange = (newChain) => {
+		setRoute(null);
 		router.push({ pathname: '/', query: { chain: newChain.value } }, undefined, { shallow: true }).then(() => {
 			if (switchNetwork) switchNetwork(newChain.chainId);
 		});
 	};
 
 	const onFromTokenChange = (token) => {
+		setRoute(null);
 		router.push({ pathname: router.pathname, query: { ...router.query, from: token.address } }, undefined, {
 			shallow: true
 		});
 	};
 
 	const onToTokenChange = (token) => {
+		setRoute(null);
 		router.push({ pathname: router.pathname, query: { ...router.query, to: token.address } }, undefined, {
 			shallow: true
 		});
 	};
 
 	const setTokens = (tokens) => {
+		setRoute(null);
 		router.push(
 			{ pathname: router.pathname, query: { ...router.query, from: tokens.token0.symbol, to: tokens.token1.symbol } },
 			undefined,
