@@ -4,7 +4,7 @@ import { FixedSizeList as List } from 'react-window';
 import { QuestionIcon } from '@chakra-ui/icons';
 import { TYPE } from '~/Theme';
 import ReactSelect from '../MultiSelect';
-import { Header, IconImage, IconWrapper, ModalWrapper, PairRow } from './Search';
+import { Header, IconImage, ModalWrapper, PairRow } from './Search';
 import { Input } from './TokenInput';
 import { useNetwork, useToken } from 'wagmi';
 import { Button, Text } from '@chakra-ui/react';
@@ -15,9 +15,8 @@ const Row = ({ data: { data, onClick }, index, style }) => {
 
 	return (
 		<PairRow key={token.value} style={style} onClick={() => onClick(token)}>
-			<IconWrapper>
-				<IconImage src={token.logoURI} />
-			</IconWrapper>
+			<IconImage src={token.logoURI} onError={(e) => (e.currentTarget.src = '/placeholder.png')} />
+
 			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">{`${token.name} (${token.symbol})`}</Text>
 			{token.balanceUSD ? (
 				<div style={{ marginRight: 0, marginLeft: 'auto' }}>
@@ -51,16 +50,16 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 
 	return (
 		<PairRow key={address} style={{ lineHeight: '38px' }} hover={false} onClick={onTokenClick}>
-			<IconWrapper>
-				<QuestionIcon height="20px" width="20px" marginTop={'10px'} />
-			</IconWrapper>
-			<TYPE.heading>
+			<QuestionIcon height="20px" width="20px" marginTop={'10px'} />
+
+			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
 				{isLoading
 					? 'Loading...'
 					: data?.name
 					? `${data.name} (${data.symbol})`
 					: address.slice(0, 4) + '...' + address.slice(-4)}
-			</TYPE.heading>
+			</Text>
+
 			<Button height={38} marginLeft="auto" onClick={onTokenClick}>
 				Add token
 			</Button>
