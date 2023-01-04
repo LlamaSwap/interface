@@ -871,7 +871,7 @@ export function AggregatorContainer({ tokenlist }) {
 													!route
 												}
 											>
-												{isApproved ? 'Swap' : 'Approve'}
+												{!route? "Select Aggregator": isApproved ? 'Swap' : 'Approve'}
 											</Button>
 
 											{(isWaitingAfterApproval || !isApproved) && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
