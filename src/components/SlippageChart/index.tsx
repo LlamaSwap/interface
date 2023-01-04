@@ -8,7 +8,14 @@ import logo from '~/public/defillama-light-neutral.png';
 
 echarts.use([SVGRenderer, LineChart, GridComponent, TooltipComponent, GraphicComponent, DataZoomComponent]);
 
-export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbol, mcap }) {
+export default function SlippageChart({
+	chartData,
+	fromTokenSymbol,
+	toTokenSymbol,
+	mcap,
+	minimumSlippage,
+	maximumSlippage
+}) {
 	const id = useMemo(() => uniqueId(), []);
 
 	const createInstance = useCallback(() => {
@@ -121,8 +128,8 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 						opacity: 0.1
 					}
 				},
-				min: 0,
-				max: 100
+				min: minimumSlippage,
+				max: maximumSlippage
 			},
 			dataZoom: [
 				{
@@ -192,7 +199,7 @@ export default function SlippageChart({ chartData, fromTokenSymbol, toTokenSymbo
 			window.removeEventListener('resize', resize);
 			chartInstance.dispose();
 		};
-	}, [createInstance, fromTokenSymbol, toTokenSymbol, mcap]);
+	}, [createInstance, fromTokenSymbol, toTokenSymbol, mcap, minimumSlippage, maximumSlippage]);
 
 	useEffect(() => {
 		// create instance

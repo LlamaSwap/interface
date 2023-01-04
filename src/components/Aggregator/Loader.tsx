@@ -1,11 +1,11 @@
-import styled from 'styled-components'
-import loaderImg from '~/public/loader.png'
+import styled from 'styled-components';
+import loaderImg from '~/public/loader.png';
 
 const LoaderWrapper = styled.div`
 	margin: 0 auto;
 	margin-top: 72px;
 	width: fit-content;
-`
+`;
 
 const LoaderText = styled.div`
 	margin-top: 8px;
@@ -13,7 +13,7 @@ const LoaderText = styled.div`
 	font-weight: 500;
 	text-align: center;
 	padding-left: 8px;
-`
+`;
 
 const LoaderBody = styled.img`
 	width: 120px;
@@ -37,15 +37,15 @@ const LoaderBody = styled.img`
 			transform: rotate(360deg);
 		}
 	}
-`
+`;
 
-const Loader = ({ loaded }) => {
+const Loader = ({ loaded, ...props }) => {
 	return (
-		<LoaderWrapper>
+		<LoaderWrapper {...props}>
 			{loaded ? null : <LoaderBody src={loaderImg.src} />}
 			{loaded ? <LoaderText>Not Found</LoaderText> : <LoaderText>Loading...</LoaderText>}
 		</LoaderWrapper>
-	)
-}
+	);
+};
 
-export default Loader
+export default Loader;

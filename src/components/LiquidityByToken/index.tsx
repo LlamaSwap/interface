@@ -2,7 +2,7 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import BigNumber from 'bignumber.js';
-import { Box, Flex, FormControl, FormLabel, Skeleton, Switch, Text } from '@chakra-ui/react';
+import { Box, Flex, FormControl, FormLabel, Grid, Skeleton, Switch, Text } from '@chakra-ui/react';
 import { ArrowRight } from 'react-feather';
 import { initialLiquidity } from '~/components/Aggregator/constants';
 import { useGetInitialTokenLiquidity, useGetTokensLiquidity } from '~/queries/useGetTokenLiquidity';
@@ -11,12 +11,15 @@ import { getChartData } from '~/utils/getChartData';
 import type { IToken } from '~/types';
 import { useRouter } from 'next/router';
 import { useGetMcap } from '~/queries/useGetMCap';
+import Loader from '../Aggregator/Loader';
 
 interface ISlippageChart {
 	chartData: Array<[number, number]>;
 	fromTokenSymbol: string;
 	toTokenSymbol: string;
 	mcap: number | null;
+	minimumSlippage: number;
+	maximumSlippage: number;
 }
 
 const SlippageChart = dynamic(() => import('../SlippageChart'), { ssr: false }) as React.FC<ISlippageChart>;
@@ -293,13 +296,21 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 					</Flex>
 
 					<Box height="400px">
-						{chartData.length > 0 && (
-							<SlippageChart
-								chartData={chartData}
-								fromTokenSymbol={fromToken.symbol}
-								toTokenSymbol={toToken.symbol}
-								mcap={mcap}
-							/>
+						{isLoading ? (
+							<Flex flexDir="column" alignItems="center" justifyContent="center" height="400px">
+								<Loader loaded={!isLoading} style={{ margin: '0' }} />
+							</Flex>
+						) : (
+							chartData.length > 0 && (
+								<SlippageChart
+									chartData={chartData}
+									fromTokenSymbol={fromToken.symbol}
+									toTokenSymbol={toToken.symbol}
+									mcap={mcap}
+									minimumSlippage={minimumSlippage}
+									maximumSlippage={maximumSlippage}
+								/>
+							)
 						)}
 					</Box>
 
