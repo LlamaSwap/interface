@@ -679,11 +679,15 @@ export function AggregatorContainer({ tokenlist }) {
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
 
 	useEffect(() => {
-		if (customSlippage && !Number.isNaN(customSlippage) && slippage !== customSlippage) {
-			router.push({ pathname: '/', query: { ...router.query, slippage: customSlippage } }, undefined, {
-				shallow: true
-			});
-		}
+		const id = setTimeout(() => {
+			if (customSlippage && !Number.isNaN(customSlippage) && slippage !== customSlippage) {
+				router.push({ pathname: '/', query: { ...router.query, slippage: customSlippage } }, undefined, {
+					shallow: true
+				});
+			}
+		}, 300);
+
+		return () => clearTimeout(id);
 	}, [slippage, customSlippage, router]);
 
 	return (
