@@ -142,8 +142,6 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		isResetLoading: isResetLoading || isConfirmingResetApproval,
 		isConfirmingResetApproval,
 		allowance,
-		shouldRemoveApproval,
-		isWaitingAfterApproval,
-		isWaitingAfterInfiniteApproval
+		shouldRemoveApproval
 	};
 };

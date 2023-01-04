@@ -2,7 +2,7 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import BigNumber from 'bignumber.js';
-import { Box, Flex, FormControl, FormLabel, Grid, Skeleton, Switch, Text } from '@chakra-ui/react';
+import { Box, Flex, FormControl, FormLabel, Skeleton, Switch, Text } from '@chakra-ui/react';
 import { ArrowRight } from 'react-feather';
 import { initialLiquidity } from '~/components/Aggregator/constants';
 import { useGetInitialTokenLiquidity, useGetTokensLiquidity } from '~/queries/useGetTokenLiquidity';
