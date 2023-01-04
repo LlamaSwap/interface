@@ -36,7 +36,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false`
 	).then((r) => r.json());
 
-	const gas = chain === 'optimism' ? BigNumber(1.5).times(data.gas).toFixed(0, 1) : data.gas;
+	const gas = chain === 'optimism' ? BigNumber(2).times(data.gas).toFixed(0, 1) : data.gas;
 
 	return {
 		amountReturned: data.buyAmount,

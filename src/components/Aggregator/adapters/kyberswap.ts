@@ -44,7 +44,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	).then((r) => r.json());
 
-	const totalGas = chain === 'optimism' ? BigNumber(1.5).times(data.totalGas).toFixed(0, 1) : data.totalGas;
+	const totalGas = chain === 'optimism' ? BigNumber(2).times(data.totalGas).toFixed(0, 1) : data.totalGas;
 
 	return {
 		amountReturned: data.outputAmount,

@@ -44,7 +44,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const gas = data.estimate.gasCosts.reduce((acc, val) => acc + Number(val.estimate), 0);
 
-	const estimatedGas = chain === 'optimism' ? BigNumber(1.5).times(gas).toFixed(0, 1) : gas;
+	const estimatedGas = chain === 'optimism' ? BigNumber(2).times(gas).toFixed(0, 1) : gas;
 
 	return {
 		amountReturned: data.estimate.toAmount,

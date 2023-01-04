@@ -29,7 +29,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	).then((r) => r.json());
 
 	const estimatedGas =
-		chain === 'optimism' ? BigNumber(1.5).times(data.maxReturn.totalGas).toFixed(0, 1) : data.maxReturn.totalGas;
+		chain === 'optimism' ? BigNumber(2).times(data.maxReturn.totalGas).toFixed(0, 1) : data.maxReturn.totalGas;
 
 	return {
 		amountReturned: data.maxReturn.totalTo,

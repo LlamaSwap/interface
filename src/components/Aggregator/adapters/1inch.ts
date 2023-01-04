@@ -48,7 +48,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const estimatedGas = swapData?.tx?.gas ?? data.estimatedGas;
 
-	const gas = chain === 'optimism' ? BigNumber(1.5).times(estimatedGas).toFixed(0, 1) : estimatedGas;
+	const gas = chain === 'optimism' ? BigNumber(2).times(estimatedGas).toFixed(0, 1) : estimatedGas;
 
 	return {
 		amountReturned: swapData?.toTokenAmount ?? data.toTokenAmount,
