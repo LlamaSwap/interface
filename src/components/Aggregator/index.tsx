@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
@@ -26,9 +26,8 @@ import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import Route from '~/components/SwapRoute';
 import { getAllChains, swap } from './router';
-import { Input, TokenInput } from './TokenInput';
+import { TokenInput } from './TokenInput';
 import Loader from './Loader';
-import Search from './Search';
 import { useTokenApprove } from './hooks';
 import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
@@ -142,14 +141,6 @@ const Wrapper = styled.div`
 	}
 `;
 
-const Balance = styled.div`
-	text-align: right;
-	padding-right: 4px;
-	text-decoration: underline;
-	margin-top: 4px;
-	cursor: pointer;
-`;
-
 const Routes = styled.div`
 	display: flex;
 	flex-direction: column;
@@ -159,7 +150,7 @@ const Routes = styled.div`
 	overflow-y: scroll;
 	min-width: 360px;
 	height: 100%;
-	max-height: 420px;
+	max-height: 520px;
 	min-width: 26rem;
 	animation: tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 
@@ -247,12 +238,6 @@ const SwapWrapper = styled.div`
 	}
 `;
 
-const InputFooter = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-`;
-
 const chains = getAllChains();
 
 export function AggregatorContainer({ tokenlist }) {
@@ -267,7 +252,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const { data: tokenBalances } = useTokenBalances(address);
 
-	const [slippage, setSlippage] = useState('0.1');
+	const [customSlippage, setCustomSlippage] = useState<string | number>('');
 
 	const addRecentTransaction = useAddRecentTransaction();
 
@@ -275,11 +260,12 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const router = useRouter();
 
-	const { chain: chainOnURL, from: fromToken, to: toToken } = router.query;
+	const { chain: chainOnURL, from: fromToken, to: toToken, slippage: slippageQuery } = router.query;
 
 	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
 	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
 	const toTokenAddress = typeof toToken === 'string' ? toToken.toLowerCase() : null;
+	const slippage = typeof slippageQuery === 'string' && !Number.isNaN(Number(slippageQuery)) ? slippageQuery : '0.1';
 
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useMemo(() => {
 		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainsMap[chainName]] || [] : null;
@@ -692,6 +678,14 @@ export function AggregatorContainer({ tokenlist }) {
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
 
+	useEffect(() => {
+		if (customSlippage && !Number.isNaN(customSlippage) && slippage !== customSlippage) {
+			router.push({ pathname: '/', query: { ...router.query, slippage: customSlippage } }, undefined, {
+				shallow: true
+			});
+		}
+	}, [slippage, customSlippage, router]);
+
 	return (
 		<Wrapper>
 			<Heading>Meta-Aggregator</Heading>
@@ -772,40 +766,117 @@ export function AggregatorContainer({ tokenlist }) {
 					<div>
 						<FormHeader>Amount In</FormHeader>
 						<TokenInput setAmount={setAmount} amount={amount} onMaxClick={onMaxClick} />
-						<InputFooter>
-							<div style={{ marginTop: 4, marginLeft: 4 }}>
-								Slippage %{' '}
-								<Input
-									value={slippage}
-									type="number"
-									style={{
-										width: 55,
-										height: 30,
-										display: 'inline',
-										appearance: 'textfield'
-									}}
-									onChange={(val) => {
-										if (+val.target.value < 50) setSlippage(val.target.value);
-									}}
-								/>{' '}
-								{fromTokenPrice ? (
-									<>
-										Value: $
-										{(+fromTokenPrice * +amount).toLocaleString(undefined, {
+
+						<Flex flexDir="column" gap="16px" marginBottom="16px">
+							<Flex alignItems="center" justifyContent="space-between" marginX="4px" marginTop="8px">
+								<Text>
+									{fromTokenPrice
+										? `Value: $
+										${(+fromTokenPrice * +amount).toLocaleString(undefined, {
+											maximumFractionDigits: 3
+										})}`
+										: ''}
+								</Text>
+
+								{balance.isSuccess ? (
+									<Button
+										textDecor="underline"
+										bg="none"
+										p={0}
+										fontWeight="400"
+										fontSize="0.875rem"
+										ml="auto"
+										height="fit-content"
+										onClick={onMaxClick}
+									>
+										Balance:{' '}
+										{(+balance?.data?.formatted).toLocaleString(undefined, {
 											maximumFractionDigits: 3
 										})}
-									</>
+									</Button>
 								) : null}
-							</div>
-							{balance.isSuccess ? (
-								<Balance onClick={onMaxClick}>
-									Balance:{' '}
-									{(+balance?.data?.formatted).toLocaleString(undefined, {
-										maximumFractionDigits: 3
-									})}
-								</Balance>
-							) : null}
-						</InputFooter>
+							</Flex>
+
+							<Box display="flex" flexDir="column" marginX="4px">
+								<Text
+									fontWeight="400"
+									display="flex"
+									justifyContent="space-between"
+									alignItems="center"
+									fontSize="0.875rem"
+								>
+									Swap Slippage: {slippage ? slippage + '%' : ''}
+								</Text>
+								<Box display="flex" gap="6px" flexWrap="wrap" width="100%">
+									<Button
+										fontSize="0.875rem"
+										fontWeight="500"
+										p="8px 8px"
+										height="2rem"
+										onClick={() => {
+											setCustomSlippage('');
+											router.push({ pathname: '/', query: { ...router.query, slippage: '0.1' } }, undefined, {
+												shallow: true
+											});
+										}}
+									>
+										0.1%
+									</Button>
+									<Button
+										fontSize="0.875rem"
+										fontWeight="500"
+										p="8px 8px"
+										height="2rem"
+										onClick={() => {
+											setCustomSlippage('');
+
+											router.push({ pathname: '/', query: { ...router.query, slippage: '0.5' } }, undefined, {
+												shallow: true
+											});
+										}}
+									>
+										0.5%
+									</Button>
+									<Button
+										fontSize="0.875rem"
+										fontWeight="500"
+										p="8px 8px"
+										height="2rem"
+										onClick={() => {
+											setCustomSlippage('');
+
+											router.push({ pathname: '/', query: { ...router.query, slippage: '1' } }, undefined, {
+												shallow: true
+											});
+										}}
+									>
+										1%
+									</Button>
+									<Box pos="relative" isolation="isolate">
+										<input
+											value={customSlippage}
+											type="number"
+											style={{
+												width: '100%',
+												height: '2rem',
+												padding: '4px 6px',
+												background: 'black',
+												marginLeft: 'auto',
+												borderRadius: '0.375rem',
+												fontSize: '0.875rem'
+											}}
+											placeholder="Custom"
+											onChange={(val) => {
+												setCustomSlippage(val.target.value);
+											}}
+										/>
+										<Text pos="absolute" top="6px" right="6px" fontSize="0.875rem" zIndex={1}>
+											%
+										</Text>
+									</Box>
+								</Box>
+							</Box>
+						</Flex>
 					</div>
 					<SwapWrapper>
 						{!isConnected ? (
