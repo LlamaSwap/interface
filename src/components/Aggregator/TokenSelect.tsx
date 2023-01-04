@@ -6,7 +6,7 @@ import ReactSelect from '../MultiSelect';
 import { Header, IconImage, ModalWrapper, PairRow } from './Search';
 import { Input } from './TokenInput';
 import { useNetwork, useToken } from 'wagmi';
-import { Button, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Text } from '@chakra-ui/react';
 import { CloseBtn } from '../CloseBtn';
 
 const Row = ({ data: { data, onClick }, index, style }) => {
@@ -35,21 +35,34 @@ const saveToken = (token) => {
 };
 
 const AddToken = ({ address, selectedChain, onClick }) => {
-	const { data, isLoading } = useToken({
+	const { data, isLoading, isError } = useToken({
 		address: address as `0x${string}`,
 		chainId: selectedChain.id,
 		enabled: typeof address === 'string' && address.length === 42 && selectedChain ? true : false
 	});
+
 	const { chain } = useNetwork();
 
 	const onTokenClick = () => {
+		if (isError) return;
+
 		saveToken({ address, ...(data || {}), label: data?.symbol, value: address, chainId: chain?.id });
 		onClick({ address, label: data?.symbol, value: address });
 	};
 
 	return (
-		<PairRow key={address} style={{ lineHeight: '38px' }} hover={false} onClick={onTokenClick}>
-			<QuestionIcon height="20px" width="20px" marginTop={'10px'} />
+		<Flex
+			alignItems="center"
+			mt="16px"
+			p="8px"
+			gap="8px"
+			justifyContent="space-between"
+			flexWrap="wrap"
+			borderBottom="1px solid #373944"
+			key={address}
+			onClick={onTokenClick}
+		>
+			<QuestionIcon height="20px" width="20px" />
 
 			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
 				{isLoading
@@ -59,10 +72,19 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 					: address.slice(0, 4) + '...' + address.slice(-4)}
 			</Text>
 
-			<Button height={38} marginLeft="auto" onClick={onTokenClick}>
+			<Button height={38} marginLeft="auto" onClick={onTokenClick} disabled={isError}>
 				Add token
 			</Button>
-		</PairRow>
+
+			{isError && (
+				<Text
+					fontSize="0.75rem"
+					color="red"
+					w="100%"
+					textAlign="center"
+				>{`This address is not a contract on ${selectedChain.value}`}</Text>
+			)}
+		</Flex>
 	);
 };
 
@@ -92,7 +114,7 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 			{ethers.utils.isAddress(input) ? (
 				<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
 			) : null}
-			<List height={390} itemCount={filteredData.length} itemSize={38} itemData={{ data: filteredData, onClick }}>
+			<List height={390} itemCount={filteredData.length} itemSize={40} itemData={{ data: filteredData, onClick }}>
 				{Row}
 			</List>
 		</ModalWrapper>
