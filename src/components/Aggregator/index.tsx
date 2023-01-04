@@ -318,8 +318,6 @@ export function AggregatorContainer({ tokenlist }) {
 		enabled: typeof toToken === 'string' && toToken.length === 42 && selectedChain ? true : false
 	});
 
-	console.log({ fromToken, fromToken2, selectedChain });
-
 	const finalSelectedFromToken =
 		!selectedFromToken && fromToken2
 			? {
