@@ -74,8 +74,8 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 	const filteredData = input
 		? data?.filter(
 				(token) =>
-					token.symbol.toLowerCase().includes(input.toLowerCase()) ||
-					token.address.toLowerCase() === input.toLowerCase()
+					token.symbol?.toLowerCase()?.includes(input.toLowerCase()) ??
+					token.address?.toLowerCase() === input.toLowerCase()
 		  )
 		: data;
 	return (

@@ -14,7 +14,7 @@ const oldErc = [
 export const useGetAllowance = (token: string, spender: `0x${string}`, amount: string) => {
 	const { address, isConnected } = useAccount();
 
-	const isOld = oldErc.includes(token?.toLowerCase());
+	const isOld = token ? oldErc.includes(token?.toLowerCase()) : false;
 
 	const {
 		data: allowance,

@@ -67,7 +67,7 @@ export async function getTokenList() {
 			label: t.symbol,
 			value: t.address,
 			geckoId: geckoList
-				? geckoList?.find((geckoCoin) => geckoCoin.symbol === t.symbol.toLowerCase())?.id ?? null
+				? geckoList?.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 				: null
 		}));
 	}

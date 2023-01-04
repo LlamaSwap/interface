@@ -287,11 +287,11 @@ export function AggregatorContainer({ tokenlist }) {
 		const selectedChain = chains.find((c) => c.value === chainName);
 
 		const selectedFromToken = tokenList?.find(
-			(t) => t.symbol.toLowerCase() === fromTokenSymbol || t.address.toLowerCase() === fromTokenSymbol
+			(t) => t.symbol?.toLowerCase() === fromTokenSymbol ?? t.address.toLowerCase() === fromTokenSymbol
 		);
 
 		const selectedToToken = tokenList?.find(
-			(t) => t.symbol.toLowerCase() === toTokenSymbol || t.address.toLowerCase() === toTokenSymbol
+			(t) => t.symbol?.toLowerCase() === toTokenSymbol ?? t.address.toLowerCase() === toTokenSymbol
 		);
 
 		return {
@@ -317,6 +317,8 @@ export function AggregatorContainer({ tokenlist }) {
 		chainId: selectedChain.id,
 		enabled: typeof toToken === 'string' && toToken.length === 42 && selectedChain ? true : false
 	});
+
+	console.log({ fromToken, fromToken2, selectedChain });
 
 	const finalSelectedFromToken =
 		!selectedFromToken && fromToken2
