@@ -16,6 +16,7 @@ export const chainToId = {
 
 export const name = 'ParaSwap';
 export const token = 'PSP';
+export const partner = 'llamaswap';
 
 export function approvalAddress() {
 	return '0x216b4b4ba9f3e719726886d34a177484278bfcae';
@@ -34,7 +35,7 @@ export async function getQuote(
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const data = await fetch(
-		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${amount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&side=SELL&network=${chainToId[chain]}`
+		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${amount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=SELL&network=${chainToId[chain]}`
 	).then((r) => r.json());
 
 	const dataSwap =
@@ -51,7 +52,7 @@ export async function getQuote(
 						userAddress: userAddress,
 						//txOrigin: userAddress,
 						//deadline: Math.floor(Date.now() / 1000) + 300,
-						partner: 'llamaswap',
+						partner: partner,
 						priceRoute: data.priceRoute
 					}),
 					headers: {
