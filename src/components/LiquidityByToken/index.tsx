@@ -2,20 +2,7 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import styled from 'styled-components';
 import BigNumber from 'bignumber.js';
-import {
-	Box,
-	Flex,
-	FormControl,
-	FormLabel,
-	RangeSlider,
-	RangeSliderFilledTrack,
-	RangeSliderMark,
-	RangeSliderThumb,
-	RangeSliderTrack,
-	Skeleton,
-	Switch,
-	Text
-} from '@chakra-ui/react';
+import { Box, Flex, FormControl, FormLabel, Skeleton, Switch, Text } from '@chakra-ui/react';
 import { ArrowRight } from 'react-feather';
 import { initialLiquidity } from '~/components/Aggregator/constants';
 import { useGetInitialTokenLiquidity, useGetTokensLiquidity } from '~/queries/useGetTokenLiquidity';
@@ -41,8 +28,9 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 
 	const minimumSlippage =
 		typeof minSlippage === 'string' && !Number.isNaN(Number(minSlippage)) ? Number(minSlippage) : 0;
+
 	const maximumSlippage =
-		typeof maxSlippage === 'string' && !Number.isNaN(Number(maxSlippage)) ? Number(maxSlippage) : 0;
+		typeof maxSlippage === 'string' && !Number.isNaN(Number(maxSlippage)) ? Number(maxSlippage) : 100;
 
 	const fromTokenMCapPercentage = showTokenMcap === 'true';
 
@@ -106,11 +94,54 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 		setLiquidity((prevLiq) => [...prevLiq, ...filteredNewliqValues].sort((a, b) => a - b));
 	}
 
-	const [sliderValue, setSliderValue] = React.useState([0, 100]);
-
 	const { data: fromTokenMcap } = useGetMcap({ id: fromToken.geckoId });
 
 	const mcap = fromTokenMcap && fromTokenMCapPercentage ? Math.round(fromTokenMcap) : null;
+
+	const [lowerEndSlippage, setLowerEndSlippage] = React.useState<number | string>(minimumSlippage);
+	const [higherEndSlippage, setHigherEndSlippage] = React.useState<number | string>(maximumSlippage);
+
+	React.useEffect(() => {
+		const id = setTimeout(() => {
+			if (
+				!Number.isNaN(Number(lowerEndSlippage)) &&
+				Number.isFinite(Number(lowerEndSlippage)) &&
+				Number(lowerEndSlippage) !== minimumSlippage
+			) {
+				router.push(
+					{
+						pathname: router.pathname,
+						query: { ...router.query, minSlippage: lowerEndSlippage }
+					},
+					undefined,
+					{ shallow: true }
+				);
+			}
+		}, 300);
+
+		return () => clearTimeout(id);
+	}, [lowerEndSlippage, minimumSlippage, router]);
+
+	React.useEffect(() => {
+		const id = setTimeout(() => {
+			if (
+				!Number.isNaN(Number(higherEndSlippage)) &&
+				Number.isFinite(Number(higherEndSlippage)) &&
+				Number(higherEndSlippage) !== maximumSlippage
+			) {
+				router.push(
+					{
+						pathname: router.pathname,
+						query: { ...router.query, maxSlippage: higherEndSlippage }
+					},
+					undefined,
+					{ shallow: true }
+				);
+			}
+		}, 300);
+
+		return () => clearTimeout(id);
+	}, [higherEndSlippage, maximumSlippage, router]);
 
 	return (
 		<Flex flexDir="column" gap="24px">
@@ -175,107 +206,124 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 			</Table>
 
 			<Box minH="745px">
-				{chartData.length > 0 && (
-					<>
-						<Flex
-							alignItems="center"
-							justifyContent="space-between"
-							gap="16px"
-							flexWrap="wrap"
-							margin="24px 32px 24px auto"
-							w="full"
-						>
-							<FormControl display="flex" alignItems="center" gap="8px" w="fit-content">
-								{fromToken.geckoId && (
-									<Switch
-										id="coinMcap"
-										checked={fromTokenMCapPercentage}
-										onChange={() => {
-											router.push(
-												{
-													pathname: router.pathname,
-													query: { ...router.query, showTokenMcap: !fromTokenMCapPercentage }
-												},
-												undefined,
-												{ shallow: true }
-											);
-										}}
-									/>
-								)}
-								<FormLabel htmlFor="coinMcap" mb="0">
-									{`Show % of ${fromToken.symbol} Mcap`}
-								</FormLabel>
-							</FormControl>
-
-							<Flex as="form" alignItems="center" flexDir="row" gap="20px" width="100%" maxW="360px">
-								<Text as="label" whiteSpace="nowrap">
-									Slippage Range
-								</Text>
-								<RangeSlider
-									aria-label={['min slippage', 'max slippage']}
-									min={0}
-									max={100}
-									defaultValue={[0, 100]}
-									step={1}
-									onChange={(val) => setSliderValue(val)}
-									onChangeEnd={(val) => {
+				<>
+					<Flex
+						alignItems="center"
+						justifyContent="space-between"
+						gap="16px"
+						flexWrap="wrap"
+						margin="24px 32px 24px auto"
+						w="full"
+					>
+						<FormControl display="flex" alignItems="center" gap="8px" w="fit-content">
+							{fromToken.geckoId && (
+								<Switch
+									id="coinMcap"
+									checked={fromTokenMCapPercentage}
+									onChange={() => {
 										router.push(
 											{
 												pathname: router.pathname,
-												query: { ...router.query, minSlippage: val[0], maxSlippage: val[1] }
+												query: { ...router.query, showTokenMcap: !fromTokenMCapPercentage }
 											},
 											undefined,
 											{ shallow: true }
 										);
 									}}
-								>
-									<RangeSliderMark value={sliderValue[0]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
-										{sliderValue[0]}%
-									</RangeSliderMark>
-									<RangeSliderMark value={sliderValue[1]} textAlign="center" color="white" mt="-8" ml="-5" w="12">
-										{sliderValue[1]}%
-									</RangeSliderMark>
+								/>
+							)}
+							<FormLabel htmlFor="coinMcap" mb="0">
+								{`Show % of ${fromToken.symbol} Mcap`}
+							</FormLabel>
+						</FormControl>
 
-									<RangeSliderTrack>
-										<RangeSliderFilledTrack bg="#2563eb" />
-									</RangeSliderTrack>
-									<RangeSliderThumb index={0} />
-									<RangeSliderThumb index={1} />
-								</RangeSlider>
+						<Flex as="form" flexDir="column" gap="8px" width="100%" maxW="250px">
+							<Text as="p" whiteSpace="nowrap" textAlign="center" fontWeight={500}>
+								Slippage Range
+							</Text>
+
+							<Flex gap="20px" flexWrap="wrap">
+								<Text
+									as="label"
+									display="flex"
+									alignItems="center"
+									gap="6px"
+									whiteSpace="nowrap"
+									width="100%"
+									flex={1}
+									pos="relative"
+								>
+									<span>Min</span>
+									<input
+										type="number"
+										name="minSlippage"
+										value={lowerEndSlippage}
+										onChange={(e) => setLowerEndSlippage(e.target.value)}
+										style={{ padding: '4px', borderRadius: '8px', width: '100%', minWidth: '80px' }}
+									/>
+									<Text pos="absolute" top="4px" right="4px">
+										%
+									</Text>
+								</Text>
+
+								<Text
+									as="label"
+									display="flex"
+									alignItems="center"
+									gap="6px"
+									whiteSpace="nowrap"
+									width="100%"
+									flex={1}
+									pos="relative"
+								>
+									<span>Max</span>
+									<input
+										type="number"
+										name="maxSlippage"
+										value={higherEndSlippage}
+										onChange={(e) => setHigherEndSlippage(e.target.value)}
+										style={{ padding: '4px', borderRadius: '8px', width: '100%', minWidth: '80px' }}
+									/>
+									<Text pos="absolute" top="4px" right="4px">
+										%
+									</Text>
+								</Text>
 							</Flex>
 						</Flex>
+					</Flex>
 
-						<Box height="400px">
+					<Box height="400px">
+						{chartData.length > 0 && (
 							<SlippageChart
 								chartData={chartData}
 								fromTokenSymbol={fromToken.symbol}
 								toTokenSymbol={toToken.symbol}
 								mcap={mcap}
 							/>
-						</Box>
+						)}
+					</Box>
 
-						<Flex flexDir="column" gap="20px" marginY="36px">
-							<Text as="p" fontSize="1rem">
-								This tool gets price quotes on 10 different dex aggregators at different levels and displays the results
-								over a chart, so the resulting data aggregates all liquidity across the hundreds of dexs that all those
-								aggregators have integrated, including stuff like limit orders, thus we are quite confident that this
-								will accurately report all on-chain liquidity.
-							</Text>
-							<Text as="p" fontSize="1rem">
-								You can use this tool to find out how much needs to be sold to cause a price drop of 10%, 20%... or just
-								to see how deep the liquidity is for a given token. It'll be especially useful for defi risk teams.
-							</Text>
-							<Text as="p" fontSize="1rem">
-								The chart will keep updating with more data as long as this window is open, so if you want your chart to
-								be more granular just wait for a bit, you'll notice how the chart adjust in real time.
-							</Text>
-							<Text as="p" fontSize="1rem">
-								There's currently a bug that causes spikes to be formed if you switch to a different tab while the chart
-								is being created, so please avoid doing that.
-							</Text>
-						</Flex>
-					</>
-				)}
+					<Flex flexDir="column" gap="20px" marginY="36px">
+						<Text as="p" fontSize="1rem">
+							This tool gets price quotes on 10 different dex aggregators at different levels and displays the results
+							over a chart, so the resulting data aggregates all liquidity across the hundreds of dexs that all those
+							aggregators have integrated, including stuff like limit orders, thus we are quite confident that this will
+							accurately report all on-chain liquidity.
+						</Text>
+						<Text as="p" fontSize="1rem">
+							You can use this tool to find out how much needs to be sold to cause a price drop of 10%, 20%... or just
+							to see how deep the liquidity is for a given token. It'll be especially useful for defi risk teams.
+						</Text>
+						<Text as="p" fontSize="1rem">
+							The chart will keep updating with more data as long as this window is open, so if you want your chart to
+							be more granular just wait for a bit, you'll notice how the chart adjust in real time.
+						</Text>
+						<Text as="p" fontSize="1rem">
+							There's currently a bug that causes spikes to be formed if you switch to a different tab while the chart
+							is being created, so please avoid doing that.
+						</Text>
+					</Flex>
+				</>
 			</Box>
 		</Flex>
 	);
