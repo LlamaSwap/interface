@@ -39,9 +39,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
 	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
 	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);
-
 	const [isWaitingAfterApproval, setIsWaitingAfterApproval] = useState(false);
-	const [isWaitingAfterInfiniteApproval, setIsWaitingAfterInfiniteApproval] = useState(false);
 
 	const { address, isConnected } = useAccount();
 
@@ -86,9 +84,9 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 				})
 				.catch((err) => console.log(err))
 				.finally(() => {
-					setIsConfirmingApproval(false);
-					setTimeout(() => {
-						setIsWaitingAfterApproval(false);
+					setIsConfirmingApproval(false)
+					setTimeout(()=>{
+						setIsWaitingAfterApproval(false)
 					}, 10000);
 				});
 		}
@@ -98,7 +96,6 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		...configInfinite,
 		onSuccess: (data) => {
 			setIsConfirmingInfiniteApproval(true);
-			setIsWaitingAfterInfiniteApproval(true);
 
 			data
 				.wait()
@@ -108,9 +105,6 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 				.catch((err) => console.log(err))
 				.finally(() => {
 					setIsConfirmingInfiniteApproval(false);
-					setTimeout(() => {
-						setIsWaitingAfterInfiniteApproval(false);
-					}, 10000);
 				});
 		}
 	});
@@ -139,8 +133,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 
 	if (allowance.toString() === ethers.constants.MaxUint256.toString()) return { isApproved: true };
 
-	if (normalizedAmount && allowance.gte(BigNumber.from(normalizedAmount)))
-		return { isApproved: true, isWaitingAfterApproval, isWaitingAfterInfiniteApproval };
+	if (normalizedAmount && allowance.gte(BigNumber.from(normalizedAmount))) return { isApproved: true, isWaitingAfterApproval };
 
 	return {
 		isApproved: false,

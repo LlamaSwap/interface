@@ -601,8 +601,7 @@ export function AggregatorContainer({ tokenlist }) {
 		isConfirmingResetApproval,
 		shouldRemoveApproval,
 		allowance,
-		isWaitingAfterApproval,
-		isWaitingAfterInfiniteApproval
+		isWaitingAfterApproval
 	} = useTokenApprove(finalSelectedFromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
 
 	const onMaxClick = () => {
@@ -854,9 +853,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 											<Button
 												isLoading={swapMutation.isLoading || isApproveLoading || isWaitingAfterApproval}
-												loadingText={
-													isConfirmingApproval || isWaitingAfterApproval ? 'Confirming' : 'Preparing transaction'
-												}
+												loadingText={isConfirmingApproval || isWaitingAfterApproval ? 'Confirming' : 'Preparing transaction'}
 												colorScheme={'messenger'}
 												onClick={() => {
 													if (approve) approve();
@@ -871,40 +868,32 @@ export function AggregatorContainer({ tokenlist }) {
 													isApproveLoading ||
 													isApproveResetLoading ||
 													isWaitingAfterApproval ||
-													isWaitingAfterInfiniteApproval ||
-													isApproveInfiniteLoading ||
 													!route
 												}
 											>
-												{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
+												{!route? "Select Aggregator": isApproved ? 'Swap' : 'Approve'}
 											</Button>
 
-											{(isWaitingAfterApproval || isWaitingAfterInfiniteApproval || !isApproved) &&
-												['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
-													<Button
-														colorScheme={'messenger'}
-														loadingText={
-															isConfirmingInfiniteApproval || isWaitingAfterInfiniteApproval
-																? 'Confirming'
-																: 'Preparing transaction'
-														}
-														isLoading={isApproveInfiniteLoading || isWaitingAfterInfiniteApproval}
-														onClick={() => {
-															if (approveInfinite) approveInfinite();
-														}}
-														disabled={
-															isUSDTNotApprovedOnEthereum ||
-															swapMutation.isLoading ||
-															isApproveLoading ||
-															isApproveResetLoading ||
-															isApproveInfiniteLoading ||
-															isWaitingAfterApproval ||
-															isWaitingAfterInfiniteApproval
-														}
-													>
-														{'Approve Infinite'}
-													</Button>
-												)}
+											{(isWaitingAfterApproval || !isApproved) && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
+												<Button
+													colorScheme={'messenger'}
+													loadingText={isConfirmingInfiniteApproval || isWaitingAfterApproval ? 'Confirming' : 'Preparing transaction'}
+													isLoading={isApproveInfiniteLoading || isWaitingAfterApproval}
+													onClick={() => {
+														if (approveInfinite) approveInfinite();
+													}}
+													disabled={
+														isUSDTNotApprovedOnEthereum ||
+														swapMutation.isLoading ||
+														isApproveLoading ||
+														isApproveResetLoading ||
+														isApproveInfiniteLoading ||
+														isWaitingAfterApproval
+													}
+												>
+													{'Approve Infinite'}
+												</Button>
+											)}
 										</>
 									</>
 								)}
