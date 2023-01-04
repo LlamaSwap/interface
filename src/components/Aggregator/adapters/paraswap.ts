@@ -39,7 +39,7 @@ export async function getQuote(
 
 	const dataSwap =
 		userAddress !== ethers.constants.AddressZero
-			? await fetch(`https://apiv5.paraswap.io/transactions/${chainToId[chain]}`, {
+			? await fetch(`https://apiv5.paraswap.io/transactions/${chainToId[chain]}?ignoreChecks=true`, {
 					method: 'POST',
 					body: JSON.stringify({
 						srcToken: data.priceRoute.srcToken,
