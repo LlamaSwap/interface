@@ -6,7 +6,7 @@ import ReactSelect from '../MultiSelect';
 import { Header, IconImage, ModalWrapper, PairRow } from './Search';
 import { Input } from './TokenInput';
 import { useNetwork, useToken } from 'wagmi';
-import { Box, Button, Flex, Text } from '@chakra-ui/react';
+import { Button, Flex, Text } from '@chakra-ui/react';
 import { CloseBtn } from '../CloseBtn';
 
 const Row = ({ data: { data, onClick }, index, style }) => {

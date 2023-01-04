@@ -278,21 +278,17 @@ export function AggregatorContainer({ tokenlist }) {
 	const { chain: chainOnURL, from: fromToken, to: toToken } = router.query;
 
 	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
-	const fromTokenSymbol = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
-	const toTokenSymbol = typeof toToken === 'string' ? toToken.toLowerCase() : null;
+	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
+	const toTokenAddress = typeof toToken === 'string' ? toToken.toLowerCase() : null;
 
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useMemo(() => {
 		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainsMap[chainName]] || [] : null;
 
 		const selectedChain = chains.find((c) => c.value === chainName);
 
-		const selectedFromToken = tokenList?.find(
-			(t) => t.symbol?.toLowerCase() === fromTokenSymbol ?? t.address.toLowerCase() === fromTokenSymbol
-		);
+		const selectedFromToken = tokenList?.find((t) => t.address.toLowerCase() === fromTokenAddress);
 
-		const selectedToToken = tokenList?.find(
-			(t) => t.symbol?.toLowerCase() === toTokenSymbol ?? t.address.toLowerCase() === toTokenSymbol
-		);
+		const selectedToToken = tokenList?.find((t) => t.address.toLowerCase() === toTokenAddress);
 
 		return {
 			selectedChain: selectedChain ? { ...selectedChain, id: chainsMap[selectedChain.value] } : null,
@@ -304,7 +300,7 @@ export function AggregatorContainer({ tokenlist }) {
 				: null,
 			chainTokenList: tokenList
 		};
-	}, [chainName, fromTokenSymbol, toTokenSymbol, tokenlist]);
+	}, [chainName, fromTokenAddress, toTokenAddress, tokenlist]);
 
 	const { data: fromToken2 } = useToken({
 		address: fromToken as `0x${string}`,
