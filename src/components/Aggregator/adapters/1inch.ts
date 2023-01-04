@@ -48,13 +48,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const estimatedGas = swapData?.tx?.gas ?? data.estimatedGas;
 
-	const gas = chain === 'optimism' ? BigNumber(1.25).times(estimatedGas).toFixed(0, 1) : estimatedGas;
+	const gas = chain === 'optimism' ? BigNumber(1.5).times(estimatedGas).toFixed(0, 1) : estimatedGas;
 
 	return {
 		amountReturned: swapData?.toTokenAmount ?? data.toTokenAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress,
-		rawQuote: swapData === null? null : { ...swapData, tx: { ...swapData.tx, gas } },
+		rawQuote: swapData === null ? null : { ...swapData, tx: { ...swapData.tx, gas } },
 		logo: 'https://defillama.com/_next/image?url=https%3A%2F%2Ficons.llama.fi%2F1inch-network.jpg&w=48&q=75'
 	};
 }

@@ -62,7 +62,7 @@ export async function getQuote(
 	}
 
 	const gasPrice =
-		chain === 'optimism' && estimatedGas ? BigNumber(1.25).times(estimatedGas).toFixed(0, 1) : estimatedGas;
+		chain === 'optimism' && estimatedGas ? BigNumber(1.5).times(estimatedGas).toFixed(0, 1) : estimatedGas;
 
 	return {
 		amountReturned: data?.route?.outputAmount,
