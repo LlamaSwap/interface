@@ -432,7 +432,7 @@ export function AggregatorContainer({ tokenlist }) {
 				isClosable: true,
 				position: 'top-right'
 			});
-			let isError = false;
+
 			data
 				.wait?.()
 				?.then((final) => {
@@ -472,7 +472,6 @@ export function AggregatorContainer({ tokenlist }) {
 							}
 						});
 					} else {
-						isError = true;
 						toast({
 							title: 'Transaction Failed',
 							status: 'error',
@@ -487,7 +486,6 @@ export function AggregatorContainer({ tokenlist }) {
 					}
 				})
 				.catch(() => {
-					isError = true;
 					toast({
 						title: 'Transaction Failed',
 						status: 'error',
@@ -499,22 +497,21 @@ export function AggregatorContainer({ tokenlist }) {
 							maxWidth: '300px'
 						}
 					});
-				})
-				?.finally(() => {
-					sendSwapEvent({
-						chain: selectedChain.value,
-						user: address,
-						from: variables.from,
-						to: variables.to,
-						aggregator: variables.adapter,
-						isError,
-						quote: variables.rawQuote,
-						txUrl,
-						amount: String(amount),
-						errorData: {},
-						amountUsd: +fromTokenPrice * +amount || 0
-					});
 				});
+
+			sendSwapEvent({
+				chain: selectedChain.value,
+				user: address,
+				from: variables.from,
+				to: variables.to,
+				aggregator: variables.adapter,
+				isError: false,
+				quote: variables.rawQuote,
+				txUrl,
+				amount: String(amount),
+				errorData: {},
+				amountUsd: +fromTokenPrice * +amount || 0
+			});
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
