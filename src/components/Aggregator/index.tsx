@@ -681,10 +681,6 @@ export function AggregatorContainer({ tokenlist }) {
 		.filter((r) => r.gasUsd !== 'Unknown')
 		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
 
-	const minAmount = normalizedRoutes[normalizedRoutes.length - 1].amount;
-
-	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < minAmount * 3);
-
 	const priceImpact =
 		fromTokenPrice && toTokenPrice && route?.route?.amountUsd > 0
 			? 100 - (route?.route?.amountUsd / (+fromTokenPrice * +amount)) * 100
