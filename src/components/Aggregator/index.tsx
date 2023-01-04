@@ -600,8 +600,7 @@ export function AggregatorContainer({ tokenlist }) {
 		isConfirmingInfiniteApproval,
 		isConfirmingResetApproval,
 		shouldRemoveApproval,
-		allowance,
-		isWaitingAfterApproval
+		allowance
 	} = useTokenApprove(finalSelectedFromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
 
 	const onMaxClick = () => {
@@ -852,8 +851,8 @@ export function AggregatorContainer({ tokenlist }) {
 											)}
 
 											<Button
-												isLoading={swapMutation.isLoading || isApproveLoading || isWaitingAfterApproval}
-												loadingText={isConfirmingApproval || isWaitingAfterApproval ? 'Confirming' : 'Preparing transaction'}
+												isLoading={swapMutation.isLoading || isApproveLoading}
+												loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
 												colorScheme={'messenger'}
 												onClick={() => {
 													if (approve) approve();
@@ -867,18 +866,17 @@ export function AggregatorContainer({ tokenlist }) {
 													swapMutation.isLoading ||
 													isApproveLoading ||
 													isApproveResetLoading ||
-													isWaitingAfterApproval ||
 													!route
 												}
 											>
 												{!route? "Select Aggregator": isApproved ? 'Swap' : 'Approve'}
 											</Button>
 
-											{(isWaitingAfterApproval || !isApproved) && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
+											{!isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
 												<Button
 													colorScheme={'messenger'}
-													loadingText={isConfirmingInfiniteApproval || isWaitingAfterApproval ? 'Confirming' : 'Preparing transaction'}
-													isLoading={isApproveInfiniteLoading || isWaitingAfterApproval}
+													loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+													isLoading={isApproveInfiniteLoading}
 													onClick={() => {
 														if (approveInfinite) approveInfinite();
 													}}
@@ -887,8 +885,7 @@ export function AggregatorContainer({ tokenlist }) {
 														swapMutation.isLoading ||
 														isApproveLoading ||
 														isApproveResetLoading ||
-														isApproveInfiniteLoading ||
-														isWaitingAfterApproval
+														isApproveInfiniteLoading
 													}
 												>
 													{'Approve Infinite'}
