@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled from 'styled-components';
 
 const InputElem = styled.input`
 	cursor: text;
@@ -18,19 +18,21 @@ const InputElem = styled.input`
 	&::placeholder {
 		color: #cbd1dc;
 	}
+
 	&:focus {
 		outline: none;
 		border-color: ${({ theme }) => (theme.mode === 'dark' ? '#949494' : '#8e8e8e')};
 	}
-`
+`;
 
 const InputWrapper = styled.div`
 	position: relative;
 	display: flex;
 	width: 100%;
 	margin-top: 4px;
+
 	& > input,
-	span {
+	button {
 		white-space: nowrap;
 		display: block;
 		&:not(:first-child):not(:last-child) {
@@ -64,19 +66,20 @@ const InputWrapper = styled.div`
 		-webkit-appearance: none;
 		margin: 0;
 	}
-	& > span {
+
+	& > button {
 		text-align: center;
 		cursor: pointer;
 		padding: 8px 12px;
-		font-size: 14px;
+		font-size: 0.875rem;
 		line-height: 30px;
 		height: 48px;
-		color: ${({ theme }) => (theme.mode === 'dark' ? '#1c1f2d' : '#727272')};
-		border: ${({ theme }) => (theme.mode === 'dark' ? '1px solid #232323;' : '1px solid #cdd9ed;')};
-		background: ${({ theme }) => (theme.mode === 'dark' ? '#787878' : '#d8d8d8')};
+		color: white;
+		border: none;
+		background: #38393e;
 		transition: background 0.3s ease, border 0.3s ease, color 0.3s ease;
 	}
-`
+`;
 
 export const TokenInput = ({ setAmount, amount, onMaxClick, ...props }) => {
 	return (
@@ -86,20 +89,21 @@ export const TokenInput = ({ setAmount, amount, onMaxClick, ...props }) => {
 				type="number"
 				pattern="\d+((\.|,)\d+)?"
 				onChange={(val) => {
-					setAmount(val.target.value)
+					setAmount(val.target.value);
 				}}
 				value={amount}
 				{...props}
 			/>
-			<span onClick={onMaxClick}>Max</span>
+
+			<button onClick={onMaxClick}>Max</button>
 		</InputWrapper>
-	)
-}
+	);
+};
 
 export const Input = (props) => {
 	return (
 		<InputWrapper {...props}>
 			<InputElem {...props} />
 		</InputWrapper>
-	)
-}
+	);
+};

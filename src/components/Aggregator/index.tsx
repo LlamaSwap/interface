@@ -815,7 +815,8 @@ export function AggregatorContainer({ tokenlist }) {
 									<Button
 										fontSize="0.875rem"
 										fontWeight="500"
-										p="8px 8px"
+										p="8px"
+										bg="#38393e"
 										height="2rem"
 										onClick={() => {
 											setCustomSlippage('');
@@ -829,7 +830,8 @@ export function AggregatorContainer({ tokenlist }) {
 									<Button
 										fontSize="0.875rem"
 										fontWeight="500"
-										p="8px 8px"
+										p="8px"
+										bg="#38393e"
 										height="2rem"
 										onClick={() => {
 											setCustomSlippage('');
@@ -844,7 +846,8 @@ export function AggregatorContainer({ tokenlist }) {
 									<Button
 										fontSize="0.875rem"
 										fontWeight="500"
-										p="8px 8px"
+										p="8px"
+										bg="#38393e"
 										height="2rem"
 										onClick={() => {
 											setCustomSlippage('');
