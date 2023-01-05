@@ -1008,8 +1008,8 @@ export function AggregatorContainer({ tokenlist }) {
 									finalSelectedFromToken.label +
 									finalSelectedToToken.label +
 									amountWithDecimals +
-									gasPriceData.formatted.gasPrice +
-									r.name
+									gasPriceData?.formatted?.gasPrice +
+									r?.name
 								}
 							/>
 						))}
