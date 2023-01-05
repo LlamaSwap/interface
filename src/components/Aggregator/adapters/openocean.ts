@@ -40,7 +40,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			chainToId[chain]
 		}/swap?inTokenAddress=${from}&outTokenAddress=${to}&amount=${amount}&gasPrice=${
 			gasPrice.fast?.maxPriorityFeePerGas ?? gasPrice.fast
-		}&slippage=${+slippage * 100 || 100}&account=${userAddress || ethers.constants.AddressZero}`
+		}&slippage=${+slippage * 100 || 100}&account=${
+			userAddress || ethers.constants.AddressZero
+		}&referrer=0x5521c3dfd563d48ca64e132324024470f3498526`
 	).then((r) => r.json());
 
 	const estimatedGas = chain === 'optimism' ? BigNumber(3.5).times(data.estimatedGas).toFixed(0, 1) : data.estimatedGas;
