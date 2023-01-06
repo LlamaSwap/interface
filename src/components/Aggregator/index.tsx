@@ -41,6 +41,7 @@ import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
 import { CloseBtn } from '../CloseBtn';
 import { TransactionModal } from '../TransactionModal';
+import { median } from '~/utils';
 
 /*
 Integrated:
@@ -666,9 +667,9 @@ export function AggregatorContainer({ tokenlist }) {
 		.filter((r) => r.gasUsd !== 'Unknown')
 		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
 
-	const minAmount = normalizedRoutes[normalizedRoutes.length - 1]?.amount;
+	const medianAmount = median(normalizedRoutes.map(({ amount }) => amount));
 
-	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < minAmount * 3);
+	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
 	const priceImpact =
 		fromTokenPrice && toTokenPrice && route?.route?.amountUsd > 0

@@ -9,3 +9,9 @@ export function chainIconUrl(chain) {
 export function getSavedTokens() {
 	return JSON.parse(localStorage.getItem('savedTokens') || '{}');
 }
+
+export const median = (arr: number[]): number => {
+	const s = [...arr].sort((a, b) => a - b);
+	const mid = Math.floor(s.length / 2);
+	return s.length % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+};
