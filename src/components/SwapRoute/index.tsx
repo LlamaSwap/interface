@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
-import { Badge, Text } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
 import { Gift, Unlock } from 'react-feather';
 import { GasIcon } from '../Icons';
 
@@ -35,6 +35,7 @@ interface IRoute {
 	lossPercent: number;
 	gasTokenPrice: number;
 	txData: string;
+	netOut: number;
 }
 
 const Route = ({
@@ -49,7 +50,8 @@ const Route = ({
 	airdrop,
 	fromToken,
 	amountFrom,
-	lossPercent
+	lossPercent,
+	netOut
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
@@ -60,28 +62,47 @@ const Route = ({
 	return (
 		<RouteWrapper onClick={setRoute} selected={selected} best={index === 0}>
 			<RouteRow>
-				<img src={toToken?.logoURI} alt="" style={{ marginRight: 4 }} />
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
-					{amount.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}{' '}
-					{amountUsd && Number.isFinite(Number(amountUsd))
-						? `($${Number(amountUsd).toLocaleString(undefined, {
-								minimumFractionDigits: 3,
-								maximumFractionDigits: 3
-						  })})`
-						: null}
+					<div style={{ display: 'flex' }}>
+						{netOut && Number.isFinite(Number(netOut))
+							? `$${Number(netOut).toLocaleString(undefined, {
+									minimumFractionDigits: 3,
+									maximumFractionDigits: 3
+							  })}`
+							: null}
+
+						{index === 0 ? (
+							<Text color="green.200" ml={2} fontSize={12} lineHeight={'26px'}>
+								BEST
+							</Text>
+						) : Number.isFinite(lossPercent) ? (
+							<Text color="red.200" ml={2} fontSize={12} lineHeight={'26px'}>
+								(-{Math.abs(100 - lossPercent * 100).toFixed(2)}%)
+							</Text>
+						) : null}
+					</div>
 				</Text>
 				<div style={{ marginLeft: 'auto', display: 'flex' }}>
+					<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
+						{amount.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}{' '}
+					</Text>
+					<img src={toToken?.logoURI} alt="" style={{ marginLeft: 4 }} />
+				</div>
+			</RouteRow>
+
+			<RouteRow>
+				<Text style={{ display: 'flex' }} color="gray.400" lineHeight={1}>
 					{name === 'CowSwap' ? (
 						<Tooltip content="Gas is taken from output amount">
-							<GasIcon />{' '}
-							<div style={{ marginLeft: 8 }}>
-								${gasUsd.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
-							</div>
+							<Text style={{ display: 'flex', marginTop: '-6px' }} color="gray.400">
+								${amountUsd} -{' '}
+								<div>${gasUsd.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</div>
+							</Text>
 						</Tooltip>
 					) : (
 						<>
-							<GasIcon />{' '}
-							<div style={{ marginLeft: 8 }}>
+							${amountUsd} -{' '}
+							<div>
 								{gasUsd === 'Unknown' ? (
 									gasUsd
 								) : (
@@ -90,36 +111,33 @@ const Route = ({
 							</div>
 						</>
 					)}
-				</div>
-			</RouteRow>
 
-			<RouteRow>
-				{toToken.symbol} via {name}
-				{airdrop ? (
-					<Tooltip content="This project has no token and might airdrop one in the future">
-						<span style={{ marginLeft: 4 }}>
-							{' '}
-							<Gift width={16} height={16} />
-						</span>
-					</Tooltip>
-				) : null}
-				{isApproved ? (
-					<Tooltip content="Token is approved for this aggregator.">
-						<span style={{ marginLeft: 4 }}>
-							<Unlock width={16} height={16} />
-						</span>
-					</Tooltip>
-				) : null}
-				{index === 0 ? (
-					<div style={{ marginLeft: 'auto', display: 'flex' }}>
-						{' '}
-						<Badge colorScheme="green">Best Route</Badge>
-					</div>
-				) : Number.isFinite(lossPercent) ? (
-					<div style={{ marginLeft: 'auto', display: 'flex' }}>
-						<Badge colorScheme="red">-{Math.abs(100 - lossPercent * 100).toFixed(2)}%</Badge>
-					</div>
-				) : null}
+					<span style={{ marginLeft: '4px' }}>
+						<GasIcon />
+					</span>
+				</Text>
+
+				<span style={{ marginLeft: '8px', display: 'flex' }}>
+					{airdrop ? (
+						<Tooltip content="This project has no token and might airdrop one in the future">
+							<span style={{ marginLeft: 4 }}>
+								{' '}
+								<Gift width={14} height={14} color="#A0AEC0" style={{ marginTop: '-6px' }} />
+							</span>
+						</Tooltip>
+					) : null}
+					{isApproved ? (
+						<Tooltip content="Token is approved for this aggregator.">
+							<span style={{ marginLeft: 4 }}>
+								<Unlock width={14} height={14} color="#A0AEC0" style={{ marginTop: '-6px' }} />
+							</span>
+						</Tooltip>
+					) : null}
+				</span>
+
+				<div style={{ marginLeft: 'auto', display: 'flex' }}>
+					<Text color={'gray.400'}>via {name}</Text>
+				</div>
 			</RouteRow>
 		</RouteWrapper>
 	);

@@ -39,9 +39,9 @@ import Tooltip from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
-import { CloseBtn } from '../CloseBtn';
 import { TransactionModal } from '../TransactionModal';
 import { median } from '~/utils';
+import RoutesPreview from './RoutesPreview';
 
 /*
 Integrated:
@@ -99,7 +99,6 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	gap: 16px;
 	padding: 16px;
 	width: 100%;
-	min-height: 420px;
 	max-width: 30rem;
 
 	box-shadow: ${({ theme }) =>
@@ -109,18 +108,6 @@ const Body = styled.div<{ showRoutes: boolean }>`
 
 	border-radius: 16px;
 	text-align: left;
-	transition: all 0.66s ease-out;
-	animation: ${(props) =>
-		props.showRoutes === true ? 'slide-left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both' : 'none'};
-
-	@keyframes slide-left {
-		0% {
-			transform: translateX(180px);
-		}
-		100% {
-			transform: translateX(0);
-		}
-	}
 `;
 
 const Wrapper = styled.div`
@@ -151,9 +138,8 @@ const Routes = styled.div`
 	overflow-y: scroll;
 	min-width: 360px;
 	height: 100%;
-	max-height: 520px;
+	max-height: 480px;
 	min-width: 26rem;
-	animation: tilt-in-fwd-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 
 	& > *:first-child {
 		margin-bottom: -6px;
@@ -170,28 +156,6 @@ const Routes = styled.div`
 
 	-ms-overflow-style: none; /* IE and Edge */
 	scrollbar-width: none; /* Firefox */
-
-	@keyframes tilt-in-fwd-in {
-		0% {
-			transform: rotateY(-20deg) rotateX(35deg) translate(-300px, -300px) skew(35deg, -10deg);
-			opacity: 0;
-		}
-		100% {
-			transform: rotateY(0) rotateX(0deg) translate(0, 0) skew(0deg, 0deg);
-			opacity: 1;
-		}
-	}
-
-	@keyframes tilt-in-fwd-out {
-		0% {
-			transform: rotateY(-20deg) rotateX(35deg) translate(-1000px, -1000px) skew(35deg, -10deg);
-			opacity: 0;
-		}
-		100% {
-			transform: rotateY(0) rotateX(0deg) translate(0, 0) skew(0deg, 0deg);
-			opacity: 1;
-		}
-	}
 `;
 
 const BodyWrapper = styled.div`
@@ -980,18 +944,11 @@ export function AggregatorContainer({ tokenlist }) {
 					) : null}
 				</Body>
 
-				{finalSelectedFromToken && finalSelectedToToken && (
+				{
 					<Routes>
-						<FormHeader>
-							Routes
-							<CloseBtn
-								right="4px"
-								top="6px"
-								onClick={() => router.push({ pathname: '/' }, undefined, { shallow: true })}
-							/>
-						</FormHeader>
+						{normalizedRoutes?.length ? <FormHeader>Routes</FormHeader> : null}
 
-						{isLoading ? <Loader loaded={!isLoading} /> : null}
+						{isLoading ? <Loader loaded={!isLoading} /> : normalizedRoutes?.length ? null : <RoutesPreview />}
 
 						{normalizedRoutes.map((r, i) => (
 							<Route
@@ -1015,7 +972,7 @@ export function AggregatorContainer({ tokenlist }) {
 							/>
 						))}
 					</Routes>
-				)}
+				}
 			</BodyWrapper>
 
 			<FAQs />
