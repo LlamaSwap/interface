@@ -74,7 +74,7 @@ const RoutesPreview = () => {
 			</Header>
 			<div style={{ zIndex: 1 }}>
 				<Heading size={'md'} textAlign="center" mt={'4'}>
-					The Aggregtor of Aggregators
+					The Aggregator of Aggregators
 				</Heading>
 				<CheckBody>
 					<CheckWithText text="Totally Free" />
