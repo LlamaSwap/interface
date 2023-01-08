@@ -25,7 +25,7 @@ const IconsBody = styled.div`
 `;
 
 const MainIcon = styled.div`
-	z-index: 10;
+	z-index: 1;
 	position: absolute;
 	left: 50%;
 	transform: translate(-50%, -20%);
@@ -72,7 +72,7 @@ const RoutesPreview = () => {
 					))}
 				</IconsBody>
 			</Header>
-			<div style={{ zIndex: 11 }}>
+			<div style={{ zIndex: 1 }}>
 				<Heading size={'md'} textAlign="center" mt={'4'}>
 					The Aggregtor of Aggregators
 				</Heading>
