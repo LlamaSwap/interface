@@ -36,9 +36,9 @@ const ArrowIcon = () => {
 			<path
 				fill="none"
 				stroke="currentColor"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				stroke-width="48"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="48"
 				d="M268 112l144 144-144 144M392 256H100"
 			/>
 		</svg>
@@ -55,8 +55,8 @@ const AggIcons = [
 			height="47.6757"
 			rx="7.62162"
 			stroke="url(#paint1_linear_1212_31)"
-			stroke-opacity="0.1"
-			stroke-width="0.324324"
+			strokeOpacity="0.1"
+			strokeWidth="0.324324"
 		/>
 		<g clipPath="url(#clip0_1212_31)">
 			<path
@@ -73,12 +73,12 @@ const AggIcons = [
 				gradientUnits="userSpaceOnUse"
 				gradientTransform="translate(22.0274 24.3288) rotate(89.4077) scale(18.2668)"
 			>
-				<stop stop-color="#222328" />
-				<stop offset="1" stop-color="#222327" />
+				<stop stopColor="#222328" />
+				<stop offset="1" stopColor="#222327" />
 			</radialGradient>
 			<linearGradient id="paint1_linear_1212_31" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse">
-				<stop stop-color="white" />
-				<stop offset="1" stop-color="white" stop-opacity="0" />
+				<stop stopColor="white" />
+				<stop offset="1" stopColor="white" stopOpacity="0" />
 			</linearGradient>
 			<clipPath id="clip0_1212_31">
 				<rect width="26.9589" height="26.3014" fill="white" transform="translate(9.86279 10.5215)" />
@@ -94,8 +94,8 @@ const AggIcons = [
 			height="47.6757"
 			rx="7.62162"
 			stroke="url(#paint1_linear_1212_7)"
-			stroke-opacity="0.1"
-			stroke-width="0.324324"
+			strokeOpacity="0.1"
+			strokeWidth="0.324324"
 		/>
 		<path
 			d="M17.4607 25.1864L18.1102 20.291L12.4678 16.3707L17.6231 18.1176L18.8409 16.2489L23.2859 13.4863L33.0891 18.8894L33.5965 27.1364L29.2327 33.2098L25.7823 33.7379L27.5684 30.4676V27.3191L26.2695 24.8614L24.9502 23.9879L22.9205 26.0801V28.2941L21.3374 29.7769L19.328 30.0207L18.435 30.5285L16.9736 30.0614L16.3647 27.8676L17.4607 26.3239V25.1864Z"
@@ -162,12 +162,12 @@ const AggIcons = [
 				gradientUnits="userSpaceOnUse"
 				gradientTransform="translate(22.0274 24.3288) rotate(89.4077) scale(18.2668)"
 			>
-				<stop stop-color="#222328" />
-				<stop offset="1" stop-color="#222327" />
+				<stop stopColor="#222328" />
+				<stop offset="1" stopColor="#222327" />
 			</radialGradient>
 			<linearGradient id="paint1_linear_1212_7" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse">
-				<stop stop-color="white" />
-				<stop offset="1" stop-color="white" stop-opacity="0" />
+				<stop stopColor="white" />
+				<stop offset="1" stopColor="white" stopOpacity="0" />
 			</linearGradient>
 		</defs>
 	</svg>,
@@ -180,8 +180,8 @@ const AggIcons = [
 			height="47.6757"
 			rx="7.62162"
 			stroke="url(#paint1_linear_1212_35)"
-			stroke-opacity="0.1"
-			stroke-width="0.324324"
+			strokeOpacity="0.1"
+			strokeWidth="0.324324"
 		/>
 		<path
 			d="M22.679 23.9959L32.3358 29.5641C32.4131 29.608 32.5003 29.6309 32.5891 29.6307C32.6778 29.6305 32.7649 29.607 32.842 29.5627C32.919 29.5184 32.9832 29.4546 33.0283 29.3778C33.0734 29.301 33.0979 29.2137 33.0994 29.1245L33.101 18.8706C33.1 18.7813 33.0758 18.6937 33.0308 18.6166C32.9858 18.5395 32.9216 18.4756 32.8445 18.4312C32.7673 18.3868 32.68 18.3633 32.5911 18.3633C32.5022 18.3632 32.4148 18.3865 32.3377 18.4308L22.679 23.9959Z"
@@ -208,12 +208,12 @@ const AggIcons = [
 				gradientUnits="userSpaceOnUse"
 				gradientTransform="translate(22.0274 24.3288) rotate(89.4077) scale(18.2668)"
 			>
-				<stop stop-color="#222328" />
-				<stop offset="1" stop-color="#222327" />
+				<stop stopColor="#222328" />
+				<stop offset="1" stopColor="#222327" />
 			</radialGradient>
 			<linearGradient id="paint1_linear_1212_35" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse">
-				<stop stop-color="white" />
-				<stop offset="1" stop-color="white" stop-opacity="0" />
+				<stop stopColor="white" />
+				<stop offset="1" stopColor="white" stopOpacity="0" />
 			</linearGradient>
 		</defs>
 	</svg>,
@@ -226,8 +226,8 @@ const AggIcons = [
 			height="47.6757"
 			rx="7.62162"
 			stroke="url(#paint1_linear_1212_25)"
-			stroke-opacity="0.1"
-			stroke-width="0.324324"
+			strokeOpacity="0.1"
+			strokeWidth="0.324324"
 		/>
 		<path
 			d="M22.9744 27.4727C18.4423 27.4727 14.7686 29.5912 14.7686 32.2048C14.7686 34.8183 18.4423 36.9369 22.9744 36.9369C27.5064 36.9369 31.1801 34.8183 31.1801 32.2048C31.1801 29.5913 27.5062 27.4727 22.9744 27.4727ZM19.0345 32.8127C18.2027 33.2193 17.4281 32.8127 17.2795 31.8909C17.1166 30.9033 18.4456 28.5561 18.7515 30.331C19.0571 32.1058 20.4178 29.6239 20.4262 30.7347C20.3807 31.6314 19.8458 32.4302 19.0345 32.8127ZM29.1668 31.8909C29.0183 32.8127 28.2437 33.2193 27.4121 32.8127C26.6005 32.4302 26.0657 31.6314 26.0204 30.7347C26.0287 29.6239 27.3892 32.1058 27.6951 30.331C28.0007 28.5561 29.3295 30.9033 29.1668 31.8909V31.8909Z"
@@ -246,12 +246,12 @@ const AggIcons = [
 				gradientUnits="userSpaceOnUse"
 				gradientTransform="translate(22.0274 24.3288) rotate(89.4077) scale(18.2668)"
 			>
-				<stop stop-color="#222328" />
-				<stop offset="1" stop-color="#222327" />
+				<stop stopColor="#222328" />
+				<stop offset="1" stopColor="#222327" />
 			</radialGradient>
 			<linearGradient id="paint1_linear_1212_25" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse">
-				<stop stop-color="white" />
-				<stop offset="1" stop-color="white" stop-opacity="0" />
+				<stop stopColor="white" />
+				<stop offset="1" stopColor="white" stopOpacity="0" />
 			</linearGradient>
 		</defs>
 	</svg>,
@@ -264,8 +264,8 @@ const AggIcons = [
 			height="47.6757"
 			rx="7.62162"
 			stroke="url(#paint1_linear_1212_43)"
-			stroke-opacity="0.1"
-			stroke-width="0.324324"
+			strokeOpacity="0.1"
+			strokeWidth="0.324324"
 		/>
 		<g clipPath="url(#clip0_1212_43)">
 			<path
@@ -282,12 +282,12 @@ const AggIcons = [
 				gradientUnits="userSpaceOnUse"
 				gradientTransform="translate(22.0274 24.3288) rotate(89.4077) scale(18.2668)"
 			>
-				<stop stop-color="#222328" />
-				<stop offset="1" stop-color="#222327" />
+				<stop stopColor="#222328" />
+				<stop offset="1" stopColor="#222327" />
 			</radialGradient>
 			<linearGradient id="paint1_linear_1212_43" x1="24" y1="0" x2="24" y2="48" gradientUnits="userSpaceOnUse">
-				<stop stop-color="white" />
-				<stop offset="1" stop-color="white" stop-opacity="0" />
+				<stop stopColor="white" />
+				<stop offset="1" stopColor="white" stopOpacity="0" />
 			</linearGradient>
 			<clipPath id="clip0_1212_43">
 				<rect width="26" height="21" fill="white" transform="translate(11 14)" />
@@ -633,20 +633,20 @@ const LlamaIcon = (
 
 const SmolCheck = (
 	<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-		<g clip-path="url(#clip0_1189_652)">
+		<g clipPath="url(#clip0_1189_652)">
 			<path
 				d="M3.42822 6.85631L5.18537 8.26202C5.23256 8.30088 5.28781 8.32874 5.34712 8.34357C5.40643 8.35839 5.4683 8.35982 5.52822 8.34773C5.58872 8.33639 5.64607 8.31214 5.69636 8.27664C5.74665 8.24114 5.7887 8.19523 5.81965 8.14202L8.57108 3.42773"
 				stroke="#61A2FE"
-				stroke-width="0.857143"
-				stroke-linecap="round"
-				stroke-linejoin="round"
+				strokeWidth="0.857143"
+				strokeLinecap="round"
+				strokeLinejoin="round"
 			/>
 			<path
 				d="M5.99965 11.5706C9.07667 11.5706 11.5711 9.07618 11.5711 5.99916C11.5711 2.92215 9.07667 0.427734 5.99965 0.427734C2.92264 0.427734 0.428223 2.92215 0.428223 5.99916C0.428223 9.07618 2.92264 11.5706 5.99965 11.5706Z"
 				stroke="#61A2FE"
-				stroke-width="0.857143"
-				stroke-linecap="round"
-				stroke-linejoin="round"
+				strokeWidth="0.857143"
+				strokeLinecap="round"
+				strokeLinejoin="round"
 			/>
 		</g>
 		<defs>
