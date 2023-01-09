@@ -2,6 +2,8 @@
 
 import { ExtraData } from '../../types';
 import { domain, SigningScheme, signOrder, OrderKind } from '@gnosis.pm/gp-v2-contracts';
+import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainnet/GPv2Settlement.json';
+
 import { ethers } from 'ethers';
 import { ABI } from './abi';
 
@@ -28,6 +30,21 @@ export function approvalAddress() {
 	return '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
+const waitForOrder = (uid, provider, trader) => async (onSuccess) => {
+	let n = 0;
+	const settlement = new ethers.Contract(
+		'0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+		GPv2SettlementArtefact.abi,
+		provider
+	);
+	provider.on(settlement.filters.Trade(trader), (log) => {
+		if (log.data.includes(uid.substring(2)) && n === 0) {
+			onSuccess();
+			n++;
+		}
+	});
+};
 
 // https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/2.-query-the-fee-endpoint
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
@@ -126,7 +143,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 
 		if (data.errorType) throw { reason: data.description };
 
-		return data;
+		return { id: data, waitForOrder: waitForOrder(data, signer.provider, fromAddress) };
 	}
 }
 

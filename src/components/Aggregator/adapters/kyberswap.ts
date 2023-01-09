@@ -44,13 +44,16 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	).then((r) => r.json());
 
-	const totalGas = chain === 'optimism' ? BigNumber(3.5).times(data.totalGas).toFixed(0, 1) : data.totalGas;
+	let gas = data.totalGas;
+
+	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
+	if (chain === 'arbitrum') gas = BigNumber(4).times(gas).toFixed(0, 1);
 
 	return {
 		amountReturned: data.outputAmount,
-		estimatedGas: data.totalGas,
+		estimatedGas: gas,
 		tokenApprovalAddress: data.routerAddress,
-		rawQuote: { ...data, totalGas },
+		rawQuote: { ...data, totalGas: gas },
 		logo: 'https://assets.coingecko.com/coins/images/14899/small/RwdVsGcw_400x400.jpg?1618923851'
 	};
 }

@@ -62,10 +62,13 @@ export async function getQuote(
 			: null;
 
 	const gasPrice = chain === 'optimism' ? BigNumber(3.5).times(dataSwap?.gasPrice).toFixed(0, 1) : dataSwap?.gasPrice;
+	let gas = data.priceRoute.gasCost;
 
+	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
+	if (chain === 'arbitrum') gas = BigNumber(7).times(gas).toFixed(0, 1);
 	return {
 		amountReturned: data.priceRoute.destAmount,
-		estimatedGas: data.priceRoute.gasCost,
+		estimatedGas: gas,
 		tokenApprovalAddress: data.priceRoute.tokenTransferProxy,
 		rawQuote: { ...dataSwap, gasPrice },
 		logo: 'https://assets.coingecko.com/coins/images/20403/small/ep7GqM19_400x400.jpg?1636979120'
