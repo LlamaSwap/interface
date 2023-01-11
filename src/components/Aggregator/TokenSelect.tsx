@@ -108,11 +108,17 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 
 	const filteredData = useMemo(() => {
 		return debouncedInput
-			? data?.filter(
-					(token) =>
-						token.symbol?.toLowerCase()?.includes(debouncedInput.toLowerCase()) ||
-						token.address?.toLowerCase() === debouncedInput.toLowerCase()
-			  )
+			? data?.filter((token) => {
+					if (token.symbol && token.symbol.toLowerCase()?.includes(debouncedInput.toLowerCase())) {
+						return true;
+					}
+
+					if (token.address && token.address.toLowerCase() === debouncedInput.toLowerCase()) {
+						return true;
+					}
+
+					return false;
+			  })
 			: data;
 	}, [debouncedInput, data]);
 
