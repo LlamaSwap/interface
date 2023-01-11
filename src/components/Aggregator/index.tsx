@@ -141,7 +141,7 @@ const Routes = styled.div`
 	width: 100%;
 	height: 100%;
 	max-height: 480px;
-	max-width: 28.25rem;
+	max-width: 30rem;
 
 	& > *:first-child {
 		margin-bottom: -6px;
@@ -174,6 +174,7 @@ const BodyWrapper = styled.div`
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		flex-direction: row;
 		justify-content: center;
+		gap: 24px;
 	}
 `;
 
