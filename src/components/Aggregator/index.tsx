@@ -34,7 +34,6 @@ import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import { chainsMap, nativeAddress } from './constants';
 import TokenSelect from './TokenSelect';
-import { getSavedTokens } from '~/utils';
 import Tooltip from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
@@ -44,6 +43,7 @@ import { median } from '~/utils';
 import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast } from '~/utils/formatSuccessToast';
 import { useDebounce } from '~/hooks/useDebounce';
+import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 
 /*
 Integrated:
@@ -165,6 +165,7 @@ const BodyWrapper = styled.div`
 	flex-direction: column;
 	gap: 16px;
 	width: 100%;
+	min-height: 480px;
 
 	& > * {
 		flex: 1;
@@ -329,12 +330,12 @@ export function AggregatorContainer({ tokenlist }) {
 		enabled: selectedChain ? true : false
 	});
 
-	const tokensInChain = useMemo(() => {
-		const savedTokens = getSavedTokens();
+	const { data: savedTokens } = useGetSavedTokens(selectedChain?.id);
 
+	const tokensInChain = useMemo(() => {
 		return (
 			chainTokenList
-				?.concat(savedTokens[selectedChain?.id] || [])
+				?.concat(savedTokens)
 				.map((token) => ({
 					...token,
 					amount:
@@ -346,7 +347,7 @@ export function AggregatorContainer({ tokenlist }) {
 				}))
 				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
 		);
-	}, [chainTokenList, selectedChain?.id, tokenBalances]);
+	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
 
 	const confirmingTxToastRef = useRef<ToastId>();
 
@@ -720,7 +721,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 						<Flex flexDir="column" gap="16px" marginBottom="16px">
 							<Flex alignItems="center" justifyContent="space-between" marginX="4px" marginTop="8px">
-								<Text>
+								<Text minH="22px">
 									{fromTokenPrice
 										? `Value: $
 										${(+fromTokenPrice * +amount).toLocaleString(undefined, {

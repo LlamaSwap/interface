@@ -86,7 +86,12 @@ const Route = ({
 					<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 						{amount.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}{' '}
 					</Text>
-					<img src={toToken?.logoURI} alt="" style={{ marginLeft: 4 }} />
+					<img
+						src={toToken?.logoURI}
+						alt=""
+						style={{ marginLeft: 4 }}
+						onError={(e) => (e.currentTarget.src = '/notFound.png')}
+					/>
 				</div>
 			</RouteRow>
 

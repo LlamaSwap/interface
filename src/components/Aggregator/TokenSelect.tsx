@@ -1,13 +1,15 @@
 import { ethers } from 'ethers';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { QuestionIcon } from '@chakra-ui/icons';
 import ReactSelect from '../MultiSelect';
 import { Header, IconImage, ModalWrapper, PairRow } from './Search';
 import { Input } from './TokenInput';
-import { useNetwork, useToken } from 'wagmi';
+import { useToken } from 'wagmi';
 import { Button, Flex, Text } from '@chakra-ui/react';
 import { CloseBtn } from '../CloseBtn';
+import { useDebounce } from '~/hooks/useDebounce';
+import { useQueryClient } from '@tanstack/react-query';
 
 const Row = ({ data: { data, onClick }, index, style }) => {
 	const token = data[index];
@@ -41,12 +43,21 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 		enabled: typeof address === 'string' && address.length === 42 && selectedChain ? true : false
 	});
 
-	const { chain } = useNetwork();
+	const queryClient = useQueryClient();
 
 	const onTokenClick = () => {
 		if (isError) return;
 
-		saveToken({ address, ...(data || {}), label: data?.symbol, value: address, chainId: chain?.id });
+		saveToken({
+			address,
+			...(data || {}),
+			label: data?.symbol,
+			value: address,
+			chainId: selectedChain?.id
+		});
+
+		queryClient.invalidateQueries({ queryKey: ['savedTokens', selectedChain?.id] });
+
 		onClick({ address, label: data?.symbol, value: address });
 	};
 
@@ -60,7 +71,6 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			flexWrap="wrap"
 			borderBottom="1px solid #373944"
 			key={address}
-			onClick={onTokenClick}
 		>
 			<QuestionIcon height="20px" width="20px" />
 
@@ -93,13 +103,19 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 	const onInputChange = (e) => {
 		setInput(e?.target?.value);
 	};
-	const filteredData = input
-		? data?.filter(
-				(token) =>
-					token.symbol?.toLowerCase()?.includes(input.toLowerCase()) ??
-					token.address?.toLowerCase() === input.toLowerCase()
-		  )
-		: data;
+
+	const debouncedInput = useDebounce(input, 300);
+
+	const filteredData = useMemo(() => {
+		return debouncedInput
+			? data?.filter(
+					(token) =>
+						token.symbol?.toLowerCase()?.includes(debouncedInput.toLowerCase()) ||
+						token.address?.toLowerCase() === debouncedInput.toLowerCase()
+			  )
+			: data;
+	}, [debouncedInput, data]);
+
 	return (
 		<ModalWrapper>
 			<Header>
@@ -111,7 +127,7 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 			<div>
 				<Input placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
 			</div>
-			{ethers.utils.isAddress(input) ? (
+			{ethers.utils.isAddress(input) && filteredData.length === 0 ? (
 				<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
 			) : null}
 			<List height={390} itemCount={filteredData.length} itemSize={40} itemData={{ data: filteredData, onClick }}>
