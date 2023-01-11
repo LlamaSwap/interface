@@ -264,44 +264,49 @@ export function AggregatorContainer({ tokenlist }) {
 	const { data: fromToken2 } = useToken({
 		address: fromToken as `0x${string}`,
 		chainId: selectedChain.id,
-		enabled: typeof fromToken === 'string' && fromToken.length === 42 && selectedChain ? true : false
+		enabled:
+			typeof fromToken === 'string' && fromToken.length === 42 && selectedChain && !selectedFromToken ? true : false
 	});
 
 	const { data: toToken2 } = useToken({
 		address: toToken as `0x${string}`,
 		chainId: selectedChain.id,
-		enabled: typeof toToken === 'string' && toToken.length === 42 && selectedChain ? true : false
+		enabled: typeof toToken === 'string' && toToken.length === 42 && selectedChain && !selectedToToken ? true : false
 	});
 
-	const finalSelectedFromToken =
-		!selectedFromToken && fromToken2
-			? {
-					name: fromToken2.name || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-					label: fromToken2.symbol || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-					symbol: fromToken2.symbol || '',
-					address: fromToken2.address,
-					value: fromToken2.address,
-					decimals: fromToken2.decimals,
-					logoURI: '',
-					chainId: selectedChain.id ?? 1,
-					geckoId: null
-			  }
-			: selectedFromToken;
+	const { finalSelectedFromToken, finalSelectedToToken } = useMemo(() => {
+		const finalSelectedFromToken =
+			!selectedFromToken && fromToken2
+				? {
+						name: fromToken2.name || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
+						label: fromToken2.symbol || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
+						symbol: fromToken2.symbol || '',
+						address: fromToken2.address,
+						value: fromToken2.address,
+						decimals: fromToken2.decimals,
+						logoURI: '',
+						chainId: selectedChain.id ?? 1,
+						geckoId: null
+				  }
+				: selectedFromToken;
 
-	const finalSelectedToToken =
-		!selectedToToken && toToken2
-			? {
-					name: toToken2.name || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-					label: toToken2.symbol || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-					symbol: toToken2.symbol || '',
-					address: toToken2.address,
-					value: toToken2.address,
-					decimals: toToken2.decimals,
-					logoURI: '',
-					chainId: selectedChain.id ?? 1,
-					geckoId: null
-			  }
-			: selectedToToken;
+		const finalSelectedToToken =
+			!selectedToToken && toToken2
+				? {
+						name: toToken2.name || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
+						label: toToken2.symbol || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
+						symbol: toToken2.symbol || '',
+						address: toToken2.address,
+						value: toToken2.address,
+						decimals: toToken2.decimals,
+						logoURI: '',
+						chainId: selectedChain.id ?? 1,
+						geckoId: null
+				  }
+				: selectedToToken;
+
+		return { finalSelectedFromToken, finalSelectedToToken };
+	}, [fromToken2, selectedChain?.id, toToken2, selectedFromToken, selectedToToken]);
 
 	const [amount, setAmount] = useState<number | string>('10');
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -572,17 +577,6 @@ export function AggregatorContainer({ tokenlist }) {
 		});
 	};
 
-	const setTokens = (tokens) => {
-		setRoute(null);
-		router.push(
-			{ pathname: router.pathname, query: { ...router.query, from: tokens.token0.symbol, to: tokens.token1.symbol } },
-			undefined,
-			{
-				shallow: true
-			}
-		);
-	};
-
 	let normalizedRoutes = [...(routes || [])]
 		?.map((route) => {
 			let gasUsd: number | string =
@@ -670,6 +664,7 @@ export function AggregatorContainer({ tokenlist }) {
 								</Tooltip>
 							</Flex>
 						</FormHeader>
+
 						<ReactSelect options={chains} value={selectedChain} onChange={onChainChange} />
 					</div>
 
