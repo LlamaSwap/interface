@@ -43,6 +43,7 @@ import { TransactionModal } from '../TransactionModal';
 import { median } from '~/utils';
 import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast } from '~/utils/formatSuccessToast';
+import { useDebounce } from '~/hooks/useDebounce';
 
 /*
 Integrated:
@@ -137,10 +138,10 @@ const Routes = styled.div`
 	border-radius: 16px;
 	text-align: left;
 	overflow-y: scroll;
-	min-width: 360px;
+	width: 100%;
 	height: 100%;
 	max-height: 480px;
-	min-width: 26rem;
+	max-width: 28.25rem;
 
 	& > *:first-child {
 		margin-bottom: -6px;
@@ -163,10 +164,15 @@ const BodyWrapper = styled.div`
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	margin: 0 auto;
+	width: 100%;
+
+	& > * {
+		flex: 1;
+	}
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		flex-direction: row;
+		justify-content: center;
 	}
 `;
 
@@ -483,11 +489,13 @@ export function AggregatorContainer({ tokenlist }) {
 		});
 	};
 
+	const debouncedAmountWithDecimals = useDebounce(amountWithDecimals, 300);
+
 	const { data: routes = [], isLoading } = useGetRoutes({
 		chain: selectedChain?.value,
 		from: finalSelectedFromToken?.value,
 		to: finalSelectedToToken?.value,
-		amount: amountWithDecimals,
+		amount: debouncedAmountWithDecimals,
 		extra: {
 			gasPriceData,
 			userAddress: address || ethers.constants.AddressZero,
@@ -918,35 +926,37 @@ export function AggregatorContainer({ tokenlist }) {
 					) : null}
 				</Body>
 
-				{
-					<Routes>
-						{normalizedRoutes?.length ? <FormHeader>Routes</FormHeader> : null}
+				<Routes>
+					{normalizedRoutes?.length ? <FormHeader>Routes</FormHeader> : null}
 
-						{isLoading ? <Loader loaded={!isLoading} /> : normalizedRoutes?.length ? null : <RoutesPreview />}
+					{isLoading && amount && finalSelectedFromToken && finalSelectedToToken ? (
+						<Loader />
+					) : normalizedRoutes?.length ? null : (
+						<RoutesPreview />
+					)}
 
-						{normalizedRoutes.map((r, i) => (
-							<Route
-								{...r}
-								index={i}
-								selected={route?.name === r.name}
-								setRoute={() => setRoute({ ...r.route, route: r })}
-								toToken={finalSelectedToToken}
-								amountFrom={amountWithDecimals}
-								fromToken={finalSelectedFromToken}
-								selectedChain={selectedChain.label}
-								gasTokenPrice={gasTokenPrice}
-								key={
-									selectedChain.label +
-									finalSelectedFromToken.label +
-									finalSelectedToToken.label +
-									amountWithDecimals +
-									gasPriceData?.formatted?.gasPrice +
-									r?.name
-								}
-							/>
-						))}
-					</Routes>
-				}
+					{normalizedRoutes.map((r, i) => (
+						<Route
+							{...r}
+							index={i}
+							selected={route?.name === r.name}
+							setRoute={() => setRoute({ ...r.route, route: r })}
+							toToken={finalSelectedToToken}
+							amountFrom={amountWithDecimals}
+							fromToken={finalSelectedFromToken}
+							selectedChain={selectedChain.label}
+							gasTokenPrice={gasTokenPrice}
+							key={
+								selectedChain.label +
+								finalSelectedFromToken.label +
+								finalSelectedToToken.label +
+								amountWithDecimals +
+								gasPriceData?.formatted?.gasPrice +
+								r?.name
+							}
+						/>
+					))}
+				</Routes>
 			</BodyWrapper>
 
 			<FAQs />

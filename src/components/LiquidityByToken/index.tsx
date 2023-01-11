@@ -298,7 +298,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 					<Box height="400px">
 						{isLoading ? (
 							<Flex flexDir="column" alignItems="center" justifyContent="center" height="400px">
-								<Loader loaded={!isLoading} style={{ margin: '0' }} />
+								<Loader style={{ margin: '0' }} />
 							</Flex>
 						) : (
 							chartData.length > 0 && (

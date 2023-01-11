@@ -4,7 +4,6 @@ import loaderImg from '~/public/loader.png';
 const LoaderWrapper = styled.div`
 	margin: 0 auto;
 	margin-top: 72px;
-	width: fit-content;
 `;
 
 const LoaderText = styled.div`
@@ -39,11 +38,11 @@ const LoaderBody = styled.img`
 	}
 `;
 
-const Loader = ({ loaded, ...props }) => {
+const Loader = (props) => {
 	return (
 		<LoaderWrapper {...props}>
-			{loaded ? null : <LoaderBody src={loaderImg.src} />}
-			{loaded ? <LoaderText>Not Found</LoaderText> : <LoaderText>Loading...</LoaderText>}
+			<LoaderBody src={loaderImg.src} />
+			<LoaderText>Loading...</LoaderText>
 		</LoaderWrapper>
 	);
 };

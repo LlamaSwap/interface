@@ -76,7 +76,15 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 			.filter((adap) => adap.chainToId[chain] !== undefined)
 			.map<UseQueryOptions<IRoute>>((adapter) => {
 				return {
-					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'selectedRoute'))],
+					queryKey: [
+						'routes',
+						adapter.name,
+						chain,
+						from,
+						to,
+						amount,
+						JSON.stringify(omit(extra, 'selectedRoute', 'amount'))
+					],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
 					refetchInterval: 15_000,
 					onSuccess: (data) => {
