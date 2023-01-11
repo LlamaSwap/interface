@@ -69,7 +69,7 @@ export async function getTokenList() {
 			geckoId: geckoList
 				? geckoList?.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 				: null
-		}));
+		})).filter(t => typeof t.address === "string");
 	}
 
 	tokenlist[66][0].logoURI = tokenlist[66][1].logoURI;
