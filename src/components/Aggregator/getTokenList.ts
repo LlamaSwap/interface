@@ -20,6 +20,23 @@ const oneInchChains = {
 	klaytn: 8217
 };
 
+const fixTotkens = (tokenlist) => {
+	// OKX token logo
+	tokenlist[66][0].logoURI = tokenlist[66][1].logoURI;
+	// BTC -> BTC.b
+	tokenlist[43114].find(
+		({ address }) => address.toLowerCase() === '0x152b9d0fdc40c096757f570a51e494bd4b943e50'
+	).symbol = 'BTC.b';
+	//RSR address
+	tokenlist[1].find(({ address }) => address.toLowerCase() === '0x8762db106b2c2a0bccb3a80d1ed41273552616e8').address =
+		'0x320623b8e4ff03373931769a31fc52a4e78b5d70';
+	// XDAI -> DAI
+	tokenlist[1].find(({ address }) => address.toLowerCase() === '0x6b175474e89094c44da98b954eedeac495271d0f').symbol =
+		'DAI';
+
+	return tokenlist;
+};
+
 export async function getTokenList() {
 	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
 	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
@@ -59,26 +76,22 @@ export async function getTokenList() {
 		return val.filter((token) => !tokensToRemove[key]?.[token.address.toLowerCase()]);
 	});
 
-	const tokenlist = {};
+	let tokenlist = {};
 
 	for (const chain in tokensFiltered) {
-		tokenlist[chain] = tokensFiltered[chain].map((t) => ({
-			...t,
-			label: t.symbol,
-			value: t.address,
-			geckoId: geckoList
-				? geckoList?.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
-				: null
-		})).filter(t => typeof t.address === "string");
+		tokenlist[chain] = tokensFiltered[chain]
+			.map((t) => ({
+				...t,
+				label: t.symbol,
+				value: t.address,
+				geckoId: geckoList
+					? geckoList?.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
+					: null
+			}))
+			.filter((t) => typeof t.address === 'string');
 	}
 
-	tokenlist[66][0].logoURI = tokenlist[66][1].logoURI;
-	tokenlist[43114].find(
-		({ address }) => address.toLowerCase() === '0x152b9d0fdc40c096757f570a51e494bd4b943e50'
-	).symbol = 'BTC.b';
-	tokenlist[1].find(
-		({ address }) => address.toLowerCase() === '0x8762db106b2c2a0bccb3a80d1ed41273552616e8'
-	).address = '0x320623b8e4ff03373931769a31fc52a4e78b5d70';
+	tokenlist = fixTotkens(tokenlist);
 
 	return {
 		props: {
