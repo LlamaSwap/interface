@@ -339,10 +339,10 @@ export function AggregatorContainer({ tokenlist }) {
 				.map((token) => ({
 					...token,
 					amount:
-						tokenBalances?.[selectedChain?.id]?.find((t) => t.address.toLowerCase() === token.address.toLowerCase())
+						tokenBalances?.[selectedChain?.id]?.find((t) => t.address.toLowerCase() === token?.address?.toLowerCase())
 							?.amount ?? 0,
 					balanceUSD:
-						tokenBalances?.[selectedChain?.id]?.find((t) => t.address.toLowerCase() === token.address.toLowerCase())
+						tokenBalances?.[selectedChain?.id]?.find((t) => t.address.toLowerCase() === token?.address?.toLowerCase())
 							?.balanceUSD ?? 0
 				}))
 				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
