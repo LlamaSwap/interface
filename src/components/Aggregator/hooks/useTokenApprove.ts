@@ -8,7 +8,8 @@ import { nativeAddress } from '../constants';
 //  already 0 to mitigate the race condition described here:
 //  https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
 const oldErc = [
-	'0xdAC17F958D2ee523a2206206994597C13D831ec7'.toLowerCase() // USDT
+	'0xdAC17F958D2ee523a2206206994597C13D831ec7'.toLowerCase(), // USDT
+	'0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32'.toLowerCase() // LDO
 ];
 
 export const useGetAllowance = (token: string, spender: `0x${string}`, amount: string) => {

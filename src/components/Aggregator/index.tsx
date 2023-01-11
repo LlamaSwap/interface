@@ -852,11 +852,13 @@ export function AggregatorContainer({ tokenlist }) {
 											{isUSDTNotApprovedOnEthereum && (
 												<Flex flexDir="column" gap="4px" w="100%">
 													<Text fontSize="0.75rem" fontWeight={400}>
-														{`USDT uses an old token implementation that requires resetting approvals if there's a
+														{`${
+															finalSelectedFromToken?.symbol
+														} uses an old token implementation that requires resetting approvals if there's a
 														previous approval, and you currently have an approval for ${(
 															Number(allowance) /
-															10 ** finalSelectedFromToken.decimals
-														).toFixed(2)} USDT for this contract, you
+															10 ** finalSelectedFromToken?.decimals
+														).toFixed(2)} ${finalSelectedFromToken?.symbol} for this contract, you
 														need to reset your approval and approve again`}
 													</Text>
 													<Button
