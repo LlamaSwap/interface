@@ -219,7 +219,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 						w="full"
 					>
 						<FormControl display="flex" alignItems="center" gap="8px" w="fit-content">
-							{fromToken.geckoId && (
+							{fromToken.geckoId && router.isReady && (
 								<Switch
 									id="coinMcap"
 									checked={fromTokenMCapPercentage}
