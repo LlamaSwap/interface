@@ -2,7 +2,7 @@
 
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
-import { applyArbitrumFees } from '../arbitrumFees';
+import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { defillamaReferrerAddress } from '../constants';
 
 export const chainToId = {

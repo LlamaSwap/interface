@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
-import { applyArbitrumFees } from '../arbitrumFees';
+import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { ExtraData } from '../types';
 
 // https://docs.kyberswap.com/Aggregator/aggregator-api#tag/swap/operation/get-route-encode

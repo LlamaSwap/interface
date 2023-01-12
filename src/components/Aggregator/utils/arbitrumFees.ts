@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
-import { providers } from './rpcs';
+import { providers } from '../rpcs';
 
 export async function applyArbitrumFees(to: string, data: string, gas: string) {
     const nodeInterface = new ethers.Contract("0x00000000000000000000000000000000000000C8",

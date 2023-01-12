@@ -2,7 +2,7 @@
 
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
-import { applyArbitrumFees } from '../arbitrumFees';
+import { applyArbitrumFees } from '../utils/arbitrumFees';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
