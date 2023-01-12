@@ -75,7 +75,7 @@ export async function getQuote(
 		amountReturned: data.priceRoute.destAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.priceRoute.tokenTransferProxy,
-		rawQuote: { ...dataSwap, gas },
+		rawQuote: { ...dataSwap, gasLimit: gas },
 		logo: 'https://assets.coingecko.com/coins/images/20403/small/ep7GqM19_400x400.jpg?1636979120'
 	};
 }
@@ -86,7 +86,7 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gas })
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
 	});
 
 	return tx;
