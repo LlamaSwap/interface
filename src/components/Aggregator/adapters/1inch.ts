@@ -2,6 +2,7 @@
 
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
+import { applyArbitrumFees } from '../arbitrumFees';
 import { defillamaReferrerAddress } from '../constants';
 
 export const chainToId = {
@@ -51,7 +52,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let gas = estimatedGas;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(estimatedGas).toFixed(0, 1);
-	if (chain === 'arbitrum') gas = BigNumber(4).times(estimatedGas).toFixed(0, 1);
+	if (chain === 'arbitrum') gas = swapData===null?0: await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas)
 
 	return {
 		amountReturned: swapData?.toTokenAmount ?? data.toTokenAmount,

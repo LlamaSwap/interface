@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
+import { applyArbitrumFees } from '../arbitrumFees';
 import { ExtraData } from '../types';
 
 // https://docs.kyberswap.com/Aggregator/aggregator-api#tag/swap/operation/get-route-encode
@@ -47,7 +48,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let gas = data.totalGas;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
-	if (chain === 'arbitrum') gas = BigNumber(4).times(gas).toFixed(0, 1);
+	if (chain === 'arbitrum') gas = await applyArbitrumFees(data.routerAddress, data.encodedSwapData, gas)
 
 	return {
 		amountReturned: data.outputAmount,
