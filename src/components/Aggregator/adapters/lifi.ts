@@ -67,3 +67,10 @@ export async function swap({ signer, rawQuote, chain }) {
 }
 
 export const getTxData = ({ rawQuote }) => rawQuote?.transactionRequest?.data;
+
+export const getTx = ({ rawQuote }) => ({
+	from: rawQuote.transactionRequest.from,
+	to: rawQuote.transactionRequest.to,
+	data: rawQuote.transactionRequest.data,
+	value: rawQuote.transactionRequest.value
+});

@@ -51,6 +51,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			price,
 			l1Gas,
 			txData,
+			tx: adapter?.getTx?.(price),
 			name: adapter.name,
 			airdrop: !adapter.token,
 			fromAmount: amount

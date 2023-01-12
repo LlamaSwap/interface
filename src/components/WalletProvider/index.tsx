@@ -8,6 +8,19 @@ import { allChains } from './chains';
 
 const { provider, chains } = configureChains(
 	[
+		chain.arbitrum,
+		{
+			...chain.mainnet,
+			rpcUrls: {
+				default: 'https://eth.llamarpc.com'
+			}
+		},
+		{
+			...chain.optimism,
+			rpcUrls: {
+				default: 'https://optimism-mainnet.public.blastapi.io'
+			}
+		},
 		...allChains
 	],
 	[

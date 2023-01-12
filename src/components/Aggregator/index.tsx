@@ -48,6 +48,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
+import { useEstimateGas } from './hooks/useEstimateGas';
 
 /*
 Integrated:
@@ -541,6 +542,13 @@ export function AggregatorContainer({ tokenlist }) {
 			isPrivacyEnabled,
 			setRoute
 		}
+	});
+
+	const gasData = useEstimateGas({
+		routes,
+		token: finalSelectedFromToken?.address,
+		userAddress: address,
+		chainId: 1
 	});
 
 	const { data: tokenPrices } = useGetPrice({
