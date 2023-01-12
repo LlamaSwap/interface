@@ -43,7 +43,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: data.buyAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.to,
-		rawQuote: { ...data, gas },
+		rawQuote: { ...data, gasLimit: gas },
 		logo: 'https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F1690203644-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FKX9pG8rH3DbKDOvV7di7%252Ficon%252F1nKfBhLbPxd2KuXchHET%252F0x%2520logo.png%3Falt%3Dmedia%26token%3D25a85a3e-7f72-47ea-a8b2-e28c0d24074b'
 	};
 }
@@ -56,7 +56,7 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gas })
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
 	});
 
 	return tx;

@@ -49,13 +49,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let gas = data.totalGas;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
-	if (chain === 'arbitrum') gas = await applyArbitrumFees(data.routerAddress, data.encodedSwapData, gas)
+	if (chain === 'arbitrum') gas = await applyArbitrumFees(data.routerAddress, data.encodedSwapData, gas);
 
 	return {
 		amountReturned: data.outputAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.routerAddress,
-		rawQuote: { ...data, totalGas: gas },
+		rawQuote: { ...data, gasLimit: gas },
 		logo: 'https://assets.coingecko.com/coins/images/14899/small/RwdVsGcw_400x400.jpg?1618923851'
 	};
 }
@@ -67,7 +67,7 @@ export async function swap({ signer, from, rawQuote, chain }) {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
 		data: rawQuote.encodedSwapData,
-		...(chain === 'optimism' && { gasLimit: rawQuote.totalGas })
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
 	};
 
 	if (from === ethers.constants.AddressZero) transactionOption.value = rawQuote.inputAmount;
