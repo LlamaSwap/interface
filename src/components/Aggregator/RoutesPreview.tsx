@@ -62,7 +62,7 @@ const CheckWithText = ({ text }: { text: string }) => {
 const RoutesPreview = () => {
 	return (
 		<div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-around', paddingTop: '30px' }}>
-			<Header mb={10}>
+			<Header>
 				<MainIcon>{LlamaIcon}</MainIcon>
 
 				<IconsBody>
