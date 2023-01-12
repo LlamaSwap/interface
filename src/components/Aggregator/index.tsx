@@ -102,6 +102,7 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	padding: 16px;
 	width: 100%;
 	max-width: 30rem;
+	border: 1px solid #2f333c;
 
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
@@ -115,6 +116,7 @@ const Body = styled.div<{ showRoutes: boolean }>`
 const Wrapper = styled.div`
 	width: 100%;
 	height: 100%;
+	min-height:100%;
 	text-align: center;
 	display: grid;
 	grid-row-gap: 36px;
@@ -140,8 +142,10 @@ const Routes = styled.div`
 	overflow-y: scroll;
 	width: 100%;
 	height: 100%;
+	min-height:100%;
 	max-height: 480px;
 	max-width: 30rem;
+	border: 1px solid #2f333c;
 
 	& > *:first-child {
 		margin-bottom: -6px;
