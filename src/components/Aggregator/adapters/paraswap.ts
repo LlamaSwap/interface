@@ -2,6 +2,7 @@
 
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
+import { applyArbitrumFees } from '../arbitrumFees';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
@@ -65,7 +66,9 @@ export async function getQuote(
 	let gas = data.priceRoute.gasCost;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
-	if (chain === 'arbitrum') gas = BigNumber(7).times(gas).toFixed(0, 1);
+	if (chain === 'arbitrum') {
+		gas = await applyArbitrumFees(dataSwap.to, dataSwap.data, gas)
+	}
 	return {
 		amountReturned: data.priceRoute.destAmount,
 		estimatedGas: gas,
