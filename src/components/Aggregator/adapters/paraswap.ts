@@ -3,6 +3,7 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
+import { sendTx } from '../utils/sendTx';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
@@ -79,7 +80,7 @@ export async function getQuote(
 }
 
 export async function swap({ signer, rawQuote, chain }) {
-	const tx = await signer.sendTransaction({
+	const tx = await sendTx(signer, chain, {
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,

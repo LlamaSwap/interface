@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
+import { sendTx } from '../utils/sendTx';
 
 export const chainToId = {
 	ethereum: 1,
@@ -59,7 +60,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ signer, rawQuote, chain }) {
-	const tx = await signer.sendTransaction({
+	const tx = await sendTx(signer, chain, {
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
