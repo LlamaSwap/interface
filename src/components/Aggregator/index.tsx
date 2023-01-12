@@ -717,7 +717,7 @@ export function AggregatorContainer({ tokenlist }) {
 					</SelectWrapper>
 
 					<div>
-						<FormHeader>Amount In</FormHeader>
+						<FormHeader>Amount In {finalSelectedFromToken?.symbol}</FormHeader>
 						<TokenInput setAmount={setAmount} amount={amount} onMaxClick={onMaxClick} />
 
 						<Flex flexDir="column" gap="16px" marginBottom="16px">
