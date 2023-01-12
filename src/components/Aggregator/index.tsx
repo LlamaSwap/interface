@@ -44,6 +44,7 @@ import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast } from '~/utils/formatSuccessToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
+import { useLocalStorage } from '~/hooks/useLocalStorage';
 
 /*
 Integrated:
@@ -221,7 +222,8 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const [route, setRoute] = useState(null);
 
-	const [isPrivacyEnabled, setIsPrivacyEnabled] = useState(false);
+	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
+
 	const toast = useToast();
 
 	const { data: tokenBalances } = useTokenBalances(address);
