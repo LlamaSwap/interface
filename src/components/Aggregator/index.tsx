@@ -725,9 +725,7 @@ export function AggregatorContainer({ tokenlist }) {
 								<Text minH="22px">
 									{fromTokenPrice
 										? `Value: $
-										${(+fromTokenPrice * +amount).toLocaleString(undefined, {
-											maximumFractionDigits: 3
-										})}`
+										${(+fromTokenPrice * +amount).toFixed(3)}`
 										: ''}
 								</Text>
 
@@ -742,10 +740,7 @@ export function AggregatorContainer({ tokenlist }) {
 										height="fit-content"
 										onClick={onMaxClick}
 									>
-										Balance:{' '}
-										{(+balance?.data?.formatted).toLocaleString(undefined, {
-											maximumFractionDigits: 3
-										})}
+										Balance: {(+balance?.data?.formatted).toFixed(3)}
 									</Button>
 								) : null}
 							</Flex>

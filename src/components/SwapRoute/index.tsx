@@ -64,12 +64,7 @@ const Route = ({
 			<RouteRow>
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 					<div style={{ display: 'flex' }}>
-						{netOut && Number.isFinite(Number(netOut))
-							? `$${Number(netOut).toLocaleString(undefined, {
-									minimumFractionDigits: 3,
-									maximumFractionDigits: 3
-							  })}`
-							: null}
+						{netOut && Number.isFinite(Number(netOut)) ? `$${Number(netOut).toFixed(3)}` : null}
 
 						{index === 0 ? (
 							<Text color="green.200" ml={2} fontSize={12} lineHeight={'26px'}>
@@ -84,7 +79,7 @@ const Route = ({
 				</Text>
 				<div style={{ marginLeft: 'auto', display: 'flex' }}>
 					<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
-						{amount.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}{' '}
+						{amount.toFixed(3)}{' '}
 					</Text>
 					<img
 						src={toToken?.logoURI}
@@ -100,20 +95,13 @@ const Route = ({
 					{name === 'CowSwap' ? (
 						<Tooltip content="Gas is taken from output amount">
 							<Text style={{ display: 'flex', marginTop: '-6px' }} color="gray.400">
-								${amountUsd} -{' '}
-								<div>${gasUsd.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</div>
+								${amountUsd} - <div>${Number(gasUsd).toFixed(3)}</div>
 							</Text>
 						</Tooltip>
 					) : (
 						<>
 							${amountUsd} -{' '}
-							<div>
-								{gasUsd === 'Unknown' ? (
-									gasUsd
-								) : (
-									<>${gasUsd.toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</>
-								)}
-							</div>
+							<div>{gasUsd === 'Unknown' && Number.isNaN(gasUsd) ? gasUsd : <>${Number(gasUsd).toFixed(3)}</>}</div>
 						</>
 					)}
 

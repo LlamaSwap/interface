@@ -186,7 +186,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 
 						return (
 							<tr key={toToken.address + liqAmount}>
-								<td>{`$${liqAmount.toLocaleString()} of ${fromToken.symbol}`}</td>
+								<td>{`$${liqAmount.toFixed(2)} of ${fromToken.symbol}`}</td>
 								<td>
 									{isLoading ? (
 										<Skeleton height="16px" width="100%" maxWidth="24ch" margin="auto" />
@@ -197,7 +197,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 														BigNumber(topRoute?.price?.amountReturned ?? 0)
 															.div(10 ** Number(toToken.decimals || 18))
 															.toFixed(3)
-												  ).toLocaleString()} ${toToken.symbol} via ${topRoute?.name}`
+												  ).toFixed(2)} ${toToken.symbol} via ${topRoute?.name}`
 												: ''}
 										</>
 									)}
