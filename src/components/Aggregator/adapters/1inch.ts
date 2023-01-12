@@ -54,7 +54,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(estimatedGas).toFixed(0, 1);
 	if (chain === 'arbitrum')
-		gas = swapData === null ? undefined : await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas);
+		gas = swapData === null ? null : await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas);
 
 	return {
 		amountReturned: swapData?.toTokenAmount ?? data.toTokenAmount,
