@@ -599,7 +599,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 			const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
 
-			return { route, gasUsd, amountUsd, amount, netOut, ...route };
+			return { route, gasUsd: gasUsd === 0 ? 'Unknown' : gasUsd, amountUsd, amount, netOut, ...route };
 		})
 		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
 		.sort((a, b) => b.netOut - a.netOut)

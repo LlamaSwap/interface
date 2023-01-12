@@ -68,7 +68,7 @@ export async function getQuote(
 		amountReturned: data?.route?.outputAmount,
 		estimatedGas: gasPrice,
 		tokenApprovalAddress: data?.tx?.txTo,
-		rawQuote: { ...data, estimatedGas },
+		rawQuote: { ...data, gasLimit: gasPrice },
 		logo: ''
 	};
 }
@@ -81,7 +81,7 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote?.tx?.txTo,
 		data: rawQuote?.tx?.txData,
 		value: rawQuote?.tx?.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.estimatedGas })
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
 	});
 
 	return tx;
