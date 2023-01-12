@@ -62,7 +62,7 @@ const CheckWithText = ({ text }: { text: string }) => {
 
 const RoutesPreview = () => {
 	return (
-		<div style={{ width: '420px', overflow: 'hidden' }}>
+		<div style={{ width: '420px' }}>
 			<Header>
 				<MainIcon>{LlamaIcon}</MainIcon>
 
