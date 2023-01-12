@@ -87,7 +87,7 @@ const RoutesPreview = () => {
 				<br /> the best execution prices in DeFi.
 				<br /> <br /> Try it now or{' '}
 				<Link href="https://discord.com/invite/j54NuUt5nW" isExternal textDecoration={'underline'}>
-					learn more <ExternalLinkIcon mx="2px" />
+					learn more<ExternalLinkIcon mx="4px" mb="3px" />
 				</Link>
 			</Text>
 		</div>
