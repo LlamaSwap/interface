@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { ExtraData } from '../types';
+import { sendTx } from '../utils/sendTx';
 
 // https://docs.kyberswap.com/Aggregator/aggregator-api#tag/swap/operation/get-route-encode
 export const chainToId = {
@@ -71,7 +72,7 @@ export async function swap({ signer, from, rawQuote, chain }) {
 
 	if (from === ethers.constants.AddressZero) transactionOption.value = rawQuote.inputAmount;
 
-	const tx = await signer.sendTransaction(transactionOption);
+	const tx = await sendTx(signer, chain, transactionOption);
 
 	return tx;
 }
