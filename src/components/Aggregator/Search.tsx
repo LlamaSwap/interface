@@ -19,6 +19,9 @@ export const ModalOverlay = styled.div`
 	bottom: 0;
 	background: rgba(0, 0, 0, 0.6);
 	z-index: 50;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 `;
 
 export const ModalWrapper = styled.div`
@@ -32,14 +35,14 @@ export const ModalWrapper = styled.div`
 	left: 0;
 	right: 0;
 	margin: auto;
-
+	width: 100%;
+	margin: 0 20px;
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
 			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
 			: '10px 0px 50px 10px rgba(211, 211, 211, 0.9);;'};
 	padding: 16px;
 	border-radius: 16px;
-	position: absolute;
 	z-index: 2;
 
 	animation: scale-in-center 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
