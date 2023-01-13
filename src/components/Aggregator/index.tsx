@@ -625,7 +625,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	useEffect(() => {
 		const id = setTimeout(() => {
-			if (customSlippage && !Number.isNaN(customSlippage) && slippage !== customSlippage) {
+			if (customSlippage && !Number.isNaN(Number(customSlippage)) && slippage !== customSlippage) {
 				router.push({ pathname: '/', query: { ...router.query, slippage: customSlippage } }, undefined, {
 					shallow: true
 				});

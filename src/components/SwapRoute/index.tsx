@@ -95,12 +95,14 @@ const Route = ({
 					{name === 'CowSwap' ? (
 						<Tooltip content="Gas is taken from output amount">
 							<Text as="span" color="gray.400">
-								{`${amountUsd} - $${Number(gasUsd).toFixed(3)}`}
+								{`${amountUsd} - ${
+									gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
+								}`}
 							</Text>
 						</Tooltip>
 					) : (
 						<>{`${amountUsd} - ${
-							gasUsd === 'Unknown' || Number.isNaN(gasUsd) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
+							gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
 						}`}</>
 					)}
 
