@@ -149,13 +149,10 @@ const Routes = styled.div`
 	text-align: left;
 	overflow-y: scroll;
 	width: 100%;
-	min-height:100%;
+	min-height: 100%;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
 		max-height: 485px;
-		[class*=SwapWrapper] {
-			display: none;
-		}
 	}
 
 	max-width: 30rem;
@@ -229,6 +226,13 @@ const SwapWrapper = styled.div`
 
 	& > button {
 		flex: 1;
+	}
+`;
+
+const SwapUnderRoute = styled(SwapWrapper)`
+	margin-top: 16px;
+	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
+		display: none;
 	}
 `;
 
@@ -1003,7 +1007,7 @@ export function AggregatorContainer({ tokenlist }) {
 							/>
 
 							{route?.name === r.name && (
-								<SwapWrapper style={{ marginTop: '16px' }}>
+								<SwapUnderRoute>
 									{!isConnected ? (
 										<ConnectButtonWrapper>
 											<ConnectButton />
@@ -1089,7 +1093,7 @@ export function AggregatorContainer({ tokenlist }) {
 											)}
 										</>
 									)}
-								</SwapWrapper>
+								</SwapUnderRoute>
 							)}
 						</Fragment>
 					))}
