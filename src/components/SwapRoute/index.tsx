@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
-import { Text } from '@chakra-ui/react';
+import { Flex, Text } from '@chakra-ui/react';
 import { Gift, Unlock } from 'react-feather';
 import { GasIcon } from '../Icons';
 
@@ -63,21 +63,21 @@ const Route = ({
 		<RouteWrapper onClick={setRoute} selected={selected} best={index === 0}>
 			<RouteRow>
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
-					<div style={{ display: 'flex' }}>
-						{netOut && Number.isFinite(Number(netOut)) ? `$${Number(netOut).toFixed(3)}` : null}
+					<Flex as="span" alignItems="center" gap="8px">
+						<span>{netOut && Number.isFinite(Number(netOut)) ? `$${Number(netOut).toFixed(3)}` : null}</span>
 
 						{index === 0 ? (
-							<Text color="green.200" ml={2} fontSize={12} lineHeight={'26px'}>
+							<Text as="span" color="green.200" fontSize={12}>
 								BEST
 							</Text>
 						) : Number.isFinite(lossPercent) ? (
-							<Text color="red.200" ml={2} fontSize={12} lineHeight={'26px'}>
+							<Text as="span" color="red.200" fontSize={12}>
 								(-{Math.abs(100 - lossPercent * 100).toFixed(2)}%)
 							</Text>
 						) : null}
-					</div>
+					</Flex>
 				</Text>
-				<div style={{ marginLeft: 'auto', display: 'flex' }}>
+				<Flex ml="auto" alignItems="center">
 					<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 						{amount.toFixed(3)}{' '}
 					</Text>
@@ -87,50 +87,42 @@ const Route = ({
 						style={{ marginLeft: 4 }}
 						onError={(e) => (e.currentTarget.src = '/notFound.png')}
 					/>
-				</div>
+				</Flex>
 			</RouteRow>
 
 			<RouteRow>
-				<Text style={{ display: 'flex' }} color="gray.400" lineHeight={1}>
+				<Text display="flex" alignItems="center" gap="4px" color="gray.400" lineHeight={1}>
 					{name === 'CowSwap' ? (
 						<Tooltip content="Gas is taken from output amount">
-							<Text style={{ display: 'flex', marginTop: '-6px' }} color="gray.400">
-								${amountUsd} - <div>${Number(gasUsd).toFixed(3)}</div>
+							<Text as="span" color="gray.400">
+								{`${amountUsd} - ${
+									gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
+								}`}
 							</Text>
 						</Tooltip>
 					) : (
-						<>
-							${amountUsd} -{' '}
-							<div>{gasUsd === 'Unknown' && Number.isNaN(gasUsd) ? gasUsd : <>${Number(gasUsd).toFixed(3)}</>}</div>
-						</>
+						<>{`${amountUsd} - ${
+							gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
+						}`}</>
 					)}
 
-					<span style={{ marginLeft: '4px' }}>
-						<GasIcon />
-					</span>
+					<GasIcon />
 				</Text>
 
-				<span style={{ marginLeft: '8px', display: 'flex' }}>
-					{airdrop ? (
-						<Tooltip content="This project has no token and might airdrop one in the future">
-							<span style={{ marginLeft: 4 }}>
-								{' '}
-								<Gift width={14} height={14} color="#A0AEC0" style={{ marginTop: '-6px' }} />
-							</span>
-						</Tooltip>
-					) : null}
-					{isApproved ? (
-						<Tooltip content="Token is approved for this aggregator.">
-							<span style={{ marginLeft: 4 }}>
-								<Unlock width={14} height={14} color="#A0AEC0" style={{ marginTop: '-6px' }} />
-							</span>
-						</Tooltip>
-					) : null}
-				</span>
+				{airdrop ? (
+					<Tooltip content="This project has no token and might airdrop one in the future">
+						<Gift size={14} color="#A0AEC0" />
+					</Tooltip>
+				) : null}
+				{isApproved ? (
+					<Tooltip content="Token is approved for this aggregator.">
+						<Unlock size={14} color="#A0AEC0" />
+					</Tooltip>
+				) : null}
 
-				<div style={{ marginLeft: 'auto', display: 'flex' }}>
-					<Text color={'gray.400'}>via {name}</Text>
-				</div>
+				<Text color={'gray.400'} ml="auto">
+					via {name}
+				</Text>
 			</RouteRow>
 		</RouteWrapper>
 	);
@@ -169,6 +161,8 @@ const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
 
 const RouteRow = styled.div`
 	display: flex;
+	align-items: center;
+	gap: 16px;
 
 	img {
 		width: 24px;

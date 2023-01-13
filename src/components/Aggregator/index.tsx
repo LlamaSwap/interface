@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
@@ -118,7 +118,7 @@ const Body = styled.div<{ showRoutes: boolean }>`
 const Wrapper = styled.div`
 	width: 100%;
 	height: 100%;
-	min-height:100%;
+	min-height: 100%;
 	text-align: center;
 	display: flex;
 	flex-direction: column;
@@ -134,10 +134,10 @@ const Wrapper = styled.div`
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
 		top: 0px;
 	}
-	
+
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
 		flex-direction: column;
-    	display: flex;
+		display: flex;
 	}
 `;
 
@@ -237,14 +237,14 @@ const ConnectButtonWrapper = styled.div`
 	width: 100%;
 	display: flex;
 	flex-wrap: wrap;
-	
+
 	& button {
 		width: 100%;
 		text-align: center !important;
 	}
 
 	& > div {
-		width: 100%
+		width: 100%;
 	}
 `;
 
@@ -270,7 +270,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const { switchNetwork } = useSwitchNetwork();
 
 	const router = useRouter();
-	
+
 	const routesRef = useRef(null);
 
 	const { chain: chainOnURL, from: fromToken, to: toToken, slippage: slippageQuery } = router.query;
@@ -662,7 +662,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	useEffect(() => {
 		const id = setTimeout(() => {
-			if (customSlippage && !Number.isNaN(customSlippage) && slippage !== customSlippage) {
+			if (customSlippage && !Number.isNaN(Number(customSlippage)) && slippage !== customSlippage) {
 				router.push({ pathname: '/', query: { ...router.query, slippage: customSlippage } }, undefined, {
 					shallow: true
 				});
@@ -747,12 +747,6 @@ export function AggregatorContainer({ tokenlist }) {
 								selectedChain={selectedChain}
 							/>
 						</TokenSelectBody>
-
-						{/* <Text textAlign="center" margin="8px 16px">
-							OR
-						</Text>
-
-						<Search tokens={tokensInChain} setTokens={setTokens} /> */}
 					</SelectWrapper>
 
 					<div>
@@ -964,14 +958,18 @@ export function AggregatorContainer({ tokenlist }) {
 						</Alert>
 					) : null}
 				</Body>
-				
+
 				<Routes ref={routesRef}>
 					{normalizedRoutes?.length ? (
-							<FormHeader>Select a route to perform a swap</FormHeader>
-						) : !isLoading && amount && finalSelectedFromToken && finalSelectedToToken ? (
-							<FormHeader>No available routes found</FormHeader>
-						) : null}
-					<span style={{ fontSize: '12px', color: '#999999', marginLeft: "4px", marginTop: "4px" }}>
+						<FormHeader>Select a route to perform a swap</FormHeader>
+					) : !isLoading &&
+					  amount &&
+					  debouncedAmountWithDecimals === amountWithDecimals &&
+					  finalSelectedFromToken &&
+					  finalSelectedToToken ? (
+						<FormHeader>No available routes found</FormHeader>
+					) : null}
+					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px' }}>
 						{normalizedRoutes?.length ? 'Best route is selected based on a net output after gas fees' : null}
 					</span>
 
@@ -982,7 +980,16 @@ export function AggregatorContainer({ tokenlist }) {
 					)}
 
 					{normalizedRoutes.map((r, i) => (
-						<>
+						<Fragment
+							key={
+								selectedChain.label +
+								finalSelectedFromToken.label +
+								finalSelectedToToken.label +
+								amountWithDecimals +
+								gasPriceData?.formatted?.gasPrice +
+								r?.name
+							}
+						>
 							<Route
 								{...r}
 								index={i}
@@ -993,109 +1000,98 @@ export function AggregatorContainer({ tokenlist }) {
 								fromToken={finalSelectedFromToken}
 								selectedChain={selectedChain.label}
 								gasTokenPrice={gasTokenPrice}
-								key={
-									selectedChain.label +
-									finalSelectedFromToken.label +
-									finalSelectedToToken.label +
-									amountWithDecimals +
-									gasPriceData?.formatted?.gasPrice +
-									r?.name
-								}
-							/>	
+							/>
 
 							{route?.name === r.name && (
-								<div>
-									{/* TODO: Change that to component inside the selected route */}
-									<SwapWrapper style={{ marginTop: '16px' }}> 
-										{!isConnected ? (
-											<ConnectButtonWrapper>
-												<ConnectButton />
-											</ConnectButtonWrapper>
-										) : !isValidSelectedChain ? (
-											<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
-												Switch Network
-											</Button>
-										) : (
-											<>
-												{router && address && (
+								<SwapWrapper style={{ marginTop: '16px' }}>
+									{!isConnected ? (
+										<ConnectButtonWrapper>
+											<ConnectButton />
+										</ConnectButtonWrapper>
+									) : !isValidSelectedChain ? (
+										<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
+											Switch Network
+										</Button>
+									) : (
+										<>
+											{router && address && (
+												<>
 													<>
-														<>
-															{isUSDTNotApprovedOnEthereum && (
-																<Flex flexDir="column" gap="4px" w="100%">
-																	<Text fontSize="0.75rem" fontWeight={400}>
-																		{`${
-																			finalSelectedFromToken?.symbol
-																		} uses an old token implementation that requires resetting approvals if there's a
+														{isUSDTNotApprovedOnEthereum && (
+															<Flex flexDir="column" gap="4px" w="100%">
+																<Text fontSize="0.75rem" fontWeight={400}>
+																	{`${
+																		finalSelectedFromToken?.symbol
+																	} uses an old token implementation that requires resetting approvals if there's a
 																		previous approval, and you currently have an approval for ${(
 																			Number(allowance) /
 																			10 ** finalSelectedFromToken?.decimals
 																		).toFixed(2)} ${finalSelectedFromToken?.symbol} for this contract, you
 																		need to reset your approval and approve again`}
-																	</Text>
-																	<Button
-																		isLoading={isApproveResetLoading}
-																		loadingText={isConfirmingResetApproval ? 'Confirming' : 'Preparing transaction'}
-																		colorScheme={'messenger'}
-																		onClick={() => {
-																			if (approveReset) approveReset();
-																		}}
-																		disabled={isApproveResetLoading}
-																	>
-																		Reset Approval
-																	</Button>
-																</Flex>
-															)}
+																</Text>
+																<Button
+																	isLoading={isApproveResetLoading}
+																	loadingText={isConfirmingResetApproval ? 'Confirming' : 'Preparing transaction'}
+																	colorScheme={'messenger'}
+																	onClick={() => {
+																		if (approveReset) approveReset();
+																	}}
+																	disabled={isApproveResetLoading}
+																>
+																	Reset Approval
+																</Button>
+															</Flex>
+														)}
 
+														<Button
+															isLoading={swapMutation.isLoading || isApproveLoading}
+															loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+															colorScheme={'messenger'}
+															onClick={() => {
+																if (approve) approve();
+
+																if (+amount > +balance?.data?.formatted) return;
+
+																if (isApproved) handleSwap();
+															}}
+															disabled={
+																isUSDTNotApprovedOnEthereum ||
+																swapMutation.isLoading ||
+																isApproveLoading ||
+																isApproveResetLoading ||
+																!route
+															}
+														>
+															{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
+														</Button>
+
+														{!isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
 															<Button
-																isLoading={swapMutation.isLoading || isApproveLoading}
-																loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
 																colorScheme={'messenger'}
+																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+																isLoading={isApproveInfiniteLoading}
 																onClick={() => {
-																	if (approve) approve();
-
-																	if (+amount > +balance?.data?.formatted) return;
-
-																	if (isApproved) handleSwap();
+																	if (approveInfinite) approveInfinite();
 																}}
 																disabled={
 																	isUSDTNotApprovedOnEthereum ||
 																	swapMutation.isLoading ||
 																	isApproveLoading ||
 																	isApproveResetLoading ||
-																	!route
+																	isApproveInfiniteLoading
 																}
 															>
-																{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
+																{'Approve Infinite'}
 															</Button>
-
-															{!isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
-																<Button
-																	colorScheme={'messenger'}
-																	loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
-																	isLoading={isApproveInfiniteLoading}
-																	onClick={() => {
-																		if (approveInfinite) approveInfinite();
-																	}}
-																	disabled={
-																		isUSDTNotApprovedOnEthereum ||
-																		swapMutation.isLoading ||
-																		isApproveLoading ||
-																		isApproveResetLoading ||
-																		isApproveInfiniteLoading
-																	}
-																>
-																	{'Approve Infinite'}
-																</Button>
-															)}
-														</>
+														)}
 													</>
-												)}
-											</>
-										)}
-									</SwapWrapper>
-								</div>
+												</>
+											)}
+										</>
+									)}
+								</SwapWrapper>
 							)}
-						</>
+						</Fragment>
 					))}
 				</Routes>
 			</BodyWrapper>
