@@ -132,6 +132,11 @@ const Wrapper = styled.div`
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
 		top: 0px;
 	}
+	
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		flex-direction: column;
+    	display: flex;
+	}
 `;
 
 const Routes = styled.div`
