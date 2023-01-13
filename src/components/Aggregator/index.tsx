@@ -966,9 +966,9 @@ export function AggregatorContainer({ tokenlist }) {
 				<Routes ref={routesRef}>
 					{normalizedRoutes?.length ? (
 							<FormHeader>Select a route to perform a swap</FormHeader>
-						) : !isLoading ? (
+						) : !isLoading && amount && finalSelectedFromToken && finalSelectedToToken ? (
 							<FormHeader>No available routes found</FormHeader>
-						) : <FormHeader>Loading...</FormHeader>}
+						) : null}
 					<span style={{ fontSize: '12px', color: '#999999', marginLeft: "4px", marginTop: "4px" }}>
 						{normalizedRoutes?.length ? 'Best route is selected based on a net output after gas fees' : null}
 					</span>
