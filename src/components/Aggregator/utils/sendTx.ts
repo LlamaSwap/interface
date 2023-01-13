@@ -6,7 +6,7 @@ export async function sendTx(signer:ethers.Signer, chain:string, txObject:any){
     }
     if(txObject.gasLimit === undefined){
         const gasPrediction = await signer.estimateGas(txObject)
-        txObject.gasLimit = gasPrediction.mul(13).div(10) // Increase gas +30%
+        txObject.gasLimit = gasPrediction.mul(14).div(10) // Increase gas +40%
     }
     return signer.sendTransaction(txObject);
 }

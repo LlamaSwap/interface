@@ -52,21 +52,19 @@ export default function SlippageChart({
 				formatter: function (params: any) {
 					const tradeInfo = mcap
 						? `${((Number(params[0].value[0]) / mcap) * 100).toFixed(2)} % of Mcap`
-						: `$${Number(params[0].value[0]).toLocaleString(undefined, {
-								maximumFractionDigits: 2
-						  })})`;
+						: `$${Number(params[0].value[0]).toFixed(2)})`;
 
 					const trade =
 						'<li style="list-style:none">' +
 						'Trade: ' +
-						Number(params[0].value[4]).toLocaleString(undefined, { maximumFractionDigits: 2 }) +
+						Number(params[0].value[4]).toFixed(2) +
 						` ${fromTokenSymbol} (${tradeInfo})` +
 						'</li>';
 
 					const receive =
 						'<li style="list-style:none">' +
 						'Receive: ' +
-						Number(params[0].value[2]).toLocaleString(undefined, { maximumFractionDigits: 2 }) +
+						Number(params[0].value[2]).toFixed(2) +
 						` ${toTokenSymbol} via ${params[0].value[3]}` +
 						'</li>';
 
@@ -87,7 +85,7 @@ export default function SlippageChart({
 				},
 				axisLabel: {
 					formatter: (value) =>
-						mcap ? `${((value / mcap) * 100).toFixed(2)} % of Mcap` : '$' + Number(value).toLocaleString(),
+						mcap ? `${((value / mcap) * 100).toFixed(2)} % of Mcap` : '$' + Number(value).toFixed(2),
 					hideOverlap: true
 				},
 				boundaryGap: false,
@@ -170,7 +168,7 @@ export default function SlippageChart({
 						}
 					},
 					fillerColor: 'rgba(0, 0, 0, 0.1)',
-					labelFormatter: (value) => '$' + Number(value).toLocaleString()
+					labelFormatter: (value) => '$' + Number(value).toFixed(2)
 				}
 			],
 			series: {
