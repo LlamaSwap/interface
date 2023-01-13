@@ -63,18 +63,19 @@ export async function getQuote(
 			  }).then((r) => r.json())
 			: null;
 
-	const gasPrice = chain === 'optimism' ? BigNumber(3.5).times(dataSwap?.gasPrice).toFixed(0, 1) : dataSwap?.gasPrice;
 	let gas = data.priceRoute.gasCost;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
+
 	if (chain === 'arbitrum') {
-		gas = await applyArbitrumFees(dataSwap.to, dataSwap.data, gas)
+		gas = await applyArbitrumFees(dataSwap.to, dataSwap.data, gas);
 	}
+
 	return {
 		amountReturned: data.priceRoute.destAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.priceRoute.tokenTransferProxy,
-		rawQuote: { ...dataSwap, gasPrice },
+		rawQuote: { ...dataSwap, gasLimit: gas },
 		logo: 'https://assets.coingecko.com/coins/images/20403/small/ep7GqM19_400x400.jpg?1636979120'
 	};
 }
@@ -85,8 +86,9 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasPrice })
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
 	});
+
 	return tx;
 }
 

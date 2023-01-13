@@ -53,13 +53,14 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let gas = estimatedGas;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(estimatedGas).toFixed(0, 1);
-	if (chain === 'arbitrum') gas = swapData===null?0: await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas)
+	if (chain === 'arbitrum')
+		gas = swapData === null ? null : await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas);
 
 	return {
 		amountReturned: swapData?.toTokenAmount ?? data.toTokenAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress,
-		rawQuote: swapData === null ? null : { ...swapData, tx: { ...swapData.tx, gas } },
+		rawQuote: swapData === null ? null : { ...swapData, tx: { ...swapData.tx, gasLimit: gas } },
 		logo: 'https://defillama.com/_next/image?url=https%3A%2F%2Ficons.llama.fi%2F1inch-network.jpg&w=48&q=75'
 	};
 }
@@ -70,7 +71,7 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gas })
+		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit })
 	});
 	return tx;
 }

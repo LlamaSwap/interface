@@ -45,6 +45,7 @@ import { formatSuccessToast } from '~/utils/formatSuccessToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useLocalStorage } from '~/hooks/useLocalStorage';
 
 /*
 Integrated:
@@ -251,7 +252,8 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const [route, setRoute] = useState(null);
 
-	const [isPrivacyEnabled, setIsPrivacyEnabled] = useState(false);
+	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
+
 	const toast = useToast();
 
 	const { data: tokenBalances } = useTokenBalances(address);
@@ -629,7 +631,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 			const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
 
-			return { route, gasUsd, amountUsd, amount, netOut, ...route };
+			return { route, gasUsd: gasUsd === 0 ? 'Unknown' : gasUsd, amountUsd, amount, netOut, ...route };
 		})
 		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
 		.sort((a, b) => b.netOut - a.netOut)
@@ -755,9 +757,7 @@ export function AggregatorContainer({ tokenlist }) {
 								<Text minH="22px">
 									{fromTokenPrice
 										? `Value: $
-										${(+fromTokenPrice * +amount).toLocaleString(undefined, {
-											maximumFractionDigits: 3
-										})}`
+										${(+fromTokenPrice * +amount).toFixed(3)}`
 										: ''}
 								</Text>
 
@@ -772,10 +772,7 @@ export function AggregatorContainer({ tokenlist }) {
 										height="fit-content"
 										onClick={onMaxClick}
 									>
-										Balance:{' '}
-										{(+balance?.data?.formatted).toLocaleString(undefined, {
-											maximumFractionDigits: 3
-										})}
+										Balance: {(+balance?.data?.formatted).toFixed(3)}
 									</Button>
 								) : null}
 							</Flex>

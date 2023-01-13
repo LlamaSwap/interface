@@ -84,9 +84,10 @@ export async function getTokenList() {
 				...t,
 				label: t.symbol,
 				value: t.address,
-				geckoId: geckoList
-					? geckoList?.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
-					: null
+				geckoId:
+					geckoList && geckoList.length > 0
+						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
+						: null
 			}))
 			.filter((t) => typeof t.address === 'string');
 	}
