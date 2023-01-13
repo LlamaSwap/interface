@@ -87,6 +87,8 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 					],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
 					refetchInterval: 15_000,
+					refetchOnWindowFocus: false,
+					refetchIntervalInBackground: false,
 					onSuccess: (data) => {
 						if (data.name === extra.selectedRoute) extra.setRoute(data);
 					}
