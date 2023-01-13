@@ -975,7 +975,7 @@ export function AggregatorContainer({ tokenlist }) {
 					)}
 
 					{normalizedRoutes.map((r, i) => (
-						<div>
+						<>
 							<Route
 								{...r}
 								index={i}
@@ -1088,7 +1088,7 @@ export function AggregatorContainer({ tokenlist }) {
 									</SwapWrapper>
 								</div>
 							)}
-						</div>
+						</>
 					))}
 				</Routes>
 			</BodyWrapper>
