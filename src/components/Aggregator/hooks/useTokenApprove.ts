@@ -31,7 +31,12 @@ export const useGetAllowance = (token: string, spender: `0x${string}`, amount: s
 	});
 
 	const shouldRemoveApproval =
-		isOld && allowance && amount && !Number.isNaN(amount) && allowance.lt(BigNumber.from(amount)) && !allowance.eq(0);
+		isOld &&
+		allowance &&
+		amount &&
+		!Number.isNaN(Number(amount)) &&
+		allowance.lt(BigNumber.from(amount)) &&
+		!allowance.eq(0);
 
 	return { allowance, shouldRemoveApproval, refetch, isRefetching };
 };
