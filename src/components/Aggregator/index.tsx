@@ -120,7 +120,8 @@ const Wrapper = styled.div`
 	height: 100%;
 	min-height:100%;
 	text-align: center;
-	display: grid;
+	display: flex;
+	flex-direction: column;
 	grid-row-gap: 36px;
 	margin: 10px auto 40px;
 	position: relative;
@@ -148,11 +149,10 @@ const Routes = styled.div`
 	text-align: left;
 	overflow-y: scroll;
 	width: 100%;
-	height: 100%;
 	min-height:100%;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
-		max-height: 480px;
+		max-height: 485px;
 		[class*=SwapWrapper] {
 			display: none;
 		}
@@ -181,6 +181,7 @@ const Routes = styled.div`
 const BodyWrapper = styled.div`
 	display: flex;
 	flex-direction: column;
+	align-items: center;
 	gap: 16px;
 	width: 100%;
 	min-height: 480px;
@@ -191,6 +192,7 @@ const BodyWrapper = styled.div`
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		flex-direction: row;
+		align-items: stretch;
 		justify-content: center;
 		gap: 24px;
 	}
