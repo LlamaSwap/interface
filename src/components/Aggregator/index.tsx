@@ -923,7 +923,8 @@ export function AggregatorContainer({ tokenlist }) {
 													isUSDTNotApprovedOnEthereum ||
 													swapMutation.isLoading ||
 													isApproveLoading ||
-													isApproveResetLoading 
+													isApproveResetLoading ||
+													!(amount && finalSelectedFromToken && finalSelectedToToken)
 												}
 											>
 												{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
@@ -963,9 +964,13 @@ export function AggregatorContainer({ tokenlist }) {
 				</Body>
 				
 				<Routes ref={routesRef}>
-					{normalizedRoutes?.length ? <FormHeader>Select a route to perform a swap</FormHeader> : null}
+					{normalizedRoutes?.length ? (
+							<FormHeader>Select a route to perform a swap</FormHeader>
+						) : !isLoading ? (
+							<FormHeader>No available routes found</FormHeader>
+						) : <FormHeader>Loading...</FormHeader>}
 					<span style={{ fontSize: '12px', color: '#999999', marginLeft: "4px", marginTop: "4px" }}>
-						{normalizedRoutes?.length ? 'Best route is selected based on a net output after gas fees' : 'No routes found'}
+						{normalizedRoutes?.length ? 'Best route is selected based on a net output after gas fees' : null}
 					</span>
 
 					{isLoading && amount && finalSelectedFromToken && finalSelectedToToken ? (
