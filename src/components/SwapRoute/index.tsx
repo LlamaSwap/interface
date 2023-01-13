@@ -91,46 +91,36 @@ const Route = ({
 			</RouteRow>
 
 			<RouteRow>
-				<Text style={{ display: 'flex' }} color="gray.400" lineHeight={1}>
+				<Text display="flex" alignItems="center" gap="4px" color="gray.400" lineHeight={1}>
 					{name === 'CowSwap' ? (
 						<Tooltip content="Gas is taken from output amount">
-							<Text style={{ display: 'flex', marginTop: '-6px' }} color="gray.400">
-								${amountUsd} - <div>${Number(gasUsd).toFixed(3)}</div>
+							<Text as="span" color="gray.400">
+								{`${amountUsd} - $${Number(gasUsd).toFixed(3)}`}
 							</Text>
 						</Tooltip>
 					) : (
-						<>
-							${amountUsd} -{' '}
-							<div>{gasUsd === 'Unknown' && Number.isNaN(gasUsd) ? gasUsd : <>${Number(gasUsd).toFixed(3)}</>}</div>
-						</>
+						<>{`${amountUsd} - ${
+							gasUsd === 'Unknown' || Number.isNaN(gasUsd) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
+						}`}</>
 					)}
 
-					<span style={{ marginLeft: '4px' }}>
-						<GasIcon />
-					</span>
+					<GasIcon />
 				</Text>
 
-				<span style={{ marginLeft: '8px', display: 'flex' }}>
-					{airdrop ? (
-						<Tooltip content="This project has no token and might airdrop one in the future">
-							<span style={{ marginLeft: 4 }}>
-								{' '}
-								<Gift width={14} height={14} color="#A0AEC0" style={{ marginTop: '-6px' }} />
-							</span>
-						</Tooltip>
-					) : null}
-					{isApproved ? (
-						<Tooltip content="Token is approved for this aggregator.">
-							<span style={{ marginLeft: 4 }}>
-								<Unlock width={14} height={14} color="#A0AEC0" style={{ marginTop: '-6px' }} />
-							</span>
-						</Tooltip>
-					) : null}
-				</span>
+				{airdrop ? (
+					<Tooltip content="This project has no token and might airdrop one in the future">
+						<Gift size={14} color="#A0AEC0" />
+					</Tooltip>
+				) : null}
+				{isApproved ? (
+					<Tooltip content="Token is approved for this aggregator.">
+						<Unlock size={14} color="#A0AEC0" />
+					</Tooltip>
+				) : null}
 
-				<div style={{ marginLeft: 'auto', display: 'flex' }}>
-					<Text color={'gray.400'}>via {name}</Text>
-				</div>
+				<Text color={'gray.400'} ml="auto">
+					via {name}
+				</Text>
 			</RouteRow>
 		</RouteWrapper>
 	);
@@ -169,6 +159,8 @@ const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
 
 const RouteRow = styled.div`
 	display: flex;
+	align-items: center;
+	gap: 16px;
 
 	img {
 		width: 24px;
