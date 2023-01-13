@@ -143,7 +143,6 @@ const Routes = styled.div`
 	width: 100%;
 	height: 100%;
 	min-height:100%;
-	max-height: 480px;
 	max-width: 30rem;
 	border: 1px solid #2f333c;
 
