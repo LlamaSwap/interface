@@ -44,6 +44,7 @@ import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast } from '~/utils/formatSuccessToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 /*
 Integrated:
@@ -217,6 +218,22 @@ const SwapWrapper = styled.div`
 
 	& > button {
 		flex: 1;
+	}
+`;
+
+const ConnectButtonWrapper = styled.div`
+	min-height: 40px;
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	
+	& button {
+		width: 100%;
+		text-align: center !important;
+	}
+
+	& > div {
+		width: 100%
 	}
 `;
 
@@ -844,10 +861,9 @@ export function AggregatorContainer({ tokenlist }) {
 					</div>
 					<SwapWrapper>
 						{!isConnected ? (
-							// <Button colorScheme={'messenger'} onClick={() => openConnectModal()}>
-							// 	Connect Wallet
-							// </Button>
-							<></>
+							<ConnectButtonWrapper>
+								<ConnectButton />
+							</ConnectButtonWrapper>
 						) : !isValidSelectedChain ? (
 							<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
 								Switch Network
