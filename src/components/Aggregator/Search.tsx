@@ -11,6 +11,18 @@ interface Props {
 		obj: Record<'token0' | 'token1', { address: string; logoURI: string; symbol: string; decimals: string }>
 	) => void;
 }
+export const ModalOverlay = styled.div`
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.6);
+	z-index: 50;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+`;
 
 export const ModalWrapper = styled.div`
 	display: flex;
@@ -23,14 +35,14 @@ export const ModalWrapper = styled.div`
 	left: 0;
 	right: 0;
 	margin: auto;
-
+	width: 100%;
+	margin: 0 20px;
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
 			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
 			: '10px 0px 50px 10px rgba(211, 211, 211, 0.9);;'};
 	padding: 16px;
 	border-radius: 16px;
-	position: absolute;
 	z-index: 2;
 
 	animation: scale-in-center 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
@@ -102,21 +114,23 @@ const Row = ({ data: { data, onClick }, index, style }) => {
 
 const Modal = ({ close, onInputChange, data, onClick }) => {
 	return (
-		<ModalWrapper>
-			<Header>
-				<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
-					Search
-				</Text>
-				<CloseBtn onClick={close} />
-			</Header>
-			<div>
-				<Input placeholder="Search... (BTC-ETH)" onChange={onInputChange} autoFocus />
-			</div>
-			<List height={390} itemCount={data.length} itemSize={38} itemData={{ data, onClick }}>
-				{Row}
-			</List>
-			<Pairs></Pairs>
-		</ModalWrapper>
+		<ModalOverlay>
+			<ModalWrapper>
+				<Header>
+					<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
+						Search
+					</Text>
+					<CloseBtn onClick={close} />
+				</Header>
+				<div>
+					<Input placeholder="Search... (BTC-ETH)" onChange={onInputChange} autoFocus />
+				</div>
+				<List height={390} itemCount={data.length} itemSize={38} itemData={{ data, onClick }}>
+					{Row}
+				</List>
+				<Pairs></Pairs>
+			</ModalWrapper>
+		</ModalOverlay>
 	);
 };
 

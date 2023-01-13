@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
-import { Text } from '@chakra-ui/react';
+import { Flex, Text } from '@chakra-ui/react';
 import { Gift, Unlock } from 'react-feather';
 import { GasIcon } from '../Icons';
 
@@ -63,21 +63,21 @@ const Route = ({
 		<RouteWrapper onClick={setRoute} selected={selected} best={index === 0}>
 			<RouteRow>
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
-					<div style={{ display: 'flex' }}>
-						{netOut && Number.isFinite(Number(netOut)) ? `$${Number(netOut).toFixed(3)}` : null}
+					<Flex as="span" alignItems="center" gap="8px">
+						<span>{netOut && Number.isFinite(Number(netOut)) ? `$${Number(netOut).toFixed(3)}` : null}</span>
 
 						{index === 0 ? (
-							<Text color="green.200" ml={2} fontSize={12} lineHeight={'26px'}>
+							<Text as="span" color="green.200" fontSize={12}>
 								BEST
 							</Text>
 						) : Number.isFinite(lossPercent) ? (
-							<Text color="red.200" ml={2} fontSize={12} lineHeight={'26px'}>
+							<Text as="span" color="red.200" fontSize={12}>
 								(-{Math.abs(100 - lossPercent * 100).toFixed(2)}%)
 							</Text>
 						) : null}
-					</div>
+					</Flex>
 				</Text>
-				<div style={{ marginLeft: 'auto', display: 'flex' }}>
+				<Flex ml="auto" alignItems="center">
 					<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 						{amount.toFixed(3)}{' '}
 					</Text>
@@ -87,7 +87,7 @@ const Route = ({
 						style={{ marginLeft: 4 }}
 						onError={(e) => (e.currentTarget.src = '/notFound.png')}
 					/>
-				</div>
+				</Flex>
 			</RouteRow>
 
 			<RouteRow>

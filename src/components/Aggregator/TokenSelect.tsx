@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { QuestionIcon } from '@chakra-ui/icons';
 import ReactSelect from '../MultiSelect';
-import { Header, IconImage, ModalWrapper, PairRow } from './Search';
+import { Header, IconImage, ModalWrapper, PairRow, ModalOverlay } from './Search';
 import { Input } from './TokenInput';
 import { useToken } from 'wagmi';
 import { Button, Flex, Text } from '@chakra-ui/react';
@@ -123,23 +123,25 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 	}, [debouncedInput, data]);
 
 	return (
-		<ModalWrapper>
-			<Header>
-				<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
-					Select Token
-				</Text>
-				<CloseBtn onClick={close} />
-			</Header>
-			<div>
-				<Input placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
-			</div>
-			{ethers.utils.isAddress(input) && filteredData.length === 0 ? (
-				<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
-			) : null}
-			<List height={390} itemCount={filteredData.length} itemSize={40} itemData={{ data: filteredData, onClick }}>
-				{Row}
-			</List>
-		</ModalWrapper>
+		<ModalOverlay>
+			<ModalWrapper>
+				<Header>
+					<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
+						Select Token
+					</Text>
+					<CloseBtn onClick={close} />
+				</Header>
+				<div>
+					<Input placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
+				</div>
+				{ethers.utils.isAddress(input) && filteredData.length === 0 ? (
+					<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
+				) : null}
+				<List height={390} itemCount={filteredData.length} itemSize={40} itemData={{ data: filteredData, onClick }}>
+					{Row}
+				</List>
+			</ModalWrapper>
+		</ModalOverlay>
 	);
 };
 

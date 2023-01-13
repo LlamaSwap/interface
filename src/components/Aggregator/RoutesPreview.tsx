@@ -28,7 +28,8 @@ const MainIcon = styled.div`
 	z-index: 1;
 	position: absolute;
 	left: 50%;
-	transform: translate(-50%, -20%);
+	top: 50%;
+	transform: translate(-50%, -50%);
 	box-shadow: 0px 16.4384px 92.0548px 13.1507px #121315;
 `;
 
@@ -40,8 +41,6 @@ const IconElem = styled.div`
 `;
 
 const Header = styled.div`
-	margin-top: 32px;
-	margin-bottom: 32px;
 	position: relative;
 `;
 
@@ -62,7 +61,15 @@ const CheckWithText = ({ text }: { text: string }) => {
 
 const RoutesPreview = () => {
 	return (
-		<div style={{ width: '420px', overflow: 'hidden' }}>
+		<div
+			style={{
+				height: '100%',
+				display: 'flex',
+				flexDirection: 'column',
+				justifyContent: 'space-around',
+				paddingTop: '30px'
+			}}
+		>
 			<Header>
 				<MainIcon>{LlamaIcon}</MainIcon>
 
@@ -81,15 +88,17 @@ const RoutesPreview = () => {
 					<CheckWithText text="Gas Estimation" />
 					<CheckWithText text="Preserves Privacy" />
 				</CheckBody>
+
+				<Text color={'gray.300'} textAlign="center" mt={6}>
+					LlamaSwap looks for the best route for your trade <br /> among a variety of Dex Aggregators, guaranteeing you{' '}
+					<br /> the best execution prices in DeFi.
+					<br /> <br /> Try it now or{' '}
+					<Link href="https://discord.com/invite/j54NuUt5nW" isExternal textDecoration={'underline'}>
+						learn more
+						<ExternalLinkIcon mx="4px" mb="3px" />
+					</Link>
+				</Text>
 			</div>
-			<Text color={'gray.300'} textAlign="center" mt={4}>
-				Llamaswap looks for the best route for your trade <br /> among a variety of Dex Aggregators, guaranteeing you{' '}
-				<br /> the best execution prices in DeFi.
-				<br /> <br /> Try it now or{' '}
-				<Link href="https://discord.com/invite/j54NuUt5nW" isExternal textDecoration={'underline'}>
-					learn more <ExternalLinkIcon mx="2px" />
-				</Link>
-			</Text>
 		</div>
 	);
 };
