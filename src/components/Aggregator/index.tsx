@@ -97,6 +97,8 @@ cant integrate:
 - https://twitter.com/DexibleApp - not an aggregator, only supports exotic orders like TWAP, segmented order, stop loss...
 */
 
+const possibleInfiniteApproval = ['Matcha/0x', '1inch', 'CowSwap', 'KyberSwap', 'ParaSwap']
+
 const Body = styled.div<{ showRoutes: boolean }>`
 	display: flex;
 	flex-direction: column;
@@ -937,7 +939,7 @@ export function AggregatorContainer({ tokenlist }) {
 												{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
 											</Button>
 
-											{!isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
+											{!isApproved && possibleInfiniteApproval.includes(route?.name) && (
 												<Button
 													colorScheme={'messenger'}
 													loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
@@ -1076,7 +1078,7 @@ export function AggregatorContainer({ tokenlist }) {
 															{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
 														</Button>
 
-														{!isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
+														{!isApproved && possibleInfiniteApproval.includes(route?.name) && (
 															<Button
 																colorScheme={'messenger'}
 																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
