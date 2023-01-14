@@ -25,7 +25,7 @@ import {
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import Route from '~/components/SwapRoute';
-import { getAllChains, swap } from './router';
+import { getAllChains, inifiniteApprovalAllowed, swap } from './router';
 import { TokenInput } from './TokenInput';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
@@ -937,7 +937,7 @@ export function AggregatorContainer({ tokenlist }) {
 												{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
 											</Button>
 
-											{!isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
+											{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
 												<Button
 													colorScheme={'messenger'}
 													loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
@@ -1076,7 +1076,7 @@ export function AggregatorContainer({ tokenlist }) {
 															{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
 														</Button>
 
-														{!isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
+														{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
 															<Button
 																colorScheme={'messenger'}
 																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
