@@ -1,7 +1,7 @@
 import * as matcha from './adapters/0x';
 import * as inch from './adapters/1inch';
 import * as cowswap from './adapters/cowswap';
-// import * as firebird from './adapters/firebird'
+import * as firebird from './adapters/firebird'
 import * as kyberswap from './adapters/kyberswap';
 import * as openocean from './adapters/openocean';
 import * as paraswap from './adapters/paraswap';
@@ -17,7 +17,7 @@ import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap];
+export const adapters = [matcha, inch, cowswap, firebird, kyberswap, openocean, yieldyak, paraswap];
 
 const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
 
