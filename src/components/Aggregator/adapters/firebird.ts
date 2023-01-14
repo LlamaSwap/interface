@@ -66,11 +66,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let estimatedGas;
 	let value = isFromNative ? amount : undefined;
 	try {
-		estimatedGas = await providers[chain].estimateGas({
+		estimatedGas = (await providers[chain].estimateGas({
 			to: encodedData.router,
 			data: encodedData.data,
 			value,
-		});
+		})).toFixed(0, 1);
 	} catch (e) {
 		estimatedGas = data.maxReturn.totalGas
 	}
