@@ -9,6 +9,7 @@ export async function getStaticProps() {
 }
 
 export default function Aggregator(props) {
+	console.log(props.geckoTokensList);
 	return (
 		<Layout title={`Meta-dex aggregator - DefiLlama`} defaultSEO>
 			<ConnectButton />

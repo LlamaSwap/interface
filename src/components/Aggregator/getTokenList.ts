@@ -1,6 +1,10 @@
+import { ethers } from 'ethers';
 import { groupBy, mapValues, merge, uniqBy } from 'lodash';
+import { erc20ABI } from 'wagmi';
 import { IToken } from '~/types';
+import { chainIdToName, chainsMap, geckoChainsMap } from './constants';
 import { nativeTokens } from './nativeTokens';
+import { providers } from './rpcs';
 
 const tokensToRemove = {
 	1: {
@@ -40,6 +44,7 @@ const fixTotkens = (tokenlist) => {
 export async function getTokenList() {
 	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
 	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
+
 	const oneInch = await Promise.all(
 		Object.values(oneInchChains).map(async (chainId) =>
 			fetch(`https://tokens.1inch.io/v1.1/${chainId}`).then((r) => r.json())
@@ -52,7 +57,7 @@ export async function getTokenList() {
 		fetch('https://tokens.uniswap.org/').then((r) => r.json()),
 		fetch('https://token-list.sushi.com/').then((r) => r.json()),
 		fetch('https://li.quest/v1/tokens').then((r) => r.json()),
-		fetch('https://api.coingecko.com/api/v3/coins/list?include_platform=false').then((res) => res.json())
+		fetch('https://api.coingecko.com/api/v3/coins/list?include_platform=true').then((res) => res.json())
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -94,10 +99,70 @@ export async function getTokenList() {
 
 	tokenlist = fixTotkens(tokenlist);
 
+	const uniqueTokenList = {};
+
+	for (const chain in tokenlist) {
+		tokenlist[chain].forEach((token) => {
+			if (!uniqueTokenList[chain]) {
+				uniqueTokenList[chain] = new Set();
+			}
+
+			uniqueTokenList[chain].add(token.address);
+		});
+	}
+
+	const geckoListByChain = {};
+
+	if (geckoList && geckoList.length > 0) {
+		geckoList.forEach((geckoToken) => {
+			Object.entries(geckoToken.platforms || {}).forEach(([chain, address]) => {
+				const id = geckoChainsMap[chain];
+
+				if (id && !uniqueTokenList[String(id)]?.has(address)) {
+					if (!geckoListByChain[id]) {
+						geckoListByChain[id] = new Set();
+					}
+
+					geckoListByChain[id].add(address);
+				}
+			});
+		});
+	}
+
+	const geckoTokensList = await Promise.all(
+		Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
+			getTokenNameAndSymbolsOnChain([chain, Array.from(tokens)])
+		)
+	);
+
 	return {
 		props: {
-			tokenlist
+			tokenlist,
+			geckoTokensList: Object.fromEntries(geckoTokensList)
 		},
 		revalidate: 5 * 60 // 5 minutes
 	};
 }
+
+const getTokenNameAndSymbolsOnChain = async ([chain, tokens]: [string, Array<string>]) => {
+	const chainProvider = chainIdToName[chain] ? providers[chainIdToName[chain]] : null;
+
+	if (!chainProvider) {
+		return [chain, []];
+	}
+
+	const data = await Promise.allSettled(tokens.map((token) => getTokenData(token, chainProvider)));
+
+	return [
+		chain,
+		data.map((items) => (items.status === 'fulfilled' ? items.value : null)).filter((item) => item !== null)
+	];
+};
+
+const getTokenData = async (token, provider) => {
+	const contract = new ethers.Contract(token, erc20ABI, provider);
+
+	const [name, symbol, decimals] = await Promise.all([contract.name(), contract.symbol(), contract.decimals()]);
+
+	return { name, symbol, decimals, label: symbol, value: token, address: token };
+};
