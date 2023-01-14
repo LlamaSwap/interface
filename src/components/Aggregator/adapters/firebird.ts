@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import { ExtraData } from '../types';
 import { providers } from '../rpcs';
 import { applyArbitrumFees } from '../utils/arbitrumFees'
+import { sendTx } from '../utils/sendTx'
 
 export const chainToId = {
 	ethereum: 1,
@@ -83,19 +84,17 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: data.maxReturn.totalTo,
 		estimatedGas,
 		tokenApprovalAddress: encodedData.router,
-		rawQuote: { ...data, tx: { ...encodedData, value, gasLimit: estimatedGas } },
+		rawQuote: { ...data, tx: { ...encodedData, from: receiver, value, gasLimit: estimatedGas } },
 		logo: 'https://assets.coingecko.com/markets/images/730/small/firebird-finance.png?1636117048'
 	};
 }
 
 export async function swap({ signer, rawQuote, chain }) {
-	const fromAddress = await signer.getAddress();
-
-	const tx = await signer.sendTransaction({
-		from: fromAddress,
-		to: rawQuote?.tx?.router,
-		data: rawQuote?.tx?.data,
-		value: rawQuote?.tx?.value,
+	const tx = await sendTx(signer, chain, {
+		from: rawQuote.tx.from,
+		to: rawQuote.tx.router,
+		data: rawQuote.tx.data,
+		value: rawQuote.tx.value,
 		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
 	});
 
