@@ -13,7 +13,7 @@ const InputElem = styled.input`
 	-webkit-appearance: none;
 	color: ${({ theme }) => (theme.mode !== 'dark' ? '#000' : '#fff')};
 	border: ${({ theme }) => (theme.mode === 'dark' ? '1px solid #232323;' : '1px solid #cdd9ed;')};
-	background: ${({ theme }) => (theme.mode === 'dark' ? '#000' : '#fff')};
+	background: ${({ theme }) => (theme.mode === 'dark' ? 'rgba(0,0,0,.4)' : '#fff')};
 	transition: border 0.3s ease;
 	&::placeholder {
 		color: #cbd1dc;
