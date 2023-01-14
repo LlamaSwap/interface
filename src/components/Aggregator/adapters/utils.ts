@@ -7,7 +7,7 @@ export const redirectQuoteReq = async (
 	extra: any
 ) => {
 	const data = await fetch(
-		`https://api.llama.fi/dexAggregatorQuote?protocol=${protocol}&chain=${chain}&from=${from}&to=${to}&amount=${amount}`,
+		`./api/dexAggregatorQuote?protocol=${protocol}&chain=${chain}&from=${from}&to=${to}&amount=${amount}`,
 		{
 			method: 'POST',
 			body: JSON.stringify(extra)
