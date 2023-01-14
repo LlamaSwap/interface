@@ -1076,7 +1076,7 @@ export function AggregatorContainer({ tokenlist }) {
 															{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
 														</Button>
 
-														{!isApproved && ['Matcha/0x', '1inch', 'CowSwap'].includes(route?.name) && (
+														{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
 															<Button
 																colorScheme={'messenger'}
 																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
