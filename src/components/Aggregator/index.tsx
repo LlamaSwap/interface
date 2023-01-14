@@ -728,7 +728,7 @@ export function AggregatorContainer({ tokenlist }) {
 						<FormHeader>Select Tokens</FormHeader>
 						<TokenSelectBody>
 							<TokenSelect
-								tokens={tokensInChain}
+								tokens={tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address)}
 								token={finalSelectedFromToken}
 								onClick={onFromTokenChange}
 								selectedChain={selectedChain}
@@ -752,7 +752,7 @@ export function AggregatorContainer({ tokenlist }) {
 							/>
 
 							<TokenSelect
-								tokens={tokensInChain}
+								tokens={tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)}
 								token={finalSelectedToToken}
 								onClick={onToTokenChange}
 								selectedChain={selectedChain}
