@@ -57,7 +57,7 @@ export async function getQuote(
 						//txOrigin: userAddress,
 						//deadline: Math.floor(Date.now() / 1000) + 300,
 						partner: partner,
-						partnerAdress: defillamaReferrerAddress,
+						partnerAddress: defillamaReferrerAddress,
 						positiveSlippageToUser: false,
 						priceRoute: data.priceRoute
 					}),
