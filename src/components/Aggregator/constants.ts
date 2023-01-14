@@ -53,7 +53,7 @@ export const geckoChainsMap = {
 };
 
 export const chainIdToName = (chainId) => {
-	return Object.entries(chainsMap).find(([, id]) => id == chainId);
+	return Object.entries(chainsMap).find(([, id]) => String(id) === String(chainId))?.[0];
 };
 
 export const chainNamesReplaced = {

@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { groupBy, mapValues, merge, uniqBy } from 'lodash';
 import { erc20ABI } from 'wagmi';
 import { IToken } from '~/types';
-import { chainIdToName, chainsMap, geckoChainsMap } from './constants';
+import { chainIdToName, geckoChainsMap } from './constants';
 import { nativeTokens } from './nativeTokens';
 import { providers } from './rpcs';
 
@@ -145,7 +145,7 @@ export async function getTokenList() {
 }
 
 const getTokenNameAndSymbolsOnChain = async ([chain, tokens]: [string, Array<string>]) => {
-	const chainProvider = chainIdToName[chain] ? providers[chainIdToName[chain]] : null;
+	const chainProvider = chainIdToName(chain) ? providers[chainIdToName(chain)] : null;
 
 	if (!chainProvider) {
 		return [chain, []];
