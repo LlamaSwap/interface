@@ -46,6 +46,7 @@ import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
+import SwapConfirmation from './SwapConfirmation';
 
 /*
 Integrated:
@@ -150,6 +151,7 @@ const Routes = styled.div`
 	overflow-y: scroll;
 	width: 100%;
 	min-height: 100%;
+	overflow-x: hidden;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
 		max-height: 485px;
@@ -413,6 +415,7 @@ export function AggregatorContainer({ tokenlist }) {
 			slippage: string;
 			rawQuote: any;
 			tokens: { toToken: IToken; fromToken: IToken };
+			index: number;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -491,7 +494,9 @@ export function AggregatorContainer({ tokenlist }) {
 						txUrl,
 						amount: String(amount),
 						errorData: {},
-						amountUsd: +fromTokenPrice * +amount || 0
+						amountUsd: +fromTokenPrice * +amount || 0,
+						slippage,
+						routePlace: String(variables?.index)
 					});
 				});
 		},
@@ -521,25 +526,13 @@ export function AggregatorContainer({ tokenlist }) {
 					txUrl: '',
 					amount: String(amount),
 					errorData: err,
-					amountUsd: fromTokenPrice * +amount || 0
+					amountUsd: fromTokenPrice * +amount || 0,
+					slippage,
+					routePlace: String(variables?.index)
 				});
 			}
 		}
 	});
-
-	const handleSwap = () => {
-		swapMutation.mutate({
-			chain: selectedChain.value,
-			from: finalSelectedFromToken.value,
-			to: finalSelectedToToken.value,
-			amount: amountWithDecimals,
-			signer,
-			slippage,
-			adapter: route.name,
-			rawQuote: route?.price?.rawQuote,
-			tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken }
-		});
-	};
 
 	const debouncedAmountWithDecimals = useDebounce(amountWithDecimals, 300);
 
@@ -623,36 +616,38 @@ export function AggregatorContainer({ tokenlist }) {
 		});
 	};
 
+	const fillRoute = (route: typeof routes[0]) => {
+		let gasUsd: number | string =
+			(gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+
+		// CowSwap native token swap
+		gasUsd =
+			route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
+				? (route.price.feeAmount / 1e18) * gasTokenPrice
+				: gasUsd;
+
+		gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
+
+		gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
+
+		const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
+
+		const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
+
+		const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
+
+		return {
+			...route,
+			route,
+			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
+			amountUsd,
+			amount,
+			netOut
+		};
+	};
+
 	let normalizedRoutes = [...(routes || [])]
-		?.map((route) => {
-			let gasUsd: number | string =
-				(gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
-
-			// CowSwap native token swap
-			gasUsd =
-				route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
-					? (route.price.feeAmount / 1e18) * gasTokenPrice
-					: gasUsd;
-
-			gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
-
-			gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
-
-			const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
-
-			const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
-
-			const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
-
-			return {
-				route,
-				gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
-				amountUsd,
-				amount,
-				netOut,
-				...route
-			};
-		})
+		?.map(fillRoute)
 		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
@@ -665,13 +660,33 @@ export function AggregatorContainer({ tokenlist }) {
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
+	const priceImpactRoute =
+		route === undefined || route === null ? normalizedRoutes?.[0]?.amountUsd : fillRoute(route).amountUsd;
+
 	const priceImpact =
-		fromTokenPrice && toTokenPrice && route?.route?.amountUsd > 0
-			? 100 - (route?.route?.amountUsd / (+fromTokenPrice * +amount)) * 100
+		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute && Number(priceImpactRoute) > 0
+			? 100 - (Number(priceImpactRoute) / (+fromTokenPrice * +amount)) * 100
 			: 0;
+	const hasPriceImapct = priceImpact > 7;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
+
+	const handleSwap = () => {
+		if (normalizedRoutes.find(({ name }) => name === route.name))
+			swapMutation.mutate({
+				chain: selectedChain.value,
+				from: finalSelectedFromToken.value,
+				to: finalSelectedToToken.value,
+				amount: amountWithDecimals,
+				signer,
+				slippage,
+				adapter: route.name,
+				rawQuote: route?.price?.rawQuote,
+				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
+				index: route?.index
+			});
+	};
 
 	useEffect(() => {
 		const id = setTimeout(() => {
@@ -882,6 +897,14 @@ export function AggregatorContainer({ tokenlist }) {
 							</Box>
 						</Flex>
 					</div>
+
+					{hasPriceImapct && !isLoading ? (
+						<Alert status="warning" borderRadius="0.375rem" py="8px">
+							<AlertIcon />
+							High price impact! More than {priceImpact.toFixed(2)}% drop.
+						</Alert>
+					) : null}
+
 					<SwapWrapper>
 						{!isConnected ? (
 							<ConnectButtonWrapper>
@@ -926,29 +949,33 @@ export function AggregatorContainer({ tokenlist }) {
 												</Flex>
 											)}
 
-											<Button
-												isLoading={swapMutation.isLoading || isApproveLoading}
-												loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
-												colorScheme={'messenger'}
-												onClick={() => {
-													//scroll Routes into view
-													!route && routesRef.current.scrollIntoView({ behavior: 'smooth' });
-													if (approve) approve();
+											{hasPriceImapct && !isLoading && route && isApproved ? (
+												<SwapConfirmation handleSwap={handleSwap} />
+											) : (
+												<Button
+													isLoading={swapMutation.isLoading || isApproveLoading}
+													loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+													colorScheme={'messenger'}
+													onClick={() => {
+														//scroll Routes into view
+														!route && routesRef.current.scrollIntoView({ behavior: 'smooth' });
+														if (approve) approve();
 
-													if (+amount > +balance?.data?.formatted) return;
+														if (+amount > +balance?.data?.formatted) return;
 
-													if (isApproved) handleSwap();
-												}}
-												disabled={
-													isUSDTNotApprovedOnEthereum ||
-													swapMutation.isLoading ||
-													isApproveLoading ||
-													isApproveResetLoading ||
-													!(amount && finalSelectedFromToken && finalSelectedToToken)
-												}
-											>
-												{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
-											</Button>
+														if (isApproved) handleSwap();
+													}}
+													disabled={
+														isUSDTNotApprovedOnEthereum ||
+														swapMutation.isLoading ||
+														isApproveLoading ||
+														isApproveResetLoading ||
+														!(amount && finalSelectedFromToken && finalSelectedToToken)
+													}
+												>
+													{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
+												</Button>
+											)}
 
 											{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
 												<Button
@@ -975,17 +1002,22 @@ export function AggregatorContainer({ tokenlist }) {
 							</>
 						)}
 					</SwapWrapper>
-					{priceImpact > 15 && !isLoading ? (
-						<Alert status="warning">
-							<AlertIcon />
-							High price impact! More than {priceImpact.toFixed(2)}% drop.
-						</Alert>
-					) : null}
 				</Body>
 
 				<Routes ref={routesRef}>
 					{normalizedRoutes?.length ? (
-						<FormHeader>Select a route to perform a swap</FormHeader>
+						<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+							<FormHeader>Select a route to perform a swap</FormHeader>
+							{route ? (
+								<div style={{ fontSize: '16px', color: '#999999' }}>
+									1 {finalSelectedFromToken?.symbol} ={' '}
+									{(
+										Number(+route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals) / Number(amount)
+									).toFixed(3)}{' '}
+									{finalSelectedToToken?.symbol}
+								</div>
+							) : null}
+						</div>
 					) : !isLoading &&
 					  amount &&
 					  debouncedAmountWithDecimals === amountWithDecimals &&
@@ -993,7 +1025,7 @@ export function AggregatorContainer({ tokenlist }) {
 					  finalSelectedToToken ? (
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
-					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px' }}>
+					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
 						{normalizedRoutes?.length ? 'Best route is selected based on a net output after gas fees' : null}
 					</span>
 
@@ -1018,7 +1050,7 @@ export function AggregatorContainer({ tokenlist }) {
 								{...r}
 								index={i}
 								selected={route?.name === r.name}
-								setRoute={() => setRoute({ ...r.route, route: r })}
+								setRoute={() => setRoute({ ...r.route, route: r, index: i })}
 								toToken={finalSelectedToToken}
 								amountFrom={amountWithDecimals}
 								fromToken={finalSelectedFromToken}
@@ -1067,27 +1099,31 @@ export function AggregatorContainer({ tokenlist }) {
 															</Flex>
 														)}
 
-														<Button
-															isLoading={swapMutation.isLoading || isApproveLoading}
-															loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
-															colorScheme={'messenger'}
-															onClick={() => {
-																if (approve) approve();
+														{hasPriceImapct && !isLoading && route && isApproved ? (
+															<SwapConfirmation handleSwap={handleSwap} />
+														) : (
+															<Button
+																isLoading={swapMutation.isLoading || isApproveLoading}
+																loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+																colorScheme={'messenger'}
+																onClick={() => {
+																	if (approve) approve();
 
-																if (+amount > +balance?.data?.formatted) return;
+																	if (+amount > +balance?.data?.formatted) return;
 
-																if (isApproved) handleSwap();
-															}}
-															disabled={
-																isUSDTNotApprovedOnEthereum ||
-																swapMutation.isLoading ||
-																isApproveLoading ||
-																isApproveResetLoading ||
-																!route
-															}
-														>
-															{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
-														</Button>
+																	if (isApproved) handleSwap();
+																}}
+																disabled={
+																	isUSDTNotApprovedOnEthereum ||
+																	swapMutation.isLoading ||
+																	isApproveLoading ||
+																	isApproveResetLoading ||
+																	!route
+																}
+															>
+																{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
+															</Button>
+														)}
 
 														{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
 															<Button
