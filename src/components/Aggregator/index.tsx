@@ -695,6 +695,10 @@ export function AggregatorContainer({ tokenlist }) {
 		return () => clearTimeout(id);
 	}, [slippage, customSlippage, router]);
 
+	useEffect(() => {
+		if (!normalizedRoutes.find(({ name }) => name === route?.name)) setRoute(null);
+	}, [normalizedRoutes, route]);
+
 	return (
 		<Wrapper>
 			<Heading>Meta-Aggregator</Heading>
