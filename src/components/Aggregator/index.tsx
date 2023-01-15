@@ -662,7 +662,7 @@ export function AggregatorContainer({ tokenlist }) {
 		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute && priceImpactRoute > 0
 			? 100 - (priceImpactRoute / (+fromTokenPrice * +amount)) * 100
 			: 0;
-	const hasPriceImapct = priceImpact > 15;
+	const hasPriceImapct = priceImpact > 7;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
