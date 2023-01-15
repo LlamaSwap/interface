@@ -412,6 +412,7 @@ export function AggregatorContainer({ tokenlist }) {
 			slippage: string;
 			rawQuote: any;
 			tokens: { toToken: IToken; fromToken: IToken };
+			index: number;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -490,7 +491,9 @@ export function AggregatorContainer({ tokenlist }) {
 						txUrl,
 						amount: String(amount),
 						errorData: {},
-						amountUsd: +fromTokenPrice * +amount || 0
+						amountUsd: +fromTokenPrice * +amount || 0,
+						slippage,
+						routePlace: String(variables?.index)
 					});
 				});
 		},
@@ -520,7 +523,9 @@ export function AggregatorContainer({ tokenlist }) {
 					txUrl: '',
 					amount: String(amount),
 					errorData: err,
-					amountUsd: fromTokenPrice * +amount || 0
+					amountUsd: fromTokenPrice * +amount || 0,
+					slippage,
+					routePlace: String(variables?.index)
 				});
 			}
 		}
@@ -536,7 +541,8 @@ export function AggregatorContainer({ tokenlist }) {
 			slippage,
 			adapter: route.name,
 			rawQuote: route?.price?.rawQuote,
-			tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken }
+			tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
+			index: route?.index
 		});
 	};
 
@@ -1006,7 +1012,7 @@ export function AggregatorContainer({ tokenlist }) {
 								{...r}
 								index={i}
 								selected={route?.name === r.name}
-								setRoute={() => setRoute({ ...r.route, route: r })}
+								setRoute={() => setRoute({ ...r.route, route: r, index: i })}
 								toToken={finalSelectedToToken}
 								amountFrom={amountWithDecimals}
 								fromToken={finalSelectedFromToken}
