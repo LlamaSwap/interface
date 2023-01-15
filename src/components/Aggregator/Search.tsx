@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { FixedSizeList as List } from 'react-window';
 import { Input } from './TokenInput';
 import styled from 'styled-components';
 import { CloseBtn } from '../CloseBtn';
@@ -70,10 +69,15 @@ export const Header = styled.div`
 export const PairRow = styled.div<{ hover?: boolean }>`
 	display: flex;
 	gap: 8px;
-	margin-top: 16px;
+	padding: 8px 4px;
+	align-items: center;
 	border-bottom: ${({ theme }) => (theme.mode === 'dark' ? '1px solid #373944;' : '2px solid #c6cae0;')};
-	padding: 8px;
+
 	cursor: pointer;
+
+	&[data-defaultcursor='true'] {
+		cursor: default;
+	}
 
 	&:hover {
 		background-color: ${({ hover }) => (hover ? ' rgba(246, 246, 246, 0.1);' : 'none')};
@@ -125,9 +129,9 @@ const Modal = ({ close, onInputChange, data, onClick }) => {
 				<div>
 					<Input placeholder="Search... (BTC-ETH)" onChange={onInputChange} autoFocus />
 				</div>
-				<List height={390} itemCount={data.length} itemSize={38} itemData={{ data, onClick }}>
+				{/* <List height={390} itemCount={data.length} itemSize={38} itemData={{ data, onClick }}>
 					{Row}
-				</List>
+				</List> */}
 				<Pairs></Pairs>
 			</ModalWrapper>
 		</ModalOverlay>

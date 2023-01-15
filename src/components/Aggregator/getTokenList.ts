@@ -77,32 +77,16 @@ export async function getTokenList() {
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
-	const tokensFiltered = mapValues(tokensByChain, (val, key) => {
+	let tokensFiltered = mapValues(tokensByChain, (val, key) => {
 		return val.filter((token) => !tokensToRemove[key]?.[token.address.toLowerCase()]);
 	});
 
-	let tokenlist = {};
-
-	for (const chain in tokensFiltered) {
-		tokenlist[chain] = tokensFiltered[chain]
-			.map((t) => ({
-				...t,
-				label: t.symbol,
-				value: t.address,
-				geckoId:
-					geckoList && geckoList.length > 0
-						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
-						: null
-			}))
-			.filter((t) => typeof t.address === 'string');
-	}
-
-	tokenlist = fixTotkens(tokenlist);
+	tokensFiltered = fixTotkens(tokensFiltered);
 
 	const uniqueTokenList = {};
 
-	for (const chain in tokenlist) {
-		tokenlist[chain].forEach((token) => {
+	for (const chain in tokensFiltered) {
+		tokensFiltered[chain].forEach((token) => {
 			if (!uniqueTokenList[chain]) {
 				uniqueTokenList[chain] = new Set();
 			}
@@ -130,39 +114,64 @@ export async function getTokenList() {
 	}
 
 	const geckoTokensList = await Promise.all(
-		Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
-			getTokenNameAndSymbolsOnChain([chain, Array.from(tokens)])
+		Object.entries({ 42161: geckoListByChain[42161] }).map(([chain, tokens]: [string, Set<string>]) =>
+			getTokenNameAndSymbolsOnChain([chain, Array.from(tokens || new Set())])
 		)
 	);
 
+	geckoTokensList.forEach(([chain, tokens]) => {
+		if (!tokensFiltered[chain]) {
+			tokensFiltered[chain] = [];
+		}
+
+		tokensFiltered[chain] = [...tokensFiltered[chain], ...tokens];
+	});
+
+	let tokenlist = {};
+
+	for (const chain in tokensFiltered) {
+		tokenlist[chain] = tokensFiltered[chain]
+			.map((t) => ({
+				...t,
+				label: t.symbol,
+				value: t.address,
+				geckoId:
+					geckoList && geckoList.length > 0
+						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
+						: null
+			}))
+			.filter((t) => typeof t.address === 'string');
+	}
+
 	return {
 		props: {
-			tokenlist,
-			geckoTokensList: Object.fromEntries(geckoTokensList)
+			tokenlist
 		},
 		revalidate: 5 * 60 // 5 minutes
 	};
 }
 
-const getTokenNameAndSymbolsOnChain = async ([chain, tokens]: [string, Array<string>]) => {
-	const chainProvider = chainIdToName(chain) ? providers[chainIdToName(chain)] : null;
+const getTokenNameAndSymbolsOnChain = async ([chainId, tokens]: [string, Array<string>]): Promise<
+	[string, Array<IToken>]
+> => {
+	const chainProvider = chainIdToName(chainId) ? providers[chainIdToName(chainId)] : null;
 
 	if (!chainProvider) {
-		return [chain, []];
+		return [chainId, []];
 	}
 
-	const data = await Promise.allSettled(tokens.map((token) => getTokenData(token, chainProvider)));
+	const data = await Promise.allSettled(tokens.map((token) => getTokenData(token, chainProvider, chainId)));
 
 	return [
-		chain,
+		chainId,
 		data.map((items) => (items.status === 'fulfilled' ? items.value : null)).filter((item) => item !== null)
 	];
 };
 
-const getTokenData = async (token, provider) => {
+const getTokenData = async (token, provider, chainId) => {
 	const contract = new ethers.Contract(token, erc20ABI, provider);
 
 	const [name, symbol, decimals] = await Promise.all([contract.name(), contract.symbol(), contract.decimals()]);
 
-	return { name, symbol, decimals, label: symbol, value: token, address: token };
+	return { name, symbol, decimals, address: token, chainId, geckoId: null, logoURI: null, isGeckoToken: true };
 };
