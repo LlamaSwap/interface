@@ -11,46 +11,41 @@ export const estimateGas = async ({ routes, token, userAddress }) => {
 		);
 		const tokenContract = new ethers.Contract(token, erc20ABI, provider);
 		const routesWithTx = routes.filter(({ tx }) => !!tx?.to);
-		const txData = routesWithTx.map(({ tx }) => tx);
-
-		const approveTxs = (
-			await Promise.all(
-				txData.map(({ to }) => tokenContract.populateTransaction.approve(to, ethers.constants.MaxUint256.toHexString()))
-			)
-		).map((tx) => ({ ...tx, from: userAddress }));
-
-		const callParams = [
-			approveTxs.concat(txData).map((txData) => [
-				{
-					from: userAddress,
-					to: txData.to,
-					data: txData.data
-				},
-				['trace', 'vmTrace']
-			]),
-			'latest'
-		];
-
-		try {
+		const txData = await Promise.all(routesWithTx.map(async ({ price, name, tx }) => {
+			try{
+			const approveTx = {
+				...await tokenContract.populateTransaction.approve(tx.to, ethers.constants.MaxUint256.toHexString()),
+				from: userAddress 
+			}
+			const callParams = [
+				[approveTx, tx].map((txData) => [
+					{
+						from: userAddress,
+						to: txData.to,
+						data: txData.data
+					},
+					['trace', 'vmTrace']
+				]),
+				'latest'
+			];
 			const res = await provider.send('trace_callMany', callParams);
-			const swapTxs = res.slice(res.length / 2, res.length);
-			const resObj = swapTxs?.reduce(
-				(acc, val, i) => ({
-					...acc,
-					[routesWithTx[i]?.name]: {
-						gas: val.trace.reduce((acc, val) => BigNumber(val.result.gasUsed).plus(acc), BigNumber(0)).toString(),
-						isFailed: !!val.trace.find((a) => a.error === 'Reverted'),
-						aggGas: routesWithTx[i].price.estimatedGas
-					}
-				}),
-				{}
-			);
-			console.log(resObj);
-			return resObj;
-		} catch (e) {
-			console.log(e);
-			return null;
-		}
+			const swapTx = res[1];
+			console.log(name, swapTx)
+			return {
+				gas: BigNumber(swapTx.trace[0].result.gasUsed).toString(),// swapTx.trace.reduce((acc, val) => BigNumber(val.result.gasUsed).plus(acc), BigNumber(0)).toString(),
+				isFailed: !!swapTx.trace.find((a) => a.error === 'Reverted'),
+				aggGas: price.estimatedGas,
+				name
+			}
+			} catch(e){
+				return null
+			}
+		}));
+		console.log(txData)
+		return txData.reduce((acc, val, i) => ({
+			...acc,
+			[val.name]: val
+		}), {})
 	} catch (ee) {
 		console.log(ee);
 	}
