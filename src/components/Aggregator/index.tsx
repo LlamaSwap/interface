@@ -46,6 +46,7 @@ import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
+import SwapConfirmation from './SwapConfirmation';
 
 /*
 Integrated:
@@ -531,21 +532,6 @@ export function AggregatorContainer({ tokenlist }) {
 		}
 	});
 
-	const handleSwap = () => {
-		swapMutation.mutate({
-			chain: selectedChain.value,
-			from: finalSelectedFromToken.value,
-			to: finalSelectedToToken.value,
-			amount: amountWithDecimals,
-			signer,
-			slippage,
-			adapter: route.name,
-			rawQuote: route?.price?.rawQuote,
-			tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
-			index: route?.index
-		});
-	};
-
 	const debouncedAmountWithDecimals = useDebounce(amountWithDecimals, 300);
 
 	const { data: routes = [], isLoading } = useGetRoutes({
@@ -676,9 +662,26 @@ export function AggregatorContainer({ tokenlist }) {
 		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute && priceImpactRoute > 0
 			? 100 - (priceImpactRoute / (+fromTokenPrice * +amount)) * 100
 			: 0;
+	const hasPriceImapct = priceImpact > 15;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
+
+	const handleSwap = () => {
+		if (normalizedRoutes.find(({ name }) => name === route.name))
+			swapMutation.mutate({
+				chain: selectedChain.value,
+				from: finalSelectedFromToken.value,
+				to: finalSelectedToToken.value,
+				amount: amountWithDecimals,
+				signer,
+				slippage,
+				adapter: route.name,
+				rawQuote: route?.price?.rawQuote,
+				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
+				index: route?.index
+			});
+	};
 
 	useEffect(() => {
 		const id = setTimeout(() => {
@@ -883,7 +886,7 @@ export function AggregatorContainer({ tokenlist }) {
 						</Flex>
 					</div>
 
-					{priceImpact > 15 && !isLoading ? (
+					{hasPriceImapct && !isLoading ? (
 						<Alert status="warning" borderRadius="0.375rem" py="8px">
 							<AlertIcon />
 							High price impact! More than {priceImpact.toFixed(2)}% drop.
@@ -930,29 +933,33 @@ export function AggregatorContainer({ tokenlist }) {
 												</Flex>
 											)}
 
-											<Button
-												isLoading={swapMutation.isLoading || isApproveLoading}
-												loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
-												colorScheme={'messenger'}
-												onClick={() => {
-													//scroll Routes into view
-													!route && routesRef.current.scrollIntoView({ behavior: 'smooth' });
-													if (approve) approve();
+											{hasPriceImapct && !isLoading && route && isApproved ? (
+												<SwapConfirmation handleSwap={handleSwap} />
+											) : (
+												<Button
+													isLoading={swapMutation.isLoading || isApproveLoading}
+													loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+													colorScheme={'messenger'}
+													onClick={() => {
+														//scroll Routes into view
+														!route && routesRef.current.scrollIntoView({ behavior: 'smooth' });
+														if (approve) approve();
 
-													if (+amount > +balance?.data?.formatted) return;
+														if (+amount > +balance?.data?.formatted) return;
 
-													if (isApproved) handleSwap();
-												}}
-												disabled={
-													isUSDTNotApprovedOnEthereum ||
-													swapMutation.isLoading ||
-													isApproveLoading ||
-													isApproveResetLoading ||
-													!(amount && finalSelectedFromToken && finalSelectedToToken)
-												}
-											>
-												{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
-											</Button>
+														if (isApproved) handleSwap();
+													}}
+													disabled={
+														isUSDTNotApprovedOnEthereum ||
+														swapMutation.isLoading ||
+														isApproveLoading ||
+														isApproveResetLoading ||
+														!(amount && finalSelectedFromToken && finalSelectedToToken)
+													}
+												>
+													{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
+												</Button>
+											)}
 
 											{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
 												<Button
@@ -1065,27 +1072,31 @@ export function AggregatorContainer({ tokenlist }) {
 															</Flex>
 														)}
 
-														<Button
-															isLoading={swapMutation.isLoading || isApproveLoading}
-															loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
-															colorScheme={'messenger'}
-															onClick={() => {
-																if (approve) approve();
+														{hasPriceImapct && !isLoading && route && isApproved ? (
+															<SwapConfirmation handleSwap={handleSwap} />
+														) : (
+															<Button
+																isLoading={swapMutation.isLoading || isApproveLoading}
+																loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+																colorScheme={'messenger'}
+																onClick={() => {
+																	if (approve) approve();
 
-																if (+amount > +balance?.data?.formatted) return;
+																	if (+amount > +balance?.data?.formatted) return;
 
-																if (isApproved) handleSwap();
-															}}
-															disabled={
-																isUSDTNotApprovedOnEthereum ||
-																swapMutation.isLoading ||
-																isApproveLoading ||
-																isApproveResetLoading ||
-																!route
-															}
-														>
-															{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
-														</Button>
+																	if (isApproved) handleSwap();
+																}}
+																disabled={
+																	isUSDTNotApprovedOnEthereum ||
+																	swapMutation.isLoading ||
+																	isApproveLoading ||
+																	isApproveResetLoading ||
+																	!route
+																}
+															>
+																{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
+															</Button>
+														)}
 
 														{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
 															<Button
