@@ -614,7 +614,7 @@ export function AggregatorContainer({ tokenlist }) {
 		});
 	};
 
-	const fillRoute = (route:typeof routes[0]) => {
+	const fillRoute = (route: typeof routes[0]) => {
 		let gasUsd: number | string =
 			(gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
@@ -640,9 +640,9 @@ export function AggregatorContainer({ tokenlist }) {
 			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
 			amountUsd,
 			amount,
-			netOut,
+			netOut
 		};
-	}
+	};
 
 	let normalizedRoutes = [...(routes || [])]
 		?.map(fillRoute)
@@ -658,7 +658,8 @@ export function AggregatorContainer({ tokenlist }) {
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
-	const priceImpactRoute = route === undefined || route === null? normalizedRoutes?.[0]?.amountUsd : fillRoute(route).amountUsd;
+	const priceImpactRoute =
+		route === undefined || route === null ? normalizedRoutes?.[0]?.amountUsd : fillRoute(route).amountUsd;
 
 	const priceImpact =
 		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute && Number(priceImpactRoute) > 0
@@ -996,7 +997,15 @@ export function AggregatorContainer({ tokenlist }) {
 
 				<Routes ref={routesRef}>
 					{normalizedRoutes?.length ? (
-						<FormHeader>Select a route to perform a swap</FormHeader>
+						<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+							<FormHeader>Select a route to perform a swap</FormHeader>
+							{fromTokenPrice && toTokenPrice ? (
+								<div style={{ fontSize: '16px', color: '#999999' }}>
+									1 {finalSelectedFromToken?.symbol} = {(fromTokenPrice / toTokenPrice).toFixed(3)}{' '}
+									{finalSelectedToToken?.symbol}
+								</div>
+							) : null}
+						</div>
 					) : !isLoading &&
 					  amount &&
 					  debouncedAmountWithDecimals === amountWithDecimals &&
@@ -1004,7 +1013,7 @@ export function AggregatorContainer({ tokenlist }) {
 					  finalSelectedToToken ? (
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
-					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px' }}>
+					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
 						{normalizedRoutes?.length ? 'Best route is selected based on a net output after gas fees' : null}
 					</span>
 
