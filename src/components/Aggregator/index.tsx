@@ -374,6 +374,8 @@ export function AggregatorContainer({ tokenlist }) {
 		enabled: selectedChain && isConnected && finalSelectedFromToken ? true : false
 	});
 
+	
+
 	const { data: gasPriceData } = useFeeData({
 		chainId: selectedChain?.id,
 		enabled: selectedChain ? true : false
@@ -683,12 +685,12 @@ export function AggregatorContainer({ tokenlist }) {
 		return () => clearTimeout(id);
 	}, [slippage, customSlippage, router]);
 
-	const insufficientBalance =
-		balance?.data?.value &&
+	const insufficientBalance = balance.data ?
+		balance.data?.value &&
 		debouncedAmountWithDecimals &&
 		amountWithDecimals &&
 		debouncedAmountWithDecimals === amountWithDecimals &&
-		+debouncedAmountWithDecimals > +balance.data.value.toString();
+		+debouncedAmountWithDecimals > +balance.data.value.toString() : false;
 
 	return (
 		<Wrapper>
