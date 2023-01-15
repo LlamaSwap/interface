@@ -32,7 +32,7 @@ export const estimateGas = async ({ routes, token, userAddress }) => {
 			const swapTx = res[1];
 			console.log(name, swapTx)
 			return {
-				gas: BigNumber(swapTx.trace[0].result.gasUsed).toString(),// swapTx.trace.reduce((acc, val) => BigNumber(val.result.gasUsed).plus(acc), BigNumber(0)).toString(),
+				gas: BigNumber(swapTx.trace[0].result.gasUsed).plus(21e3).toString(), // ignores calldata and accesslist costs
 				isFailed: !!swapTx.trace.find((a) => a.error === 'Reverted'),
 				aggGas: price.estimatedGas,
 				name
