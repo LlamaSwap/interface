@@ -111,7 +111,7 @@ export async function getTokenList() {
 	}
 
 	const geckoTokensList = await Promise.all(
-		Object.entries({}).map(([chain, tokens]: [string, Set<string>]) =>
+		Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
 			getTokenNameAndSymbolsOnChain([chain, Array.from(tokens || new Set())])
 		)
 	);
