@@ -663,9 +663,11 @@ export function AggregatorContainer({ tokenlist }) {
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
+	const priceImpactRoute = route?.route?.amountUsd ?? normalizedRoutes?.[0]?.amountUsd;
+
 	const priceImpact =
-		fromTokenPrice && toTokenPrice && route?.route?.amountUsd > 0
-			? 100 - (route?.route?.amountUsd / (+fromTokenPrice * +amount)) * 100
+		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute && priceImpactRoute > 0
+			? 100 - (priceImpactRoute / (+fromTokenPrice * +amount)) * 100
 			: 0;
 
 	const isUSDTNotApprovedOnEthereum =
@@ -873,6 +875,14 @@ export function AggregatorContainer({ tokenlist }) {
 							</Box>
 						</Flex>
 					</div>
+
+					{priceImpact > 15 && !isLoading ? (
+						<Alert status="warning" borderRadius="0.375rem" py="8px">
+							<AlertIcon />
+							High price impact! More than {priceImpact.toFixed(2)}% drop.
+						</Alert>
+					) : null}
+
 					<SwapWrapper>
 						{!isConnected ? (
 							<ConnectButtonWrapper>
@@ -962,12 +972,6 @@ export function AggregatorContainer({ tokenlist }) {
 							</>
 						)}
 					</SwapWrapper>
-					{priceImpact > 15 && !isLoading ? (
-						<Alert status="warning">
-							<AlertIcon />
-							High price impact! More than {priceImpact.toFixed(2)}% drop.
-						</Alert>
-					) : null}
 				</Body>
 
 				<Routes ref={routesRef}>
