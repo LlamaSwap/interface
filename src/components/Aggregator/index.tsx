@@ -614,36 +614,38 @@ export function AggregatorContainer({ tokenlist }) {
 		});
 	};
 
+	const fillRoute = (route:typeof routes[0]) => {
+		let gasUsd: number | string =
+			(gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+
+		// CowSwap native token swap
+		gasUsd =
+			route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
+				? (route.price.feeAmount / 1e18) * gasTokenPrice
+				: gasUsd;
+
+		gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
+
+		gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
+
+		const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
+
+		const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
+
+		const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
+
+		return {
+			...route,
+			route,
+			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
+			amountUsd,
+			amount,
+			netOut,
+		};
+	}
+
 	let normalizedRoutes = [...(routes || [])]
-		?.map((route) => {
-			let gasUsd: number | string =
-				(gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
-
-			// CowSwap native token swap
-			gasUsd =
-				route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
-					? (route.price.feeAmount / 1e18) * gasTokenPrice
-					: gasUsd;
-
-			gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
-
-			gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
-
-			const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
-
-			const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
-
-			const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
-
-			return {
-				route,
-				gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
-				amountUsd,
-				amount,
-				netOut,
-				...route
-			};
-		})
+		?.map(fillRoute)
 		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
@@ -656,11 +658,11 @@ export function AggregatorContainer({ tokenlist }) {
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
-	const priceImpactRoute = route?.route?.amountUsd ?? normalizedRoutes?.[0]?.amountUsd;
+	const priceImpactRoute = route === undefined || route === null? normalizedRoutes?.[0]?.amountUsd : fillRoute(route).amountUsd;
 
 	const priceImpact =
-		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute && priceImpactRoute > 0
-			? 100 - (priceImpactRoute / (+fromTokenPrice * +amount)) * 100
+		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute && Number(priceImpactRoute) > 0
+			? 100 - (Number(priceImpactRoute) / (+fromTokenPrice * +amount)) * 100
 			: 0;
 	const hasPriceImapct = priceImpact > 7;
 
