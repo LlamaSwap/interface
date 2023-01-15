@@ -1,4 +1,4 @@
-import { chain } from 'wagmi';
+import { Chain, chain } from 'wagmi';
 import { chainIconUrl } from '~/utils/index';
 
 const okx = {
@@ -419,18 +419,27 @@ const polygon = {
 
 const arbirum = {
 	...chain.arbitrum,
+	rpcUrls: {
+		default: 'https://rpc.ankr.com/arbitrum'
+	},
 	iconUrl: chainIconUrl('arbitrum')
 };
 const ethereum = {
 	...chain.mainnet,
+	rpcUrls: {
+		default: 'https://rpc.ankr.com/eth'
+	},
 	iconUrl: chainIconUrl('ethereum')
 };
 const optimism = {
 	...chain.optimism,
+	rpcUrls: {
+		default: 'https://optimism-mainnet.public.blastapi.io'
+	},
 	iconUrl: chainIconUrl('optimism')
 };
 
-export const allChains = [
+export const allChains: Array<Chain> = [
 	polygon,
 	binance,
 	oasis,
