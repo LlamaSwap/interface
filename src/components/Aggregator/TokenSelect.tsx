@@ -12,8 +12,11 @@ import { useDebounce } from '~/hooks/useDebounce';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import coingecko from '~/public/coingecko.svg';
+import { allChains } from '../WalletProvider/chains';
 
-const Row = ({ token, onClick }) => {
+const Row = ({ chain, token, onClick }) => {
+	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
+
 	return (
 		<PairRow
 			key={token.value}
@@ -34,10 +37,28 @@ const Row = ({ token, onClick }) => {
 				>{`${token.name} (${token.symbol})`}</Text>
 
 				{token.isGeckoToken && (
-					<Text as="span" display="flex" alignItems="center" justifyContent="flex-start" gap="4px" fontSize="0.75rem">
-						<span>via CoinGecko</span>
-						<Image src={coingecko} height="16px" width="16px" objectFit="contain" alt="" />
-					</Text>
+					<>
+						<Text
+							as="span"
+							display="flex"
+							alignItems="center"
+							textColor="gray.400"
+							justifyContent="flex-start"
+							gap="4px"
+							fontSize="0.75rem"
+						>
+							<span>via CoinGecko</span>
+							<Image src={coingecko} height="14px" width="14px" objectFit="contain" alt="" />
+						</Text>
+						{blockExplorer && (
+							<a
+								href={`${blockExplorer.url}/address/${token.address}`}
+								target="_blank"
+								rel="noreferrer noopener"
+								style={{ fontSize: '0.75rem', textDecoration: 'underline' }}
+							>{`View on ${blockExplorer.name}`}</a>
+						)}
+					</>
 				)}
 			</Text>
 
@@ -172,7 +193,7 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 	const rowVirtualizer = useVirtualizer({
 		count: filteredData.length,
 		getScrollElement: () => parentRef.current,
-		estimateSize: (index) => (filteredData[index].isGeckoToken ? 56 : 40),
+		estimateSize: (index) => (filteredData[index].isGeckoToken ? 72 : 40),
 		overscan: 5
 	});
 
@@ -216,11 +237,11 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 									top: 0,
 									left: 0,
 									width: '100%',
-									height: filteredData[virtualRow.index].isGeckoToken ? '56px' : '40px',
+									height: filteredData[virtualRow.index].isGeckoToken ? '72px' : '40px',
 									transform: `translateY(${virtualRow.start}px)`
 								}}
 							>
-								<Row token={filteredData[virtualRow.index]} onClick={onClick} />
+								<Row token={filteredData[virtualRow.index]} onClick={onClick} chain={selectedChain} />
 							</div>
 						))}
 					</div>

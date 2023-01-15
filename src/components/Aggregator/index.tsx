@@ -693,7 +693,7 @@ export function AggregatorContainer({ tokenlist }) {
 				<a
 					style={{ textDecoration: 'underline' }}
 					target={'_blank'}
-					rel="noreferrer"
+					rel="noreferrer noopener"
 					href="https://discord.gg/j54NuUt5nW"
 				>
 					discord server
