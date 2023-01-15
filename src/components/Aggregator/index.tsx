@@ -683,6 +683,13 @@ export function AggregatorContainer({ tokenlist }) {
 		return () => clearTimeout(id);
 	}, [slippage, customSlippage, router]);
 
+	const insufficientBalance =
+		balance?.data?.value &&
+		debouncedAmountWithDecimals &&
+		amountWithDecimals &&
+		debouncedAmountWithDecimals === amountWithDecimals &&
+		+debouncedAmountWithDecimals > +balance.data.value.toString();
+
 	return (
 		<Wrapper>
 			<Heading>Meta-Aggregator</Heading>
@@ -881,6 +888,10 @@ export function AggregatorContainer({ tokenlist }) {
 						) : !isValidSelectedChain ? (
 							<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
 								Switch Network
+							</Button>
+						) : insufficientBalance ? (
+							<Button colorScheme={'messenger'} disabled>
+								Insufficient Balance
 							</Button>
 						) : (
 							<>
