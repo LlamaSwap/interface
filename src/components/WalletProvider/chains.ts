@@ -439,7 +439,12 @@ const optimism = {
 	iconUrl: chainIconUrl('optimism')
 };
 
-export const allChains: Array<Chain> = [
+
+interface IChain extends Chain {
+	iconUrl: string
+}
+
+export const allChains: Array<IChain> = [
 	polygon,
 	binance,
 	oasis,
