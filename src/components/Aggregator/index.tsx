@@ -999,9 +999,12 @@ export function AggregatorContainer({ tokenlist }) {
 					{normalizedRoutes?.length ? (
 						<div style={{ display: 'flex', justifyContent: 'space-between' }}>
 							<FormHeader>Select a route to perform a swap</FormHeader>
-							{fromTokenPrice && toTokenPrice ? (
+							{route ? (
 								<div style={{ fontSize: '16px', color: '#999999' }}>
-									1 {finalSelectedFromToken?.symbol} = {(fromTokenPrice / toTokenPrice).toFixed(3)}{' '}
+									1 {finalSelectedFromToken?.symbol} ={' '}
+									{(
+										Number(+route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals) / Number(amount)
+									).toFixed(3)}{' '}
 									{finalSelectedToToken?.symbol}
 								</div>
 							) : null}
