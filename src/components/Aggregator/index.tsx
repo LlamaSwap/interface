@@ -150,6 +150,7 @@ const Routes = styled.div`
 	overflow-y: scroll;
 	width: 100%;
 	min-height: 100%;
+	overflow-x: hidden;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
 		max-height: 485px;
