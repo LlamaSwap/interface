@@ -32,8 +32,8 @@ const fixTotkens = (tokenlist) => {
 		({ address }) => address.toLowerCase() === '0x152b9d0fdc40c096757f570a51e494bd4b943e50'
 	).symbol = 'BTC.b';
 	//RSR address
-	tokenlist[1].find(({ address }) => address.toLowerCase() === '0x8762db106b2c2a0bccb3a80d1ed41273552616e8').address =
-		'0x320623b8e4ff03373931769a31fc52a4e78b5d70';
+	// tokenlist[1].find(({ address }) => address.toLowerCase() === '0x8762db106b2c2a0bccb3a80d1ed41273552616e8').address =
+	// 	'0x320623b8e4ff03373931769a31fc52a4e78b5d70';
 	// XDAI -> DAI
 	tokenlist[1].find(({ address }) => address.toLowerCase() === '0x6b175474e89094c44da98b954eedeac495271d0f').symbol =
 		'DAI';
@@ -53,10 +53,9 @@ export async function getTokenList() {
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
-	const [uniList, sushiList, lifiList, geckoList, logos] = await Promise.all([
+	const [uniList, sushiList, geckoList, logos] = await Promise.all([
 		fetch('https://tokens.uniswap.org/').then((r) => r.json()),
 		fetch('https://token-list.sushi.com/').then((r) => r.json()),
-		fetch('https://li.quest/v1/tokens').then((r) => r.json()),
 		fetch('https://api.coingecko.com/api/v3/coins/list?include_platform=true').then((res) => res.json()),
 		fetch('https://datasets.llama.fi/tokenlist/logos.json').then((res) => res.json())
 	]);
@@ -71,10 +70,7 @@ export async function getTokenList() {
 		.flat();
 
 	const tokensByChain = mapValues(
-		merge(
-			groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...nativeTokens], 'chainId'),
-			lifiList.tokens
-		),
+		merge(groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...nativeTokens], 'chainId'), {}),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
@@ -115,7 +111,7 @@ export async function getTokenList() {
 	}
 
 	const geckoTokensList = await Promise.all(
-		Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
+		Object.entries({}).map(([chain, tokens]: [string, Set<string>]) =>
 			getTokenNameAndSymbolsOnChain([chain, Array.from(tokens || new Set())])
 		)
 	);
