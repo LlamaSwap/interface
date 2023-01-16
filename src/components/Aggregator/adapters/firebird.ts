@@ -1,9 +1,10 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
+import { defillamaReferrerAddress } from '../constants';
 import { ExtraData } from '../types';
 import { providers } from '../rpcs';
-import { applyArbitrumFees } from '../utils/arbitrumFees'
-import { sendTx } from '../utils/sendTx'
+import { applyArbitrumFees } from '../utils/arbitrumFees';
+import { sendTx } from '../utils/sendTx';
 
 export const chainToId = {
 	ethereum: 1,
@@ -49,7 +50,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	// amount should include decimals
 	const result = await fetch(
-		`${routerAPI}/quote?chainId=${chainToId[chain]}&from=${tokenFrom}&to=${tokenTo}&amount=${amount}&receiver=${receiver}&slippage=${extra.slippage}&source=defillama`,
+		`${routerAPI}/quote?chainId=${chainToId[chain]}&from=${tokenFrom}&to=${tokenTo}&amount=${amount}&receiver=${receiver}&slippage=${extra.slippage}&source=defillama&ref=${defillamaReferrerAddress}`,
 		{ headers }
 	).then((r) => r.json());
 	const data = result.quoteData;
