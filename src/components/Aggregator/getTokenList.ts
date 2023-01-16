@@ -180,8 +180,6 @@ export async function getTokenList() {
 const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promise<[string, Array<IToken>]> => {
 	const chainName = chainIdToName(chainId);
 
-	return [chainId, []];
-
 	if (!chainName) {
 		return [chainId, []];
 	}
