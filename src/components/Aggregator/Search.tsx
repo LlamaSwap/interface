@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { FixedSizeList as List } from 'react-window';
 import { Input } from './TokenInput';
 import styled from 'styled-components';
 import { CloseBtn } from '../CloseBtn';
@@ -70,10 +69,15 @@ export const Header = styled.div`
 export const PairRow = styled.div<{ hover?: boolean }>`
 	display: flex;
 	gap: 8px;
-	margin-top: 16px;
+	padding: 8px 4px;
+	align-items: center;
 	border-bottom: ${({ theme }) => (theme.mode === 'dark' ? '1px solid #373944;' : '2px solid #c6cae0;')};
-	padding: 8px;
+
 	cursor: pointer;
+
+	&[data-defaultcursor='true'] {
+		cursor: default;
+	}
 
 	&:hover {
 		background-color: ${({ hover }) => (hover ? ' rgba(246, 246, 246, 0.1);' : 'none')};
@@ -96,17 +100,15 @@ const Pairs = styled.div`
 	overflow-y: scroll;
 `;
 
-const Row = ({ data: { data, onClick }, index, style }) => {
-	const pair = data[index];
-
+const Row = ({ data, onClick }) => {
 	return (
-		<PairRow key={pair.value} style={style} onClick={() => onClick(pair)}>
+		<PairRow key={data.value} onClick={() => onClick(data)}>
 			<IconWrapper>
-				<IconImage src={pair.token0.logoURI} onError={(e) => (e.currentTarget.src = '/placeholder.png')} /> -{' '}
-				<IconImage src={pair.token1.logoURI} onError={(e) => (e.currentTarget.src = '/placeholder.png')} />
+				<IconImage src={data.token0.logoURI} onError={(e) => (e.currentTarget.src = '/placeholder.png')} /> -{' '}
+				<IconImage src={data.token1.logoURI} onError={(e) => (e.currentTarget.src = '/placeholder.png')} />
 			</IconWrapper>
 			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
-				{pair.label}
+				{data.label}
 			</Text>
 		</PairRow>
 	);
@@ -125,10 +127,12 @@ const Modal = ({ close, onInputChange, data, onClick }) => {
 				<div>
 					<Input placeholder="Search... (BTC-ETH)" onChange={onInputChange} autoFocus />
 				</div>
-				<List height={390} itemCount={data.length} itemSize={38} itemData={{ data, onClick }}>
-					{Row}
-				</List>
-				<Pairs></Pairs>
+
+				<Pairs>
+					{data.map((pair) => (
+						<Row data={pair} onClick={onClick} key={pair.value} />
+					))}
+				</Pairs>
 			</ModalWrapper>
 		</ModalOverlay>
 	);

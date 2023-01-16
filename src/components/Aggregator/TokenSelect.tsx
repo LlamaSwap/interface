@@ -1,30 +1,92 @@
 import { ethers } from 'ethers';
-import { useMemo, useState } from 'react';
-import { FixedSizeList as List } from 'react-window';
-import { QuestionIcon } from '@chakra-ui/icons';
+import { useMemo, useRef, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { QuestionIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import ReactSelect from '../MultiSelect';
 import { Header, IconImage, ModalWrapper, PairRow, ModalOverlay } from './Search';
 import { Input } from './TokenInput';
 import { useToken } from 'wagmi';
-import { Button, Flex, Text } from '@chakra-ui/react';
+import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
 import { CloseBtn } from '../CloseBtn';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useQueryClient } from '@tanstack/react-query';
+import Image from 'next/image';
+import coingecko from '~/public/coingecko.svg';
+import { allChains } from '../WalletProvider/chains';
 
-const Row = ({ data: { data, onClick }, index, style }) => {
-	const token = data[index];
+const Row = ({ chain, token, onClick }) => {
+	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
 
 	return (
-		<PairRow key={token.value} style={style} onClick={() => onClick(token)}>
-			<IconImage src={token.logoURI} onError={(e) => (e.currentTarget.src = '/placeholder.png')} />
+		<PairRow
+			key={token.value}
+			data-defaultcursor={token.isGeckoToken ? true : false}
+			onClick={() => !token.isGeckoToken && onClick(token)}
+		>
+			<IconImage
+				src={token.logoURI || '/placeholder.png'}
+				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+			/>
 
-			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">{`${token.name} (${token.symbol})`}</Text>
+			<Text display="flex" flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
+				<Text
+					as="span"
+					whiteSpace="nowrap"
+					textOverflow="ellipsis"
+					overflow="hidden"
+				>{`${token.name} (${token.symbol})`}</Text>
+
+				{token.isGeckoToken && (
+					<>
+						<Text
+							as="span"
+							display="flex"
+							alignItems="center"
+							textColor="gray.400"
+							justifyContent="flex-start"
+							gap="4px"
+							fontSize="0.75rem"
+						>
+							<span>via CoinGecko</span>
+							<Image src={coingecko} height="14px" width="14px" objectFit="contain" alt="" />
+						</Text>
+						{blockExplorer && (
+							<a
+								href={`${blockExplorer.url}/address/${token.address}`}
+								target="_blank"
+								rel="noreferrer noopener"
+								style={{ fontSize: '0.75rem', textDecoration: 'underline' }}
+							>{`View on ${blockExplorer.name}`}</a>
+						)}
+					</>
+				)}
+			</Text>
+
 			{token.balanceUSD ? (
 				<div style={{ marginRight: 0, marginLeft: 'auto' }}>
 					{(token.amount / 10 ** token.decimals).toFixed(3)}
 					<span style={{ fontSize: 12 }}> (~${token.balanceUSD?.toFixed(3)})</span>
 				</div>
 			) : null}
+
+			{token.isGeckoToken && (
+				<Tooltip
+					label="This token doesn't appear on active token list(s). Make sure this is the token that you want to trade."
+					bg="black"
+					color="white"
+				>
+					<Button
+						fontSize={'0.875rem'}
+						fontWeight={500}
+						ml="auto"
+						colorScheme={'orange'}
+						onClick={() => onClick(token)}
+						leftIcon={<WarningTwoIcon />}
+					>
+						<span style={{ position: 'relative', top: '1px' }}>Import Token</span>
+					</Button>
+				</Tooltip>
+			)}
 		</PairRow>
 	);
 };
@@ -117,10 +179,23 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 						return true;
 					}
 
+					if (token.name && token.name.toLowerCase()?.includes(debouncedInput.toLowerCase())) {
+						return true;
+					}
+
 					return false;
 			  })
 			: data;
 	}, [debouncedInput, data]);
+
+	const parentRef = useRef();
+
+	const rowVirtualizer = useVirtualizer({
+		count: filteredData.length,
+		getScrollElement: () => parentRef.current,
+		estimateSize: (index) => (filteredData[index].isGeckoToken ? 72 : 40),
+		overscan: 5
+	});
 
 	return (
 		<ModalOverlay>
@@ -137,9 +212,40 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 				{ethers.utils.isAddress(input) && filteredData.length === 0 ? (
 					<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
 				) : null}
-				<List height={390} itemCount={filteredData.length} itemSize={40} itemData={{ data: filteredData, onClick }}>
-					{Row}
-				</List>
+
+				<div
+					ref={parentRef}
+					className="List"
+					style={{
+						height: `390px`,
+						overflow: 'auto',
+						marginTop: '24px'
+					}}
+				>
+					<div
+						style={{
+							height: `${rowVirtualizer.getTotalSize()}px`,
+							width: '100%',
+							position: 'relative'
+						}}
+					>
+						{rowVirtualizer.getVirtualItems().map((virtualRow) => (
+							<div
+								key={virtualRow.index + filteredData[virtualRow.index].address}
+								style={{
+									position: 'absolute',
+									top: 0,
+									left: 0,
+									width: '100%',
+									height: filteredData[virtualRow.index].isGeckoToken ? '72px' : '40px',
+									transform: `translateY(${virtualRow.start}px)`
+								}}
+							>
+								<Row token={filteredData[virtualRow.index]} onClick={onClick} chain={selectedChain} />
+							</div>
+						))}
+					</div>
+				</div>
 			</ModalWrapper>
 		</ModalOverlay>
 	);

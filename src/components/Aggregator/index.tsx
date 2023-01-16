@@ -289,7 +289,8 @@ export function AggregatorContainer({ tokenlist }) {
 	const slippage = typeof slippageQuery === 'string' && !Number.isNaN(Number(slippageQuery)) ? slippageQuery : '0.5';
 
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useMemo(() => {
-		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainsMap[chainName]] || [] : null;
+		const chainId = chainsMap[chainName];
+		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainId] || [] : null;
 
 		const selectedChain = chains.find((c) => c.value === chainName);
 
@@ -721,7 +722,7 @@ export function AggregatorContainer({ tokenlist }) {
 				<a
 					style={{ textDecoration: 'underline' }}
 					target={'_blank'}
-					rel="noreferrer"
+					rel="noreferrer noopener"
 					href="https://discord.gg/j54NuUt5nW"
 				>
 					discord server
