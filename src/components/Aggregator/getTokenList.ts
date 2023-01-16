@@ -91,7 +91,7 @@ export async function getTokenList() {
 		});
 	}
 
-	// store unique coingecko tokens not in above token list by chain
+	// store coingecko tokens that aren't in above token list by chain
 	const geckoListByChain = {};
 
 	if (geckoList && geckoList.length > 0) {
