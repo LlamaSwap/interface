@@ -33,7 +33,6 @@ const CONCURRENT_TESTS = 5;
 
 export async function testAdapters(addTest: (test: any) => void) {
 	const allChains = getAllChains().map((c) => c.value);
-	console.log({ allChains });
 	const allTokenlists = (await getTokenList()).props.tokenlist;
 	setTimeout(() => new Array(CONCURRENT_TESTS).fill(null).map(releaseLock), 1e3); // Release locks in 1 sec
 	await Promise.all(
