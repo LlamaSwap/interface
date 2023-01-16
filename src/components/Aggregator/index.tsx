@@ -648,8 +648,10 @@ export function AggregatorContainer({ tokenlist }) {
 
 	let normalizedRoutes = [...(routes || [])]
 		?.map(fillRoute)
-		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
-		.filter(({ isFailed }) => isFailed !== true)
+		.filter(
+			({ fromAmount, amount: toAmount, isFailed }) =>
+				Number(toAmount) && amountWithDecimals === fromAmount && isFailed !== true
+		)
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
