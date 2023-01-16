@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import type { IToken } from '~/types';
 
 type ChainId = number | string;
-type Address = string;
 type Balances = Record<ChainId, Array<IToken>>;
 
 const getBalances = async (address) => {

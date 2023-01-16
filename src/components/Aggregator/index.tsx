@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useBalance, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
+import { useAccount, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
@@ -32,7 +32,7 @@ import { useTokenApprove } from './hooks';
 import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
-import { chainsMap, nativeAddress } from './constants';
+import { chainsMap } from './constants';
 import TokenSelect from './TokenSelect';
 import Tooltip from '../Tooltip';
 import type { IToken } from '~/types';
@@ -47,6 +47,7 @@ import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
+import { useBalance } from '~/queries/useBalance';
 
 /*
 Integrated:
@@ -364,17 +365,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 
-	const balance = useBalance({
-		addressOrName: address,
-		token: [ethers.constants.AddressZero, nativeAddress.toLowerCase()].includes(
-			finalSelectedFromToken?.address?.toLowerCase()
-		)
-			? undefined
-			: (finalSelectedFromToken?.address as `0x${string}`),
-		watch: true,
-		chainId: selectedChain.id,
-		enabled: selectedChain && isConnected && finalSelectedFromToken ? true : false
-	});
+	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
 
 	const { data: gasPriceData } = useFeeData({
 		chainId: selectedChain?.id,
@@ -576,7 +567,7 @@ export function AggregatorContainer({ tokenlist }) {
 	} = useTokenApprove(finalSelectedFromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
 
 	const onMaxClick = () => {
-		if (balance?.data?.formatted) {
+		if (balance.data && balance.data.formatted && !Number.isNaN(Number(balance.data.formatted))) {
 			if (
 				route?.price?.estimatedGas &&
 				gasPriceData?.formatted?.gasPrice &&
@@ -584,11 +575,11 @@ export function AggregatorContainer({ tokenlist }) {
 			) {
 				const gas = (+route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
 
-				const amountWithoutGas = +balance?.data?.formatted - gas;
+				const amountWithoutGas = +balance.data.formatted - gas;
 
 				setAmount(amountWithoutGas);
 			} else {
-				setAmount(balance?.data?.formatted);
+				setAmount(balance.data.formatted);
 			}
 		}
 	};
@@ -698,9 +689,14 @@ export function AggregatorContainer({ tokenlist }) {
 		return () => clearTimeout(id);
 	}, [slippage, customSlippage, router]);
 
-	useEffect(() => {
-		if (!normalizedRoutes.find(({ name }) => name === route?.name)) setRoute(null);
-	}, [normalizedRoutes, route]);
+	const insufficientBalance =
+		balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted))
+			? balance.data.value &&
+			  debouncedAmountWithDecimals &&
+			  amountWithDecimals &&
+			  debouncedAmountWithDecimals === amountWithDecimals &&
+			  +debouncedAmountWithDecimals > +balance.data.value.toString()
+			: false;
 
 	return (
 		<Wrapper>
@@ -792,7 +788,7 @@ export function AggregatorContainer({ tokenlist }) {
 										: ''}
 								</Text>
 
-								{balance.isSuccess ? (
+								{balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted)) ? (
 									<Button
 										textDecor="underline"
 										bg="none"
@@ -803,7 +799,7 @@ export function AggregatorContainer({ tokenlist }) {
 										height="fit-content"
 										onClick={onMaxClick}
 									>
-										Balance: {(+balance?.data?.formatted).toFixed(3)}
+										Balance: {(+balance.data.formatted).toFixed(3)}
 									</Button>
 								) : null}
 							</Flex>
@@ -909,6 +905,10 @@ export function AggregatorContainer({ tokenlist }) {
 							<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
 								Switch Network
 							</Button>
+						) : insufficientBalance ? (
+							<Button colorScheme={'messenger'} disabled>
+								Insufficient Balance
+							</Button>
 						) : (
 							<>
 								{router && address && (
@@ -950,9 +950,15 @@ export function AggregatorContainer({ tokenlist }) {
 													onClick={() => {
 														//scroll Routes into view
 														!route && routesRef.current.scrollIntoView({ behavior: 'smooth' });
+
 														if (approve) approve();
 
-														if (+amount > +balance?.data?.formatted) return;
+														if (
+															balance.data &&
+															!Number.isNaN(Number(balance.data.formatted)) &&
+															+amount > +balance.data.formatted
+														)
+															return;
 
 														if (isApproved) handleSwap();
 													}}
@@ -1100,7 +1106,12 @@ export function AggregatorContainer({ tokenlist }) {
 																onClick={() => {
 																	if (approve) approve();
 
-																	if (+amount > +balance?.data?.formatted) return;
+																	if (
+																		balance.data &&
+																		!Number.isNaN(Number(balance.data.formatted)) &&
+																		+amount > +balance.data.formatted
+																	)
+																		return;
 
 																	if (isApproved) handleSwap();
 																}}
