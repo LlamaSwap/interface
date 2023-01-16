@@ -219,7 +219,7 @@ export const rpcUrls = {
 	}
 };
 
-const getUrls = (chainId) => Object.values(rpcUrls[chainId] || {}).join(',');
+const getUrls = (chainId: keyof typeof rpcUrls) => Object.values(rpcUrls[chainId]).join(',');
 
 export const providers = {
 	ethereum: createProvider('ethereum', getUrls(1), 1),
@@ -238,7 +238,7 @@ export const providers = {
 	optimism: createProvider('optimism', getUrls(10), 10),
 	arbitrum: createProvider('arbitrum', getUrls(42161), 42161),
 	kcc: createProvider('kcc', getUrls(321), 321),
-	celo: createProvider('celo', getUrls(4220), 42220),
+	celo: createProvider('celo', getUrls(42220), 42220),
 	iotex: createProvider('iotex', getUrls(4689), 4689),
 	moonriver: createProvider('moonriver', getUrls(1285), 1285),
 	shiden: createProvider('shiden', getUrls(336), 336),
