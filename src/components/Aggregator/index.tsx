@@ -48,6 +48,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
+import { formattedNum } from '~/utils';
 
 /*
 Integrated:
@@ -209,6 +210,9 @@ const FormHeader = styled.div`
 	font-size: 16px;
 	margin-bottom: 4px;
 	margin-left: 4px;
+	.chakra-switch, .chakra-switch__track, .chakra-switch__thumb {
+		height: 10px;
+	}
 `;
 
 const SelectWrapper = styled.div`
@@ -722,9 +726,9 @@ export function AggregatorContainer({ tokenlist }) {
 								<Box>Chain</Box>
 								<Spacer />
 								<Tooltip content="Redirect requests through the DefiLlama Server to hide your IP address">
-									<FormControl display="flex" alignItems="center" gap="4px" justifyContent={'center'}>
-										<FormLabel htmlFor="privacy-switch" margin={0}>
-											Private mode
+									<FormControl display="flex" alignItems="baseline" gap="6px" justifyContent={'center'}>
+										<FormLabel htmlFor="privacy-switch" margin={0} fontSize="14px" color="gray.400">
+											Hide IP
 										</FormLabel>
 										<Switch
 											id="privacy-switch"
@@ -783,8 +787,7 @@ export function AggregatorContainer({ tokenlist }) {
 							<Flex alignItems="center" justifyContent="space-between" marginX="4px" marginTop="8px">
 								<Text minH="22px">
 									{fromTokenPrice
-										? `Value: $
-										${(+fromTokenPrice * +amount).toFixed(3)}`
+										? `Value: $${formattedNum((+fromTokenPrice * +amount))}`
 										: ''}
 								</Text>
 
@@ -1005,15 +1008,6 @@ export function AggregatorContainer({ tokenlist }) {
 					{normalizedRoutes?.length ? (
 						<div style={{ display: 'flex', justifyContent: 'space-between' }}>
 							<FormHeader>Select a route to perform a swap</FormHeader>
-							{route ? (
-								<div style={{ fontSize: '16px', color: '#999999' }}>
-									1 {finalSelectedFromToken?.symbol} ={' '}
-									{(
-										Number(+route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals) / Number(amount)
-									).toFixed(3)}{' '}
-									{finalSelectedToToken?.symbol}
-								</div>
-							) : null}
 						</div>
 					) : !isLoading &&
 					  amount &&
@@ -1032,129 +1026,132 @@ export function AggregatorContainer({ tokenlist }) {
 						<RoutesPreview />
 					)}
 
-					{normalizedRoutes.map((r, i) => (
-						<Fragment
-							key={
-								selectedChain.label +
-								finalSelectedFromToken.label +
-								finalSelectedToToken.label +
-								amountWithDecimals +
-								gasPriceData?.formatted?.gasPrice +
-								r?.name
-							}
-						>
-							<Route
-								{...r}
-								index={i}
-								selected={route?.name === r.name}
-								setRoute={() => setRoute({ ...r.route, route: r, index: i })}
-								toToken={finalSelectedToToken}
-								amountFrom={amountWithDecimals}
-								fromToken={finalSelectedFromToken}
-								selectedChain={selectedChain.label}
-								gasTokenPrice={gasTokenPrice}
-							/>
+					{/* routes wrapper */}
+					<div>
+						{normalizedRoutes.map((r, i) => (
+							<Fragment
+								key={
+									selectedChain.label +
+									finalSelectedFromToken.label +
+									finalSelectedToToken.label +
+									amountWithDecimals +
+									gasPriceData?.formatted?.gasPrice +
+									r?.name
+								}
+							>
+								<Route
+									{...r}
+									index={i}
+									selected={route?.name === r.name}
+									setRoute={() => setRoute({ ...r.route, route: r, index: i })}
+									toToken={finalSelectedToToken}
+									amountFrom={amountWithDecimals}
+									fromToken={finalSelectedFromToken}
+									selectedChain={selectedChain.label}
+									gasTokenPrice={gasTokenPrice}
+								/>
 
-							{route?.name === r.name && (
-								<SwapUnderRoute>
-									{!isConnected ? (
-										<ConnectButtonWrapper>
-											<ConnectButton />
-										</ConnectButtonWrapper>
-									) : !isValidSelectedChain ? (
-										<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
-											Switch Network
-										</Button>
-									) : (
-										<>
-											{router && address && (
-												<>
+								{route?.name === r.name && (
+									<SwapUnderRoute>
+										{!isConnected ? (
+											<ConnectButtonWrapper>
+												<ConnectButton />
+											</ConnectButtonWrapper>
+										) : !isValidSelectedChain ? (
+											<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
+												Switch Network
+											</Button>
+										) : (
+											<>
+												{router && address && (
 													<>
-														{isUSDTNotApprovedOnEthereum && (
-															<Flex flexDir="column" gap="4px" w="100%">
-																<Text fontSize="0.75rem" fontWeight={400}>
-																	{`${
-																		finalSelectedFromToken?.symbol
-																	} uses an old token implementation that requires resetting approvals if there's a
-																		previous approval, and you currently have an approval for ${(
-																			Number(allowance) /
-																			10 ** finalSelectedFromToken?.decimals
-																		).toFixed(2)} ${finalSelectedFromToken?.symbol} for this contract, you
-																		need to reset your approval and approve again`}
-																</Text>
+														<>
+															{isUSDTNotApprovedOnEthereum && (
+																<Flex flexDir="column" gap="4px" w="100%">
+																	<Text fontSize="0.75rem" fontWeight={400}>
+																		{`${
+																			finalSelectedFromToken?.symbol
+																		} uses an old token implementation that requires resetting approvals if there's a
+																			previous approval, and you currently have an approval for ${(
+																				Number(allowance) /
+																				10 ** finalSelectedFromToken?.decimals
+																			).toFixed(2)} ${finalSelectedFromToken?.symbol} for this contract, you
+																			need to reset your approval and approve again`}
+																	</Text>
+																	<Button
+																		isLoading={isApproveResetLoading}
+																		loadingText={isConfirmingResetApproval ? 'Confirming' : 'Preparing transaction'}
+																		colorScheme={'messenger'}
+																		onClick={() => {
+																			if (approveReset) approveReset();
+																		}}
+																		disabled={isApproveResetLoading}
+																	>
+																		Reset Approval
+																	</Button>
+																</Flex>
+															)}
+
+															{hasPriceImapct && !isLoading && route && isApproved ? (
+																<SwapConfirmation handleSwap={handleSwap} />
+															) : (
 																<Button
-																	isLoading={isApproveResetLoading}
-																	loadingText={isConfirmingResetApproval ? 'Confirming' : 'Preparing transaction'}
+																	isLoading={swapMutation.isLoading || isApproveLoading}
+																	loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
 																	colorScheme={'messenger'}
 																	onClick={() => {
-																		if (approveReset) approveReset();
+																		if (approve) approve();
+
+																		if (
+																			balance.data &&
+																			!Number.isNaN(Number(balance.data.formatted)) &&
+																			+amount > +balance.data.formatted
+																		)
+																			return;
+
+																		if (isApproved) handleSwap();
 																	}}
-																	disabled={isApproveResetLoading}
+																	disabled={
+																		isUSDTNotApprovedOnEthereum ||
+																		swapMutation.isLoading ||
+																		isApproveLoading ||
+																		isApproveResetLoading ||
+																		!route
+																	}
 																>
-																	Reset Approval
+																	{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
 																</Button>
-															</Flex>
-														)}
+															)}
 
-														{hasPriceImapct && !isLoading && route && isApproved ? (
-															<SwapConfirmation handleSwap={handleSwap} />
-														) : (
-															<Button
-																isLoading={swapMutation.isLoading || isApproveLoading}
-																loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
-																colorScheme={'messenger'}
-																onClick={() => {
-																	if (approve) approve();
-
-																	if (
-																		balance.data &&
-																		!Number.isNaN(Number(balance.data.formatted)) &&
-																		+amount > +balance.data.formatted
-																	)
-																		return;
-
-																	if (isApproved) handleSwap();
-																}}
-																disabled={
-																	isUSDTNotApprovedOnEthereum ||
-																	swapMutation.isLoading ||
-																	isApproveLoading ||
-																	isApproveResetLoading ||
-																	!route
-																}
-															>
-																{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
-															</Button>
-														)}
-
-														{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
-															<Button
-																colorScheme={'messenger'}
-																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
-																isLoading={isApproveInfiniteLoading}
-																onClick={() => {
-																	if (approveInfinite) approveInfinite();
-																}}
-																disabled={
-																	isUSDTNotApprovedOnEthereum ||
-																	swapMutation.isLoading ||
-																	isApproveLoading ||
-																	isApproveResetLoading ||
-																	isApproveInfiniteLoading
-																}
-															>
-																{'Approve Infinite'}
-															</Button>
-														)}
+															{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
+																<Button
+																	colorScheme={'messenger'}
+																	loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+																	isLoading={isApproveInfiniteLoading}
+																	onClick={() => {
+																		if (approveInfinite) approveInfinite();
+																	}}
+																	disabled={
+																		isUSDTNotApprovedOnEthereum ||
+																		swapMutation.isLoading ||
+																		isApproveLoading ||
+																		isApproveResetLoading ||
+																		isApproveInfiniteLoading
+																	}
+																>
+																	{'Approve Infinite'}
+																</Button>
+															)}
+														</>
 													</>
-												</>
-											)}
-										</>
-									)}
-								</SwapUnderRoute>
-							)}
-						</Fragment>
-					))}
+												)}
+											</>
+										)}
+									</SwapUnderRoute>
+								)}
+							</Fragment>
+						))}
+					</div>
 				</Routes>
 			</BodyWrapper>
 

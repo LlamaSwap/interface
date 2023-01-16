@@ -4,6 +4,7 @@ import { useTokenApprove } from '../Aggregator/hooks';
 import { Flex, Text } from '@chakra-ui/react';
 import { Gift, Unlock } from 'react-feather';
 import { GasIcon } from '../Icons';
+import { formattedNum } from '~/utils';
 
 interface IToken {
 	address: string;
@@ -58,16 +59,38 @@ const Route = ({
 	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap')) return null;
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
+	
+	let quotedRate = Number(+price.amountReturned / 10 ** +toToken?.decimals) / (amountFrom / 10 ** +fromToken?.decimals)
+		quotedRate = quotedRate < 0.0001 ? `${formattedNum(1/quotedRate)} ${toToken.symbol} per ${fromToken.symbol}`  : `${formattedNum(quotedRate)} ${fromToken.symbol} per ${toToken.symbol}`
 
 	return (
-		<RouteWrapper onClick={setRoute} selected={selected} best={index === 0}>
+		<RouteWrapper onClick={setRoute} className="RouteWrapper" className={selected?'is-selected':null} selected={selected} best={index === 0}>
 			<RouteRow>
+				<Flex alignItems="baseline">
+					
+					<Text fontWeight={500} fontSize={19} fontWeight={700} color={'#FAFAFA'}>
+						{amount.toFixed(3)}{' '}
+					</Text>
+					{/* <img
+						src={toToken?.logoURI}
+						alt=""
+						onError={(e) => (e.currentTarget.src = '/notFound.png')}
+					/> */}
+					<Text fontWeight={500} fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
+						{toToken?.symbol}
+					</Text>
+
+					<Text fontSize={12} className="secondary-data" fontWeight={500} marginLeft={'4px'} color='gray.500'>
+						<Text as='span' fontSize={14} fontWeight={500}>≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut,false,true)}` : null}</Text> after fees
+					</Text>
+
+				</Flex>
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 					<Flex as="span" alignItems="center" gap="8px">
-						<span>{netOut && Number.isFinite(Number(netOut)) ? `$${Number(netOut).toFixed(3)}` : null}</span>
+						
 
 						{index === 0 ? (
-							<Text as="span" color="green.200" fontSize={12}>
+							<Text as="span" color="#059669" fontSize={14} fontWeight={700}>
 								BEST
 							</Text>
 						) : Number.isFinite(lossPercent) ? (
@@ -77,36 +100,14 @@ const Route = ({
 						) : null}
 					</Flex>
 				</Text>
-				<Flex ml="auto" alignItems="center">
-					<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
-						{amount.toFixed(3)}{' '}
-					</Text>
-					<img
-						src={toToken?.logoURI}
-						alt=""
-						style={{ marginLeft: 4 }}
-						onError={(e) => (e.currentTarget.src = '/notFound.png')}
-					/>
-				</Flex>
 			</RouteRow>
 
 			<RouteRow>
-				<Text display="flex" alignItems="center" gap="4px" color="gray.400" lineHeight={1}>
-					{name === 'CowSwap' ? (
-						<Tooltip content="Gas is taken from output amount">
-							<Text as="span" color="gray.400">
-								{`${amountUsd} - ${
-									gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
-								}`}
-							</Text>
-						</Tooltip>
-					) : (
-						<>{`${amountUsd} - ${
-							gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
-						}`}</>
-					)}
+				
+				
 
-					<GasIcon />
+				<Text as="span"  color="gray.500" fontWeight={500}>
+					{quotedRate}
 				</Text>
 
 				{airdrop ? (
@@ -114,14 +115,36 @@ const Route = ({
 						<Gift size={14} color="#A0AEC0" />
 					</Tooltip>
 				) : null}
-				{isApproved ? (
-					<Tooltip content="Token is approved for this aggregator.">
-						<Unlock size={14} color="#A0AEC0" />
-					</Tooltip>
-				) : null}
+				
 
-				<Text color={'gray.400'} ml="auto">
-					via {name}
+				<Text display="flex" gap="6px" color={'gray.500'}  fontWeight={500} ml="auto">
+					
+					<Text display="flex" alignItems="center" gap="4px" color="gray.500">
+						<GasIcon/>
+						{name === 'CowSwap' ? (
+							<Tooltip content="Gas is taken from output amount">
+								<Text as="span" color='gray.500' fontWeight={500}>
+									{`${
+										gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
+									}`}
+								</Text>
+							</Tooltip>
+						) : (
+							<Text as="span" fontWeight={500}>{`${
+								gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
+							}`}</Text>
+						)}
+						<Text display="flex" gap="3px">
+							via 
+							{isApproved ? (
+								<Tooltip content="Token is approved for this aggregator.">
+									<Unlock size={14} color="#059669" />
+								</Tooltip>
+							) : " "}
+							{name}
+						</Text> 	
+					</Text>
+										
 				</Text>
 			</RouteRow>
 		</RouteWrapper>
@@ -130,13 +153,16 @@ const Route = ({
 
 const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
 	display: grid;
-	grid-row-gap: 8px;
+	grid-row-gap: 4px;
 	margin-top: 16px;
+	:first-of-type {
+		border-color: #059669;
+	}
 
 	background-color: ${({ theme, selected }) =>
 		theme.mode === 'dark' ? (selected ? ' #161616;' : '#2d3039;') : selected ? ' #bec1c7;' : ' #dde3f3;'};
 	border: ${({ theme }) => (theme.mode === 'dark' ? '1px solid #373944;' : '1px solid #c6cae0;')};
-	padding: 8px;
+	padding: 7px 15px 9px;
 	border-radius: 8px;
 	cursor: pointer;
 
@@ -153,24 +179,34 @@ const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
 			opacity: 1;
 		}
 	}
-
+	.secondary-data {
+		opacity: 0;
+		transition: opacity 0.2s linear;
+	}
 	&:hover {
 		background-color: ${({ theme }) => (theme.mode === 'dark' ? '#161616;' : '#b7b7b7;;')};
+	}
+	&:hover , &.is-selected, &:first-of-type {
+		.secondary-data {
+			opacity: 1;
+		}
 	}
 `;
 
 const RouteRow = styled.div`
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: 16px;
 
 	img {
-		width: 24px;
-		height: 24px;
+		width: 15px;
+		height: 15px;
 		aspect-ratio: 1;
 		border-radius: 50%;
-		margin-right: 0;
+		margin: 0 0px 0 6px;
 	}
 `;
 
 export default Route;
+

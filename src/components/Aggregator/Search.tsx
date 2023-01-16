@@ -37,6 +37,7 @@ export const ModalWrapper = styled.div`
 	margin: auto;
 	width: 100%;
 	margin: 0 20px;
+	border: 1px solid #2f333c;
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
 			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
