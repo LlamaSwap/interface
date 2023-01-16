@@ -1,10 +1,8 @@
-import { ethers } from 'ethers';
 import { groupBy, mapValues, merge, uniqBy } from 'lodash';
-import { erc20ABI } from 'wagmi';
 import { IToken } from '~/types';
 import { chainIdToName, geckoChainsMap } from './constants';
 import { nativeTokens } from './nativeTokens';
-import { providers } from './rpcs';
+import { multiCall } from '@defillama/sdk/build/abi';
 
 const tokensToRemove = {
 	1: {
@@ -155,24 +153,63 @@ export async function getTokenList() {
 const getTokenNameAndSymbolsOnChain = async ([chainId, tokens]: [string, Array<string>]): Promise<
 	[string, Array<IToken>]
 > => {
-	const chainProvider = chainIdToName(chainId) ? providers[chainIdToName(chainId)] : null;
+	const chainName = chainIdToName(chainId);
 
-	if (!chainProvider) {
+	if (!chainName) {
 		return [chainId, []];
 	}
 
-	const data = await Promise.allSettled(tokens.map((token) => getTokenData(token, chainProvider, chainId)));
+	const { output: names } = await multiCall({
+		abi: {
+			constant: true,
+			inputs: [],
+			name: 'name',
+			outputs: [
+				{
+					name: '',
+					type: 'string'
+				}
+			],
+			payable: false,
+			stateMutability: 'view',
+			type: 'function'
+		},
+		chain: chainName,
+		calls: tokens.map((token) => ({ target: token }))
+	});
 
-	return [
-		chainId,
-		data.map((items) => (items.status === 'fulfilled' ? items.value : null)).filter((item) => item !== null)
-	];
-};
+	const { output: symbols } = await multiCall({
+		abi: 'erc20:symbol',
+		chain: chainName,
+		calls: tokens.map((token) => ({ target: token }))
+	});
 
-const getTokenData = async (token, provider, chainId) => {
-	const contract = new ethers.Contract(token, erc20ABI, provider);
+	const { output: decimals } = await multiCall({
+		abi: 'erc20:decimals',
+		chain: chainName,
+		calls: tokens.map((token) => ({ target: token }))
+	});
 
-	const [name, symbol, decimals] = await Promise.all([contract.name(), contract.symbol(), contract.decimals()]);
+	const data = [];
 
-	return { name, symbol, decimals, address: token, chainId, geckoId: null, logoURI: null, isGeckoToken: true };
+	tokens.forEach((token, i) => {
+		const name = names[i];
+		const symbol = symbols[i];
+		const decimal = decimals[i];
+
+		if (name.success && symbol.success && decimal.success) {
+			data.push({
+				name: name.output,
+				symbol: symbol.output,
+				decimals: decimal.output,
+				address: token,
+				chainId,
+				geckoId: null,
+				logoURI: null,
+				isGeckoToken: true
+			});
+		}
+	});
+
+	return [chainId, data];
 };
