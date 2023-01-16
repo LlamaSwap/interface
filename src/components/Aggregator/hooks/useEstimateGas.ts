@@ -1,4 +1,4 @@
-import { useQueries, useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useQueries, UseQueryOptions } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { last } from 'lodash';
@@ -44,7 +44,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 			const swapTx = last<{ trace: Array<{ result: { gasUsed: string }; error: string }> }>(res);
 			return {
 				gas: BigNumber(swapTx.trace[0].result.gasUsed).plus(21e3).toString(), // ignores calldata and accesslist costs
-				isFailed: !!swapTx.trace.find((a) => a.error === 'Reverted'),
+				isFailed: swapTx.trace[0]?.error === 'Reverted',
 				aggGas: route.price.estimatedGas,
 				name: route.name,
 				swapTx
@@ -58,29 +58,31 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 	}
 };
 
-type EstimationRes = UseQueryOptions<Awaited<ReturnType<typeof estimateGas>>>;
+type EstimationRes = Awaited<ReturnType<typeof estimateGas>>;
 
 export const useEstimateGas = ({
 	routes,
 	token,
 	userAddress,
 	chain,
-	amount
+	amount,
+	hasEnoughBalance
 }: {
 	routes: Array<IRoute>;
 	token: string;
 	userAddress: string;
 	chain: string;
 	amount: string;
+	hasEnoughBalance: boolean;
 }) => {
 	const res = useQueries({
 		queries: routes
 			.filter((route) => !!route?.tx?.to)
-			.map<EstimationRes>((route) => {
+			.map<UseQueryOptions<Awaited<ReturnType<typeof estimateGas>>>>((route) => {
 				return {
 					queryKey: ['estimateGas', route.name, chain, route?.tx?.data],
 					queryFn: () => estimateGas({ route, token, userAddress, chain, amount }),
-					enabled: Object.keys(traceRpcs).includes(chain)
+					enabled: Object.keys(traceRpcs).includes(chain) && hasEnoughBalance
 				};
 			})
 	});
@@ -88,8 +90,7 @@ export const useEstimateGas = ({
 	const data =
 		res
 			?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
-			.reduce((acc, r) => ({ ...acc, [r.data.name]: r.data }), {} as Record<string, EstimationRes>) ?? null;
-	console.log(data);
+			.reduce((acc, r) => ({ ...acc, [r.data.name]: r.data }), {} as Record<string, EstimationRes>) ?? {};
 	return {
 		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
 		data
