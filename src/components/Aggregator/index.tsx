@@ -48,6 +48,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
+import { useEstimateGas } from './hooks/useEstimateGas';
 
 /*
 Integrated:
@@ -543,6 +544,15 @@ export function AggregatorContainer({ tokenlist }) {
 		}
 	});
 
+	const { data: gasData } = useEstimateGas({
+		routes,
+		token: finalSelectedFromToken?.address,
+		userAddress: address,
+		chain: selectedChain.value,
+		amount: amountWithDecimals,
+		hasEnoughBalance: +amount < +balance?.data?.formatted
+	});
+
 	const { data: tokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
 		toToken: finalSelectedToToken?.address,
@@ -573,7 +583,7 @@ export function AggregatorContainer({ tokenlist }) {
 				gasPriceData?.formatted?.gasPrice &&
 				finalSelectedFromToken?.address === ethers.constants.AddressZero
 			) {
-				const gas = (+route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
+				const gas = (+route?.price?.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
 
 				const amountWithoutGas = +balance.data.formatted - gas;
 
@@ -606,8 +616,8 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const fillRoute = (route: typeof routes[0]) => {
-		let gasUsd: number | string =
-			(gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+		const gasEstimation = +(gasData?.[route.name]?.gas || route.price.estimatedGas);
+		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
 		// CowSwap native token swap
 		gasUsd =
@@ -627,6 +637,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 		return {
 			...route,
+			isFailed: gasData?.[route.name]?.isFailed || false,
 			route,
 			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
 			amountUsd,
@@ -637,7 +648,10 @@ export function AggregatorContainer({ tokenlist }) {
 
 	let normalizedRoutes = [...(routes || [])]
 		?.map(fillRoute)
-		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
+		.filter(
+			({ fromAmount, amount: toAmount, isFailed }) =>
+				Number(toAmount) && amountWithDecimals === fromAmount && isFailed !== true
+		)
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
