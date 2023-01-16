@@ -67,11 +67,11 @@ const Route = ({
 		console.log(quotedRate)
 
 	return (
-		<RouteWrapper onClick={setRoute} className="RouteWrapper" className={selected?'is-selected':null} selected={selected} best={index === 0}>
+		<RouteWrapper onClick={setRoute} className={selected?'RouteWrapper is-selected':'RouteWrapper'} selected={selected} best={index === 0}>
 			<RouteRow>
 				<Flex alignItems="baseline">
 					
-					<Text fontWeight={500} fontSize={19} fontWeight={700} color={'#FAFAFA'}>
+					<Text fontSize={19} fontWeight={700} color={'#FAFAFA'}>
 						{amount.toFixed(3)}{' '}
 					</Text>
 					{/* <img
@@ -79,7 +79,7 @@ const Route = ({
 						alt=""
 						onError={(e) => (e.currentTarget.src = '/notFound.png')}
 					/> */}
-					<Text fontWeight={500} fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
+					<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
 						{toToken?.symbol}
 					</Text>
 
