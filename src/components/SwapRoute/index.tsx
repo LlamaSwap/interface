@@ -60,8 +60,11 @@ const Route = ({
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 	
-	let quotedRate = Number(+price.amountReturned / 10 ** +toToken?.decimals) / (amountFrom / 10 ** +fromToken?.decimals)
-		quotedRate = quotedRate < 0.0001 ? `${formattedNum(1/quotedRate)} ${toToken.symbol} per ${fromToken.symbol}`  : `${formattedNum(quotedRate)} ${fromToken.symbol} per ${toToken.symbol}`
+	let quotedRate = Number(+price.amountReturned / 10 ** +toToken?.decimals) / Number(+amountFrom / 10 ** +fromToken?.decimals)
+		//eth/usdt
+		console.log(quotedRate)
+		quotedRate = quotedRate < 0.001 ? `${formattedNum(1/quotedRate)} ${fromToken.symbol} per ${toToken.symbol}`  : `${formattedNum(quotedRate)} ${toToken.symbol} per ${fromToken.symbol}`
+		console.log(quotedRate)
 
 	return (
 		<RouteWrapper onClick={setRoute} className="RouteWrapper" className={selected?'is-selected':null} selected={selected} best={index === 0}>
@@ -94,8 +97,8 @@ const Route = ({
 								BEST
 							</Text>
 						) : Number.isFinite(lossPercent) ? (
-							<Text as="span" color="red.200" fontSize={12}>
-								(-{Math.abs(100 - lossPercent * 100).toFixed(2)}%)
+							<Text as="span" color="red.600" fontSize={12}>
+								-{Math.abs(100 - lossPercent * 100).toFixed(2)}%
 							</Text>
 						) : null}
 					</Flex>
@@ -155,7 +158,7 @@ const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
 	display: grid;
 	grid-row-gap: 4px;
 	margin-top: 16px;
-	:first-of-type {
+	&.is-selected {
 		border-color: #059669;
 	}
 
