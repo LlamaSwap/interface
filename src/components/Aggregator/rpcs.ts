@@ -219,7 +219,7 @@ export const rpcUrls = {
 	}
 };
 
-const getUrls = (chainId) => Object.values(rpcUrls[chainId]).join(',');
+const getUrls = (chainId) => Object.values(rpcUrls[chainId] || {}).join(',');
 
 export const providers = {
 	ethereum: createProvider('ethereum', getUrls(1), 1),
