@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { getAddress } from 'ethers/lib/utils';
 import { erc20ABI, useAccount, useBalance as useWagmiBalance } from 'wagmi';
 import { nativeAddress } from '~/components/Aggregator/constants';
-import { allChains } from '~/components/WalletProvider/chains';
+import { rpcUrls } from '~/components/Aggregator/rpcs';
 
 interface IGetBalance {
 	address?: string;
@@ -37,13 +37,13 @@ const getBalance = async ({ address, chainId, token }: IGetBalance) => {
 			return null;
 		}
 
-		const rpcUrls = Object.values(allChains.find((chain) => chain.id === chainId)?.rpcUrls ?? {});
+		const urls = Object.values(rpcUrls[chainId] || {});
 
-		if (rpcUrls.length === 0) {
+		if (urls.length === 0) {
 			return null;
 		}
 
-		const data = await Promise.any(rpcUrls.map((rpcUrl) => createProviderAndGetBalance({ rpcUrl, address, token })));
+		const data = await Promise.any(urls.map((rpcUrl) => createProviderAndGetBalance({ rpcUrl, address, token })));
 
 		return data;
 	} catch (error) {
