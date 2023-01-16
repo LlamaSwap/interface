@@ -1,22 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery, UseQueryOptions } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { erc20ABI } from 'wagmi';
-import { slots } from '~/constants/slots';
+import { IRoute } from '~/queries/useGetRoutes';
 
-export const estimateGas = async ({ routes, token, userAddress }) => {
+const traceRpcs = {
+	ethereum: 'https://eth-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
+	bsc: 'https://bsc-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
+	gnosis: 'https://gnosis-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
+	polygon: 'https://polygon.llamarpc.com'
+};
+
+export const estimateGas = async ({ route, token, userAddress, chain }) => {
 	try {
-		const provider = new ethers.providers.JsonRpcProvider(
-			'https://eth-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929'
-		);
+		const provider = new ethers.providers.JsonRpcProvider(traceRpcs[chain]);
 		const tokenContract = new ethers.Contract(token, erc20ABI, provider);
-		const routesWithTx = routes.filter(({ tx }) => !!tx?.to);
-		const txData = await Promise.all(routesWithTx.map(async ({ price, name, tx }) => {
-			try{
+		const tx = route?.tx;
+		try {
 			const approveTx = {
-				...await tokenContract.populateTransaction.approve(tx.to, ethers.constants.MaxUint256.toHexString()),
-				from: userAddress 
-			}
+				...(await tokenContract.populateTransaction.approve(tx.to, ethers.constants.MaxUint256.toHexString())),
+				from: userAddress
+			};
 			const callParams = [
 				[approveTx, tx].map((txData) => [
 					{
@@ -30,33 +34,53 @@ export const estimateGas = async ({ routes, token, userAddress }) => {
 			];
 			const res = await provider.send('trace_callMany', callParams);
 			const swapTx = res[1];
-			console.log(name, swapTx)
 			return {
 				gas: BigNumber(swapTx.trace[0].result.gasUsed).plus(21e3).toString(), // ignores calldata and accesslist costs
 				isFailed: !!swapTx.trace.find((a) => a.error === 'Reverted'),
-				aggGas: price.estimatedGas,
-				name
-			}
-			} catch(e){
-				return null
-			}
-		}));
-		console.log(txData)
-		return txData.reduce((acc, val, i) => ({
-			...acc,
-			[val.name]: val
-		}), {})
+				aggGas: route.price.estimatedGas,
+				name: route.name,
+				swapTx
+			};
+		} catch (e) {
+			return null;
+		}
 	} catch (ee) {
 		console.log(ee);
 	}
 };
 
-export const useEstimateGas = ({ routes, token, userAddress, chainId }) => {
-	const { data, isLoading } = useQuery(['estimateGas', ...(routes || [])], () =>
-		estimateGas({ routes, token, userAddress, chainId })
-	);
+type EstimationRes = UseQueryOptions<Awaited<ReturnType<typeof estimateGas>>>;
 
+export const useEstimateGas = ({
+	routes,
+	token,
+	userAddress,
+	chain
+}: {
+	routes: Array<IRoute>;
+	token: string;
+	userAddress: string;
+	chain: string;
+}) => {
+	const res = useQueries({
+		queries: routes
+			.filter((route) => !!route?.tx?.to)
+			.map<EstimationRes>((route) => {
+				return {
+					queryKey: ['estimateGas', route.name, chain, route?.tx?.data],
+					queryFn: () => estimateGas({ route, token, userAddress, chain }),
+					enabled: Object.keys(traceRpcs).includes(chain)
+				};
+			})
+	});
+
+	const data =
+		res
+			?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
+			.reduce((acc, r) => ({ ...acc, [r.data.name]: r.data }), {} as Record<string, EstimationRes>) ?? null;
 	console.log(data);
-
-	return { data, isLoading };
+	return {
+		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
+		data
+	};
 };

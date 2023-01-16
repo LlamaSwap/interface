@@ -12,13 +12,18 @@ interface IGetListRoutesProps {
 	extra?: any;
 }
 
-interface IRoute {
+export interface IRoute {
 	price: { amountReturned: any; estimatedGas: any; tokenApprovalAddress: any; logo: string; feeAmount?: number } | null;
 	name: string;
 	airdrop: boolean;
 	fromAmount: string;
 	txData: string;
 	l1Gas: number | 'Unknown';
+	tx: {
+		from: string;
+		to: string;
+		data: string;
+	};
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
@@ -27,7 +32,15 @@ interface IGetAdapterRouteProps extends IGetListRoutesProps {
 
 export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
 	if (!chain || !from || !to || !amount || amount === '0') {
-		return { price: null, name: adapter.name, airdrop: !adapter.token, fromAmount: amount, txData: '', l1Gas: 0 };
+		return {
+			price: null,
+			name: adapter.name,
+			airdrop: !adapter.token,
+			fromAmount: amount,
+			txData: '',
+			l1Gas: 0,
+			tx: {}
+		};
 	}
 
 	try {
@@ -66,7 +79,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			name: adapter.name,
 			airdrop: !adapter.token,
 			fromAmount: amount,
-			txData: ''
+			txData: '',
+			tx: {}
 		};
 	}
 }

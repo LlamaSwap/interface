@@ -548,7 +548,7 @@ export function AggregatorContainer({ tokenlist }) {
 		routes,
 		token: finalSelectedFromToken?.address,
 		userAddress: address,
-		chainId: 1
+		chain: selectedChain.value
 	});
 
 	const { data: tokenPrices } = useGetPrice({

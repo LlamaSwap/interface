@@ -74,10 +74,10 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	}).then((r) => r.json());
 
 	return {
-		amountReturned: data.quote.buyAmount,
+		amountReturned: data.quote?.buyAmount || 0,
 		estimatedGas: 0,
-		feeAmount: data.quote.feeAmount,
-		validTo: data.quote.validTo,
+		feeAmount: data.quote?.feeAmount || 0,
+		validTo: data.quote?.validTo || 0,
 		rawQuote: data,
 		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
 		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589'

@@ -40,7 +40,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const gas = chain === 'optimism' ? BigNumber(3.5).times(data.gas).toFixed(0, 1) : data.gas;
 
 	return {
-		amountReturned: data.buyAmount,
+		amountReturned: data?.buyAmount || 0,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.to,
 		rawQuote: { ...data, gasLimit: gas },
