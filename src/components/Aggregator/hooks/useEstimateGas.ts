@@ -34,7 +34,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 						from: userAddress,
 						to: txData.to,
 						data: txData.data,
-						...(isNative ? { value: ethers.BigNumber.from(amount).toHexString() } : {})
+						...(isNative ? { value: '0x' + BigNumber(amount).toString(16) } : {})
 					},
 					['trace', 'vmTrace']
 				]),
