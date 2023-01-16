@@ -1,8 +1,7 @@
-import * as React from 'react'
-import Head from 'next/head'
-import styled from 'styled-components'
-import ThemeProvider, { GlobalStyle } from '~/Theme'
-
+import * as React from 'react';
+import Head from 'next/head';
+import styled from 'styled-components';
+import ThemeProvider, { GlobalStyle } from '~/Theme';
 
 const PageWrapper = styled.div`
 	flex: 1;
@@ -14,7 +13,7 @@ const PageWrapper = styled.div`
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		margin: 28px;
 	}
-`
+`;
 
 const Center = styled.main`
 	flex: 1;
@@ -26,17 +25,17 @@ const Center = styled.main`
 	min-height: 100%;
 	margin: 0 auto;
 	color: ${({ theme }) => theme.text1};
-`
+`;
 
 interface ILayoutProps {
-	title: string
-	children: React.ReactNode
-	defaultSEO?: boolean
-	backgroundColor?: string
-	style?: React.CSSProperties
+	title: string;
+	children: React.ReactNode;
+	defaultSEO?: boolean;
+	backgroundColor?: string;
+	style?: React.CSSProperties;
 }
 
-export default function Layout({ title, children, defaultSEO = false, ...props }: ILayoutProps) {
+export default function Layout({ title, children, ...props }: ILayoutProps) {
 	return (
 		<>
 			<Head>
@@ -50,5 +49,5 @@ export default function Layout({ title, children, defaultSEO = false, ...props }
 				</PageWrapper>
 			</ThemeProvider>
 		</>
-	)
+	);
 }

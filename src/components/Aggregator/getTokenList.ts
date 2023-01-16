@@ -3,6 +3,7 @@ import { IToken } from '~/types';
 import { chainIdToName, dexToolsChainMap, geckoChainsMap } from './constants';
 import { nativeTokens } from './nativeTokens';
 import { multiCall } from '@defillama/sdk/build/abi';
+import { ethers } from 'ethers';
 
 const tokensToRemove = {
 	1: {
@@ -165,7 +166,7 @@ export async function getTokenList() {
 					volume24h
 				};
 			})
-			.sort((a, b) => b.volume24h - a.volume24h);
+			.sort((a, b) => (b.address === ethers.constants.AddressZero ? 1 : b.volume24h - a.volume24h));
 	}
 
 	return {
