@@ -427,11 +427,7 @@ const arbirum = {
 const ethereum = {
 	...chain.mainnet,
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/eth',
-		pokt: 'https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79',
-		cloudflare: 'https://cloudflare-eth.com',
-		linkpool: 'https://main-light.eth.linkpool.io/',
-		mycrypto: 'https://api.mycryptoapi.com/eth'
+		default: 'https://rpc.ankr.com/eth'
 	},
 	iconUrl: chainIconUrl('ethereum')
 };
@@ -443,9 +439,8 @@ const optimism = {
 	iconUrl: chainIconUrl('optimism')
 };
 
-
 interface IChain extends Chain {
-	iconUrl: string
+	iconUrl: string;
 }
 
 export const allChains: Array<IChain> = [
