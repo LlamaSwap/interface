@@ -24,9 +24,9 @@ export const chainsMap = {
 	okexchain: 66,
 	fuse: 122,
 	moonbeam: 1284
-};
+} as const;
 
-export const geckoChainsMap = {
+export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chainsMap]> = {
 	ethereum: 1,
 	'binance-smart-chain': 56,
 	'polygon-pos': 137,
@@ -50,6 +50,32 @@ export const geckoChainsMap = {
 	'okex-chain': 66,
 	fuse: 122,
 	moonbeam: 1284
+};
+
+export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], string> = {
+	1: 'ether',
+	56: 'bsc',
+	137: 'polygon',
+	10: 'optimism',
+	42161: 'arbitrum',
+	43114: 'avalanche',
+	100: 'gnosis',
+	250: 'fantom',
+	1313161554: 'aurora',
+	42220: 'celo',
+	25: 'cronos',
+	2000: 'dogechain',
+	1285: 'moonriver',
+	42262: 'oasis',
+	106: 'velas',
+	128: 'heco',
+	1666600000: 'harmony',
+	288: 'boba',
+	66: 'okc',
+	122: 'fuse',
+	1284: 'moonbeam',
+	199: 'bittorrent',
+	8217: 'klay'
 };
 
 export const chainIdToName = (chainId) => {

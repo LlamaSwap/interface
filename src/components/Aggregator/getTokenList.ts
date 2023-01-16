@@ -1,6 +1,6 @@
-import { groupBy, mapValues, merge, uniqBy } from 'lodash';
+import { groupBy, mapValues, uniqBy } from 'lodash';
 import { IToken } from '~/types';
-import { chainIdToName, geckoChainsMap } from './constants';
+import { chainIdToName, dexToolsChainMap, geckoChainsMap } from './constants';
 import { nativeTokens } from './nativeTokens';
 import { multiCall } from '@defillama/sdk/build/abi';
 
@@ -68,15 +68,28 @@ export async function getTokenList() {
 		.flat();
 
 	const tokensByChain = mapValues(
-		merge(groupBy([...oneInchList, ...sushiList.tokens, ...uniList.tokens, ...nativeTokens], 'chainId'), {}),
+		groupBy([...nativeTokens, ...oneInchList, ...sushiList.tokens, ...uniList.tokens], 'chainId'),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
 	let tokensFiltered = mapValues(tokensByChain, (val, key) => {
-		return val.filter((token) => !tokensToRemove[key]?.[token.address.toLowerCase()]);
+		return val
+			.filter((token) => typeof token.address === 'string' && !tokensToRemove[key]?.[token.address.toLowerCase()])
+			.map((token) => ({ ...token, address: token.address.toLowerCase() }));
 	});
 
 	tokensFiltered = fixTotkens(tokensFiltered);
+
+	// get top tokens on each chain
+	const topTokensByChain = await Promise.allSettled(
+		Object.keys(tokensFiltered).map((chain) => topTopTokenByChain(chain))
+	);
+
+	const topTokensByVolume = Object.fromEntries(
+		topTokensByChain
+			.map((chain) => (chain.status === 'fulfilled' ? chain.value : null))
+			.filter((chain) => chain !== null && chain[1].length > 0 && tokensFiltered[chain[0]])
+	);
 
 	// store unique tokens by chain
 	const uniqueTokenList = {};
@@ -96,15 +109,15 @@ export async function getTokenList() {
 
 	if (geckoList && geckoList.length > 0) {
 		geckoList.forEach((geckoToken) => {
-			Object.entries(geckoToken.platforms || {}).forEach(([chain, address]) => {
+			Object.entries(geckoToken.platforms || {}).forEach(([chain, address]: [string, string]) => {
 				const id = geckoChainsMap[chain];
 
-				if (id && !uniqueTokenList[String(id)]?.has(address)) {
+				if (id && !uniqueTokenList[String(id)]?.has(address.toLowerCase())) {
 					if (!geckoListByChain[id]) {
 						geckoListByChain[id] = new Set();
 					}
 
-					geckoListByChain[id].add(address);
+					geckoListByChain[id].add(address.toLowerCase());
 				}
 			});
 		});
@@ -139,15 +152,20 @@ export async function getTokenList() {
 					geckoList && geckoList.length > 0
 						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 						: null;
+
+				const volume24h =
+					topTokensByVolume[chain]?.find((item) => item['_id']?.token === t.address)?.['volume24h'] ?? 0;
+
 				return {
 					...t,
 					label: t.symbol,
 					value: t.address,
 					geckoId,
-					logoURI: t.logoURI || logos[geckoId] || null
+					logoURI: t.logoURI || logos[geckoId] || null,
+					volume24h
 				};
 			})
-			.filter((t) => typeof t.address === 'string');
+			.sort((a, b) => b.volume24h - a.volume24h);
 	}
 
 	return {
@@ -161,6 +179,8 @@ export async function getTokenList() {
 // use multicall to fetch tokens name, symbol and decimals
 const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promise<[string, Array<IToken>]> => {
 	const chainName = chainIdToName(chainId);
+
+	return [chainId, []];
 
 	if (!chainName) {
 		return [chainId, []];
@@ -219,4 +239,20 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 	});
 
 	return [chainId, data];
+};
+
+const topTopTokenByChain = async (chainId) => {
+	try {
+		if (!dexToolsChainMap[chainId]) {
+			throw new Error(`${chainId} not supported by dex tools.`);
+		}
+
+		const res = await fetch(
+			`https://www.dextools.io/shared/analytics/pairs?limit=51&interval=24h&chain=${dexToolsChainMap[chainId]}`
+		).then((res) => res.json());
+
+		return [chainId, res.data || []];
+	} catch (error) {
+		return [chainId, []];
+	}
 };
