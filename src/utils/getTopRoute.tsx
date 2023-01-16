@@ -5,8 +5,8 @@ export function getTopRoute({ routes, gasPriceData, gasTokenPrice, fromToken, to
 		.map((route) => {
 			if (route.price) {
 				let gasUsd =
-					route.price.estimatedGas && gasPriceData?.formatted?.gasPrice && gasTokenPrice
-						? (gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18
+					route.price?.estimatedGas && gasPriceData?.formatted?.gasPrice && gasTokenPrice
+						? (gasTokenPrice * +route.price?.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18
 						: 0;
 
 				// CowSwap native token swap

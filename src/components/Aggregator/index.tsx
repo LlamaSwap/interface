@@ -583,7 +583,7 @@ export function AggregatorContainer({ tokenlist }) {
 				gasPriceData?.formatted?.gasPrice &&
 				finalSelectedFromToken?.address === ethers.constants.AddressZero
 			) {
-				const gas = (+route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
+				const gas = (+route?.price?.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
 
 				const amountWithoutGas = +balance.data.formatted - gas;
 
