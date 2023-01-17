@@ -16,7 +16,7 @@
 	"dependencies": {
 		"@chakra-ui/icons": "^2.0.12",
 		"@chakra-ui/react": "2.2.1",
-		"@defillama/sdk": "^3.0.25",
+		"@defillama/sdk": "^3.0.26",
 		"@emotion/react": "^11",
 		"@emotion/styled": "^11",
 		"@gnosis.pm/gp-v2-contracts": "^1.1.2",
