@@ -61,10 +61,8 @@ const Route = ({
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 	
 	let quotedRate = Number(+price.amountReturned / 10 ** +toToken?.decimals) / Number(+amountFrom / 10 ** +fromToken?.decimals)
-		//eth/usdt
-		console.log(quotedRate)
-		quotedRate = quotedRate < 0.001 ? `${formattedNum(1/quotedRate)} ${fromToken.symbol} per ${toToken.symbol}`  : `${formattedNum(quotedRate)} ${toToken.symbol} per ${fromToken.symbol}`
-		console.log(quotedRate)
+	let	quotedRateString = quotedRate < 0.001 ? `${formattedNum(1/quotedRate)} ${fromToken.symbol} per ${toToken.symbol}`  : `${formattedNum(quotedRate)} ${toToken.symbol} per ${fromToken.symbol}`
+		
 
 	return (
 		<RouteWrapper onClick={setRoute} className={selected?'RouteWrapper is-selected':'RouteWrapper'} selected={selected} best={index === 0}>
@@ -110,7 +108,7 @@ const Route = ({
 				
 
 				<Text as="span"  color="gray.500" fontWeight={500}>
-					{quotedRate}
+					{quotedRateString}
 				</Text>
 
 				{airdrop ? (

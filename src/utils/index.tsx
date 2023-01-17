@@ -46,11 +46,11 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 		return symbol ? `< ${currencySymbol}0.0001` : '< 0.0001'
 	}
 
-	if (num > 1000) {
-		return symbol
-			? currencyMark + Number(parseFloat(num).toFixed(0)).toLocaleString()
-			: normalMark + Number(parseFloat(num).toFixed(0)).toLocaleString()
-	}
+	// if (num > 1000) {
+	// 	return symbol
+	// 		? currencyMark + Number(parseFloat(num).toFixed(0)).toLocaleString()
+	// 		: normalMark + Number(parseFloat(num).toFixed(0)).toLocaleString()
+	// }
 
 	// if (symbol) {
 	// 	if (num < 0.1) {
@@ -61,5 +61,5 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	// 	}
 	// }
 
-	return Number(parseFloat(num).toFixed(2))
+	return Number(num.toFixed(2))
 }
