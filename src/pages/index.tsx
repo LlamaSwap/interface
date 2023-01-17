@@ -9,7 +9,6 @@ export async function getStaticProps() {
 }
 
 export default function Aggregator(props) {
-	console.log(props.eth);
 	return (
 		<Layout title={`Meta-dex aggregator - DefiLlama`} defaultSEO>
 			<ConnectButton />
