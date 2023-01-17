@@ -49,6 +49,7 @@ import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
 import { formattedNum } from '~/utils';
+import { useEstimateGas } from './hooks/useEstimateGas';
 
 /*
 Integrated:
@@ -292,7 +293,8 @@ export function AggregatorContainer({ tokenlist }) {
 	const slippage = typeof slippageQuery === 'string' && !Number.isNaN(Number(slippageQuery)) ? slippageQuery : '0.5';
 
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useMemo(() => {
-		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainsMap[chainName]] || [] : null;
+		const chainId = chainsMap[chainName];
+		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainId] || [] : null;
 
 		const selectedChain = chains.find((c) => c.value === chainName);
 
@@ -547,6 +549,15 @@ export function AggregatorContainer({ tokenlist }) {
 		}
 	});
 
+	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
+		routes,
+		token: finalSelectedFromToken?.address,
+		userAddress: address,
+		chain: selectedChain.value,
+		amount: amountWithDecimals,
+		hasEnoughBalance: +amount < +balance?.data?.formatted
+	});
+
 	const { data: tokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
 		toToken: finalSelectedToToken?.address,
@@ -577,7 +588,7 @@ export function AggregatorContainer({ tokenlist }) {
 				gasPriceData?.formatted?.gasPrice &&
 				finalSelectedFromToken?.address === ethers.constants.AddressZero
 			) {
-				const gas = (+route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
+				const gas = (+route?.price?.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
 
 				const amountWithoutGas = +balance.data.formatted - gas;
 
@@ -610,8 +621,8 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const fillRoute = (route: typeof routes[0]) => {
-		let gasUsd: number | string =
-			(gasTokenPrice * +route.price.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+		const gasEstimation = +(isGasDataLoading ? route.price.estimatedGas : gasData?.[route.name]?.gas);
+		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
 		// CowSwap native token swap
 		gasUsd =
@@ -631,6 +642,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 		return {
 			...route,
+			isFailed: gasData?.[route.name]?.isFailed || false,
 			route,
 			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
 			amountUsd,
@@ -641,7 +653,10 @@ export function AggregatorContainer({ tokenlist }) {
 
 	let normalizedRoutes = [...(routes || [])]
 		?.map(fillRoute)
-		.filter(({ fromAmount, amount: toAmount }) => Number(toAmount) && amountWithDecimals === fromAmount)
+		.filter(
+			({ fromAmount, amount: toAmount, isFailed }) =>
+				Number(toAmount) && amountWithDecimals === fromAmount && isFailed !== true
+		)
 		.sort((a, b) => b.netOut - a.netOut)
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
@@ -657,7 +672,7 @@ export function AggregatorContainer({ tokenlist }) {
 		route === undefined || route === null ? normalizedRoutes?.[0]?.amountUsd : fillRoute(route).amountUsd;
 
 	const priceImpact =
-		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute && Number(priceImpactRoute) > 0
+		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute
 			? 100 - (Number(priceImpactRoute) / (+fromTokenPrice * +amount)) * 100
 			: 0;
 	const hasPriceImapct = priceImpact > 7;
@@ -711,7 +726,7 @@ export function AggregatorContainer({ tokenlist }) {
 				<a
 					style={{ textDecoration: 'underline' }}
 					target={'_blank'}
-					rel="noreferrer"
+					rel="noreferrer noopener"
 					href="https://discord.gg/j54NuUt5nW"
 				>
 					discord server

@@ -8,4 +8,5 @@ export interface IToken {
 	amount?: string;
 	balanceUSD?: number;
 	geckoId: string | null;
+	isGeckoToken?: boolean;
 }
