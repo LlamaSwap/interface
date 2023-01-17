@@ -55,7 +55,7 @@ export async function getTokenList() {
 	const [uniList, sushiList, geckoList, logos] = await Promise.all([
 		fetch('https://tokens.uniswap.org/').then((r) => r.json()),
 		fetch('https://token-list.sushi.com/').then((r) => r.json()),
-		fetch('https://api.coingecko.com/api/v3/coins/list?include_platform=true').then((res) => res.json()),
+		fetch('https://datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://datasets.llama.fi/tokenlist/logos.json').then((res) => res.json())
 	]);
 
