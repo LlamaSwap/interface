@@ -674,9 +674,9 @@ export function AggregatorContainer({ tokenlist }) {
 		priceImpactRoute.amountUsd &&
 		!Number.isNaN(Number(priceImpactRoute.amountUsd))
 			? 100 - (Number(priceImpactRoute.amountUsd) / (+fromTokenPrice * +amount)) * 100
-			: 0;
+			: null;
 
-	const hasPriceImapct = priceImpact ? Number(priceImpact) > 7 : false;
+	const hasPriceImapct = priceImpact === null || Number(priceImpact) > 7;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;

@@ -60,6 +60,8 @@ export function PriceImpact({
 			? Number(priceImpactRoute.amount) - Number(priceImpactRoute.amount) * Number(slippage)
 			: null;
 
+	const isPriceImpactNotKnown = !priceImpact && priceImpact !== 0;
+
 	return (
 		<Accordion allowToggle style={{ margin: '0 4px' }}>
 			<AccordionItem borderColor="#373944" minH="2.5rem">
@@ -85,9 +87,15 @@ export function PriceImpact({
 						<span>Expected Output</span>
 						<span>{expectedOutput ? `${expectedOutput} ${toToken.symbol}` : '-'}</span>
 					</Text>
-					<Text display="flex" justifyContent="space-between" gap="8px" alignItems="center">
+					<Text
+						display="flex"
+						justifyContent="space-between"
+						gap="8px"
+						alignItems="center"
+						color={isPriceImpactNotKnown ? 'red.500' : 'white'}
+					>
 						<span>Price Impact</span>
-						<span>{priceImpact ? `${priceImpact.toFixed(2)}%` : '-'}</span>
+						<span>{isPriceImpactNotKnown ? 'Unknown' : `${priceImpact.toFixed(2)}%`}</span>
 					</Text>
 					<Text
 						display="flex"
@@ -96,10 +104,11 @@ export function PriceImpact({
 						alignItems="center"
 						borderTop="1px solid #373944"
 						paddingTop={2}
+						color={!minimumReceived || minimumReceived <= 0 ? 'red.500' : 'white'}
 					>
 						<span>{`Minimum received after slippage (${slippage}%)`}</span>
 						<span>
-							{minimumReceived ? `${minimumReceived < 0 ? 0 : minimumReceived.toFixed(4)} ${toToken.symbol}` : '-'}
+							{minimumReceived ? `${minimumReceived <= 0 ? 0 : minimumReceived.toFixed(4)} ${toToken.symbol}` : '-'}
 						</span>
 					</Text>
 				</AccordionPanel>
