@@ -617,7 +617,8 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const fillRoute = (route: typeof routes[0]) => {
-		const gasEstimation = +(gasData?.[route.name]?.gas || route.price.estimatedGas);
+		if (!route?.price) return null;
+		const gasEstimation = +(gasData?.[route.name]?.gas || route.price?.estimatedGas);
 		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
 		// CowSwap native token swap
@@ -665,7 +666,7 @@ export function AggregatorContainer({ tokenlist }) {
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
 	const priceImpactRoute =
-		route === undefined || route === null ? normalizedRoutes?.[0]?.amountUsd : fillRoute(route).amountUsd;
+		route === undefined || route === null ? normalizedRoutes?.[0]?.amountUsd : fillRoute(route)?.amountUsd;
 
 	const priceImpact =
 		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute
@@ -1020,7 +1021,7 @@ export function AggregatorContainer({ tokenlist }) {
 					{normalizedRoutes?.length ? (
 						<div style={{ display: 'flex', justifyContent: 'space-between' }}>
 							<FormHeader>Select a route to perform a swap</FormHeader>
-							{route ? (
+							{route?.price ? (
 								<div style={{ fontSize: '16px', color: '#999999' }}>
 									1 {finalSelectedFromToken?.symbol} ={' '}
 									{(
