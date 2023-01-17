@@ -101,7 +101,7 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 						JSON.stringify(omit(extra, 'selectedRoute', 'amount'))
 					],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: 15_000,
+					refetchInterval: 20_000,
 					refetchOnWindowFocus: false,
 					refetchIntervalInBackground: false,
 					onSuccess: (data) => {
