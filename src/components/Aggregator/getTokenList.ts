@@ -113,7 +113,7 @@ export async function getTokenList() {
 			Object.entries(geckoToken.platforms || {}).forEach(([chain, address]: [string, string]) => {
 				const id = geckoChainsMap[chain];
 
-				if (id && !uniqueTokenList[String(id)]?.has(address.toLowerCase())) {
+				if (id && uniqueTokenList[id] && !uniqueTokenList[id].has(address.toLowerCase())) {
 					if (!geckoListByChain[id]) {
 						geckoListByChain[id] = new Set();
 					}
