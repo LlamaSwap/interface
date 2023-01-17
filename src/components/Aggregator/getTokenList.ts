@@ -69,7 +69,7 @@ export async function getTokenList() {
 		.flat();
 
 	const tokensByChain = mapValues(
-		groupBy([...nativeTokens, ...oneInchList, ...sushiList.tokens, ...uniList.tokens], 'chainId'),
+		groupBy([...nativeTokens, ...uniList.tokens, ...sushiList.tokens, ...oneInchList], 'chainId'),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
