@@ -790,6 +790,8 @@ export function AggregatorContainer({ tokenlist }) {
 						<TokenInput setAmount={setAmount} amount={amount} onMaxClick={onMaxClick} />
 					</Flex>
 
+					<Slippage />
+
 					<PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
 						fromTokenPrice={fromTokenPrice}
@@ -799,8 +801,6 @@ export function AggregatorContainer({ tokenlist }) {
 						priceImpactRoute={priceImpactRoute}
 						priceImpact={priceImpact}
 					/>
-
-					<Slippage />
 
 					<SwapWrapper>
 						{!isConnected ? (

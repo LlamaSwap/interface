@@ -44,7 +44,6 @@ export function PriceImpact({
 		!toToken ||
 		!fromTokenPrice ||
 		!toTokenPrice ||
-		!priceImpact ||
 		Number.isNaN(Number(fromTokenPrice)) ||
 		Number.isNaN(Number(toTokenPrice))
 	) {
@@ -52,8 +51,14 @@ export function PriceImpact({
 	}
 
 	const fromTokenValue = (fromTokenPrice / toTokenPrice).toFixed(4);
-	const expectedOutput = Number(priceImpactRoute.amount).toFixed(4);
-	const minimumReceived = Number(priceImpactRoute.amount) - Number(priceImpactRoute.amount) * Number(slippage);
+	const expectedOutput =
+		priceImpactRoute && !Number.isNaN(Number(priceImpactRoute.amount))
+			? Number(priceImpactRoute.amount).toFixed(4)
+			: null;
+	const minimumReceived =
+		priceImpactRoute && !Number.isNaN(Number(priceImpactRoute.amount))
+			? Number(priceImpactRoute.amount) - Number(priceImpactRoute.amount) * Number(slippage)
+			: null;
 
 	return (
 		<Accordion allowToggle style={{ margin: '0 4px' }}>
@@ -78,11 +83,11 @@ export function PriceImpact({
 				>
 					<Text display="flex" justifyContent="space-between" gap="8px" alignItems="center">
 						<span>Expected Output</span>
-						<span>{`${expectedOutput} ${toToken.symbol}`}</span>
+						<span>{expectedOutput ? `${expectedOutput} ${toToken.symbol}` : '-'}</span>
 					</Text>
 					<Text display="flex" justifyContent="space-between" gap="8px" alignItems="center">
 						<span>Price Impact</span>
-						<span>{`${priceImpact.toFixed(2)}%`}</span>
+						<span>{priceImpact ? `${priceImpact.toFixed(2)}%` : '-'}</span>
 					</Text>
 					<Text
 						display="flex"
@@ -93,7 +98,9 @@ export function PriceImpact({
 						paddingTop={2}
 					>
 						<span>{`Minimum received after slippage (${slippage}%)`}</span>
-						<span>{`${minimumReceived < 0 ? 0 : minimumReceived.toFixed(4)} ${toToken.symbol}`}</span>
+						<span>
+							{minimumReceived ? `${minimumReceived < 0 ? 0 : minimumReceived.toFixed(4)} ${toToken.symbol}` : '-'}
+						</span>
 					</Text>
 				</AccordionPanel>
 			</AccordionItem>
