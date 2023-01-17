@@ -83,7 +83,7 @@ export async function getTokenList() {
 
 	// get top tokens on each chain
 	const topTokensByChain = await Promise.allSettled(
-		Object.keys(tokensFiltered).map((chain) => topTopTokenByChain(chain))
+		Object.keys(tokensFiltered).map((chain) => getTopTokensByChain(chain))
 	);
 
 	const topTokensByVolume = Object.fromEntries(
@@ -131,23 +131,8 @@ export async function getTokenList() {
 		)
 	);
 
-	// add coingecko tokens to list
-	geckoTokensList.forEach((data) => {
-		if (data.status === 'rejected') return;
-
-		const [chain, tokens] = data.value;
-
-		if (!tokensFiltered[chain]) {
-			tokensFiltered[chain] = [];
-		}
-
-		tokensFiltered[chain] = [...tokensFiltered[chain], ...tokens];
-	});
-
-	// format and store final tokens list
-	let tokenlist = {};
-	for (const chain in tokensFiltered) {
-		tokenlist[chain] = tokensFiltered[chain]
+	const formatAndSortTokens = (tokens, chain) => {
+		return tokens
 			.map((t) => {
 				const geckoId =
 					geckoList && geckoList.length > 0
@@ -167,6 +152,26 @@ export async function getTokenList() {
 				};
 			})
 			.sort((a, b) => (b.address === ethers.constants.AddressZero ? 1 : b.volume24h - a.volume24h));
+	};
+
+	// store coingecko token lists by chain
+	const cgList = {};
+	geckoTokensList.forEach((data) => {
+		if (data.status === 'rejected') return;
+
+		const [chain, tokens] = data.value;
+
+		if (!cgList[chain]) {
+			cgList[chain] = [];
+		}
+
+		cgList[chain] = formatAndSortTokens(tokens || [], chain);
+	});
+
+	// format and store final tokens list
+	let tokenlist = {};
+	for (const chain in tokensFiltered) {
+		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])];
 	}
 
 	return {
@@ -240,7 +245,7 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 	return [chainId, data];
 };
 
-const topTopTokenByChain = async (chainId) => {
+const getTopTokensByChain = async (chainId) => {
 	try {
 		if (!dexToolsChainMap[chainId]) {
 			throw new Error(`${chainId} not supported by dex tools.`);

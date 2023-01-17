@@ -82,6 +82,7 @@ const Row = ({ chain, token, onClick }) => {
 						colorScheme={'orange'}
 						onClick={() => onClick(token)}
 						leftIcon={<WarningTwoIcon />}
+						flexShrink={0}
 					>
 						<span style={{ position: 'relative', top: '1px' }}>Import Token</span>
 					</Button>
