@@ -425,6 +425,21 @@ export function AggregatorContainer({ tokenlist }) {
 				setTxUrl(txUrl);
 				data.waitForOrder(() => {
 					toast(formatSuccessToast(variables));
+					sendSwapEvent({
+						chain: selectedChain.value,
+						user: address,
+						from: variables.from,
+						to: variables.to,
+						aggregator: variables.adapter,
+						isError,
+						quote: variables.rawQuote,
+						txUrl,
+						amount: String(amount),
+						errorData: {},
+						amountUsd: +fromTokenPrice * +amount || 0,
+						slippage,
+						routePlace: String(variables?.index)
+					});
 				});
 			}
 
