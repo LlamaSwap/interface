@@ -83,7 +83,7 @@ export async function getTokenList() {
 
 	// get top tokens on each chain
 	const topTokensByChain = await Promise.allSettled(
-		Object.keys(tokensFiltered).map((chain) => topTopTokenByChain(chain))
+		Object.keys(tokensFiltered).map((chain) => topTopTokenByChain(Number(chain)))
 	);
 
 	const topTokensByVolume = Object.fromEntries(
@@ -95,13 +95,13 @@ export async function getTokenList() {
 	// store unique tokens by chain
 	const uniqueTokenList = {};
 
-	for (const chain in tokensFiltered) {
-		tokensFiltered[chain].forEach((token) => {
-			if (!uniqueTokenList[chain]) {
-				uniqueTokenList[chain] = new Set();
+	for (const chainId in tokensFiltered) {
+		tokensFiltered[chainId].forEach((token) => {
+			if (!uniqueTokenList[Number(chainId)]) {
+				uniqueTokenList[Number(chainId)] = new Set();
 			}
 
-			uniqueTokenList[chain].add(token.address);
+			uniqueTokenList[Number(chainId)].add(token.address);
 		});
 	}
 
@@ -113,7 +113,7 @@ export async function getTokenList() {
 			Object.entries(geckoToken.platforms || {}).forEach(([chain, address]: [string, string]) => {
 				const id = geckoChainsMap[chain];
 
-				if (id && !uniqueTokenList[String(id)]?.has(address.toLowerCase())) {
+				if (id && !uniqueTokenList[id]?.has(address.toLowerCase())) {
 					if (!geckoListByChain[id]) {
 						geckoListByChain[id] = new Set();
 					}
@@ -126,8 +126,8 @@ export async function getTokenList() {
 
 	// fetch name, symbol, decimals fo coingecko tokens
 	const geckoTokensList = await Promise.allSettled(
-		Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
-			getTokensData([chain, Array.from(tokens || new Set())])
+		Object.entries(geckoListByChain).map(([chainId, tokens]: [string, Set<string>]) =>
+			getTokensData([Number(chainId), Array.from(tokens || new Set())])
 		)
 	);
 
@@ -135,19 +135,19 @@ export async function getTokenList() {
 	geckoTokensList.forEach((data) => {
 		if (data.status === 'rejected') return;
 
-		const [chain, tokens] = data.value;
+		const [chainId, tokens] = data.value;
 
-		if (!tokensFiltered[chain]) {
-			tokensFiltered[chain] = [];
+		if (!tokensFiltered[Number(chainId)]) {
+			tokensFiltered[Number(chainId)] = [];
 		}
 
-		tokensFiltered[chain] = [...tokensFiltered[chain], ...tokens];
+		tokensFiltered[Number(chainId)] = [...tokensFiltered[Number(chainId)], ...tokens];
 	});
 
 	// format and store final tokens list
 	let tokenlist = {};
-	for (const chain in tokensFiltered) {
-		tokenlist[chain] = tokensFiltered[chain]
+	for (const chainId in tokensFiltered) {
+		tokenlist[Number(chainId)] = tokensFiltered[Number(chainId)]
 			.map((t) => {
 				const geckoId =
 					geckoList && geckoList.length > 0
@@ -155,7 +155,7 @@ export async function getTokenList() {
 						: null;
 
 				const volume24h =
-					topTokensByVolume[chain]?.find((item) => item['_id']?.token === t.address)?.['volume24h'] ?? 0;
+					topTokensByVolume[Number(chainId)]?.find((item) => item['_id']?.token === t.address)?.['volume24h'] ?? 0;
 
 				return {
 					...t,
@@ -178,7 +178,7 @@ export async function getTokenList() {
 }
 
 // use multicall to fetch tokens name, symbol and decimals
-const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promise<[string, Array<IToken>]> => {
+const getTokensData = async ([chainId, tokens]: [number, Array<string>]): Promise<[number, Array<IToken>]> => {
 	const chainName = chainIdToName(chainId);
 
 	if (!chainName) {
@@ -240,7 +240,7 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 	return [chainId, data];
 };
 
-const topTopTokenByChain = async (chainId) => {
+const topTopTokenByChain = async (chainId: number) => {
 	try {
 		if (!dexToolsChainMap[chainId]) {
 			throw new Error(`${chainId} not supported by dex tools.`);
