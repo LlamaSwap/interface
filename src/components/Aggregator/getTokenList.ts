@@ -55,7 +55,7 @@ export async function getTokenList() {
 	const [uniList, sushiList, geckoList, logos] = await Promise.all([
 		fetch('https://tokens.uniswap.org/').then((r) => r.json()),
 		fetch('https://token-list.sushi.com/').then((r) => r.json()),
-		fetch('https://api.coingecko.com/api/v3/coins/list?include_platform=true').then((res) => res.json()),
+		fetch('https://datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://datasets.llama.fi/tokenlist/logos.json').then((res) => res.json())
 	]);
 
@@ -69,7 +69,7 @@ export async function getTokenList() {
 		.flat();
 
 	const tokensByChain = mapValues(
-		groupBy([...nativeTokens, ...oneInchList, ...sushiList.tokens, ...uniList.tokens], 'chainId'),
+		groupBy([...nativeTokens, ...uniList.tokens, ...sushiList.tokens, ...oneInchList], 'chainId'),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
@@ -83,7 +83,7 @@ export async function getTokenList() {
 
 	// get top tokens on each chain
 	const topTokensByChain = await Promise.allSettled(
-		Object.keys(tokensFiltered).map((chain) => topTopTokenByChain(chain))
+		Object.keys(tokensFiltered).map((chain) => getTopTokensByChain(chain))
 	);
 
 	const topTokensByVolume = Object.fromEntries(
@@ -131,23 +131,8 @@ export async function getTokenList() {
 		)
 	);
 
-	// add coingecko tokens to list
-	geckoTokensList.forEach((data) => {
-		if (data.status === 'rejected') return;
-
-		const [chain, tokens] = data.value;
-
-		if (!tokensFiltered[chain]) {
-			tokensFiltered[chain] = [];
-		}
-
-		tokensFiltered[chain] = [...tokensFiltered[chain], ...tokens];
-	});
-
-	// format and store final tokens list
-	let tokenlist = {};
-	for (const chain in tokensFiltered) {
-		tokenlist[chain] = tokensFiltered[chain]
+	const formatAndSortTokens = (tokens, chain) => {
+		return tokens
 			.map((t) => {
 				const geckoId =
 					geckoList && geckoList.length > 0
@@ -167,6 +152,26 @@ export async function getTokenList() {
 				};
 			})
 			.sort((a, b) => (b.address === ethers.constants.AddressZero ? 1 : b.volume24h - a.volume24h));
+	};
+
+	// store coingecko token lists by chain
+	const cgList = {};
+	geckoTokensList.forEach((data) => {
+		if (data.status === 'rejected') return;
+
+		const [chain, tokens] = data.value;
+
+		if (!cgList[chain]) {
+			cgList[chain] = [];
+		}
+
+		cgList[chain] = formatAndSortTokens(tokens || [], chain);
+	});
+
+	// format and store final tokens list
+	let tokenlist = {};
+	for (const chain in tokensFiltered) {
+		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])];
 	}
 
 	return {
@@ -240,14 +245,14 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 	return [chainId, data];
 };
 
-const topTopTokenByChain = async (chainId) => {
+const getTopTokensByChain = async (chainId) => {
 	try {
 		if (!dexToolsChainMap[chainId]) {
 			throw new Error(`${chainId} not supported by dex tools.`);
 		}
 
 		const res = await fetch(
-			`https://www.dextools.io/shared/analytics/pairs?limit=51&interval=24h&chain=${dexToolsChainMap[chainId]}`
+			`https://www.dextools.io/shared/analytics/pairs?limit=200&interval=24h&chain=${dexToolsChainMap[chainId]}`
 		).then((res) => res.json());
 
 		return [chainId, res.data || []];
