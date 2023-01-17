@@ -668,7 +668,7 @@ export function AggregatorContainer({ tokenlist }) {
 		route === undefined || route === null ? normalizedRoutes?.[0]?.amountUsd : fillRoute(route).amountUsd;
 
 	const priceImpact =
-		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute && Number(priceImpactRoute) > 0
+		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute
 			? 100 - (Number(priceImpactRoute) / (+fromTokenPrice * +amount)) * 100
 			: 0;
 	const hasPriceImapct = priceImpact > 7;
