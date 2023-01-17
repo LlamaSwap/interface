@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, Fragment } from 'react';
+import { useMemo, useRef, useState, Fragment } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
 import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
@@ -10,8 +10,6 @@ import {
 	Heading,
 	useToast,
 	Button,
-	Alert,
-	AlertIcon,
 	FormControl,
 	FormLabel,
 	Switch,
@@ -49,6 +47,9 @@ import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
 import { useEstimateGas } from './hooks/useEstimateGas';
+import { Slippage } from '../Slippage';
+import { PriceImpact } from '../PriceImpact';
+import { useQueryParams } from '~/hooks/useQueryParams';
 
 /*
 Integrated:
@@ -271,8 +272,6 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const { data: tokenBalances } = useTokenBalances(address);
 
-	const [customSlippage, setCustomSlippage] = useState<string | number>('');
-
 	const addRecentTransaction = useAddRecentTransaction();
 
 	const { switchNetwork } = useSwitchNetwork();
@@ -281,15 +280,11 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const routesRef = useRef(null);
 
-	const { chain: chainOnURL, from: fromToken, to: toToken, slippage: slippageQuery } = router.query;
-
-	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
-	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
-	const toTokenAddress = typeof toToken === 'string' ? toToken.toLowerCase() : null;
-	const slippage = typeof slippageQuery === 'string' && !Number.isNaN(Number(slippageQuery)) ? slippageQuery : '0.5';
+	const { chainName, fromTokenAddress, toTokenAddress, slippage } = useQueryParams();
 
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useMemo(() => {
 		const chainId = chainsMap[chainName];
+
 		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainId] || [] : null;
 
 		const selectedChain = chains.find((c) => c.value === chainName);
@@ -311,16 +306,21 @@ export function AggregatorContainer({ tokenlist }) {
 	}, [chainName, fromTokenAddress, toTokenAddress, tokenlist]);
 
 	const { data: fromToken2 } = useToken({
-		address: fromToken as `0x${string}`,
+		address: fromTokenAddress as `0x${string}`,
 		chainId: selectedChain.id,
 		enabled:
-			typeof fromToken === 'string' && fromToken.length === 42 && selectedChain && !selectedFromToken ? true : false
+			typeof fromTokenAddress === 'string' && fromTokenAddress.length === 42 && selectedChain && !selectedFromToken
+				? true
+				: false
 	});
 
 	const { data: toToken2 } = useToken({
-		address: toToken as `0x${string}`,
+		address: toTokenAddress as `0x${string}`,
 		chainId: selectedChain.id,
-		enabled: typeof toToken === 'string' && toToken.length === 42 && selectedChain && !selectedToToken ? true : false
+		enabled:
+			typeof toTokenAddress === 'string' && toTokenAddress.length === 42 && selectedChain && !selectedToToken
+				? true
+				: false
 	});
 
 	const { finalSelectedFromToken, finalSelectedToToken } = useMemo(() => {
@@ -554,7 +554,7 @@ export function AggregatorContainer({ tokenlist }) {
 		hasEnoughBalance: +amount < +balance?.data?.formatted
 	});
 
-	const { data: tokenPrices } = useGetPrice({
+	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
 		toToken: finalSelectedToToken?.address,
 		fromToken: finalSelectedFromToken?.address
@@ -664,14 +664,19 @@ export function AggregatorContainer({ tokenlist }) {
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
-	const priceImpactRoute =
-		route === undefined || route === null ? normalizedRoutes?.[0]?.amountUsd : fillRoute(route).amountUsd;
+	const priceImpactRoute = route === undefined || route === null ? normalizedRoutes?.[0] : fillRoute(route);
 
 	const priceImpact =
-		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute
-			? 100 - (Number(priceImpactRoute) / (+fromTokenPrice * +amount)) * 100
+		fromTokenPrice &&
+		toTokenPrice &&
+		normalizedRoutes.length > 0 &&
+		priceImpactRoute &&
+		priceImpactRoute.amountUsd &&
+		!Number.isNaN(Number(priceImpactRoute.amountUsd))
+			? 100 - (Number(priceImpactRoute.amountUsd) / (+fromTokenPrice * +amount)) * 100
 			: 0;
-	const hasPriceImapct = priceImpact > 7;
+
+	const hasPriceImapct = priceImpact ? Number(priceImpact) > 7 : false;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
@@ -691,18 +696,6 @@ export function AggregatorContainer({ tokenlist }) {
 				index: route?.index
 			});
 	};
-
-	useEffect(() => {
-		const id = setTimeout(() => {
-			if (customSlippage && !Number.isNaN(Number(customSlippage)) && slippage !== customSlippage) {
-				router.push({ pathname: '/', query: { ...router.query, slippage: customSlippage } }, undefined, {
-					shallow: true
-				});
-			}
-		}, 300);
-
-		return () => clearTimeout(id);
-	}, [slippage, customSlippage, router]);
 
 	const insufficientBalance =
 		balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted))
@@ -769,7 +762,7 @@ export function AggregatorContainer({ tokenlist }) {
 									router.push(
 										{
 											pathname: router.pathname,
-											query: { ...router.query, to: fromToken, from: toToken }
+											query: { ...router.query, to: finalSelectedFromToken.address, from: finalSelectedToToken.address }
 										},
 										undefined,
 										{ shallow: true }
@@ -790,126 +783,24 @@ export function AggregatorContainer({ tokenlist }) {
 						</TokenSelectBody>
 					</SelectWrapper>
 
-					<div>
-						<FormHeader>Amount In {finalSelectedFromToken?.symbol}</FormHeader>
+					<Flex as="label" flexDir="column">
+						<Text as="span" fontWeight="bold" fontSize="1rem" ml="4px">
+							Amount In {finalSelectedFromToken?.symbol}
+						</Text>
 						<TokenInput setAmount={setAmount} amount={amount} onMaxClick={onMaxClick} />
+					</Flex>
 
-						<Flex flexDir="column" gap="16px" marginBottom="16px">
-							<Flex alignItems="center" justifyContent="space-between" marginX="4px" marginTop="8px">
-								<Text minH="22px">
-									{fromTokenPrice
-										? `Value: $
-										${(+fromTokenPrice * +amount).toFixed(3)}`
-										: ''}
-								</Text>
+					<PriceImpact
+						isLoading={isLoading || fetchingTokenPrices}
+						fromTokenPrice={fromTokenPrice}
+						fromToken={finalSelectedFromToken}
+						toTokenPrice={toTokenPrice}
+						toToken={finalSelectedToToken}
+						priceImpactRoute={priceImpactRoute}
+						priceImpact={priceImpact}
+					/>
 
-								{balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted)) ? (
-									<Button
-										textDecor="underline"
-										bg="none"
-										p={0}
-										fontWeight="400"
-										fontSize="0.875rem"
-										ml="auto"
-										height="fit-content"
-										onClick={onMaxClick}
-									>
-										Balance: {(+balance.data.formatted).toFixed(3)}
-									</Button>
-								) : null}
-							</Flex>
-
-							<Box display="flex" flexDir="column" marginX="4px">
-								<Text
-									fontWeight="400"
-									display="flex"
-									justifyContent="space-between"
-									alignItems="center"
-									fontSize="0.875rem"
-								>
-									Swap Slippage: {slippage ? slippage + '%' : ''}
-								</Text>
-								<Box display="flex" gap="6px" flexWrap="wrap" width="100%">
-									<Button
-										fontSize="0.875rem"
-										fontWeight="500"
-										p="8px"
-										bg="#38393e"
-										height="2rem"
-										onClick={() => {
-											setCustomSlippage('');
-											router.push({ pathname: '/', query: { ...router.query, slippage: '0.1' } }, undefined, {
-												shallow: true
-											});
-										}}
-									>
-										0.1%
-									</Button>
-									<Button
-										fontSize="0.875rem"
-										fontWeight="500"
-										p="8px"
-										bg="#38393e"
-										height="2rem"
-										onClick={() => {
-											setCustomSlippage('');
-
-											router.push({ pathname: '/', query: { ...router.query, slippage: '0.5' } }, undefined, {
-												shallow: true
-											});
-										}}
-									>
-										0.5%
-									</Button>
-									<Button
-										fontSize="0.875rem"
-										fontWeight="500"
-										p="8px"
-										bg="#38393e"
-										height="2rem"
-										onClick={() => {
-											setCustomSlippage('');
-
-											router.push({ pathname: '/', query: { ...router.query, slippage: '1' } }, undefined, {
-												shallow: true
-											});
-										}}
-									>
-										1%
-									</Button>
-									<Box pos="relative" isolation="isolate">
-										<input
-											value={customSlippage}
-											type="number"
-											style={{
-												width: '100%',
-												height: '2rem',
-												padding: '4px 6px',
-												background: 'rgba(0,0,0,.4)',
-												marginLeft: 'auto',
-												borderRadius: '0.375rem',
-												fontSize: '0.875rem'
-											}}
-											placeholder="Custom"
-											onChange={(val) => {
-												setCustomSlippage(val.target.value);
-											}}
-										/>
-										<Text pos="absolute" top="6px" right="6px" fontSize="0.875rem" zIndex={1}>
-											%
-										</Text>
-									</Box>
-								</Box>
-							</Box>
-						</Flex>
-					</div>
-
-					{hasPriceImapct && !isLoading ? (
-						<Alert status="warning" borderRadius="0.375rem" py="8px">
-							<AlertIcon />
-							High price impact! More than {priceImpact.toFixed(2)}% drop.
-						</Alert>
-					) : null}
+					<Slippage />
 
 					<SwapWrapper>
 						{!isConnected ? (
@@ -1018,18 +909,16 @@ export function AggregatorContainer({ tokenlist }) {
 
 				<Routes ref={routesRef}>
 					{normalizedRoutes?.length ? (
-						<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+						<Flex alignItems="center" justifyContent="space-between">
 							<FormHeader>Select a route to perform a swap</FormHeader>
 							{route ? (
-								<div style={{ fontSize: '16px', color: '#999999' }}>
-									1 {finalSelectedFromToken?.symbol} ={' '}
-									{(
+								<Text fontSize="1rem" color="#999999">
+									{`1 ${finalSelectedFromToken?.symbol} = ${(
 										Number(+route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals) / Number(amount)
-									).toFixed(3)}{' '}
-									{finalSelectedToToken?.symbol}
-								</div>
+									).toFixed(4)} ${finalSelectedToToken?.symbol}`}
+								</Text>
 							) : null}
-						</div>
+						</Flex>
 					) : !isLoading &&
 					  amount &&
 					  debouncedAmountWithDecimals === amountWithDecimals &&
