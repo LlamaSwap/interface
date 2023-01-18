@@ -85,7 +85,7 @@ const Route = ({
 						src={toToken?.logoURI}
 						alt=""
 						style={{ marginLeft: 4 }}
-						onError={(e) => (e.currentTarget.src = '/notFound.png')}
+						onError={(e) => (e.currentTarget.src = '/placeholder.png')}
 					/>
 				</Flex>
 			</RouteRow>
