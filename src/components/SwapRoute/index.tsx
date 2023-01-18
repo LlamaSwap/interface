@@ -104,7 +104,7 @@ const Route = ({
 				
 
 				<Flex as="span" gap="6px"  display='flex' color="gray.500" fontWeight={500}>
-					≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut,false,true)}` : null} {gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? (<Flex as="span" gap="4px" alignItems="center" color="#d97706" className='inline-alert'><AlertCircle size='14'/> unknown gas fees</Flex>) : 'after fees'}
+					≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut.toFixed(1),false,true)}` : null} {gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? (<Flex as="span" gap="4px" alignItems="center" color="#d97706" className='inline-alert'><AlertCircle size='14'/> unknown gas fees</Flex>) : 'after fees'}
 				</Flex>
 
 				{airdrop ? (
