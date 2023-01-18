@@ -1,5 +1,5 @@
 import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { Heading, Link, Text } from '@chakra-ui/react';
+import { Box, Flex, Heading, Link, Text } from '@chakra-ui/react';
 import styled from 'styled-components';
 import { AggIcons, LlamaIcon, SmolCheck } from '../Icons';
 
@@ -61,15 +61,7 @@ const CheckWithText = ({ text }: { text: string }) => {
 
 const RoutesPreview = () => {
 	return (
-		<div
-			style={{
-				height: '100%',
-				display: 'flex',
-				flexDirection: 'column',
-				justifyContent: 'space-around',
-				paddingTop: '30px'
-			}}
-		>
+		<Flex pt="30px" flexDir="column" justifyContent="space-around" h="100%">
 			<Header>
 				<MainIcon>{LlamaIcon}</MainIcon>
 
@@ -79,7 +71,7 @@ const RoutesPreview = () => {
 					))}
 				</IconsBody>
 			</Header>
-			<div style={{ zIndex: 1 }}>
+			<Box zIndex={1}>
 				<Heading size={'md'} textAlign="center" mt={'4'}>
 					The Aggregator of Aggregators
 				</Heading>
@@ -98,8 +90,8 @@ const RoutesPreview = () => {
 						<ExternalLinkIcon mx="4px" mb="3px" />
 					</Link>
 				</Text>
-			</div>
-		</div>
+			</Box>
+		</Flex>
 	);
 };
 

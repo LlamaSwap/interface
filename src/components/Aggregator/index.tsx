@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, Fragment } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
-import { useAddRecentTransaction } from '@rainbow-me/rainbowkit';
+import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
 import { ArrowRight } from 'react-feather';
@@ -30,7 +30,7 @@ import { useTokenApprove } from './hooks';
 import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
-import { chainsMap } from './constants';
+import { chainsMap, PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import TokenSelect from './TokenSelect';
 import Tooltip from '../Tooltip';
 import type { IToken } from '~/types';
@@ -264,9 +264,13 @@ export function AggregatorContainer({ tokenlist }) {
 	const { address, isConnected } = useAccount();
 	const { chain: chainOnWallet } = useNetwork();
 
+	const { openConnectModal } = useConnectModal();
+
 	const [route, setRoute] = useState(null);
 
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
+
+	const [slippage, setSlippage] = useState<string>('0.5');
 
 	const toast = useToast();
 
@@ -280,7 +284,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const routesRef = useRef(null);
 
-	const { chainName, fromTokenAddress, toTokenAddress, slippage } = useQueryParams();
+	const { chainName, fromTokenAddress, toTokenAddress } = useQueryParams();
 
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useMemo(() => {
 		const chainId = chainsMap[chainName];
@@ -605,7 +609,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 				setAmount(amountWithoutGas);
 			} else {
-				setAmount(balance.data.formatted);
+				setAmount(balance.data.formatted === '0.0' ? 0 : balance.data.formatted);
 			}
 		}
 	};
@@ -692,7 +696,7 @@ export function AggregatorContainer({ tokenlist }) {
 			? 100 - (Number(priceImpactRoute.amountUsd) / (+fromTokenPrice * +amount)) * 100
 			: null;
 
-	const hasPriceImapct = priceImpact === null || Number(priceImpact) > 7;
+	const hasPriceImapct = priceImpact === null || Number(priceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
@@ -804,9 +808,29 @@ export function AggregatorContainer({ tokenlist }) {
 							Amount In {finalSelectedFromToken?.symbol}
 						</Text>
 						<TokenInput setAmount={setAmount} amount={amount} onMaxClick={onMaxClick} />
+
+						{balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted)) ? (
+							<Button
+								textDecor="underline"
+								bg="none"
+								p={0}
+								fontWeight="400"
+								fontSize="0.875rem"
+								ml="auto"
+								h="initial"
+								mt="8px"
+								onClick={onMaxClick}
+								_hover={{ bg: 'none' }}
+								_focus={{ bg: 'none' }}
+							>
+								Balance: {(+balance.data.formatted).toFixed(3)}
+							</Button>
+						) : (
+							<Box h="16.8px" mt="8px"></Box>
+						)}
 					</Flex>
 
-					<Slippage />
+					<Slippage slippage={slippage} setSlippage={setSlippage} />
 
 					<PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
@@ -816,13 +840,15 @@ export function AggregatorContainer({ tokenlist }) {
 						toToken={finalSelectedToToken}
 						priceImpactRoute={priceImpactRoute}
 						priceImpact={priceImpact}
+						amount={amount}
+						slippage={slippage}
 					/>
 
 					<SwapWrapper>
 						{!isConnected ? (
-							<ConnectButtonWrapper>
-								<ConnectButton />
-							</ConnectButtonWrapper>
+							<Button colorScheme={'messenger'} onClick={openConnectModal}>
+								Connect Wallet
+							</Button>
 						) : !isValidSelectedChain ? (
 							<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
 								Switch Network
@@ -927,13 +953,6 @@ export function AggregatorContainer({ tokenlist }) {
 					{normalizedRoutes?.length ? (
 						<Flex alignItems="center" justifyContent="space-between">
 							<FormHeader>Select a route to perform a swap</FormHeader>
-							{route ? (
-								<Text fontSize="1rem" color="#999999">
-									{`1 ${finalSelectedFromToken?.symbol} = ${(
-										Number(+route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals) / Number(amount)
-									).toFixed(4)} ${finalSelectedToToken?.symbol}`}
-								</Text>
-							) : null}
 						</Flex>
 					) : !isLoading &&
 					  amount &&

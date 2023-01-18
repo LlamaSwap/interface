@@ -1,27 +1,6 @@
 import { Button, Box, Text } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { useQueryParams } from '~/hooks/useQueryParams';
 
-export function Slippage() {
-	const [customSlippage, setCustomSlippage] = useState<string | number>('');
-
-	const router = useRouter();
-
-	const { slippage } = useQueryParams();
-
-	useEffect(() => {
-		const id = setTimeout(() => {
-			if (customSlippage && !Number.isNaN(Number(customSlippage)) && slippage !== customSlippage) {
-				router.push({ pathname: '/', query: { ...router.query, slippage: customSlippage } }, undefined, {
-					shallow: true
-				});
-			}
-		}, 300);
-
-		return () => clearTimeout(id);
-	}, [slippage, customSlippage, router]);
-
+export function Slippage({ slippage, setSlippage }) {
 	return (
 		<Box display="flex" flexDir="column" marginX="4px">
 			<Text fontWeight="400" display="flex" justifyContent="space-between" alignItems="center" fontSize="0.875rem">
@@ -35,10 +14,7 @@ export function Slippage() {
 					bg="#38393e"
 					height="2rem"
 					onClick={() => {
-						setCustomSlippage('');
-						router.push({ pathname: '/', query: { ...router.query, slippage: '0.1' } }, undefined, {
-							shallow: true
-						});
+						setSlippage('0.1');
 					}}
 				>
 					0.1%
@@ -50,11 +26,7 @@ export function Slippage() {
 					bg="#38393e"
 					height="2rem"
 					onClick={() => {
-						setCustomSlippage('');
-
-						router.push({ pathname: '/', query: { ...router.query, slippage: '0.5' } }, undefined, {
-							shallow: true
-						});
+						setSlippage('0.5');
 					}}
 				>
 					0.5%
@@ -66,18 +38,14 @@ export function Slippage() {
 					bg="#38393e"
 					height="2rem"
 					onClick={() => {
-						setCustomSlippage('');
-
-						router.push({ pathname: '/', query: { ...router.query, slippage: '1' } }, undefined, {
-							shallow: true
-						});
+						setSlippage('1');
 					}}
 				>
 					1%
 				</Button>
 				<Box pos="relative" isolation="isolate">
 					<input
-						value={customSlippage}
+						value={slippage}
 						type="number"
 						style={{
 							width: '100%',
@@ -90,7 +58,7 @@ export function Slippage() {
 						}}
 						placeholder="Custom"
 						onChange={(val) => {
-							setCustomSlippage(val.target.value);
+							setSlippage(val.target.value);
 						}}
 					/>
 					<Text pos="absolute" top="6px" right="6px" fontSize="0.875rem" zIndex={1}>
