@@ -425,6 +425,21 @@ export function AggregatorContainer({ tokenlist }) {
 				setTxUrl(txUrl);
 				data.waitForOrder(() => {
 					toast(formatSuccessToast(variables));
+					sendSwapEvent({
+						chain: selectedChain.value,
+						user: address,
+						from: variables.from,
+						to: variables.to,
+						aggregator: variables.adapter,
+						isError,
+						quote: variables.rawQuote,
+						txUrl,
+						amount: String(amount),
+						errorData: {},
+						amountUsd: +fromTokenPrice * +amount || 0,
+						slippage,
+						routePlace: String(variables?.index)
+					});
 				});
 			}
 
@@ -617,6 +632,7 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const fillRoute = (route: typeof routes[0]) => {
+		if (!route?.price) return null;
 		const gasEstimation = +(isGasDataLoading ? route.price.estimatedGas : gasData?.[route.name]?.gas);
 		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
@@ -665,7 +681,7 @@ export function AggregatorContainer({ tokenlist }) {
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
 	const priceImpactRoute =
-		route === undefined || route === null ? normalizedRoutes?.[0]?.amountUsd : fillRoute(route).amountUsd;
+		route === undefined || route === null ? normalizedRoutes?.[0]?.amountUsd : fillRoute(route)?.amountUsd;
 
 	const priceImpact =
 		fromTokenPrice && toTokenPrice && normalizedRoutes.length > 0 && priceImpactRoute
@@ -677,7 +693,7 @@ export function AggregatorContainer({ tokenlist }) {
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
 
 	const handleSwap = () => {
-		if (normalizedRoutes.find(({ name }) => name === route.name))
+		if (normalizedRoutes.find(({ name }) => name === route.name) && route.price)
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -1020,7 +1036,7 @@ export function AggregatorContainer({ tokenlist }) {
 					{normalizedRoutes?.length ? (
 						<div style={{ display: 'flex', justifyContent: 'space-between' }}>
 							<FormHeader>Select a route to perform a swap</FormHeader>
-							{route ? (
+							{route?.price ? (
 								<div style={{ fontSize: '16px', color: '#999999' }}>
 									1 {finalSelectedFromToken?.symbol} ={' '}
 									{(
