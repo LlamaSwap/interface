@@ -425,6 +425,21 @@ export function AggregatorContainer({ tokenlist }) {
 				setTxUrl(txUrl);
 				data.waitForOrder(() => {
 					toast(formatSuccessToast(variables));
+					sendSwapEvent({
+						chain: selectedChain.value,
+						user: address,
+						from: variables.from,
+						to: variables.to,
+						aggregator: variables.adapter,
+						isError,
+						quote: variables.rawQuote,
+						txUrl,
+						amount: String(amount),
+						errorData: {},
+						amountUsd: +fromTokenPrice * +amount || 0,
+						slippage,
+						routePlace: String(variables?.index)
+					});
 				});
 			}
 
@@ -617,6 +632,7 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const fillRoute = (route: typeof routes[0]) => {
+		if (!route?.price) return null;
 		const gasEstimation = +(isGasDataLoading ? route.price.estimatedGas : gasData?.[route.name]?.gas);
 		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
@@ -682,7 +698,7 @@ export function AggregatorContainer({ tokenlist }) {
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
 
 	const handleSwap = () => {
-		if (normalizedRoutes.find(({ name }) => name === route.name))
+		if (normalizedRoutes.find(({ name }) => name === route.name) && route.price)
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -716,7 +732,7 @@ export function AggregatorContainer({ tokenlist }) {
 					style={{ textDecoration: 'underline' }}
 					target={'_blank'}
 					rel="noreferrer noopener"
-					href="https://discord.gg/j54NuUt5nW"
+					href="https://discord.swap.defillama.com/"
 				>
 					discord server
 				</a>
