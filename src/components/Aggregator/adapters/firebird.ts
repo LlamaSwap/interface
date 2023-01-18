@@ -47,10 +47,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenFrom = isFromNative ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const receiver = extra.userAddress || ethers.constants.AddressZero;
+	const slippage = extra.slippage ? Number(extra.slippage) / 100 : undefined;
 
 	// amount should include decimals
 	const result = await fetch(
-		`${routerAPI}/quote?chainId=${chainToId[chain]}&from=${tokenFrom}&to=${tokenTo}&amount=${amount}&receiver=${receiver}&slippage=${extra.slippage}&source=defillama&ref=${defillamaReferrerAddress}`,
+		`${routerAPI}/quote?chainId=${chainToId[chain]}&from=${tokenFrom}&to=${tokenTo}&amount=${amount}&receiver=${receiver}&slippage=${slippage}&source=defillama&ref=${defillamaReferrerAddress}`,
 		{ headers }
 	).then((r) => r.json());
 	const data = result.quoteData;
