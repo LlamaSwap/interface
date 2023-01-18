@@ -12,7 +12,7 @@ const { provider, chains } = configureChains(
 		{
 			...chain.mainnet,
 			rpcUrls: {
-				default: 'https://rpc.ankr.com/eth'
+				default: 'https://eth-mainnet.public.blastapi.io'
 			}
 		},
 		{

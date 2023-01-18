@@ -1,6 +1,5 @@
 import Select, { Props } from 'react-select';
 import styled from 'styled-components';
-import { FixedSizeList as List } from 'react-window';
 import { QuestionIcon } from '@chakra-ui/icons';
 import { CSSProperties } from 'react';
 
@@ -96,20 +95,6 @@ const customStyles = {
 
 const height = 35;
 
-const MenuList = (props) => {
-	const { options, children, maxHeight, getValue } = props;
-	const [value] = getValue();
-	const initialOffset = options.indexOf(value) * height;
-
-	if (!children.length) return null;
-
-	return (
-		<List height={maxHeight} itemCount={children.length} itemSize={height} initialScrollOffset={initialOffset}>
-			{({ index, style }) => <div style={style}>{children[index]}</div>}
-		</List>
-	);
-};
-
 const ReactSelect = ({ options, style, ...props }: IReactSelect) => (
 	<Wrapper style={style}>
 		<Select
@@ -126,7 +111,6 @@ const ReactSelect = ({ options, style, ...props }: IReactSelect) => (
 					}
 				};
 			}}
-			components={{ MenuList }}
 			formatOptionLabel={formatOptionLabel}
 			{...props}
 		/>
