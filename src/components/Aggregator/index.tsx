@@ -157,7 +157,7 @@ const Routes = styled.div`
 	overflow-x: hidden;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
-		max-height: 485px;
+		max-height: 495px;
 	}
 
 	max-width: 30rem;
