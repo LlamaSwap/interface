@@ -798,6 +798,7 @@ export function AggregatorContainer({ tokenlist }) {
 						fromToken={finalSelectedFromToken}
 						toTokenPrice={toTokenPrice}
 						toToken={finalSelectedToToken}
+						amount={debouncedAmountWithDecimals}
 						priceImpactRoute={priceImpactRoute}
 						priceImpact={priceImpact}
 					/>

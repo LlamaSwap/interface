@@ -1,3 +1,4 @@
+import { WarningTwoIcon } from '@chakra-ui/icons';
 import {
 	Accordion,
 	AccordionButton,
@@ -16,6 +17,7 @@ interface IPriceImpact {
 	toToken?: { symbol: string; decimals: number } | null;
 	fromTokenPrice?: number;
 	toTokenPrice?: number;
+	amount?: string | number | null;
 	priceImpact?: number;
 	priceImpactRoute: { amountUsd: string; amount: number };
 }
@@ -26,6 +28,7 @@ export function PriceImpact({
 	toToken,
 	fromTokenPrice,
 	toTokenPrice,
+	amount,
 	priceImpactRoute,
 	priceImpact
 }: IPriceImpact) {
@@ -57,7 +60,7 @@ export function PriceImpact({
 			: null;
 	const minimumReceived =
 		priceImpactRoute && !Number.isNaN(Number(priceImpactRoute.amount))
-			? Number(priceImpactRoute.amount) - Number(priceImpactRoute.amount) * Number(slippage)
+			? Number(priceImpactRoute.amount) - (Number(priceImpactRoute.amount) / 100) * Number(slippage)
 			: null;
 
 	const isPriceImpactNotKnown = !priceImpact && priceImpact !== 0;
@@ -92,9 +95,12 @@ export function PriceImpact({
 						justifyContent="space-between"
 						gap="8px"
 						alignItems="center"
-						color={isPriceImpactNotKnown ? 'red.500' : 'white'}
+						color={isPriceImpactNotKnown ? 'red.500' : priceImpact >= 7 ? 'orange.500' : 'white'}
 					>
 						<span>Price Impact</span>
+
+						{isPriceImpactNotKnown || priceImpact >= 7 ? <WarningTwoIcon style={{ marginLeft: 'auto' }} /> : null}
+
 						<span>{isPriceImpactNotKnown ? 'Unknown' : `${priceImpact.toFixed(2)}%`}</span>
 					</Text>
 					<Text
@@ -104,11 +110,13 @@ export function PriceImpact({
 						alignItems="center"
 						borderTop="1px solid #373944"
 						paddingTop={2}
-						color={!minimumReceived || minimumReceived <= 0 ? 'red.500' : 'white'}
+						color={minimumReceived !== null && Number(minimumReceived) <= 0 ? 'red.500' : 'white'}
 					>
 						<span>{`Minimum received after slippage (${slippage}%)`}</span>
 						<span>
-							{minimumReceived ? `${minimumReceived <= 0 ? 0 : minimumReceived.toFixed(4)} ${toToken.symbol}` : '-'}
+							{minimumReceived === null
+								? '-'
+								: `${Number(minimumReceived) <= 0 ? 0 : minimumReceived.toFixed(4)} ${toToken.symbol}`}
 						</span>
 					</Text>
 				</AccordionPanel>
