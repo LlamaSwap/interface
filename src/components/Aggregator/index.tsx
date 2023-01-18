@@ -739,7 +739,7 @@ export function AggregatorContainer({ tokenlist }) {
 					style={{ textDecoration: 'underline' }}
 					target={'_blank'}
 					rel="noreferrer noopener"
-					href="https://discord.gg/j54NuUt5nW"
+					href="https://discord.swap.defillama.com/"
 				>
 					discord server
 				</a>
