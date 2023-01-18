@@ -676,7 +676,7 @@ export function AggregatorContainer({ tokenlist }) {
 		.filter((r) => r.gasUsd !== 'Unknown')
 		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
 
-	const medianAmount = median(normalizedRoutes.map(({ amount }) => amount));
+	const medianAmount = Math.max(median(normalizedRoutes.map(({ amount }) => amount)), normalizedRoutes.find(r=>r.name === "1inch")?.amount ?? 0);
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
