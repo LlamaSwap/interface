@@ -32,39 +32,24 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	let num = parseFloat(number)
 	const isNegative = num < 0
 
-	const currencyMark = isNegative ? `${currencySymbol}-` : currencySymbol
-	const normalMark = isNegative ? '-' : ''
+	// const currencyMark = isNegative ? `${currencySymbol}-` : currencySymbol
+	// const normalMark = isNegative ? '-' : ''
 
 	// if (num > 10000000) {
 	// 	return (symbol ? currencyMark : normalMark) + toK(num.toFixed(0), true)
 	// }
 
-	if (num === 0) {
-		return symbol ? `${currencySymbol}0` : 0
-	}
+	// if (num === 0) {
+	// 	return symbol ? `${currencySymbol}0` : 0
+	// }
 
-	if (num < 0.0001 && num > 0) {
-		return symbol ? `< ${currencySymbol}0.0001` : '< 0.0001'
-	}
-	// add thousands separator to number before dot and not after
+	// if (num < 0.0001 && num > 0) {
+	// 	return symbol ? `< ${currencySymbol}0.0001` : '< 0.0001'
+	// }
+
 	let maximumFractionDigits = num < 1 ? 7 : 4
 	maximumFractionDigits = num > 100000 ? 2 : maximumFractionDigits
 	formattedNum = num.toLocaleString('en-US', {maximumFractionDigits})
-
-	// if (num > 1000) {
-	// 	return symbol
-	// 		? currencyMark + Number(parseFloat(num).toFixed(0)).toLocaleString()
-	// 		: normalMark + Number(parseFloat(num).toFixed(0)).toLocaleString()
-	// }
-
-	// if (symbol) {
-	// 	if (num < 0.1) {
-	// 		return currencyMark + Number(parseFloat(num).toFixed(2))
-	// 	} else {
-	// 		let usdString = priceFormatter.format(num) // priceFoematter isn't defined on llama main repo
-	// 		return currencyMark + usdString.slice(1, usdString.length)
-	// 	}
-	// }
 
 	return String(formattedNum)
 }
