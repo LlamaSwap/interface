@@ -17,7 +17,6 @@ interface IPriceImpact {
 	toToken?: { symbol: string; decimals: number } | null;
 	fromTokenPrice?: number;
 	toTokenPrice?: number;
-	amount?: string | number | null;
 	priceImpact?: number;
 	priceImpactRoute: { amountUsd: string; amount: number };
 }
@@ -28,7 +27,6 @@ export function PriceImpact({
 	toToken,
 	fromTokenPrice,
 	toTokenPrice,
-	amount,
 	priceImpactRoute,
 	priceImpact
 }: IPriceImpact) {
@@ -48,9 +46,10 @@ export function PriceImpact({
 		!fromTokenPrice ||
 		!toTokenPrice ||
 		Number.isNaN(Number(fromTokenPrice)) ||
-		Number.isNaN(Number(toTokenPrice))
+		Number.isNaN(Number(toTokenPrice)) ||
+		!priceImpactRoute
 	) {
-		return <Box h="2.5rem" display="flex" alignItems="center" borderY="1px solid #373944"></Box>;
+		return <Box h="2.5rem" display="flex" alignItems="center"></Box>;
 	}
 
 	const fromTokenValue = (fromTokenPrice / toTokenPrice).toFixed(4);

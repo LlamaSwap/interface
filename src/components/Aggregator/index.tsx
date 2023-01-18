@@ -664,7 +664,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
-	const priceImpactRoute = route === undefined || route === null ? normalizedRoutes?.[0] : fillRoute(route);
+	const priceImpactRoute = !route ? null : fillRoute(route);
 
 	const priceImpact =
 		fromTokenPrice &&
@@ -798,7 +798,6 @@ export function AggregatorContainer({ tokenlist }) {
 						fromToken={finalSelectedFromToken}
 						toTokenPrice={toTokenPrice}
 						toToken={finalSelectedToToken}
-						amount={debouncedAmountWithDecimals}
 						priceImpactRoute={priceImpactRoute}
 						priceImpact={priceImpact}
 					/>
