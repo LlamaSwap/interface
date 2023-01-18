@@ -122,13 +122,13 @@ const Route = ({
 							<Tooltip content="Gas is taken from output amount">
 								<Text as="span" color='gray.500' fontWeight={500}>
 									{`${
-										gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? null : '$' + Number(gasUsd).toFixed(3)
+										gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? null : '$' + formattedNum(gasUsd.toFixed(2))
 									}`}
 								</Text>
 							</Tooltip>
 						) : (
 							<Text as="span" fontWeight={500}>{`${
-								gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? null : '$' + Number(gasUsd).toFixed(3)
+								gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? null : '$' + formattedNum(gasUsd.toFixed(2))
 							}`}</Text>
 						)}
 						<Text display="flex" gap="3px">
