@@ -46,10 +46,10 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	if (num < 0.0001 && num > 0) {
 		return symbol ? `< ${currencySymbol}0.0001` : '< 0.0001'
 	}
-	// add thousands separator
-	formattedNum = num.toFixed(3).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
-	// strip trailing zeros
-	formattedNum = formattedNum.replace(/\.?0+$/, '')
+	// add thousands separator to number before dot and not after
+	let maximumFractionDigits = num < 1 ? 7 : 4
+	maximumFractionDigits = num > 100000 ? 2 : maximumFractionDigits
+	formattedNum = num.toLocaleString('en-US', {maximumFractionDigits})
 
 	// if (num > 1000) {
 	// 	return symbol
