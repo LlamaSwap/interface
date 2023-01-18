@@ -61,7 +61,7 @@ const CheckWithText = ({ text }: { text: string }) => {
 
 const RoutesPreview = () => {
 	return (
-		<Flex pt="30px" flexDir="column" justifyContent="space-around" h="100%">
+		<Flex pt="30px" flexDir="column" justifyContent="space-around" h="100%" minH={{ md: '485px' }}>
 			<Header>
 				<MainIcon>{LlamaIcon}</MainIcon>
 
