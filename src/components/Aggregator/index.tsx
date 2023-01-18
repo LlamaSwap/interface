@@ -693,7 +693,7 @@ export function AggregatorContainer({ tokenlist }) {
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
 
 	const handleSwap = () => {
-		if (normalizedRoutes.find(({ name }) => name === route.name))
+		if (normalizedRoutes.find(({ name }) => name === route.name) && route.price)
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,

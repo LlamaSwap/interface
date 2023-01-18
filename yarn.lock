@@ -822,10 +822,10 @@
   resolved "https://registry.yarnpkg.com/@ctrl/tinycolor/-/tinycolor-3.4.1.tgz#75b4c27948c81e88ccd3a8902047bcd797f38d32"
   integrity sha512-ej5oVy6lykXsvieQtqZxCOaLT+xD4+QNarq78cIYISHmZXshCvROLudpQN3lfL8G0NL7plMSSK+zlyvCaIJ4Iw==
 
-"@defillama/sdk@^3.0.26":
-  version "3.0.26"
-  resolved "https://registry.yarnpkg.com/@defillama/sdk/-/sdk-3.0.26.tgz#b270690d6d5d37c157d50d150a61391fa1f28430"
-  integrity sha512-5H2ulkQMYVKkIRHdSZHhRmP1P9sjcob+FnpKePQFT1+fTjnJOn7wyRBMRR86UfMfodArQJ6IMfAfBl4Jz9ToNQ==
+"@defillama/sdk@^3.0.25":
+  version "3.0.25"
+  resolved "https://registry.yarnpkg.com/@defillama/sdk/-/sdk-3.0.25.tgz#406e6c96cbc2e63f9c2acce54c783af94ed18b3e"
+  integrity sha512-dMECqb/r/7amC5WTnonLuChSuKyTz0b4U1wF9HVmt3aEiwjYZbi9dQVD7RDA8/xdXnVue9RLxxvYWBKKIfWQeg==
   dependencies:
     "@supercharge/promise-pool" "^2.1.0"
     ethers "^5.4.5"
