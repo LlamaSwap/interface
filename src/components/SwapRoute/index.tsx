@@ -70,7 +70,7 @@ const Route = ({
 				<Flex alignItems="baseline">
 					
 					<Text fontSize={19} fontWeight={700} color={'#FAFAFA'}>
-						{amount.toFixed(3)}{' '}
+						{formattedNum(amount)}{' '}
 					</Text>
 					{/* <img
 						src={toToken?.logoURI}
@@ -79,10 +79,6 @@ const Route = ({
 					/> */}
 					<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
 						{toToken?.symbol}
-					</Text>
-
-					<Text fontSize={12} className="secondary-data" fontWeight={500} marginLeft={'4px'} color='gray.500'>
-						<Text as='span' fontSize={14} fontWeight={500}>≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut,false,true)}` : null}</Text> after fees
 					</Text>
 
 				</Flex>
@@ -108,7 +104,7 @@ const Route = ({
 				
 
 				<Text as="span"  color="gray.500" fontWeight={500}>
-					{quotedRateString}
+					≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut,false,true)}` : null} after fees
 				</Text>
 
 				{airdrop ? (

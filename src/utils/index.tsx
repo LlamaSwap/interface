@@ -28,6 +28,7 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	if (isNaN(number) || number === '' || number === undefined) {
 		return symbol ? `${currencySymbol}0` : 0
 	}
+	let formattedNum = String()
 	let num = parseFloat(number)
 	const isNegative = num < 0
 
@@ -45,6 +46,10 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	if (num < 0.0001 && num > 0) {
 		return symbol ? `< ${currencySymbol}0.0001` : '< 0.0001'
 	}
+	// add thousands separator
+	formattedNum = num.toFixed(3).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+	// strip trailing zeros
+	formattedNum = formattedNum.replace(/\.?0+$/, '')
 
 	// if (num > 1000) {
 	// 	return symbol
@@ -61,5 +66,5 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	// 	}
 	// }
 
-	return Number(num.toFixed(2))
+	return String(formattedNum)
 }
