@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
 import { Flex, Text } from '@chakra-ui/react';
-import { Gift, Unlock } from 'react-feather';
+import { AlertCircle, Gift, Unlock } from 'react-feather';
 import { GasIcon } from '../Icons';
 import { formattedNum } from '~/utils';
 
@@ -103,9 +103,9 @@ const Route = ({
 				
 				
 
-				<Text as="span"  color="gray.500" fontWeight={500}>
-					≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut,false,true)}` : null} after fees
-				</Text>
+				<Flex as="span" gap="6px"  display='flex' color="gray.500" fontWeight={500}>
+					≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut,false,true)}` : null} {gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? (<Flex as="span" gap="4px" alignItems="center" color="#d97706" className='inline-alert'><AlertCircle size='14'/> unknown gas fees</Flex>) : 'after fees'}
+				</Flex>
 
 				{airdrop ? (
 					<Tooltip content="This project has no token and might airdrop one in the future">
@@ -117,18 +117,18 @@ const Route = ({
 				<Text display="flex" gap="6px" color={'gray.500'}  fontWeight={500} ml="auto">
 					
 					<Text display="flex" alignItems="center" gap="4px" color="gray.500">
-						<GasIcon/>
+						{gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? null : <GasIcon/>}
 						{name === 'CowSwap' ? (
 							<Tooltip content="Gas is taken from output amount">
 								<Text as="span" color='gray.500' fontWeight={500}>
 									{`${
-										gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
+										gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? null : '$' + Number(gasUsd).toFixed(3)
 									}`}
 								</Text>
 							</Tooltip>
 						) : (
 							<Text as="span" fontWeight={500}>{`${
-								gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
+								gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? null : '$' + Number(gasUsd).toFixed(3)
 							}`}</Text>
 						)}
 						<Text display="flex" gap="3px">
