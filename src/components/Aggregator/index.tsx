@@ -455,6 +455,7 @@ export function AggregatorContainer({ tokenlist }) {
 		const isUnknown =
 			selectedToToken === null &&
 			finalSelectedToToken !== null &&
+			savedTokens &&
 			!savedTokens.find(({ address }) => address.toLowerCase() === toTokenAddress.toLowerCase());
 
 		if (isUnknown && toTokenAddress && savedTokens?.length > 1) {
