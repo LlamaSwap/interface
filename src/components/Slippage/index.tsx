@@ -7,42 +7,21 @@ export function Slippage({ slippage, setSlippage }) {
 				Swap Slippage: {slippage ? slippage + '%' : ''}
 			</Text>
 			<Box display="flex" gap="6px" flexWrap="wrap" width="100%">
-				<Button
-					fontSize="0.875rem"
-					fontWeight="500"
-					p="8px"
-					bg="#38393e"
-					height="2rem"
-					onClick={() => {
-						setSlippage('0.1');
-					}}
-				>
-					0.1%
-				</Button>
-				<Button
-					fontSize="0.875rem"
-					fontWeight="500"
-					p="8px"
-					bg="#38393e"
-					height="2rem"
-					onClick={() => {
-						setSlippage('0.5');
-					}}
-				>
-					0.5%
-				</Button>
-				<Button
-					fontSize="0.875rem"
-					fontWeight="500"
-					p="8px"
-					bg="#38393e"
-					height="2rem"
-					onClick={() => {
-						setSlippage('1');
-					}}
-				>
-					1%
-				</Button>
+				{['0.1', '0.5', '1'].map((slippage) => (
+					<Button
+						fontSize="0.875rem"
+						fontWeight="500"
+						p="8px"
+						bg="#38393e"
+						height="2rem"
+						onClick={() => {
+							setSlippage(slippage);
+						}}
+						key={'slippage-btn' + slippage}
+					>
+						{slippage}%
+					</Button>
+				))}
 				<Box pos="relative" isolation="isolate">
 					<input
 						value={slippage}
