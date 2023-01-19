@@ -22,7 +22,7 @@ import {
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
-import Route from '~/components/SwapRoute';
+import SwapRoute from '~/components/SwapRoute';
 import { getAllChains, inifiniteApprovalAllowed, swap } from './router';
 import { TokenInput } from './TokenInput';
 import Loader from './Loader';
@@ -975,7 +975,7 @@ export function AggregatorContainer({ tokenlist }) {
 								r?.name
 							}
 						>
-							<Route
+							<SwapRoute
 								{...r}
 								index={i}
 								selected={aggregator === r.name}
