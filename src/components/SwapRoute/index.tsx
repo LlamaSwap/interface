@@ -17,6 +17,7 @@ interface IPrice {
 	estimatedGas: string;
 	tokenApprovalAddress: string;
 	logo: string;
+	rawQuote?: {};
 }
 
 interface IRoute {

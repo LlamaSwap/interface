@@ -30,7 +30,7 @@ import { useTokenApprove } from './hooks';
 import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
-import { chainsMap, PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
+import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import TokenSelect from './TokenSelect';
 import Tooltip from '../Tooltip';
 import type { IToken } from '~/types';
@@ -50,6 +50,7 @@ import { useEstimateGas } from './hooks/useEstimateGas';
 import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
+import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 
 /*
 Integrated:
@@ -260,55 +261,39 @@ const ConnectButtonWrapper = styled.div`
 const chains = getAllChains();
 
 export function AggregatorContainer({ tokenlist }) {
+	// wallet stuff
 	const { data: signer } = useSigner();
 	const { address, isConnected } = useAccount();
 	const { chain: chainOnWallet } = useNetwork();
-
 	const { openConnectModal } = useConnectModal();
-
-	const [route, setRoute] = useState(null);
-
-	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
-
-	const [slippage, setSlippage] = useState<string>('0.5');
-
-	const toast = useToast();
-
-	const { data: tokenBalances } = useTokenBalances(address);
-
+	const { switchNetwork } = useSwitchNetwork();
 	const addRecentTransaction = useAddRecentTransaction();
 
-	const { switchNetwork } = useSwitchNetwork();
+	// swap input fields and selected aggregator states
+	const [aggregator, setAggregator] = useState(null);
+	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
+	const [amount, setAmount] = useState<number | string>('10');
+	const [slippage, setSlippage] = useState<string>('0.5');
 
-	const router = useRouter();
+	// post swap states
+	const [txModalOpen, setTxModalOpen] = useState(false);
+	const [txUrl, setTxUrl] = useState('');
+	const confirmingTxToastRef = useRef<ToastId>();
+	const toast = useToast();
 
+	// debounce input amount and limit no of queries made to aggregators api, to avoid CORS errors
+	const debouncedAmount = useDebounce(amount, 300);
+
+	// get selected chain and tokens from URL query params
 	const routesRef = useRef(null);
+	const router = useRouter();
+	const { fromTokenAddress, toTokenAddress } = useQueryParams();
+	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useSelectedChainAndTokens({
+		tokens: tokenlist
+	});
+	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 
-	const { chainName, fromTokenAddress, toTokenAddress } = useQueryParams();
-
-	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useMemo(() => {
-		const chainId = chainsMap[chainName];
-
-		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainId] || [] : null;
-
-		const selectedChain = chains.find((c) => c.value === chainName);
-
-		const selectedFromToken = tokenList?.find((t) => t.address.toLowerCase() === fromTokenAddress);
-
-		const selectedToToken = tokenList?.find((t) => t.address.toLowerCase() === toTokenAddress);
-
-		return {
-			selectedChain: selectedChain ? { ...selectedChain, id: chainsMap[selectedChain.value] } : null,
-			selectedFromToken: selectedFromToken
-				? { ...selectedFromToken, label: selectedFromToken.symbol, value: selectedFromToken.address }
-				: null,
-			selectedToToken: selectedToToken
-				? { ...selectedToToken, label: selectedToToken.symbol, value: selectedToToken.address }
-				: null,
-			chainTokenList: tokenList
-		};
-	}, [chainName, fromTokenAddress, toTokenAddress, tokenlist]);
-
+	// data of selected token not in chain's tokenlist
 	const { data: fromToken2 } = useToken({
 		address: fromTokenAddress as `0x${string}`,
 		chainId: selectedChain.id,
@@ -317,7 +302,6 @@ export function AggregatorContainer({ tokenlist }) {
 				? true
 				: false
 	});
-
 	const { data: toToken2 } = useToken({
 		address: toTokenAddress as `0x${string}`,
 		chainId: selectedChain.id,
@@ -326,7 +310,7 @@ export function AggregatorContainer({ tokenlist }) {
 				? true
 				: false
 	});
-
+	// final tokens data
 	const { finalSelectedFromToken, finalSelectedToToken } = useMemo(() => {
 		const finalSelectedFromToken =
 			!selectedFromToken && fromToken2
@@ -361,24 +345,21 @@ export function AggregatorContainer({ tokenlist }) {
 		return { finalSelectedFromToken, finalSelectedToToken };
 	}, [fromToken2, selectedChain?.id, toToken2, selectedFromToken, selectedToToken]);
 
-	const [amount, setAmount] = useState<number | string>('10');
-	const [txModalOpen, setTxModalOpen] = useState(false);
-	const [txUrl, setTxUrl] = useState('');
-
-	const amountWithDecimals = BigNumber(amount && amount !== '' ? amount : '0')
+	// format input amount of selected from token
+	const amountWithDecimals = BigNumber(debouncedAmount && debouncedAmount !== '' ? debouncedAmount : '0')
 		.times(BigNumber(10).pow(finalSelectedFromToken?.decimals || 18))
 		.toFixed(0);
 
-	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
+	// saved tokens list
+	const { data: savedTokens } = useGetSavedTokens(selectedChain?.id);
 
+	// selected from token's balances
 	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
-
+	const { data: tokenBalances } = useTokenBalances(address);
 	const { data: gasPriceData } = useFeeData({
 		chainId: selectedChain?.id,
 		enabled: selectedChain ? true : false
 	});
-
-	const { data: savedTokens } = useGetSavedTokens(selectedChain?.id);
 
 	const tokensInChain = useMemo(() => {
 		return (
@@ -397,8 +378,176 @@ export function AggregatorContainer({ tokenlist }) {
 		);
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
 
-	const confirmingTxToastRef = useRef<ToastId>();
+	const { data: routes = [], isLoading } = useGetRoutes({
+		chain: selectedChain?.value,
+		from: finalSelectedFromToken?.value,
+		to: finalSelectedToToken?.value,
+		amount: amountWithDecimals,
+		extra: {
+			gasPriceData,
+			userAddress: address || ethers.constants.AddressZero,
+			amount: debouncedAmount,
+			fromToken: finalSelectedFromToken,
+			toToken: finalSelectedToToken,
+			slippage,
+			isPrivacyEnabled
+		}
+	});
+	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
+		routes,
+		token: finalSelectedFromToken?.address,
+		userAddress: address,
+		chain: selectedChain.value,
+		amount: amountWithDecimals,
+		hasEnoughBalance: +debouncedAmount < +balance?.data?.formatted
+	});
+	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
+		chain: selectedChain?.value,
+		toToken: finalSelectedToToken?.address,
+		fromToken: finalSelectedFromToken?.address
+	});
+	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
 
+	const selecteRouteIndex =
+		routes && routes.length > 0 ? routes.findIndex((r) => r.name.toLowerCase() === aggregator.toLowerCase()) : -1;
+	// store selected aggregators route
+	const selectedRoute = selecteRouteIndex >= 0 ? { ...routes[selecteRouteIndex], index: selecteRouteIndex } : null;
+
+	// functions to handle change in swap input fields
+	const onMaxClick = () => {
+		if (balance.data && balance.data.formatted && !Number.isNaN(Number(balance.data.formatted))) {
+			if (
+				selectedRoute &&
+				selectedRoute.price.estimatedGas &&
+				gasPriceData?.formatted?.gasPrice &&
+				finalSelectedFromToken?.address === ethers.constants.AddressZero
+			) {
+				const gas = (+selectedRoute.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
+
+				const amountWithoutGas = +balance.data.formatted - gas;
+
+				setAmount(amountWithoutGas);
+			} else {
+				setAmount(balance.data.formatted === '0.0' ? 0 : balance.data.formatted);
+			}
+		}
+	};
+	const onChainChange = (newChain) => {
+		setAggregator(null);
+		router.push({ pathname: '/', query: { chain: newChain.value } }, undefined, { shallow: true }).then(() => {
+			if (switchNetwork) switchNetwork(newChain.chainId);
+		});
+	};
+	const onFromTokenChange = (token) => {
+		setAggregator(null);
+		router.push({ pathname: router.pathname, query: { ...router.query, from: token.address } }, undefined, {
+			shallow: true
+		});
+	};
+	const onToTokenChange = (token) => {
+		setAggregator(null);
+		router.push({ pathname: router.pathname, query: { ...router.query, to: token.address } }, undefined, {
+			shallow: true
+		});
+	};
+
+	// format routes
+	const fillRoute = (route: typeof routes[0]) => {
+		if (!route?.price) return null;
+		const gasEstimation = +(isGasDataLoading ? route.price.estimatedGas : gasData?.[route.name]?.gas);
+		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+
+		// CowSwap native token swap
+		gasUsd =
+			route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
+				? (route.price.feeAmount / 1e18) * gasTokenPrice
+				: gasUsd;
+
+		gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
+
+		gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
+
+		const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
+
+		const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
+
+		const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
+
+		return {
+			...route,
+			isFailed: gasData?.[route.name]?.isFailed || false,
+			route,
+			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
+			amountUsd,
+			amount,
+			netOut
+		};
+	};
+
+	let normalizedRoutes = [...(routes || [])]
+		?.map(fillRoute)
+		.filter(
+			({ fromAmount, amount: toAmount, isFailed }) =>
+				Number(toAmount) && amountWithDecimals === fromAmount && isFailed !== true
+		)
+		.sort((a, b) => b.netOut - a.netOut)
+		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
+
+	normalizedRoutes = normalizedRoutes
+		.filter((r) => r.gasUsd !== 'Unknown')
+		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
+
+	const medianAmount = median(normalizedRoutes.map(({ amount }) => amount));
+
+	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
+
+	const priceImpactRoute = selectedRoute ? fillRoute(selectedRoute) : null;
+
+	const selectedRoutesPriceImpact =
+		fromTokenPrice &&
+		toTokenPrice &&
+		priceImpactRoute &&
+		priceImpactRoute.amountUsd &&
+		debouncedAmount &&
+		!Number.isNaN(Number(priceImpactRoute.amountUsd))
+			? 100 - (Number(priceImpactRoute.amountUsd) / (+fromTokenPrice * +debouncedAmount)) * 100
+			: null;
+
+	const hasPriceImapct =
+		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
+
+	//  only show insufficient balance when there is token balance data and debouncedAmount is in sync with amount
+	const insufficientBalance =
+		balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted))
+			? balance.data.value &&
+			  amount &&
+			  debouncedAmount &&
+			  amountWithDecimals &&
+			  amount === debouncedAmount &&
+			  +amountWithDecimals > +balance.data.value.toString()
+			: false;
+
+	// approve/swap tokens
+	const {
+		isApproved,
+		approve,
+		approveInfinite,
+		approveReset,
+		isLoading: isApproveLoading,
+		isInfiniteLoading: isApproveInfiniteLoading,
+		isResetLoading: isApproveResetLoading,
+		isConfirmingApproval,
+		isConfirmingInfiniteApproval,
+		isConfirmingResetApproval,
+		shouldRemoveApproval,
+		allowance
+	} = useTokenApprove(
+		finalSelectedFromToken?.address,
+		selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
+		amountWithDecimals
+	);
+	const isUSDTNotApprovedOnEthereum =
+		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
 	const swapMutation = useMutation({
 		mutationFn: (params: {
 			chain: string;
@@ -438,9 +587,9 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(amount),
+						amount: String(debouncedAmount),
 						errorData: {},
-						amountUsd: +fromTokenPrice * +amount || 0,
+						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
 						slippage,
 						routePlace: String(variables?.index)
 					});
@@ -502,9 +651,9 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(amount),
+						amount: String(debouncedAmount),
 						errorData: {},
-						amountUsd: +fromTokenPrice * +amount || 0,
+						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
 						slippage,
 						routePlace: String(variables?.index)
 					});
@@ -534,175 +683,17 @@ export function AggregatorContainer({ tokenlist }) {
 					isError: true,
 					quote: variables.rawQuote,
 					txUrl: '',
-					amount: String(amount),
+					amount: String(debouncedAmount),
 					errorData: err,
-					amountUsd: fromTokenPrice * +amount || 0,
+					amountUsd: fromTokenPrice * +debouncedAmount || 0,
 					slippage,
 					routePlace: String(variables?.index)
 				});
 			}
 		}
 	});
-
-	const debouncedAmountWithDecimals = useDebounce(amountWithDecimals, 300);
-
-	const { data: routes = [], isLoading } = useGetRoutes({
-		chain: selectedChain?.value,
-		from: finalSelectedFromToken?.value,
-		to: finalSelectedToToken?.value,
-		amount: debouncedAmountWithDecimals,
-		extra: {
-			gasPriceData,
-			userAddress: address || ethers.constants.AddressZero,
-			amount,
-			fromToken: finalSelectedFromToken,
-			toToken: finalSelectedToToken,
-			slippage,
-			selectedRoute: route?.name,
-			isPrivacyEnabled,
-			setRoute
-		}
-	});
-
-	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
-		routes,
-		token: finalSelectedFromToken?.address,
-		userAddress: address,
-		chain: selectedChain.value,
-		amount: amountWithDecimals,
-		hasEnoughBalance: +amount < +balance?.data?.formatted
-	});
-
-	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
-		chain: selectedChain?.value,
-		toToken: finalSelectedToToken?.address,
-		fromToken: finalSelectedFromToken?.address
-	});
-
-	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
-
-	const {
-		isApproved,
-		approve,
-		approveInfinite,
-		approveReset,
-		isLoading: isApproveLoading,
-		isInfiniteLoading: isApproveInfiniteLoading,
-		isResetLoading: isApproveResetLoading,
-		isConfirmingApproval,
-		isConfirmingInfiniteApproval,
-		isConfirmingResetApproval,
-		shouldRemoveApproval,
-		allowance
-	} = useTokenApprove(finalSelectedFromToken?.address, route?.price?.tokenApprovalAddress, amountWithDecimals);
-
-	const onMaxClick = () => {
-		if (balance.data && balance.data.formatted && !Number.isNaN(Number(balance.data.formatted))) {
-			if (
-				route?.price?.estimatedGas &&
-				gasPriceData?.formatted?.gasPrice &&
-				finalSelectedFromToken?.address === ethers.constants.AddressZero
-			) {
-				const gas = (+route?.price?.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
-
-				const amountWithoutGas = +balance.data.formatted - gas;
-
-				setAmount(amountWithoutGas);
-			} else {
-				setAmount(balance.data.formatted === '0.0' ? 0 : balance.data.formatted);
-			}
-		}
-	};
-
-	const onChainChange = (newChain) => {
-		setRoute(null);
-		router.push({ pathname: '/', query: { chain: newChain.value } }, undefined, { shallow: true }).then(() => {
-			if (switchNetwork) switchNetwork(newChain.chainId);
-		});
-	};
-
-	const onFromTokenChange = (token) => {
-		setRoute(null);
-		router.push({ pathname: router.pathname, query: { ...router.query, from: token.address } }, undefined, {
-			shallow: true
-		});
-	};
-
-	const onToTokenChange = (token) => {
-		setRoute(null);
-		router.push({ pathname: router.pathname, query: { ...router.query, to: token.address } }, undefined, {
-			shallow: true
-		});
-	};
-
-	const fillRoute = (route: typeof routes[0]) => {
-		if (!route?.price) return null;
-		const gasEstimation = +(isGasDataLoading ? route.price.estimatedGas : gasData?.[route.name]?.gas);
-		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
-
-		// CowSwap native token swap
-		gasUsd =
-			route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
-				? (route.price.feeAmount / 1e18) * gasTokenPrice
-				: gasUsd;
-
-		gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
-
-		gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
-
-		const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
-
-		const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
-
-		const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
-
-		return {
-			...route,
-			isFailed: gasData?.[route.name]?.isFailed || false,
-			route,
-			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
-			amountUsd,
-			amount,
-			netOut
-		};
-	};
-
-	let normalizedRoutes = [...(routes || [])]
-		?.map(fillRoute)
-		.filter(
-			({ fromAmount, amount: toAmount, isFailed }) =>
-				Number(toAmount) && amountWithDecimals === fromAmount && isFailed !== true
-		)
-		.sort((a, b) => b.netOut - a.netOut)
-		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
-
-	normalizedRoutes = normalizedRoutes
-		.filter((r) => r.gasUsd !== 'Unknown')
-		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
-
-	const medianAmount = median(normalizedRoutes.map(({ amount }) => amount));
-
-	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
-
-	const priceImpactRoute = !route ? null : fillRoute(route);
-
-	const priceImpact =
-		fromTokenPrice &&
-		toTokenPrice &&
-		normalizedRoutes.length > 0 &&
-		priceImpactRoute &&
-		priceImpactRoute.amountUsd &&
-		!Number.isNaN(Number(priceImpactRoute.amountUsd))
-			? 100 - (Number(priceImpactRoute.amountUsd) / (+fromTokenPrice * +amount)) * 100
-			: null;
-
-	const hasPriceImapct = priceImpact === null || Number(priceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
-
-	const isUSDTNotApprovedOnEthereum =
-		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
-
 	const handleSwap = () => {
-		if (normalizedRoutes.find(({ name }) => name === route.name) && route.price)
+		if (selectedRoute && selectedRoute.price) {
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -710,21 +701,13 @@ export function AggregatorContainer({ tokenlist }) {
 				amount: amountWithDecimals,
 				signer,
 				slippage,
-				adapter: route.name,
-				rawQuote: route?.price?.rawQuote,
+				adapter: selectedRoute.name,
+				rawQuote: selectedRoute.price.rawQuote,
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
-				index: route?.index
+				index: selectedRoute.index
 			});
+		}
 	};
-
-	const insufficientBalance =
-		balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted))
-			? balance.data.value &&
-			  debouncedAmountWithDecimals &&
-			  amountWithDecimals &&
-			  debouncedAmountWithDecimals === amountWithDecimals &&
-			  +debouncedAmountWithDecimals > +balance.data.value.toString()
-			: false;
 
 	return (
 		<Wrapper>
@@ -838,9 +821,11 @@ export function AggregatorContainer({ tokenlist }) {
 						fromToken={finalSelectedFromToken}
 						toTokenPrice={toTokenPrice}
 						toToken={finalSelectedToToken}
-						priceImpactRoute={priceImpactRoute}
-						priceImpact={priceImpact}
-						amount={amount}
+						amountReturnedInSelectedRoute={
+							priceImpactRoute && priceImpactRoute.price && priceImpactRoute.price.amountReturned
+						}
+						selectedRoutesPriceImpact={selectedRoutesPriceImpact}
+						amount={debouncedAmount}
 						slippage={slippage}
 					/>
 
@@ -881,14 +866,14 @@ export function AggregatorContainer({ tokenlist }) {
 														onClick={() => {
 															if (approveReset) approveReset();
 														}}
-														disabled={isApproveResetLoading}
+														disabled={isApproveResetLoading || !selectedRoute}
 													>
 														Reset Approval
 													</Button>
 												</Flex>
 											)}
 
-											{hasPriceImapct && !isLoading && route && isApproved ? (
+											{hasPriceImapct && !isLoading && selectedRoute && isApproved ? (
 												<SwapConfirmation handleSwap={handleSwap} />
 											) : (
 												<Button
@@ -897,14 +882,14 @@ export function AggregatorContainer({ tokenlist }) {
 													colorScheme={'messenger'}
 													onClick={() => {
 														//scroll Routes into view
-														!route && routesRef.current.scrollIntoView({ behavior: 'smooth' });
+														!selectedRoute && routesRef.current.scrollIntoView({ behavior: 'smooth' });
 
 														if (approve) approve();
 
 														if (
 															balance.data &&
 															!Number.isNaN(Number(balance.data.formatted)) &&
-															+amount > +balance.data.formatted
+															+debouncedAmount > +balance.data.formatted
 														)
 															return;
 
@@ -915,14 +900,15 @@ export function AggregatorContainer({ tokenlist }) {
 														swapMutation.isLoading ||
 														isApproveLoading ||
 														isApproveResetLoading ||
-														!(amount && finalSelectedFromToken && finalSelectedToToken)
+														!(debouncedAmount && finalSelectedFromToken && finalSelectedToToken) ||
+														!selectedRoute
 													}
 												>
-													{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
+													{!selectedRoute ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
 												</Button>
 											)}
 
-											{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
+											{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
 												<Button
 													colorScheme={'messenger'}
 													loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
@@ -935,7 +921,8 @@ export function AggregatorContainer({ tokenlist }) {
 														swapMutation.isLoading ||
 														isApproveLoading ||
 														isApproveResetLoading ||
-														isApproveInfiniteLoading
+														isApproveInfiniteLoading ||
+														!selectedRoute
 													}
 												>
 													{'Approve Infinite'}
@@ -956,20 +943,23 @@ export function AggregatorContainer({ tokenlist }) {
 						</Flex>
 					) : !isLoading &&
 					  amount &&
-					  debouncedAmountWithDecimals === amountWithDecimals &&
+					  debouncedAmount &&
+					  amount === debouncedAmount &&
 					  finalSelectedFromToken &&
-					  finalSelectedToToken ? (
+					  finalSelectedToToken &&
+					  routes &&
+					  routes.length ? (
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
 					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
 						{normalizedRoutes?.length ? 'Best route is selected based on net output after gas fees' : null}
 					</span>
 
-					{isLoading && amount && finalSelectedFromToken && finalSelectedToToken ? (
+					{isLoading && debouncedAmount && finalSelectedFromToken && finalSelectedToToken ? (
 						<Loader />
-					) : normalizedRoutes?.length ? null : (
+					) : !debouncedAmount || !finalSelectedFromToken || !finalSelectedToToken ? (
 						<RoutesPreview />
-					)}
+					) : null}
 
 					{normalizedRoutes.map((r, i) => (
 						<Fragment
@@ -985,8 +975,8 @@ export function AggregatorContainer({ tokenlist }) {
 							<Route
 								{...r}
 								index={i}
-								selected={route?.name === r.name}
-								setRoute={() => setRoute({ ...r.route, route: r, index: i })}
+								selected={aggregator === r.name}
+								setRoute={() => setAggregator(r.name)}
 								toToken={finalSelectedToToken}
 								amountFrom={amountWithDecimals}
 								fromToken={finalSelectedFromToken}
@@ -994,7 +984,7 @@ export function AggregatorContainer({ tokenlist }) {
 								gasTokenPrice={gasTokenPrice}
 							/>
 
-							{route?.name === r.name && (
+							{aggregator === r.name && (
 								<SwapUnderRoute>
 									{!isConnected ? (
 										<ConnectButtonWrapper>
@@ -1028,14 +1018,14 @@ export function AggregatorContainer({ tokenlist }) {
 																	onClick={() => {
 																		if (approveReset) approveReset();
 																	}}
-																	disabled={isApproveResetLoading}
+																	disabled={isApproveResetLoading || !selectedRoute}
 																>
 																	Reset Approval
 																</Button>
 															</Flex>
 														)}
 
-														{hasPriceImapct && !isLoading && route && isApproved ? (
+														{hasPriceImapct && !isLoading && selectedRoute && isApproved ? (
 															<SwapConfirmation handleSwap={handleSwap} />
 														) : (
 															<Button
@@ -1048,7 +1038,7 @@ export function AggregatorContainer({ tokenlist }) {
 																	if (
 																		balance.data &&
 																		!Number.isNaN(Number(balance.data.formatted)) &&
-																		+amount > +balance.data.formatted
+																		+debouncedAmount > +balance.data.formatted
 																	)
 																		return;
 
@@ -1059,14 +1049,14 @@ export function AggregatorContainer({ tokenlist }) {
 																	swapMutation.isLoading ||
 																	isApproveLoading ||
 																	isApproveResetLoading ||
-																	!route
+																	!selectedRoute
 																}
 															>
-																{!route ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
+																{!selectedRoute ? 'Select Aggregator' : isApproved ? 'Swap' : 'Approve'}
 															</Button>
 														)}
 
-														{!isApproved && inifiniteApprovalAllowed.includes(route?.name) && (
+														{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
 															<Button
 																colorScheme={'messenger'}
 																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
@@ -1079,7 +1069,8 @@ export function AggregatorContainer({ tokenlist }) {
 																	swapMutation.isLoading ||
 																	isApproveLoading ||
 																	isApproveResetLoading ||
-																	isApproveInfiniteLoading
+																	isApproveInfiniteLoading ||
+																	!selectedRoute
 																}
 															>
 																{'Approve Infinite'}

@@ -19,8 +19,8 @@ interface IPriceImpact {
 	amount?: string | number;
 	fromTokenPrice?: number;
 	toTokenPrice?: number;
-	priceImpact?: number;
-	priceImpactRoute: { amountUsd: string; amount: number; price: { amountReturned: string } };
+	selectedRoutesPriceImpact?: number;
+	amountReturnedInSelectedRoute?: string;
 	slippage?: string;
 }
 
@@ -40,8 +40,8 @@ export function PriceImpact({
 	fromTokenPrice,
 	toTokenPrice,
 	amount,
-	priceImpactRoute,
-	priceImpact,
+	amountReturnedInSelectedRoute,
+	selectedRoutesPriceImpact,
 	slippage
 }: IPriceImpact) {
 	if (isLoading || !fromToken || !toToken) {
@@ -56,24 +56,22 @@ export function PriceImpact({
 		return <NoPriceImpactAlert name={toToken.symbol} />;
 	}
 
-	if (!amount || Number.isNaN(Number(amount)) || !priceImpact || !priceImpactRoute) {
+	if (!amount || Number.isNaN(Number(amount)) || !selectedRoutesPriceImpact || !amountReturnedInSelectedRoute) {
 		return null;
 	}
 
-	const amountReceived = (
-		Number(+priceImpactRoute.price.amountReturned / 10 ** +toToken.decimals) / Number(amount)
-	).toFixed(4);
+	const amountReceived = (Number(+amountReturnedInSelectedRoute / 10 ** +toToken.decimals) / Number(amount)).toFixed(4);
 
 	const expectedOutput = ((+amount * fromTokenPrice) / toTokenPrice).toFixed(4);
 
-	const totalAmountReceived = Number(+priceImpactRoute.price.amountReturned / 10 ** +toToken.decimals).toFixed(4);
+	const totalAmountReceived = Number(+amountReturnedInSelectedRoute / 10 ** +toToken.decimals).toFixed(4);
 
 	const minimumReceived =
 		totalAmountReceived && !Number.isNaN(Number(totalAmountReceived))
 			? Number(totalAmountReceived) - (Number(totalAmountReceived) / 100) * Number(slippage)
 			: null;
 
-	const isPriceImpactNotKnown = !priceImpact && priceImpact !== 0;
+	const isPriceImpactNotKnown = !selectedRoutesPriceImpact && selectedRoutesPriceImpact !== 0;
 
 	return (
 		<>
@@ -109,18 +107,18 @@ export function PriceImpact({
 							color={
 								isPriceImpactNotKnown
 									? 'red.500'
-									: priceImpact >= PRICE_IMPACT_WARNING_THRESHOLD
+									: selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD
 									? 'orange.500'
 									: 'white'
 							}
 						>
 							<span>Price Impact</span>
 
-							{isPriceImpactNotKnown || priceImpact >= PRICE_IMPACT_WARNING_THRESHOLD ? (
+							{isPriceImpactNotKnown || selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD ? (
 								<WarningTwoIcon style={{ marginLeft: 'auto' }} />
 							) : null}
 
-							<span>{isPriceImpactNotKnown ? 'Unknown' : `${priceImpact.toFixed(2)}%`}</span>
+							<span>{isPriceImpactNotKnown ? 'Unknown' : `${selectedRoutesPriceImpact.toFixed(2)}%`}</span>
 						</Text>
 						<Text
 							display="flex"
@@ -142,10 +140,10 @@ export function PriceImpact({
 				</AccordionItem>
 			</Accordion>
 
-			{!isLoading && !isPriceImpactNotKnown && priceImpact >= PRICE_IMPACT_WARNING_THRESHOLD ? (
+			{!isLoading && !isPriceImpactNotKnown && selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD ? (
 				<Alert status="warning" borderRadius="0.375rem" py="8px">
 					<AlertIcon />
-					High price impact! More than {priceImpact.toFixed(2)}% drop.
+					High price impact! More than {selectedRoutesPriceImpact.toFixed(2)}% drop.
 				</Alert>
 			) : null}
 		</>

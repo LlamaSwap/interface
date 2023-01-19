@@ -13,7 +13,14 @@ interface IGetListRoutesProps {
 }
 
 export interface IRoute {
-	price: { amountReturned: any; estimatedGas: any; tokenApprovalAddress: any; logo: string; feeAmount?: number } | null;
+	price: {
+		amountReturned: any;
+		estimatedGas: any;
+		tokenApprovalAddress: any;
+		logo: string;
+		feeAmount?: number;
+		rawQuote?: {};
+	} | null;
 	name: string;
 	airdrop: boolean;
 	fromAmount: string;
@@ -91,22 +98,11 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 			.filter((adap) => adap.chainToId[chain] !== undefined)
 			.map<UseQueryOptions<IRoute>>((adapter) => {
 				return {
-					queryKey: [
-						'routes',
-						adapter.name,
-						chain,
-						from,
-						to,
-						amount,
-						JSON.stringify(omit(extra, 'selectedRoute', 'amount'))
-					],
+					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
 					refetchInterval: 20_000,
 					refetchOnWindowFocus: false,
-					refetchIntervalInBackground: false,
-					onSuccess: (data) => {
-						if (data.name === extra.selectedRoute) extra.setRoute(data);
-					}
+					refetchIntervalInBackground: false
 				};
 			})
 	});
