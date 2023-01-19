@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, Fragment } from 'react';
+import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
@@ -446,10 +446,19 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 	const onToTokenChange = (token) => {
 		setAggregator(null);
-		router.push({ pathname: router.pathname, query: { ...router.query, to: token.address } }, undefined, {
+		router.push({ pathname: router.pathname, query: { ...router.query, to: token?.address || undefined } }, undefined, {
 			shallow: true
 		});
 	};
+
+	useEffect(() => {
+		const isUnknown =
+			finalSelectedToToken && !savedTokens.find(({ address }) => address === finalSelectedToToken.address);
+
+		if (isUnknown && finalSelectedToToken) {
+			onToTokenChange(undefined);
+		}
+	}, [finalSelectedToToken]);
 
 	// format routes
 	const fillRoute = (route: typeof routes[0]) => {
@@ -960,7 +969,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 					{isLoading && debouncedAmount && finalSelectedFromToken && finalSelectedToToken ? (
 						<Loader />
-					) : !debouncedAmount || !finalSelectedFromToken || !finalSelectedToToken ? (
+					) : !debouncedAmount || !finalSelectedFromToken || !finalSelectedToToken || !router.isReady ? (
 						<RoutesPreview />
 					) : null}
 
