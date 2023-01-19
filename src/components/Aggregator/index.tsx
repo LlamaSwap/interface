@@ -453,12 +453,15 @@ export function AggregatorContainer({ tokenlist }) {
 
 	useEffect(() => {
 		const isUnknown =
-			finalSelectedToToken && !savedTokens.find(({ address }) => address === finalSelectedToToken.address);
+			toTokenAddress &&
+			!selectedToToken &&
+			savedTokens &&
+			!savedTokens.find(({ address }) => address === toTokenAddress);
 
-		if (isUnknown && finalSelectedToToken) {
+		if (isUnknown) {
 			onToTokenChange(undefined);
 		}
-	}, [finalSelectedToToken]);
+	}, [selectedToToken, toTokenAddress, savedTokens]);
 
 	// format routes
 	const fillRoute = (route: typeof routes[0]) => {
