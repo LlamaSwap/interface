@@ -23,6 +23,8 @@ export const name = '1inch';
 export const token = '1INCH';
 export const referral = true;
 
+const API_URL = 'https://api.1inch.io/v5.0';
+
 export function approvalAddress() {
 	// https://api.1inch.io/v4.0/1/approve/spender
 	return '0x1111111254fb6c44bac0bed2854e76f90643097d';
@@ -38,12 +40,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const [data, { address: tokenApprovalAddress }, swapData] = await Promise.all([
 		fetch(
-			`https://api.1inch.io/v4.0/${chainToId[chain]}/quote?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&slippage=${extra.slippage}`
+			`${API_URL}/${chainToId[chain]}/quote?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&slippage=${extra.slippage}`
 		).then((r) => r.json()),
-		fetch(`https://api.1inch.io/v4.0/${chainToId[chain]}/approve/spender`).then((r) => r.json()),
+		fetch(`${API_URL}/${chainToId[chain]}/approve/spender`).then((r) => r.json()),
 		extra.userAddress !== ethers.constants.AddressZero
 			? fetch(
-					`https://api.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${extra.userAddress}&slippage=${extra.slippage}&referrerAddress=${defillamaReferrerAddress}&disableEstimate=true`
+					`${API_URL}/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${extra.userAddress}&slippage=${extra.slippage}&referrerAddress=${defillamaReferrerAddress}&disableEstimate=true`
 			  ).then((r) => r.json())
 			: null
 	]);
