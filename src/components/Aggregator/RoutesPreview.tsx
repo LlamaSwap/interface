@@ -93,7 +93,7 @@ const RoutesPreview = () => {
 					LlamaSwap looks for the best route for your trade <br /> among a variety of Dex Aggregators, guaranteeing you{' '}
 					<br /> the best execution prices in DeFi.
 					<br /> <br /> Try it now or{' '}
-					<Link href="https://discord.com/invite/j54NuUt5nW" isExternal textDecoration={'underline'}>
+					<Link href="https://twitter.com/defillama/status/1609989799653285888" isExternal textDecoration={'underline'}>
 						learn more
 						<ExternalLinkIcon mx="4px" mb="3px" />
 					</Link>
