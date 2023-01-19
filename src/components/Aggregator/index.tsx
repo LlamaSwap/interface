@@ -490,9 +490,18 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 	const onChainChange = (newChain) => {
 		setAggregator(null);
-		router.push({ pathname: '/', query: { chain: newChain.value } }, undefined, { shallow: true }).then(() => {
-			if (switchNetwork) switchNetwork(newChain.chainId);
-		});
+		router
+			.push(
+				{
+					pathname: '/',
+					query: { chain: newChain.value, from: ethers.constants.AddressZero }
+				},
+				undefined,
+				{ shallow: true }
+			)
+			.then(() => {
+				if (switchNetwork) switchNetwork(newChain.chainId);
+			});
 	};
 	const onFromTokenChange = (token) => {
 		setAggregator(null);

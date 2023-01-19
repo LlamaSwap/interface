@@ -186,6 +186,10 @@ export async function getTokenList() {
 const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promise<[string, Array<IToken>]> => {
 	const chainName = chainIdToName(chainId);
 
+	if (process.env.NODE_ENV === 'development') {
+		return [chainId, []];
+	}
+
 	if (!chainName) {
 		return [chainId, []];
 	}
