@@ -62,8 +62,6 @@ export function PriceImpact({
 
 	const amountReceived = (Number(+amountReturnedInSelectedRoute / 10 ** +toToken.decimals) / Number(amount)).toFixed(4);
 
-	const expectedOutput = ((+amount * fromTokenPrice) / toTokenPrice).toFixed(4);
-
 	const totalAmountReceived = Number(+amountReturnedInSelectedRoute / 10 ** +toToken.decimals).toFixed(4);
 
 	const minimumReceived =
@@ -97,7 +95,7 @@ export function PriceImpact({
 					>
 						<Text display="flex" justifyContent="space-between" gap="8px" alignItems="center">
 							<span>Expected Output</span>
-							<span>{expectedOutput ? `${expectedOutput} ${toToken.symbol}` : '-'}</span>
+							<span>{totalAmountReceived ? `${totalAmountReceived} ${toToken.symbol}` : '-'}</span>
 						</Text>
 						<Text
 							display="flex"
