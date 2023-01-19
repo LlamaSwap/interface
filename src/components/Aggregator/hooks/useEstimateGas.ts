@@ -24,7 +24,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				: {
 						...(await tokenContract.populateTransaction.approve(
 							route.price.tokenApprovalAddress,
-							ethers.constants.MaxUint256.toHexString()
+							"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 						)),
 						from: userAddress
 				  };
@@ -36,7 +36,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 						data: txData.data,
 						...(isNative ? { value: '0x' + BigNumber(amount).toString(16) } : {})
 					},
-					['trace', 'vmTrace']
+					['trace']
 				]),
 				'latest'
 			];
@@ -47,7 +47,6 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				isFailed: swapTx.trace[0]?.error === 'Reverted',
 				aggGas: route.price?.estimatedGas,
 				name: route.name,
-				swapTx
 			};
 		} catch (e) {
 			console.log(e);
