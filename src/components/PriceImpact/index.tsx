@@ -56,7 +56,7 @@ export function PriceImpact({
 		return <NoPriceImpactAlert name={toToken.symbol} />;
 	}
 
-	if (!amount || Number.isNaN(Number(amount)) || !selectedRoutesPriceImpact || !amountReturnedInSelectedRoute) {
+	if (!amount || Number.isNaN(Number(amount)) || !amountReturnedInSelectedRoute) {
 		return null;
 	}
 
