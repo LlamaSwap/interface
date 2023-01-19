@@ -49,6 +49,7 @@ import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
 import { useEstimateGas } from './hooks/useEstimateGas';
+import { nativeTokens } from './nativeTokens';
 
 /*
 Integrated:
@@ -287,6 +288,37 @@ export function AggregatorContainer({ tokenlist }) {
 	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
 	const toTokenAddress = typeof toToken === 'string' ? toToken.toLowerCase() : null;
 	const slippage = typeof slippageQuery === 'string' && !Number.isNaN(Number(slippageQuery)) ? slippageQuery : '0.5';
+
+	useEffect(() => {
+		if (router.isReady && isConnected && !chainOnURL && chainOnWallet) {
+			const chain = chains.find((c) => c.chainId === chainOnWallet.id);
+
+			// redirect to ethereum when chain on wallet is not supported
+			if (chainOnWallet.unsupported || !chain) {
+				router
+					.push(
+						{
+							pathname: '/',
+							query: { chain: 'ethereum', from: nativeTokens.find((nt) => nt.chainId === 1)?.address }
+						},
+						undefined,
+						{ shallow: true }
+					)
+					.then(() => {
+						if (switchNetwork) switchNetwork(1);
+					});
+			} else {
+				router.push(
+					{
+						pathname: '/',
+						query: { chain: chain.value, from: nativeTokens.find((nt) => nt.chainId === chain.chainId)?.address }
+					},
+					undefined,
+					{ shallow: true }
+				);
+			}
+		}
+	}, [isConnected, chainOnWallet, chainOnURL, router, switchNetwork]);
 
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useMemo(() => {
 		const chainId = chainsMap[chainName];
@@ -612,9 +644,18 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const onChainChange = (newChain) => {
 		setRoute(null);
-		router.push({ pathname: '/', query: { chain: newChain.value } }, undefined, { shallow: true }).then(() => {
-			if (switchNetwork) switchNetwork(newChain.chainId);
-		});
+		router
+			.push(
+				{
+					pathname: '/',
+					query: { chain: newChain.value, from: nativeTokens.find((nt) => nt.chainId === newChain.chainId)?.address }
+				},
+				undefined,
+				{ shallow: true }
+			)
+			.then(() => {
+				if (switchNetwork) switchNetwork(newChain.chainId);
+			});
 	};
 
 	const onFromTokenChange = (token) => {
@@ -676,7 +717,10 @@ export function AggregatorContainer({ tokenlist }) {
 		.filter((r) => r.gasUsd !== 'Unknown')
 		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
 
-	const medianAmount = Math.max(median(normalizedRoutes.map(({ amount }) => amount)), normalizedRoutes.find(r=>r.name === "1inch")?.amount ?? 0);
+	const medianAmount = Math.max(
+		median(normalizedRoutes.map(({ amount }) => amount)),
+		normalizedRoutes.find((r) => r.name === '1inch')?.amount ?? 0
+	);
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
