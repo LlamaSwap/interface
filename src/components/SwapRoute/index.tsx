@@ -60,19 +60,26 @@ const Route = ({
 	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap')) return null;
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
-	
-	let quotedRate = Number(+price.amountReturned / 10 ** +toToken?.decimals) / Number(+amountFrom / 10 ** +fromToken?.decimals)
-	let	quotedRateString = quotedRate < 0.001 ? `${formattedNum(1/quotedRate)} ${fromToken.symbol} per ${toToken.symbol}`  : `${formattedNum(quotedRate)} ${toToken.symbol} per ${fromToken.symbol}`
-		
 
-	const txGas = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3);
-	const txCost = amountUsd ? `${amountUsd} - ${txGas}` : txGas;
+	let quotedRate =
+		Number(+price.amountReturned / 10 ** +toToken?.decimals) / Number(+amountFrom / 10 ** +fromToken?.decimals);
+	let quotedRateString =
+		quotedRate < 0.001
+			? `${formattedNum(1 / quotedRate)} ${fromToken.symbol} per ${toToken.symbol}`
+			: `${formattedNum(quotedRate)} ${toToken.symbol} per ${fromToken.symbol}`;
+
+	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
+	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
 
 	return (
-		<RouteWrapper onClick={setRoute} className={selected?'RouteWrapper is-selected':'RouteWrapper'} selected={selected} best={index === 0}>
+		<RouteWrapper
+			onClick={setRoute}
+			className={selected ? 'RouteWrapper is-selected' : 'RouteWrapper'}
+			selected={selected}
+			best={index === 0}
+		>
 			<RouteRow>
 				<Flex alignItems="baseline">
-					
 					<Text fontSize={19} fontWeight={700} color={'#FAFAFA'}>
 						{formattedNum(amount)}{' '}
 					</Text>
@@ -84,7 +91,6 @@ const Route = ({
 					<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
 						{toToken?.symbol}
 					</Text>
-
 				</Flex>
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 					<Flex as="span" alignItems="center" gap="8px">
@@ -102,8 +108,15 @@ const Route = ({
 			</RouteRow>
 
 			<RouteRow>
-				<Flex as="span" gap="6px"  display='flex' color="gray.500" fontWeight={500}>
-					≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut.toFixed(1),false,true)}` : null} {gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? (<Flex as="span" gap="4px" alignItems="center" color="#d97706" className='inline-alert'><AlertCircle size='14'/> unknown gas fees</Flex>) : 'after fees'}
+				<Flex as="span" gap="6px" display="flex" color="gray.500" fontWeight={500}>
+					≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut.toFixed(1), false, true)}` : null}{' '}
+					{isGasNotKnown ? (
+						<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
+							<AlertCircle size="14" /> unknown gas fees
+						</Flex>
+					) : (
+						'after fees'
+					)}
 				</Flex>
 
 				{airdrop ? (
@@ -111,36 +124,33 @@ const Route = ({
 						<Gift size={14} color="#A0AEC0" />
 					</Tooltip>
 				) : null}
-				
 
-				<Text display="flex" gap="6px" color={'gray.500'}  fontWeight={500} ml="auto">
-					
+				<Text display="flex" gap="6px" color={'gray.500'} fontWeight={500} ml="auto">
 					<Text display="flex" alignItems="center" gap="4px" color="gray.500">
-						{gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? null : <GasIcon/>}
+						{isGasNotKnown ? null : <GasIcon />}
 						{name === 'CowSwap' ? (
 							<Tooltip content="Gas is taken from output amount">
-								<Text as="span" color='gray.500' fontWeight={500}>
-									{`${
-										gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? '' : '$' + formattedNum(gasUsd)
-									}`}
+								<Text as="span" color="gray.500" fontWeight={500}>
+									{txGas}
 								</Text>
 							</Tooltip>
 						) : (
-							<Text as="span" fontWeight={500}>{`${
-								gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? '' : '$' + formattedNum(gasUsd)
-							}`}</Text>
+							<Text as="span" fontWeight={500}>
+								{txGas}
+							</Text>
 						)}
 						<Text display="flex" gap="3px">
-							via 
+							via
 							{isApproved ? (
 								<Tooltip content="Token is approved for this aggregator.">
 									<Unlock size={14} color="#059669" />
 								</Tooltip>
-							) : " "}
+							) : (
+								' '
+							)}
 							{name}
-						</Text> 	
+						</Text>
 					</Text>
-										
 				</Text>
 			</RouteRow>
 		</RouteWrapper>
@@ -182,7 +192,9 @@ const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
 	&:hover {
 		background-color: ${({ theme }) => (theme.mode === 'dark' ? '#161616;' : '#b7b7b7;;')};
 	}
-	&:hover , &.is-selected, &:first-of-type {
+	&:hover,
+	&.is-selected,
+	&:first-of-type {
 		.secondary-data {
 			opacity: 1;
 		}
@@ -205,4 +217,3 @@ const RouteRow = styled.div`
 `;
 
 export default Route;
-

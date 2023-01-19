@@ -17,20 +17,20 @@ export const median = (arr: number[]): number => {
 };
 
 export const formattedNum = (number, symbol = false, acceptNegatives = false) => {
-	let currencySymbol
+	let currencySymbol;
 	if (symbol === true) {
-		currencySymbol = '$'
+		currencySymbol = '$';
 	} else if (symbol === false) {
-		currencySymbol = ''
+		currencySymbol = '';
 	} else {
-		currencySymbol = symbol
+		currencySymbol = symbol;
 	}
-	if (isNaN(number) || number === '' || number === undefined) {
-		return symbol ? `${currencySymbol}0` : 0
+	if (!number || number === '' || Number.isNaN(Number(number))) {
+		return symbol ? `${currencySymbol}0` : 0;
 	}
-	let formattedNum = String()
-	let num = parseFloat(number)
-	const isNegative = num < 0
+	let formattedNum = String();
+	let num = parseFloat(number);
+	const isNegative = num < 0;
 
 	// const currencyMark = isNegative ? `${currencySymbol}-` : currencySymbol
 	// const normalMark = isNegative ? '-' : ''
@@ -47,9 +47,9 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	// 	return symbol ? `< ${currencySymbol}0.0001` : '< 0.0001'
 	// }
 
-	let maximumFractionDigits = num < 1 ? 7 : 4
-	maximumFractionDigits = num > 100000 ? 2 : maximumFractionDigits
-	formattedNum = num.toLocaleString('en-US', {maximumFractionDigits})
+	let maximumFractionDigits = num < 1 ? 7 : 4;
+	maximumFractionDigits = num > 100000 ? 2 : maximumFractionDigits;
+	formattedNum = num.toLocaleString('en-US', { maximumFractionDigits });
 
-	return String(formattedNum)
-}
+	return String(formattedNum);
+};
