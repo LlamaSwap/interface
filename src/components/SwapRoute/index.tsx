@@ -48,7 +48,6 @@ const Route = ({
 	selected,
 	index,
 	gasUsd,
-	amountUsd,
 	airdrop,
 	fromToken,
 	amountFrom,
@@ -61,13 +60,8 @@ const Route = ({
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
-	let quotedRate =
-		Number(+price.amountReturned / 10 ** +toToken?.decimals) / Number(+amountFrom / 10 ** +fromToken?.decimals);
-	let quotedRateString =
-		quotedRate < 0.001
-			? `${formattedNum(1 / quotedRate)} ${fromToken.symbol} per ${toToken.symbol}`
-			: `${formattedNum(quotedRate)} ${toToken.symbol} per ${fromToken.symbol}`;
-
+	const afterFees =
+		netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut.toFixed(1), false, true)}` : null;
 	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
 	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
 
@@ -83,11 +77,6 @@ const Route = ({
 					<Text fontSize={19} fontWeight={700} color={'#FAFAFA'}>
 						{formattedNum(amount)}{' '}
 					</Text>
-					{/* <img
-						src={toToken?.logoURI}
-						alt=""
-						onError={(e) => (e.currentTarget.src = '/notFound.png')}
-					/> */}
 					<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
 						{toToken?.symbol}
 					</Text>
@@ -109,7 +98,7 @@ const Route = ({
 
 			<RouteRow>
 				<Flex as="span" gap="6px" display="flex" color="gray.500" fontWeight={500}>
-					≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut.toFixed(1), false, true)}` : null}{' '}
+					{`≈ ${afterFees} `}
 					{isGasNotKnown ? (
 						<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
 							<AlertCircle size="14" /> unknown gas fees
