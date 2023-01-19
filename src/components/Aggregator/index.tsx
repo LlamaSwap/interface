@@ -351,7 +351,7 @@ export function AggregatorContainer({ tokenlist }) {
 		.toFixed(0);
 
 	// saved tokens list
-	const savedTokens = useGetSavedTokens(selectedChain?.id);
+	const { data: savedTokens } = useGetSavedTokens(selectedChain?.id);
 
 	// selected from token's balances
 	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
