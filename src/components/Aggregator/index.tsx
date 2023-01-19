@@ -408,61 +408,6 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
 
-	const selecteRouteIndex =
-		aggregator && routes && routes.length > 0 ? routes.findIndex((r) => r.name === aggregator) : -1;
-	// store selected aggregators route
-	const selectedRoute = selecteRouteIndex >= 0 ? { ...routes[selecteRouteIndex], index: selecteRouteIndex } : null;
-
-	// functions to handle change in swap input fields
-	const onMaxClick = () => {
-		if (balance.data && balance.data.formatted && !Number.isNaN(Number(balance.data.formatted))) {
-			if (
-				selectedRoute &&
-				selectedRoute.price.estimatedGas &&
-				gasPriceData?.formatted?.gasPrice &&
-				finalSelectedFromToken?.address === ethers.constants.AddressZero
-			) {
-				const gas = (+selectedRoute.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
-
-				const amountWithoutGas = +balance.data.formatted - gas;
-
-				setAmount(amountWithoutGas);
-			} else {
-				setAmount(balance.data.formatted === '0.0' ? 0 : balance.data.formatted);
-			}
-		}
-	};
-	const onChainChange = (newChain) => {
-		setAggregator(null);
-		router.push({ pathname: '/', query: { chain: newChain.value } }, undefined, { shallow: true }).then(() => {
-			if (switchNetwork) switchNetwork(newChain.chainId);
-		});
-	};
-	const onFromTokenChange = (token) => {
-		setAggregator(null);
-		router.push({ pathname: router.pathname, query: { ...router.query, from: token.address } }, undefined, {
-			shallow: true
-		});
-	};
-	const onToTokenChange = (token) => {
-		setAggregator(null);
-		router.push({ pathname: router.pathname, query: { ...router.query, to: token?.address || undefined } }, undefined, {
-			shallow: true
-		});
-	};
-
-	useEffect(() => {
-		const isUnknown =
-			selectedToToken === null &&
-			finalSelectedToToken !== null &&
-			savedTokens &&
-			!savedTokens.find(({ address }) => address.toLowerCase() === toTokenAddress.toLowerCase());
-
-		if (isUnknown && toTokenAddress && savedTokens?.length > 1) {
-			onToTokenChange(undefined);
-		}
-	}, [router?.query, savedTokens]);
-
 	// format routes
 	const fillRoute = (route: typeof routes[0]) => {
 		if (!route?.price) return null;
@@ -515,6 +460,64 @@ export function AggregatorContainer({ tokenlist }) {
 	);
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
+
+	const selecteRouteIndex =
+		aggregator && normalizedRoutes && normalizedRoutes.length > 0
+			? normalizedRoutes.findIndex((r) => r.name === aggregator)
+			: -1;
+	// store selected aggregators route
+	const selectedRoute =
+		selecteRouteIndex >= 0 ? { ...normalizedRoutes[selecteRouteIndex], index: selecteRouteIndex } : null;
+
+	// functions to handle change in swap input fields
+	const onMaxClick = () => {
+		if (balance.data && balance.data.formatted && !Number.isNaN(Number(balance.data.formatted))) {
+			if (
+				selectedRoute &&
+				selectedRoute.price.estimatedGas &&
+				gasPriceData?.formatted?.gasPrice &&
+				finalSelectedFromToken?.address === ethers.constants.AddressZero
+			) {
+				const gas = (+selectedRoute.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
+
+				const amountWithoutGas = +balance.data.formatted - gas;
+
+				setAmount(amountWithoutGas);
+			} else {
+				setAmount(balance.data.formatted === '0.0' ? 0 : balance.data.formatted);
+			}
+		}
+	};
+	const onChainChange = (newChain) => {
+		setAggregator(null);
+		router.push({ pathname: '/', query: { chain: newChain.value } }, undefined, { shallow: true }).then(() => {
+			if (switchNetwork) switchNetwork(newChain.chainId);
+		});
+	};
+	const onFromTokenChange = (token) => {
+		setAggregator(null);
+		router.push({ pathname: router.pathname, query: { ...router.query, from: token.address } }, undefined, {
+			shallow: true
+		});
+	};
+	const onToTokenChange = (token) => {
+		setAggregator(null);
+		router.push({ pathname: router.pathname, query: { ...router.query, to: token?.address || undefined } }, undefined, {
+			shallow: true
+		});
+	};
+
+	useEffect(() => {
+		const isUnknown =
+			selectedToToken === null &&
+			finalSelectedToToken !== null &&
+			savedTokens &&
+			!savedTokens.find(({ address }) => address.toLowerCase() === toTokenAddress.toLowerCase());
+
+		if (isUnknown && toTokenAddress && savedTokens?.length > 1) {
+			onToTokenChange(undefined);
+		}
+	}, [router?.query, savedTokens]);
 
 	const priceImpactRoute = selectedRoute ? fillRoute(selectedRoute) : null;
 
