@@ -18,25 +18,25 @@ export function useQueryParams() {
 	const toTokenAddress = typeof toToken === 'string' ? toToken.toLowerCase() : null;
 
 	useEffect(() => {
-		if (router.isReady && isConnected && !chainOnURL && chainOnWallet) {
-			const chain = chains.find((c) => c.chainId === chainOnWallet.id);
+		if (router.isReady && !chainOnURL) {
+			const chain = chainOnWallet ? chains.find((c) => c.chainId === chainOnWallet.id) : null;
 
-			// redirects to ethereum, when chain on wallet is not supported
-			if (chainOnWallet.unsupported || !chain) {
+			// redirects to chain on wallet if supported
+			if (isConnected && chainOnWallet && chain && !chainOnWallet.unsupported) {
 				router.push(
 					{
 						pathname: '/',
-						query: { chain: 'ethereum', from: ethers.constants.AddressZero }
+						query: { chain: chain.value, from: ethers.constants.AddressZero }
 					},
 					undefined,
 					{ shallow: true }
 				);
 			} else {
-				// redirects to chain on wallet if supported
+				// redirects to ethereum, when there is no chain query param in URl or if chain on wallet is not supported
 				router.push(
 					{
 						pathname: '/',
-						query: { chain: chain.value, from: ethers.constants.AddressZero }
+						query: { chain: 'ethereum', from: ethers.constants.AddressZero }
 					},
 					undefined,
 					{ shallow: true }
