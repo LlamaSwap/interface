@@ -351,7 +351,7 @@ export function AggregatorContainer({ tokenlist }) {
 		.toFixed(0);
 
 	// saved tokens list
-	const { data: savedTokens } = useGetSavedTokens(selectedChain?.id);
+	const savedTokens = useGetSavedTokens(selectedChain?.id);
 
 	// selected from token's balances
 	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
@@ -453,12 +453,14 @@ export function AggregatorContainer({ tokenlist }) {
 
 	useEffect(() => {
 		const isUnknown =
-			finalSelectedToToken && !savedTokens.find(({ address }) => address === finalSelectedToToken.address);
+			selectedToToken === null &&
+			finalSelectedToToken !== null &&
+			!savedTokens.find(({ address }) => address.toLowerCase() === toTokenAddress.toLowerCase());
 
-		if (isUnknown && finalSelectedToToken) {
+		if (isUnknown && toTokenAddress && savedTokens?.length > 1) {
 			onToTokenChange(undefined);
 		}
-	}, [finalSelectedToToken]);
+	}, [router?.query, savedTokens]);
 
 	// format routes
 	const fillRoute = (route: typeof routes[0]) => {
