@@ -626,7 +626,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const onToTokenChange = (token) => {
 		setRoute(null);
-		router.push({ pathname: router.pathname, query: { ...router.query, to: token.address } }, undefined, {
+		router.push({ pathname: router.pathname, query: { ...router.query, to: token?.address || undefined } }, undefined, {
 			shallow: true
 		});
 	};
@@ -719,6 +719,16 @@ export function AggregatorContainer({ tokenlist }) {
 
 		return () => clearTimeout(id);
 	}, [slippage, customSlippage, router]);
+
+	useEffect(() => {
+		const isUnknown =
+			selectedToToken === null &&
+			finalSelectedToToken !== null &&
+			!savedTokens.find(({ address }) => address === toToken);
+		if (isUnknown && toToken) {
+			onToTokenChange(undefined);
+		}
+	}, [route?.query, selectedToToken, finalSelectedToToken]);
 
 	const insufficientBalance =
 		balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted))
