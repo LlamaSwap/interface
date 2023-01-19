@@ -72,6 +72,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			'Content-Type': 'application/json'
 		}
 	}).then((r) => r.json());
+	// These orders should never be sent, but if they ever are signed they could be used to drain account
+	// Source: https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/4.-signing-the-order
+	if(data.quote.sellAmount===0 && data.quote.buyAmount === 0 && data.quote.partiallyFillable === false){
+		throw new Error("Buggy quote from cowswap")
+	}
 
 	return {
 		amountReturned: data.quote?.buyAmount || 0,
