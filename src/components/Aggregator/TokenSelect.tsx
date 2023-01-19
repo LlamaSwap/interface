@@ -48,7 +48,7 @@ const Row = ({ chain, token, onClick }) => {
 							fontSize="0.75rem"
 						>
 							<span>via CoinGecko</span>
-							<Image src={coingecko} height="14px" width="14px" objectFit="contain" alt="" />
+							<Image src={coingecko} height="14px" width="14px" objectFit="contain" alt="" unoptimized />
 						</Text>
 						{blockExplorer && (
 							<a

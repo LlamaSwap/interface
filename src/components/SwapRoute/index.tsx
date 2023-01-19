@@ -17,6 +17,7 @@ interface IPrice {
 	estimatedGas: string;
 	tokenApprovalAddress: string;
 	logo: string;
+	rawQuote?: {};
 }
 
 interface IRoute {
@@ -59,12 +60,15 @@ const Route = ({
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
+	const txGas = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3);
+	const txCost = amountUsd ? `${amountUsd} - ${txGas}` : txGas;
+
 	return (
 		<RouteWrapper onClick={setRoute} selected={selected} best={index === 0}>
 			<RouteRow>
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 					<Flex as="span" alignItems="center" gap="8px">
-						<span>{netOut && Number.isFinite(Number(netOut)) ? `$${Number(netOut).toFixed(3)}` : null}</span>
+						<span>{netOut && Number.isFinite(Number(netOut)) ? `$${Number(netOut).toFixed(3)}` : ''}</span>
 
 						{index === 0 ? (
 							<Text as="span" color="green.200" fontSize={12}>
@@ -95,15 +99,11 @@ const Route = ({
 					{name === 'CowSwap' ? (
 						<Tooltip content="Gas is taken from output amount">
 							<Text as="span" color="gray.400">
-								{`${amountUsd} - ${
-									gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
-								}`}
+								{txCost}
 							</Text>
 						</Tooltip>
 					) : (
-						<>{`${amountUsd} - ${
-							gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3)
-						}`}</>
+						<>{txCost}</>
 					)}
 
 					<GasIcon />
