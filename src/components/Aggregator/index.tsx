@@ -409,7 +409,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
 
 	const selecteRouteIndex =
-		routes && routes.length > 0 ? routes.findIndex((r) => r.name.toLowerCase() === aggregator.toLowerCase()) : -1;
+		aggregator && routes && routes.length > 0 ? routes.findIndex((r) => r.name === aggregator) : -1;
 	// store selected aggregators route
 	const selectedRoute = selecteRouteIndex >= 0 ? { ...routes[selecteRouteIndex], index: selecteRouteIndex } : null;
 
@@ -497,7 +497,10 @@ export function AggregatorContainer({ tokenlist }) {
 		.filter((r) => r.gasUsd !== 'Unknown')
 		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
 
-	const medianAmount = median(normalizedRoutes.map(({ amount }) => amount));
+	const medianAmount = Math.max(
+		median(normalizedRoutes.map(({ amount }) => amount)),
+		normalizedRoutes.find((r) => r.name === '1inch')?.amount ?? 0
+	);
 
 	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
 
