@@ -110,7 +110,7 @@ export function PriceImpact({
 									: 'white'
 							}
 						>
-							<span>Price Impact</span>
+							<span>Price impact according to CoinGecko</span>
 
 							{isPriceImpactNotKnown || selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD ? (
 								<WarningTwoIcon style={{ marginLeft: 'auto' }} />
