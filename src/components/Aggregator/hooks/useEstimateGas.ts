@@ -43,7 +43,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 			const res = await provider.send('trace_callMany', callParams);
 			const swapTx = last<{ trace: Array<{ result: { gasUsed: string }; error: string }> }>(res);
 			return {
-				gas: BigNumber(swapTx.trace[0].result.gasUsed).plus(21e3).toString(), // ignores calldata and accesslist costs
+				gas: (Number(swapTx.trace[0].result.gasUsed) + 21e3).toString(), // ignores calldata and accesslist costs
 				isFailed: swapTx.trace[0]?.error === 'Reverted',
 				aggGas: route.price?.estimatedGas,
 				name: route.name,
@@ -81,7 +81,7 @@ export const useEstimateGas = ({
 				return {
 					queryKey: ['estimateGas', route.name, chain, route?.tx?.data],
 					queryFn: () => estimateGas({ route, token, userAddress, chain, amount }),
-					enabled: Object.keys(traceRpcs).includes(chain) && hasEnoughBalance
+					enabled: traceRpcs[chain] !== undefined && hasEnoughBalance
 				};
 			})
 	});
@@ -91,7 +91,7 @@ export const useEstimateGas = ({
 			?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
 			.reduce((acc, r) => ({ ...acc, [r.data.name]: r.data }), {} as Record<string, EstimationRes>) ?? {};
 	return {
-		isLoading: res.filter((r) => r.status === 'loading').length >= 1 ? true : false,
+		isLoading: res.some((r) => r.status === 'loading'),
 		data
 	};
 };

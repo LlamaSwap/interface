@@ -669,12 +669,15 @@ export function AggregatorContainer({ tokenlist }) {
 			({ fromAmount, amount: toAmount, isFailed }) =>
 				Number(toAmount) && amountWithDecimals === fromAmount && isFailed !== true
 		)
-		.sort((a, b) => b.netOut - a.netOut)
+		.sort((a, b) =>{
+			if(a.gasUsd === 'Unknown'){
+				return 1
+			} else if(b.gasUsd === 'Unknown'){
+				return -1
+			}
+			return b.netOut - a.netOut
+		})
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
-
-	normalizedRoutes = normalizedRoutes
-		.filter((r) => r.gasUsd !== 'Unknown')
-		.concat(normalizedRoutes.filter((r) => r.gasUsd === 'Unknown'));
 
 	const medianAmount = Math.max(median(normalizedRoutes.map(({ amount }) => amount)), normalizedRoutes.find(r=>r.name === "1inch")?.amount ?? 0);
 
