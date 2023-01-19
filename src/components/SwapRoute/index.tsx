@@ -18,6 +18,7 @@ interface IPrice {
 	estimatedGas: string;
 	tokenApprovalAddress: string;
 	logo: string;
+	rawQuote?: {};
 }
 
 interface IRoute {
@@ -64,6 +65,9 @@ const Route = ({
 	let	quotedRateString = quotedRate < 0.001 ? `${formattedNum(1/quotedRate)} ${fromToken.symbol} per ${toToken.symbol}`  : `${formattedNum(quotedRate)} ${toToken.symbol} per ${fromToken.symbol}`
 		
 
+	const txGas = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? gasUsd : '$' + Number(gasUsd).toFixed(3);
+	const txCost = amountUsd ? `${amountUsd} - ${txGas}` : txGas;
+
 	return (
 		<RouteWrapper onClick={setRoute} className={selected?'RouteWrapper is-selected':'RouteWrapper'} selected={selected} best={index === 0}>
 			<RouteRow>
@@ -84,8 +88,6 @@ const Route = ({
 				</Flex>
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 					<Flex as="span" alignItems="center" gap="8px">
-						
-
 						{index === 0 ? (
 							<Text as="span" color="#059669" fontSize={14} fontWeight={700}>
 								BEST
@@ -100,9 +102,6 @@ const Route = ({
 			</RouteRow>
 
 			<RouteRow>
-				
-				
-
 				<Flex as="span" gap="6px"  display='flex' color="gray.500" fontWeight={500}>
 					≈ {netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut.toFixed(1),false,true)}` : null} {gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd)) ? (<Flex as="span" gap="4px" alignItems="center" color="#d97706" className='inline-alert'><AlertCircle size='14'/> unknown gas fees</Flex>) : 'after fees'}
 				</Flex>

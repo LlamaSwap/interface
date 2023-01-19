@@ -18,22 +18,27 @@ interface IPrice {
 }
 
 export async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
-	if (!fromToken || !toToken || !chain) {
-		return { gasTokenPrice: 0, fromTokenPrice: 0, toTokenPrice: 0 };
-	}
-	const [{ coins }, gasPriceData] = await Promise.all([
-		fetch(
-			`https://coins.llama.fi/prices/current/${chain}:${toToken},${chain}:${ZERO_ADDRESS},${chain}:${fromToken}`
-		).then((r) => r.json()),
-		providers[chain].getFeeData()
-	]);
+	try {
+		if (!fromToken || !toToken || !chain) {
+			return {};
+		}
+		const [{ coins }, gasPriceData] = await Promise.all([
+			fetch(
+				`https://coins.llama.fi/prices/current/${chain}:${toToken},${chain}:${ZERO_ADDRESS},${chain}:${fromToken}`
+			).then((r) => r.json()),
+			providers[chain].getFeeData()
+		]);
 
-	return {
-		gasTokenPrice: coins[`${chain}:${ZERO_ADDRESS}`]?.price,
-		fromTokenPrice: coins[`${chain}:${fromToken}`]?.price,
-		toTokenPrice: coins[`${chain}:${toToken}`]?.price,
-		gasPriceData
-	};
+		return {
+			gasTokenPrice: coins[`${chain}:${ZERO_ADDRESS}`]?.price,
+			fromTokenPrice: coins[`${chain}:${fromToken}`]?.price,
+			toTokenPrice: coins[`${chain}:${toToken}`]?.price,
+			gasPriceData
+		};
+	} catch (error) {
+		console.log(error);
+		return {};
+	}
 }
 
 export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPriceProps) {

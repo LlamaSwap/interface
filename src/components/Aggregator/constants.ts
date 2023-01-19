@@ -92,3 +92,5 @@ export const chainNamesReplaced = {
 export const nativeAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowerCase();
 
 export const initialLiquidity = [500, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000, 500_000_000];
+
+export const PRICE_IMPACT_WARNING_THRESHOLD = 7;

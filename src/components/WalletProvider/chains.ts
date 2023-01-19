@@ -320,7 +320,7 @@ const avax = {
 	id: 43114,
 	name: 'AVAX',
 	network: 'avax',
-	iconUrl: chainIconUrl('avalanche'),
+	iconUrl: chainIconUrl('avax'),
 	iconBackground: '#000',
 	nativeCurrency: {
 		decimals: 18,
