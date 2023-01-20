@@ -114,6 +114,7 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	align-self: flex-start;
 	position: sticky;
 	top: 24px;
+	z-index: 1;
 
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
@@ -161,7 +162,6 @@ const Routes = styled.div`
 	min-height: 100%;
 	overflow-x: hidden;
 	align-self:stretch;
-	z-index: -1;
 	max-width: 30rem;
 	border: 1px solid #2f333c;
 
@@ -748,7 +748,7 @@ export function AggregatorContainer({ tokenlist }) {
 				</a>
 			</Text>
 
-			<BodyWrapper>
+			<BodyWrapper zIndex="1" position="relative">
 				<Body showRoutes={finalSelectedFromToken && finalSelectedToToken ? true : false}>
 					<div>
 						<FormHeader>
