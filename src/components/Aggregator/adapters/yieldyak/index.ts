@@ -47,7 +47,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
 
-	let gas = 400_000;
+	let gas = data.gasEstimate.add(21000);
 	try {
 		gas = await estimateGas({ chain, provider, rawQuote: data, from, to, userAddress: extra.userAddress });
 	} catch (e) {
