@@ -161,7 +161,7 @@ const Routes = styled.div`
 	min-height: 100%;
 	overflow-x: hidden;
 	align-self:stretch;
-
+	z-index: -1;
 	max-width: 30rem;
 	border: 1px solid #2f333c;
 
