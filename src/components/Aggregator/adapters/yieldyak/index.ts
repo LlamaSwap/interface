@@ -17,18 +17,18 @@ export function approvalAddress(chain: string) {
 
 const nativeToken = '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7';
 
-export async function getQuote(chain: string, from: string, to: string, amount: string, extra: any) {
+export async function getQuote(chain: string, from: string, to: string, amount: string) {
 	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, providers[chain]);
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const gasPrice = extra.gasPriceData.gasPrice.toNumber();
+	const gasPrice = await providers[chain].getGasPrice();
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
 
 	const gasEstimate = chain === 'optimism' ? BigNumber(3.5).times(data.gasEstimate).toFixed(0, 1) : data.gasEstimate;
 
 	return {
-		amountReturned: data.amounts[data.amounts.length - 1],
-		estimatedGas: gasEstimate, // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic, nor tx-gas-cost.
+		amountReturned: data.amounts[data.amounts.length - 1].toString(),
+		estimatedGas: gasEstimate.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic, nor tx-gas-cost.
 		rawQuote: data,
 		tokenApprovalAddress: '0xC4729E56b831d74bBc18797e0e17A295fA77488c',
 		logo: 'https://assets.coingecko.com/coins/images/17654/small/yieldyak.png?1665824438'
