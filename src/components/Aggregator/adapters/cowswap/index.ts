@@ -4,8 +4,10 @@ import { ExtraData } from '../../types';
 import { domain, SigningScheme, signOrder, OrderKind } from '@gnosis.pm/gp-v2-contracts';
 import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainnet/GPv2Settlement.json';
 
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { ABI } from './abi';
+import BigNumber from 'bignumber.js';
+import {chainsMap} from '../../constants';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
@@ -77,9 +79,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	if(data.quote.sellAmount===0 && data.quote.buyAmount === 0 && data.quote.partiallyFillable === false){
 		throw new Error("Buggy quote from cowswap")
 	}
+	
+	const expectedBuyAmount = data.quote.buyAmount
+	data.quote.buyAmount = BigNumber(expectedBuyAmount).times(1-(Number(extra.slippage)/100)).toFixed(0)
 
 	return {
-		amountReturned: data.quote?.buyAmount || 0,
+		amountReturned: expectedBuyAmount,
 		estimatedGas: 0,
 		feeAmount: data.quote?.feeAmount || 0,
 		validTo: data.quote?.validTo || 0,
@@ -107,7 +112,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 				rawQuote.quote.partiallyFillable,
 				rawQuote.id
 			],
-			{ value: BigNumber.from(rawQuote.quote.sellAmount).add(rawQuote.quote.feeAmount) }
+			{ value: BigNumber(rawQuote.quote.sellAmount).plus(rawQuote.quote.feeAmount).toFixed(0) }
 		);
 
 		return tx;
@@ -126,10 +131,10 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 		};
 
 		const rawSignature = await signOrder(
-			domain(1, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
+			domain(chainsMap[chain], '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
 			order,
 			signer,
-			SigningScheme.ETHSIGN
+			SigningScheme.EIP712
 		);
 
 		const signature = ethers.utils.joinSignature(rawSignature.data);
@@ -139,7 +144,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 			body: JSON.stringify({
 				...rawQuote.quote,
 				signature,
-				signingScheme: 'ethsign'
+				signingScheme: 'eip712'
 			}),
 			headers: {
 				'Content-Type': 'application/json'
