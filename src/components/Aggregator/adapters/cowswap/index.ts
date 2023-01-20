@@ -4,7 +4,7 @@ import { ExtraData } from '../../types';
 import { domain, SigningScheme, signOrder, OrderKind } from '@gnosis.pm/gp-v2-contracts';
 import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainnet/GPv2Settlement.json';
 
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { ABI } from './abi';
 
 export const chainToId = {
@@ -72,6 +72,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			'Content-Type': 'application/json'
 		}
 	}).then((r) => r.json());
+	// These orders should never be sent, but if they ever are signed they could be used to drain account
+	// Source: https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/4.-signing-the-order
+	if(data.quote.sellAmount===0 && data.quote.buyAmount === 0 && data.quote.partiallyFillable === false){
+		throw new Error("Buggy quote from cowswap")
+	}
 
 	return {
 		amountReturned: data.quote?.buyAmount || 0,
@@ -102,7 +107,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 				rawQuote.quote.partiallyFillable,
 				rawQuote.id
 			],
-			{ value: Number(rawQuote.quote.sellAmount) + Number(rawQuote.quote.feeAmount) }
+			{ value: BigNumber.from(rawQuote.quote.sellAmount).add(rawQuote.quote.feeAmount) }
 		);
 
 		return tx;
