@@ -7,6 +7,7 @@ import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainn
 import { ethers } from 'ethers';
 import { ABI } from './abi';
 import BigNumber from 'bignumber.js';
+import {chainsMap} from '../../constants';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
@@ -130,7 +131,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 		};
 
 		const rawSignature = await signOrder(
-			domain(1, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
+			domain(chainsMap[chain], '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
 			order,
 			signer,
 			SigningScheme.EIP712
@@ -143,7 +144,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 			body: JSON.stringify({
 				...rawQuote.quote,
 				signature,
-				signingScheme: 'ethsign'
+				signingScheme: 'eip712'
 			}),
 			headers: {
 				'Content-Type': 'application/json'
