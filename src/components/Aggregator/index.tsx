@@ -111,6 +111,7 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	width: 100%;
 	max-width: 30rem;
 	border: 1px solid #2f333c;
+	align-self: flex-start;
 
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
@@ -157,6 +158,7 @@ const Routes = styled.div`
 	width: 100%;
 	min-height: 100%;
 	overflow-x: hidden;
+	align-self:stretch;
 
 	max-width: 30rem;
 	border: 1px solid #2f333c;
@@ -184,7 +186,6 @@ const BodyWrapper = styled.div`
 	align-items: center;
 	gap: 16px;
 	width: 100%;
-	min-height: 480px;
 
 	& > * {
 		flex: 1;
