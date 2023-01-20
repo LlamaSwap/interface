@@ -38,6 +38,7 @@ interface IRoute {
 	gasTokenPrice: number;
 	txData: string;
 	netOut: number;
+	isFetchingGasPrice: boolean;
 }
 
 const Route = ({
@@ -52,7 +53,8 @@ const Route = ({
 	fromToken,
 	amountFrom,
 	lossPercent,
-	netOut
+	netOut,
+	isFetchingGasPrice
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
@@ -97,9 +99,9 @@ const Route = ({
 			</RouteRow>
 
 			<RouteRow>
-				<Flex as="span" gap="6px" display="flex" color="gray.500" fontWeight={500}>
+				<Flex as="span" gap="6px" display="flex" color="gray.400" fontWeight={500}>
 					{`≈ ${afterFees} `}
-					{isGasNotKnown ? (
+					{isGasNotKnown && !isFetchingGasPrice ? (
 						<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
 							<AlertCircle size="14" /> unknown gas fees
 						</Flex>
@@ -114,12 +116,12 @@ const Route = ({
 					</Tooltip>
 				) : null}
 
-				<Text display="flex" gap="6px" color={'gray.500'} fontWeight={500} ml="auto">
-					<Text display="flex" alignItems="center" gap="4px" color="gray.500">
+				<Text display="flex" gap="6px" color={'gray.400'} fontWeight={500} ml="auto">
+					<Text display="flex" alignItems="center" gap="4px" color="gray.400">
 						{isGasNotKnown ? null : <GasIcon />}
 						{name === 'CowSwap' ? (
 							<Tooltip content="Gas is taken from output amount">
-								<Text as="span" color="gray.500" fontWeight={500}>
+								<Text as="span" color="gray.400" fontWeight={500}>
 									{txGas}
 								</Text>
 							</Tooltip>

@@ -213,7 +213,9 @@ const FormHeader = styled.div`
 	font-size: 16px;
 	margin-bottom: 4px;
 	margin-left: 4px;
-	.chakra-switch, .chakra-switch__track, .chakra-switch__thumb {
+	.chakra-switch,
+	.chakra-switch__track,
+	.chakra-switch__thumb {
 		height: 10px;
 	}
 `;
@@ -1004,6 +1006,7 @@ export function AggregatorContainer({ tokenlist }) {
 								fromToken={finalSelectedFromToken}
 								selectedChain={selectedChain.label}
 								gasTokenPrice={gasTokenPrice}
+								isFetchingGasPrice={fetchingTokenPrices}
 							/>
 
 							{aggregator === r.name && (
