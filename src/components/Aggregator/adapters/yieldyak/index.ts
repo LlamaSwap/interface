@@ -46,7 +46,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const gasPrice = ethers.BigNumber.from(extra.gasPriceData.gasPrice);
 
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
-	let gas = data.gasEstimate;
+
+	let gas = 400_000;
 	try {
 		gas = await estimateGas({ chain, provider, rawQuote: data, from, to, userAddress: extra.userAddress });
 	} catch (e) {
@@ -73,7 +74,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 	})();
 
 	const tx = await swapFunc(
-		[rawQuote.amounts[0], rawQuote.amounts[rawQuote.amounts.length - 1], rawQuote.path, rawQuote.adapters],
+		[rawQuote[0][0], rawQuote[0][rawQuote[0].length - 1], rawQuote[2], rawQuote[1]],
 		fromAddress,
 		0,
 		from === ethers.constants.AddressZero ? { value: rawQuote.amounts[0] } : {}
