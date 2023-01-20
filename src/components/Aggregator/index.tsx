@@ -158,10 +158,6 @@ const Routes = styled.div`
 	min-height: 100%;
 	overflow-x: hidden;
 
-	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
-		max-height: 480px;
-	}
-
 	max-width: 30rem;
 	border: 1px solid #2f333c;
 
@@ -196,7 +192,7 @@ const BodyWrapper = styled.div`
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		flex-direction: row;
-		align-items: stretch;
+		align-items: flex-start;
 		justify-content: center;
 		gap: 24px;
 	}

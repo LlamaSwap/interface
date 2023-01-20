@@ -99,14 +99,14 @@ const Route = ({
 			</RouteRow>
 
 			<RouteRow>
-				<Flex as="span" gap="6px" display="flex" color="gray.400" fontWeight={500}>
-					{`≈ ${afterFees} `}
+				<Flex className='mobile-column' as="span" columnGap="6px" display="flex" color="gray.400" fontWeight={500}>
+					<span>{`≈ ${afterFees} `}</span>
 					{isGasNotKnown && !isFetchingGasPrice ? (
 						<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
 							<AlertCircle size="14" /> unknown gas fees
 						</Flex>
 					) : (
-						'after fees'
+						<span>after fees</span>
 					)}
 				</Flex>
 
@@ -116,17 +116,18 @@ const Route = ({
 					</Tooltip>
 				) : null}
 
-				<Text display="flex" gap="6px" color={'gray.400'} fontWeight={500} ml="auto">
-					<Text display="flex" alignItems="center" gap="4px" color="gray.400">
-						{isGasNotKnown ? null : <GasIcon />}
+				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
+					<Text display="flex" className='mobile-column mobile-flexend' alignItems="center" gap="4px" color="gray.400">
 						{name === 'CowSwap' ? (
 							<Tooltip content="Gas is taken from output amount">
-								<Text as="span" color="gray.400" fontWeight={500}>
+								<Text as="span" display="flex" alignItems="center" gap="4px" color="gray.400" fontWeight={500}>
+									{isGasNotKnown ? null : <GasIcon />}
 									{txGas}
 								</Text>
 							</Tooltip>
 						) : (
-							<Text as="span" fontWeight={500}>
+							<Text as="span" display="flex" alignItems="center" gap="4px" fontWeight={500}>
+								{isGasNotKnown ? null : <GasIcon />}
 								{txGas}
 							</Text>
 						)}
@@ -204,6 +205,14 @@ const RouteRow = styled.div`
 		aspect-ratio: 1;
 		border-radius: 50%;
 		margin: 0 0px 0 6px;
+	}
+	@media (max-width: 768px) {
+		.mobile-column {
+			flex-direction: column;
+		}
+		.mobile-flexend {
+			align-items: flex-end;
+		}
 	}
 `;
 
