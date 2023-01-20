@@ -80,7 +80,7 @@ export const getTxData = ({ rawQuote }) => rawQuote?.tx?.data;
 
 export const getTx = ({ rawQuote }) => {
 	if (rawQuote === null) {
-		return null
+		return {}
 	}
 	return {
 		from: rawQuote.tx.from,
