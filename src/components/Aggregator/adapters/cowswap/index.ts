@@ -81,7 +81,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	
 	const expectedBuyAmount = data.quote.buyAmount
 	data.quote.buyAmount = BigNumber(expectedBuyAmount).times(1-(Number(extra.slippage)/100)).toFixed(0)
-	console.log(expectedBuyAmount, data.quote.buyAmount)
 
 	return {
 		amountReturned: expectedBuyAmount,
