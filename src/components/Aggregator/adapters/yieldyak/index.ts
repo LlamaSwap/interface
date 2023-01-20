@@ -54,7 +54,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		console.log(e);
 	}
 	return {
-		amountReturned: data.amounts[data.amounts.length - 1].toString(),
+		amountReturned: data[0][data[0].length - 1].toString(),
 		estimatedGas: gas.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic, nor tx-gas-cost.
 		rawQuote: data,
 		tokenApprovalAddress: '0xC4729E56b831d74bBc18797e0e17A295fA77488c',
@@ -77,7 +77,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 		[rawQuote[0][0], rawQuote[0][rawQuote[0].length - 1], rawQuote[2], rawQuote[1]],
 		fromAddress,
 		0,
-		from === ethers.constants.AddressZero ? { value: rawQuote.amounts[0] } : {}
+		from === ethers.constants.AddressZero ? { value: rawQuote[0][0] } : {}
 	);
 
 	return tx;
