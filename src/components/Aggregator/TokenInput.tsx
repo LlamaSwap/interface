@@ -23,6 +23,9 @@ const InputElem = styled.input`
 		outline: none;
 		border-color: ${({ theme }) => (theme.mode === 'dark' ? '#949494' : '#8e8e8e')};
 	}
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		font-size: 16px;
+	}
 `;
 
 const InputWrapper = styled.div`
@@ -59,6 +62,11 @@ const InputWrapper = styled.div`
 		width: 1%;
 		margin-top: 0;
 		margin-bottom: 0;
+	}
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		& > input {
+			font-size: 16px;
+		}
 	}
 
 	input[type='number']::-webkit-outer-spin-button,
