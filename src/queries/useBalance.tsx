@@ -52,18 +52,18 @@ const getBalance = async ({ address, chainId, token }: IGetBalance) => {
 	}
 };
 
-export const useBalance = ({ address, chainId, token }) => {
+export const useBalance = ({ address, chainId, token }: { address: string; chainId?: number; token?: string }) => {
 	const { isConnected } = useAccount();
 
 	const tokenAddress = [ethers.constants.AddressZero, nativeAddress.toLowerCase()].includes(token?.toLowerCase())
 		? null
-		: (token as `0x${string}`);
+		: token;
 
 	const isEnabled = chainId && isConnected && token ? true : false;
 
 	const wagmiData = useWagmiBalance({
-		address: address,
-		token: tokenAddress,
+		address: address as `0x${string}`,
+		token: tokenAddress as `0x${string}`,
 		watch: true,
 		chainId: chainId,
 		enabled: isEnabled

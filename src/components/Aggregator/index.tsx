@@ -931,7 +931,11 @@ export function AggregatorContainer({ tokenlist }) {
 														!selectedRoute
 													}
 												>
-													{!selectedRoute ? 'Select Aggregator' : isApproved ? `Swap via ${selectedRoute.name}` : 'Approve'}
+													{!selectedRoute
+														? 'Select Aggregator'
+														: isApproved
+														? `Swap via ${selectedRoute.name}`
+														: 'Approve'}
 												</Button>
 											)}
 
@@ -1079,7 +1083,11 @@ export function AggregatorContainer({ tokenlist }) {
 																	!selectedRoute
 																}
 															>
-																{!selectedRoute ? 'Select Aggregator' : isApproved ? `Swap via ${selectedRoute?.name}` : 'Approve'}
+																{!selectedRoute
+																	? 'Select Aggregator'
+																	: isApproved
+																	? `Swap via ${selectedRoute?.name}`
+																	: 'Approve'}
 															</Button>
 														)}
 
