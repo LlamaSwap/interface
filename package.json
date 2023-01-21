@@ -1,5 +1,5 @@
 {
-	"name": "defillama",
+	"name": "llamaswap",
 	"sideEffects": false,
 	"version": "1.0.0",
 	"private": true,
@@ -11,7 +11,8 @@
 		"format": "prettier --write .",
 		"build": "next build && ./post-build.sh",
 		"start": "next start",
-		"lint": "next lint"
+		"lint": "next lint",
+		"tscheck": "tsc -p tsconfig.json --noEmit"
 	},
 	"dependencies": {
 		"@chakra-ui/icons": "^2.0.12",
