@@ -555,6 +555,12 @@ export function AggregatorContainer({ tokenlist }) {
 			  +amountWithDecimals > +balance.data.value.toString()
 			: false;
 
+	const forceRefreshTokenBalance = () => {
+		if (chainOnWallet && address) {
+			wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
+		}
+	};
+
 	// approve/swap tokens
 	const {
 		isApproved,
@@ -605,7 +611,10 @@ export function AggregatorContainer({ tokenlist }) {
 				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
 				setTxUrl(txUrl);
 				data.waitForOrder(() => {
+					forceRefreshTokenBalance();
+
 					toast(formatSuccessToast(variables));
+
 					sendSwapEvent({
 						chain: selectedChain.value,
 						user: address,
@@ -631,18 +640,19 @@ export function AggregatorContainer({ tokenlist }) {
 				isClosable: true,
 				position: 'top-right'
 			});
+
 			let isError = false;
+
 			data
 				.wait?.()
 				?.then((final) => {
 					if (final.status === 1) {
-						if (chainOnWallet && address) {
-							wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
-						}
+						forceRefreshTokenBalance();
 
 						if (confirmingTxToastRef.current) {
 							toast.close(confirmingTxToastRef.current);
 						}
+
 						toast(formatSuccessToast(variables));
 					} else {
 						isError = true;
