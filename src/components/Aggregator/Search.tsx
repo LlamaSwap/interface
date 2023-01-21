@@ -17,7 +17,7 @@ export const ModalOverlay = styled.div`
 	right: 0;
 	bottom: 0;
 	background: rgba(0, 0, 0, 0.6);
-	z-index: 50;
+	z-index: 150;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -36,6 +36,7 @@ export const ModalWrapper = styled.div`
 	margin: auto;
 	width: 100%;
 	margin: 0 20px;
+	border: 1px solid #2f333c;
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
 			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'

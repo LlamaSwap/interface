@@ -46,6 +46,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
+import { formattedNum } from '~/utils';
 import { useEstimateGas } from './hooks/useEstimateGas';
 import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
@@ -110,6 +111,14 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	width: 100%;
 	max-width: 30rem;
 	border: 1px solid #2f333c;
+	align-self: flex-start;
+	
+	z-index: 1;
+
+	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
+		position: sticky;
+		top: 24px;
+	}
 
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
@@ -156,11 +165,7 @@ const Routes = styled.div`
 	width: 100%;
 	min-height: 100%;
 	overflow-x: hidden;
-
-	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
-		max-height: 480px;
-	}
-
+	align-self: stretch;
 	max-width: 30rem;
 	border: 1px solid #2f333c;
 
@@ -187,7 +192,8 @@ const BodyWrapper = styled.div`
 	align-items: center;
 	gap: 16px;
 	width: 100%;
-	min-height: 480px;
+	z-index: 1;
+	position: relative;
 
 	& > * {
 		flex: 1;
@@ -195,7 +201,7 @@ const BodyWrapper = styled.div`
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		flex-direction: row;
-		align-items: stretch;
+		align-items: flex-start;
 		justify-content: center;
 		gap: 24px;
 	}
@@ -212,6 +218,11 @@ const FormHeader = styled.div`
 	font-size: 16px;
 	margin-bottom: 4px;
 	margin-left: 4px;
+	.chakra-switch,
+	.chakra-switch__track,
+	.chakra-switch__thumb {
+		height: 10px;
+	}
 `;
 
 const SelectWrapper = styled.div`
@@ -775,9 +786,9 @@ export function AggregatorContainer({ tokenlist }) {
 								<Box>Chain</Box>
 								<Spacer />
 								<Tooltip content="Redirect requests through the DefiLlama Server to hide your IP address">
-									<FormControl display="flex" alignItems="center" gap="4px" justifyContent={'center'}>
-										<FormLabel htmlFor="privacy-switch" margin={0}>
-											Private mode
+									<FormControl display="flex" alignItems="baseline" gap="6px" justifyContent={'center'}>
+										<FormLabel htmlFor="privacy-switch" margin={0} fontSize="14px" color="gray.400">
+											Hide IP
 										</FormLabel>
 										<Switch
 											id="privacy-switch"
@@ -1028,6 +1039,7 @@ export function AggregatorContainer({ tokenlist }) {
 								fromToken={finalSelectedFromToken}
 								selectedChain={selectedChain.label}
 								gasTokenPrice={gasTokenPrice}
+								isFetchingGasPrice={fetchingTokenPrices}
 							/>
 
 							{aggregator === r.name && (
