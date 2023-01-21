@@ -62,6 +62,24 @@ export default function FaqWrapper() {
 					<h2>
 						<AccordionButton>
 							<Box flex="1" textAlign="left">
+								Why do gas fees in MetaMask not match what I see in the UI?
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+					</h2>
+					<AccordionPanel pb={4}>
+						We inflate gas limit of txs on MetaMask by +40% to ensure that there's nothig unexpected that could trigger out-of-gas reverts. This stacks
+						on top of any increase your RPC might apply on gas estimations, along with possible different gas prices between your metamask and our estimation.
+						<br />
+						<br />
+						All this together means that gas number you see on metamask will always be inflated, while in our UI we display the actual gas that the tx will consume. 
+						The extra gas that is not used is just refunded to the user when tx executes.
+					</AccordionPanel>
+				</AccordionItem>
+				<AccordionItem>
+					<h2>
+						<AccordionButton>
+							<Box flex="1" textAlign="left">
 								Will I be eligible for aggregator airdrops if I swap through DefiLlama?
 							</Box>
 							<AccordionIcon />
