@@ -25,6 +25,3 @@ yarn-debug.log*
 yarn-error.log*
 
 /.vscode
-
-# typescript
-*.tsbuildinfo
