@@ -154,7 +154,8 @@ const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
 	grid-row-gap: 4px;
 	margin-top: 16px;
 	&.is-selected {
-		border-color: #059669;
+		border-color: rgb(31 114 229);
+		background-color: rgb(3 11 23);
 	}
 
 	background-color: ${({ theme, selected }) =>
