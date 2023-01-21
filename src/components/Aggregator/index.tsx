@@ -112,9 +112,13 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	max-width: 30rem;
 	border: 1px solid #2f333c;
 	align-self: flex-start;
-	position: sticky;
-	top: 24px;
+	
 	z-index: 1;
+
+	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
+		position: sticky;
+		top: 24px;
+	}
 
 	box-shadow: ${({ theme }) =>
 		theme.mode === 'dark'
