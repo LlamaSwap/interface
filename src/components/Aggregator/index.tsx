@@ -417,7 +417,7 @@ export function AggregatorContainer({ tokenlist }) {
 		// CowSwap native token swap
 		gasUsd =
 			route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
-				? (route.price.feeAmount / 1e18) * gasTokenPrice
+				? (route.price.feeAmount / 1e18) * gasTokenPrice + gasUsd
 				: gasUsd;
 
 		gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
