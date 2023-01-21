@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
+import { useAccount, useFeeData, useNetwork, useQueryClient, useSigner, useSwitchNetwork, useToken } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
@@ -268,6 +268,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const { openConnectModal } = useConnectModal();
 	const { switchNetwork } = useSwitchNetwork();
 	const addRecentTransaction = useAddRecentTransaction();
+	const wagmiClient = useQueryClient();
 
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState(null);
@@ -554,6 +555,12 @@ export function AggregatorContainer({ tokenlist }) {
 			  +amountWithDecimals > +balance.data.value.toString()
 			: false;
 
+	const forceRefreshTokenBalance = () => {
+		if (chainOnWallet && address) {
+			wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
+		}
+	};
+
 	// approve/swap tokens
 	const {
 		isApproved,
@@ -604,7 +611,10 @@ export function AggregatorContainer({ tokenlist }) {
 				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
 				setTxUrl(txUrl);
 				data.waitForOrder(() => {
+					forceRefreshTokenBalance();
+
 					toast(formatSuccessToast(variables));
+
 					sendSwapEvent({
 						chain: selectedChain.value,
 						user: address,
@@ -630,14 +640,19 @@ export function AggregatorContainer({ tokenlist }) {
 				isClosable: true,
 				position: 'top-right'
 			});
+
 			let isError = false;
+
 			data
 				.wait?.()
 				?.then((final) => {
 					if (final.status === 1) {
+						forceRefreshTokenBalance();
+
 						if (confirmingTxToastRef.current) {
 							toast.close(confirmingTxToastRef.current);
 						}
+
 						toast(formatSuccessToast(variables));
 					} else {
 						isError = true;
@@ -931,7 +946,11 @@ export function AggregatorContainer({ tokenlist }) {
 														!selectedRoute
 													}
 												>
-													{!selectedRoute ? 'Select Aggregator' : isApproved ? `Swap via ${selectedRoute.name}` : 'Approve'}
+													{!selectedRoute
+														? 'Select Aggregator'
+														: isApproved
+														? `Swap via ${selectedRoute.name}`
+														: 'Approve'}
 												</Button>
 											)}
 
@@ -1079,7 +1098,11 @@ export function AggregatorContainer({ tokenlist }) {
 																	!selectedRoute
 																}
 															>
-																{!selectedRoute ? 'Select Aggregator' : isApproved ? `Swap via ${selectedRoute?.name}` : 'Approve'}
+																{!selectedRoute
+																	? 'Select Aggregator'
+																	: isApproved
+																	? `Swap via ${selectedRoute?.name}`
+																	: 'Approve'}
 															</Button>
 														)}
 
