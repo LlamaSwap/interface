@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useFeeData, useNetwork, useSigner, useSwitchNetwork, useToken } from 'wagmi';
+import { useAccount, useFeeData, useNetwork, useQueryClient, useSigner, useSwitchNetwork, useToken } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
@@ -280,6 +280,8 @@ export function AggregatorContainer({ tokenlist }) {
 	const [txUrl, setTxUrl] = useState('');
 	const confirmingTxToastRef = useRef<ToastId>();
 	const toast = useToast();
+
+	const wagmiClient = useQueryClient();
 
 	// debounce input amount and limit no of queries made to aggregators api, to avoid CORS errors
 	const debouncedAmount = useDebounce(amount, 300);
@@ -635,9 +637,12 @@ export function AggregatorContainer({ tokenlist }) {
 				.wait?.()
 				?.then((final) => {
 					if (final.status === 1) {
+						wagmiClient.invalidateQueries([{ address, chainId: chainOnWallet.id, entity: 'balance' }]);
+
 						if (confirmingTxToastRef.current) {
 							toast.close(confirmingTxToastRef.current);
 						}
+
 						toast(formatSuccessToast(variables));
 					} else {
 						isError = true;
