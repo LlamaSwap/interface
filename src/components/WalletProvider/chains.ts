@@ -1,4 +1,4 @@
-import { Chain, chain } from 'wagmi';
+import { arbitrum as WArbitrum, mainnet as WMainnet, optimism as WOptimism, Chain } from 'wagmi/chains';
 import { chainIconUrl } from '~/utils/index';
 
 const okx = {
@@ -13,7 +13,8 @@ const okx = {
 		symbol: 'OKT'
 	},
 	rpcUrls: {
-		default: 'https://mainnet.boba.network'
+		default: { http: ['https://mainnet.boba.network'] },
+		public: { http: ['https://mainnet.boba.network'] }
 	},
 	blockExplorers: {
 		default: { name: 'OKLink', url: 'https://www.oklink.com/en/okc' }
@@ -33,7 +34,8 @@ const binance = {
 		symbol: 'BNB'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/bsc'
+		default: { http: ['https://rpc.ankr.com/bsc'] },
+		public: { http: ['https://rpc.ankr.com/bsc'] }
 	},
 	blockExplorers: {
 		default: { name: 'BSCScan', url: 'https://bscscan.com' }
@@ -53,7 +55,8 @@ const boba = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://mainnet.boba.network'
+		default: { http: ['https://mainnet.boba.network'] },
+		public: { http: ['https://mainnet.boba.network'] }
 	},
 	blockExplorers: {
 		default: { name: 'BobaScan', url: 'https://bobascan.com' }
@@ -73,7 +76,8 @@ const harmony = {
 		symbol: 'ONE'
 	},
 	rpcUrls: {
-		default: 'https://api.s0.t.hmny.io'
+		default: { http: ['https://api.s0.t.hmny.io'] },
+		public: { http: ['https://api.s0.t.hmny.io'] }
 	},
 	blockExplorers: {
 		default: {
@@ -96,7 +100,8 @@ const heco = {
 		symbol: 'HT'
 	},
 	rpcUrls: {
-		default: 'https://http-mainnet.hecochain.com'
+		default: { http: ['https://http-mainnet.hecochain.com'] },
+		public: { http: ['https://http-mainnet.hecochain.com'] }
 	},
 	blockExplorers: {
 		default: {
@@ -119,7 +124,8 @@ const velas = {
 		symbol: 'VLX'
 	},
 	rpcUrls: {
-		default: 'https://evmexplorer.velas.com/rpc'
+		default: { http: ['https://evmexplorer.velas.com/rpc'] },
+		public: { http: ['https://evmexplorer.velas.com/rpc'] }
 	},
 	blockExplorers: {
 		default: { name: 'VelaScan', url: 'https://velascan.org' }
@@ -139,7 +145,8 @@ const oasis = {
 		symbol: 'ROSE'
 	},
 	rpcUrls: {
-		default: 'https://emerald.oasis.dev'
+		default: { http: ['https://emerald.oasis.dev'] },
+		public: { http: ['https://emerald.oasis.dev'] }
 	},
 	blockExplorers: {
 		default: { name: 'OasisScan', url: 'https://www.oasisscan.com' }
@@ -159,7 +166,8 @@ const bttc = {
 		symbol: 'BTT'
 	},
 	rpcUrls: {
-		default: 'https://rpc.bittorrentchain.io'
+		default: { http: ['https://rpc.bittorrentchain.io'] },
+		public: { http: ['https://rpc.bittorrentchain.io'] }
 	},
 	blockExplorers: {
 		default: { name: 'BTTScan', url: 'https://bttcscan.com' }
@@ -179,7 +187,8 @@ const moonbeam = {
 		symbol: 'GLMR'
 	},
 	rpcUrls: {
-		default: 'https://rpc.api.moonbeam.network'
+		default: { http: ['https://rpc.api.moonbeam.network'] },
+		public: { http: ['https://rpc.api.moonbeam.network'] }
 	},
 	blockExplorers: {
 		default: {
@@ -202,7 +211,8 @@ const fuse = {
 		symbol: 'FUSE'
 	},
 	rpcUrls: {
-		default: 'https://rpc.fuse.io'
+		default: { http: ['https://rpc.fuse.io'] },
+		public: { http: ['https://rpc.fuse.io'] }
 	},
 	blockExplorers: {
 		default: {
@@ -225,7 +235,8 @@ const moonriver = {
 		symbol: 'MOVR'
 	},
 	rpcUrls: {
-		default: 'https://moonriver.public.blastapi.io'
+		default: { http: ['https://moonriver.public.blastapi.io'] },
+		public: { http: ['https://moonriver.public.blastapi.io'] }
 	},
 	blockExplorers: {
 		default: {
@@ -248,7 +259,8 @@ const dogechain = {
 		symbol: 'DOGE'
 	},
 	rpcUrls: {
-		default: 'https://dogechain.ankr.com'
+		default: { http: ['https://dogechain.ankr.com'] },
+		public: { http: ['https://dogechain.ankr.com'] }
 	},
 	blockExplorers: {
 		default: {
@@ -271,7 +283,8 @@ const cronos = {
 		symbol: 'CRO'
 	},
 	rpcUrls: {
-		default: 'https://evm.cronos.org'
+		default: { http: ['https://evm.cronos.org'] },
+		public: { http: ['https://evm.cronos.org'] }
 	},
 	blockExplorers: {
 		default: { name: 'CronosScan', url: 'https://cronoscan.com' }
@@ -290,7 +303,8 @@ const celo = {
 		symbol: 'CELO'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/celo'
+		default: { http: ['https://rpc.ankr.com/celo'] },
+		public: { http: ['https://rpc.ankr.com/celo'] }
 	},
 	blockExplorers: {
 		default: { name: 'CeloScan', url: 'https://celoscan.io' }
@@ -309,7 +323,8 @@ const aurora = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://mainnet.aurora.dev'
+		default: { http: ['https://mainnet.aurora.dev'] },
+		public: { http: ['https://mainnet.aurora.dev'] }
 	},
 	blockExplorers: {
 		default: { name: 'AuroraScan', url: 'https://aurorascan.dev' }
@@ -328,7 +343,8 @@ const avax = {
 		symbol: 'AVAX'
 	},
 	rpcUrls: {
-		default: 'https://avalanche-evm.publicnode.com'
+		default: { http: ['https://avalanche-evm.publicnode.com'] },
+		public: { http: ['https://avalanche-evm.publicnode.com'] }
 	},
 	blockExplorers: {
 		default: { name: 'SnowTrace', url: 'https://snowtrace.io' }
@@ -348,7 +364,8 @@ const klaytn = {
 		symbol: 'KLAY'
 	},
 	rpcUrls: {
-		default: 'https://cypress.fandom.finance/archive'
+		default: { http: ['https://cypress.fandom.finance/archive'] },
+		public: { http: ['https://cypress.fandom.finance/archive'] }
 	},
 	blockExplorers: {
 		default: {
@@ -370,7 +387,8 @@ const fantom = {
 		symbol: 'FTM'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ftm.tools'
+		default: { http: ['https://rpc.ftm.tools'] },
+		public: { http: ['https://rpc.ftm.tools'] }
 	},
 	blockExplorers: {
 		default: { name: 'FTMScan', url: 'https://ftmscan.com' }
@@ -390,7 +408,8 @@ const gnosis = {
 		symbol: 'xDai'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/gnosis'
+		default: { http: ['https://rpc.ankr.com/gnosis'] },
+		public: { http: ['https://rpc.ankr.com/gnosis'] }
 	},
 	blockExplorers: {
 		default: { name: 'GnosisScan', url: 'https://gnosisscan.io' }
@@ -409,7 +428,8 @@ const polygon = {
 		symbol: 'MATIC'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/polygon'
+		default: { http: ['https://rpc.ankr.com/polygon'] },
+		public: { http: ['https://rpc.ankr.com/polygon'] }
 	},
 	blockExplorers: {
 		default: { name: 'PolygonScan', url: 'https://polygonscan.com' }
@@ -418,23 +438,26 @@ const polygon = {
 };
 
 const arbirum = {
-	...chain.arbitrum,
+	...WArbitrum,
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/arbitrum'
+		default: { http: ['https://rpc.ankr.com/arbitrum'] },
+		public: { http: ['https://rpc.ankr.com/arbitrum'] }
 	},
 	iconUrl: chainIconUrl('arbitrum')
 };
 const ethereum = {
-	...chain.mainnet,
+	...WMainnet,
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/eth'
+		default: { http: ['https://eth-mainnet.public.blastapi.io'] },
+		public: { http: ['https://eth-mainnet.public.blastapi.io'] }
 	},
 	iconUrl: chainIconUrl('ethereum')
 };
 const optimism = {
-	...chain.optimism,
+	...WOptimism,
 	rpcUrls: {
-		default: 'https://optimism-mainnet.public.blastapi.io'
+		default: { http: ['https://optimism-mainnet.public.blastapi.io'] },
+		public: { http: ['https://optimism-mainnet.public.blastapi.io'] }
 	},
 	iconUrl: chainIconUrl('optimism')
 };

@@ -9,7 +9,7 @@ export const useOptimismFees = (txData, gasTokenPrice) => {
 	const { chain } = useNetwork();
 
 	const { data: l1Fee } = useContractRead({
-		address: FEE_ADDRESS,
+		address: FEE_ADDRESS as `0x${string}`,
 		abi: FEE_ABI,
 		functionName: 'getL1Fee',
 		args: [txData],

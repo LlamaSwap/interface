@@ -62,7 +62,7 @@ export const useBalance = ({ address, chainId, token }) => {
 	const isEnabled = chainId && isConnected && token ? true : false;
 
 	const wagmiData = useWagmiBalance({
-		addressOrName: address,
+		address: address,
 		token: tokenAddress,
 		watch: true,
 		chainId: chainId,

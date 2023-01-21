@@ -22,7 +22,7 @@ export const useGetAllowance = (token: string, spender: `0x${string}`, amount: s
 		refetch,
 		isRefetching
 	} = useContractRead({
-		address: token,
+		address: token as `0x${string}`,
 		abi: erc20ABI,
 		functionName: 'allowance',
 		args: [address, spender],
@@ -53,7 +53,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 	const normalizedAmount = Number(amount) ? amount : '0';
 
 	const { config } = usePrepareContractWrite({
-		address: token,
+		address: token as `0x${string}`,
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
@@ -61,7 +61,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 	});
 
 	const { config: configInfinite } = usePrepareContractWrite({
-		address: token,
+		address: token as `0x${string}`,
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, ethers.constants.MaxUint256],
@@ -69,7 +69,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 	});
 
 	const { config: configReset } = usePrepareContractWrite({
-		address: token,
+		address: token as `0x${string}`,
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, BigNumber.from('0')],
