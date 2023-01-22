@@ -18,26 +18,6 @@ export function approvalAddress(chain: string) {
 
 const nativeToken = '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7';
 
-export async function estimateGas({ chain, rawQuote, from, to, provider, userAddress }) {
-	let routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, provider).populateTransaction;
-
-	const swapFunc = (() => {
-		if (from === ethers.constants.AddressZero) return routerContract.swapNoSplitFromAVAX;
-		if (to === ethers.constants.AddressZero) return routerContract.swapNoSplitToAVAX;
-		return routerContract.swapNoSplit;
-	})();
-
-	const tx = await swapFunc(
-		[rawQuote.amounts[0], rawQuote.amounts[rawQuote.amounts.length - 1], rawQuote.path, rawQuote.adapters],
-		userAddress,
-		0,
-		from === ethers.constants.AddressZero ? { value: rawQuote.amounts[0], from: userAddress } : { from: userAddress }
-	);
-	const gas = await provider.estimateGas(tx);
-
-	return gas;
-}
-
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: any) {
 	const provider = providers[chain];
 	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, provider);
@@ -52,7 +32,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: data[0][data[0].length - 1].toString(),
-		estimatedGas: gas.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic, nor tx-gas-cost.
+		estimatedGas: gas.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic.
 		rawQuote: data,
 		tokenApprovalAddress: '0xC4729E56b831d74bBc18797e0e17A295fA77488c',
 		logo: 'https://assets.coingecko.com/coins/images/17654/small/yieldyak.png?1665824438'
