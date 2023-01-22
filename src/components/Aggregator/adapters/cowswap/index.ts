@@ -65,7 +65,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			buyTokenBalance: 'erc20',
 			from: extra.userAddress,
 			//"priceQuality": "fast",
-			signingScheme: 'ethsign',
+			signingScheme: 'eip712',
 			//"onchainOrder": false,
 			kind: 'sell',
 			sellAmountBeforeFee: amount
@@ -88,7 +88,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		estimatedGas: from === ethers.constants.AddressZero? 56360 : 0,
 		feeAmount: data.quote?.feeAmount || 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
-		rawQuote: data,
+		rawQuote: {...data, slippage: extra.slippage},
 		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
 		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589'
 	};
@@ -99,6 +99,10 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 
 	if (from === ethers.constants.AddressZero) {
 		const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer);
+
+		if(rawQuote.slippage < 2){
+			throw { reason: "Slippage for ETH orders on CowSwap needs to be higher than 2%"}
+		}
 
 		const tx = await nativeSwap.createOrder(
 			[
