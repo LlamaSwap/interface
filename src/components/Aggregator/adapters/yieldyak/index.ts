@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { providers } from '../../rpcs';
+import { sendTx } from '../../utils/sendTx';
 import { ABI } from './abi';
 
 // Source https://github.com/yieldyak/yak-aggregator
@@ -61,7 +62,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 export async function swap({ chain, signer, rawQuote, from, to }) {
 	const fromAddress = await signer.getAddress();
 
-	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, signer);
+	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, signer).populateTransaction;
 
 	const swapFunc = (() => {
 		if (from === ethers.constants.AddressZero) return routerContract.swapNoSplitFromAVAX;
@@ -76,5 +77,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 		from === ethers.constants.AddressZero ? { value: rawQuote[0][0] } : {}
 	);
 
-	return tx;
+	const res = await sendTx(signer, chain, tx);
+
+	return res;
 }
