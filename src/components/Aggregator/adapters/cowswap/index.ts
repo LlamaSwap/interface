@@ -85,8 +85,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: expectedBuyAmount,
-		estimatedGas: 0,
-		feeAmount: data.quote?.feeAmount || 0,
+		estimatedGas: from === ethers.constants.AddressZero? 56360 : 0,
+		feeAmount: data.quote?.feeAmount || 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
 		rawQuote: data,
 		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
