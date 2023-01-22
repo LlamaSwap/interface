@@ -17,11 +17,17 @@ interface IPrice {
 	gasPriceData?: {};
 }
 
-export async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
+function convertChain(chain:string){
+	if(chain === "gnosis") return "xdai";
+	return chain
+}
+
+export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPriceProps) {
 	try {
-		if (!fromToken || !toToken || !chain) {
+		if (!fromToken || !toToken || !rawChain) {
 			return {};
 		}
+		const chain = convertChain(rawChain)
 		const [{ coins }, gasPriceData] = await Promise.all([
 			fetch(
 				`https://coins.llama.fi/prices/current/${chain}:${toToken},${chain}:${ZERO_ADDRESS},${chain}:${fromToken}`
