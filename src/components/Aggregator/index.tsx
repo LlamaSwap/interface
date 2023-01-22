@@ -889,7 +889,7 @@ export function AggregatorContainer({ tokenlist }) {
 						{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 2? 
 								<Alert status="warning" borderRadius="0.375rem" py="8px">
 									<AlertIcon />
-									Swaps from ETH on CowSwap need to have slippage higher than 2%
+									Swaps from {finalSelectedFromToken.symbol} on CowSwap need to have slippage higher than 2%.
 								</Alert>
 						: null}
 						<Alert status="warning" borderRadius="0.375rem" py="8px">
