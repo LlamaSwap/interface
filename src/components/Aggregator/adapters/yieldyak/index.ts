@@ -47,12 +47,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
 
-	let gas = data.gasEstimate.add(21000);
-	try {
-		gas = await estimateGas({ chain, provider, rawQuote: data, from, to, userAddress: extra.userAddress });
-	} catch (e) {
-		console.log(e);
-	}
+	const gas = data.gasEstimate.add(21000);
+
 	return {
 		amountReturned: data[0][data[0].length - 1].toString(),
 		estimatedGas: gas.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic, nor tx-gas-cost.
