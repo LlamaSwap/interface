@@ -18,7 +18,9 @@ import {
 	Spacer,
 	IconButton,
 	Text,
-	ToastId
+	ToastId,
+	Alert,
+	AlertIcon
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
@@ -881,6 +883,21 @@ export function AggregatorContainer({ tokenlist }) {
 						amount={debouncedAmount}
 						slippage={slippage}
 					/>
+
+					{aggregator==="CowSwap" ? (
+						<>
+						{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 2? 
+								<Alert status="warning" borderRadius="0.375rem" py="8px">
+									<AlertIcon />
+									Swaps from ETH on CowSwap need to have slippage higher than 2%
+								</Alert>
+						: null}
+						<Alert status="warning" borderRadius="0.375rem" py="8px">
+							<AlertIcon />
+							CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
+						</Alert>
+						</>
+					) : null}
 
 					<SwapWrapper>
 						{!isConnected ? (
