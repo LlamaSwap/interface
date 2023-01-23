@@ -842,33 +842,32 @@ export function AggregatorContainer({ tokenlist }) {
 					</SelectWrapper>
 
 					<Flex as="label" flexDir="column">
-						<Text as="span" fontWeight="bold" fontSize="1rem" ml="4px">
-							Amount In {finalSelectedFromToken?.symbol}
-						</Text>
+						<Flex alignItems="center">
+							<Text as="span" fontWeight="bold" fontSize="1rem" ml="4px">
+								Amount In {finalSelectedFromToken?.symbol}
+							</Text>
+							{balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted)) ? (
+								<Button
+									bg="none"
+									p={0}
+									fontWeight="400"
+									fontSize="0.875rem"
+									ml="auto"
+									h="initial"
+									onClick={onMaxClick}
+									_hover={{ bg: 'none' }}
+									_focus={{ bg: 'none' }}
+								>
+									Balance: {(+balance.data.formatted).toFixed(3)}
+								</Button>
+							) : (
+								<Box h="16.8px" mt="8px"></Box>
+							)}
+						</Flex>
 						<TokenInput setAmount={setAmount} amount={amount} onMaxClick={onMaxClick} />
-
-						{balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted)) ? (
-							<Button
-								textDecor="underline"
-								bg="none"
-								p={0}
-								fontWeight="400"
-								fontSize="0.875rem"
-								ml="auto"
-								h="initial"
-								mt="8px"
-								onClick={onMaxClick}
-								_hover={{ bg: 'none' }}
-								_focus={{ bg: 'none' }}
-							>
-								Balance: {(+balance.data.formatted).toFixed(3)}
-							</Button>
-						) : (
-							<Box h="16.8px" mt="8px"></Box>
-						)}
 					</Flex>
 
-					<Slippage slippage={slippage} setSlippage={setSlippage} />
+					{selectedRoute ? <Slippage slippage={slippage} setSlippage={setSlippage} /> : null}
 
 					<PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
