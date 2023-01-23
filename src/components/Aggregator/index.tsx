@@ -867,7 +867,13 @@ export function AggregatorContainer({ tokenlist }) {
 						<TokenInput setAmount={setAmount} amount={amount} onMaxClick={onMaxClick} />
 					</Flex>
 
-					{selectedRoute ? <Slippage slippage={slippage} setSlippage={setSlippage} /> : null}
+					<Text>
+						{ amount &&
+						debouncedAmount &&
+						amount === debouncedAmount &&
+						finalSelectedFromToken &&
+						finalSelectedToToken ? <Slippage amountUsd={+debouncedAmount * +fromTokenPrice} slippage={slippage} setSlippage={setSlippage} /> : null}
+					</Text>
 
 					<PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
