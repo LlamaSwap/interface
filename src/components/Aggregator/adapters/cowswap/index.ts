@@ -50,8 +50,9 @@ const waitForOrder = (uid, provider, trader) => async (onSuccess) => {
 
 // https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/2.-query-the-fee-endpoint
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
+	const isEthflowOrder = from === ethers.constants.AddressZero
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const tokenFrom = from === ethers.constants.AddressZero ? wrappedTokens[chain] : from;
+	const tokenFrom = isEthflowOrder ? wrappedTokens[chain] : from;
 	// amount should include decimals
 	const data = await fetch(`${chainToId[chain]}/api/v1/quote`, {
 		method: 'POST',
@@ -65,8 +66,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			buyTokenBalance: 'erc20',
 			from: extra.userAddress,
 			//"priceQuality": "fast",
-			signingScheme: 'eip712',
-			//"onchainOrder": false,
+			signingScheme: isEthflowOrder ? 'eip1272' : 'eip712', // for selling directly ether, another signature type is required
+			onchainOrder: isEthflowOrder ? true : false,  // for selling directly ether, we have to quote for onchain orders
 			kind: 'sell',
 			sellAmountBeforeFee: amount
 		}),
@@ -85,13 +86,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: expectedBuyAmount,
-		estimatedGas: from === ethers.constants.AddressZero? 56360 : 0,
-		feeAmount: data.quote?.feeAmount || 0, // 56360 is gas from sending createOrder() tx
+		estimatedGas: from === ethers.constants.AddressZero? 56360 : 0, // 56360 is gas from sending createOrder() tx
+		feeAmount: data.quote?.feeAmount, // even for ethflow orders, the normal fee has to be paid after onchain order placement costs 
 		validTo: data.quote?.validTo || 0,
 		rawQuote: {...data, slippage: extra.slippage},
 		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
 		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589'
-	};
+	}; 	
 }
 
 export async function swap({ chain, signer, rawQuote, from, to }) {
