@@ -7,7 +7,7 @@ import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainn
 import { ethers } from 'ethers';
 import { ABI } from './abi';
 import BigNumber from 'bignumber.js';
-import {chainsMap} from '../../constants';
+import { chainsMap } from '../../constants';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
@@ -50,7 +50,7 @@ const waitForOrder = (uid, provider, trader) => async (onSuccess) => {
 
 // https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/2.-query-the-fee-endpoint
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
-	const isEthflowOrder = from === ethers.constants.AddressZero
+	const isEthflowOrder = from === ethers.constants.AddressZero;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const tokenFrom = isEthflowOrder ? wrappedTokens[chain] : from;
 	// amount should include decimals
@@ -67,7 +67,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			from: extra.userAddress,
 			//"priceQuality": "fast",
 			signingScheme: isEthflowOrder ? 'eip1272' : 'eip712', // for selling directly ether, another signature type is required
-			onchainOrder: isEthflowOrder ? true : false,  // for selling directly ether, we have to quote for onchain orders
+			onchainOrder: isEthflowOrder ? true : false, // for selling directly ether, we have to quote for onchain orders
 			kind: 'sell',
 			sellAmountBeforeFee: amount
 		}),
@@ -77,22 +77,24 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	}).then((r) => r.json());
 	// These orders should never be sent, but if they ever are signed they could be used to drain account
 	// Source: https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/4.-signing-the-order
-	if(data.quote.sellAmount===0 && data.quote.buyAmount === 0 && data.quote.partiallyFillable === false){
-		throw new Error("Buggy quote from cowswap")
+	if (data.quote.sellAmount === 0 && data.quote.buyAmount === 0 && data.quote.partiallyFillable === false) {
+		throw new Error('Buggy quote from cowswap');
 	}
-	
-	const expectedBuyAmount = data.quote.buyAmount
-	data.quote.buyAmount = BigNumber(expectedBuyAmount).times(1-(Number(extra.slippage)/100)).toFixed(0)
+
+	const expectedBuyAmount = data.quote.buyAmount;
+	data.quote.buyAmount = BigNumber(expectedBuyAmount)
+		.times(1 - Number(extra.slippage) / 100)
+		.toFixed(0);
 
 	return {
 		amountReturned: expectedBuyAmount,
-		estimatedGas: from === ethers.constants.AddressZero? 56360 : 0, // 56360 is gas from sending createOrder() tx
-		feeAmount: data.quote?.feeAmount, // even for ethflow orders, the normal fee has to be paid after onchain order placement costs 
+		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
+		feeAmount: data.quote?.feeAmount, // even for ethflow orders, the normal fee has to be paid after onchain order placement costs
 		validTo: data.quote?.validTo || 0,
-		rawQuote: {...data, slippage: extra.slippage},
+		rawQuote: { ...data, slippage: extra.slippage },
 		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
 		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589'
-	}; 	
+	};
 }
 
 export async function swap({ chain, signer, rawQuote, from, to }) {
@@ -101,8 +103,8 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 	if (from === ethers.constants.AddressZero) {
 		const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer);
 
-		if(rawQuote.slippage < 2){
-			throw { reason: "Slippage for ETH orders on CowSwap needs to be higher than 2%"}
+		if (rawQuote.slippage < 2) {
+			throw { reason: 'Slippage for ETH orders on CowSwap needs to be higher than 2%' };
 		}
 
 		const tx = await nativeSwap.createOrder(
