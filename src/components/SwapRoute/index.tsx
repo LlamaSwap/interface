@@ -99,7 +99,7 @@ const Route = ({
 			</RouteRow>
 
 			<RouteRow>
-				<Flex className='mobile-column' as="span" columnGap="6px" display="flex" color="gray.400" fontWeight={500}>
+				<Flex className='mobile-column' as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
 					<span>{`≈ ${afterFees} `}</span>
 					{isGasNotKnown && !isFetchingGasPrice ? (
 						<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
