@@ -66,7 +66,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			buyTokenBalance: 'erc20',
 			from: extra.userAddress,
 			//"priceQuality": "fast",
-			signingScheme: isEthflowOrder ? 'eip1272' : 'eip712', // for selling directly ether, another signature type is required
+			signingScheme: isEthflowOrder ? 'eip1271' : 'eip712', // for selling directly ether, another signature type is required
 			onchainOrder: isEthflowOrder ? true : false, // for selling directly ether, we have to quote for onchain orders
 			kind: 'sell',
 			sellAmountBeforeFee: amount
