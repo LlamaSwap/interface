@@ -89,7 +89,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	return {
 		amountReturned: expectedBuyAmount,
 		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
-		feeAmount: data.quote?.feeAmount, // even for ethflow orders, the normal fee has to be paid after onchain order placement costs
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
 		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
