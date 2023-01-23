@@ -10,6 +10,7 @@ import {
 	Box,
 	Text
 } from '@chakra-ui/react';
+import { useState } from 'react';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from '../Aggregator/constants';
 
 interface IPriceImpact {
@@ -44,6 +45,7 @@ export function PriceImpact({
 	selectedRoutesPriceImpact,
 	slippage
 }: IPriceImpact) {
+	const [priceOrder, setPriceOrder] = useState(1);
 	if (isLoading || !fromToken || !toToken) {
 		return null;
 	}
@@ -62,6 +64,8 @@ export function PriceImpact({
 
 	const amountReceived = (Number(+amountReturnedInSelectedRoute / 10 ** +toToken.decimals) / Number(amount)).toFixed(4);
 
+	const toTokenValue = (1 / Number(amountReceived)).toFixed(4);
+
 	const totalAmountReceived = Number(+amountReturnedInSelectedRoute / 10 ** +toToken.decimals).toFixed(4);
 
 	const minimumReceived =
@@ -75,10 +79,18 @@ export function PriceImpact({
 		<>
 			<Accordion allowToggle style={{ margin: '0 4px' }}>
 				<AccordionItem borderColor="#373944" minH="2.5rem">
-					<AccordionButton>
-						<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${fromToken.symbol} = ${amountReceived} ${
-							toToken.symbol
-						} ($${(Number(amountReceived) * Number(toTokenPrice)).toFixed(2)})`}</Box>
+					<AccordionButton onClick={() => setPriceOrder((prev) => prev * -1)}>
+						{priceOrder === 1 ? (
+							<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${
+								fromToken.symbol
+							} = ${amountReceived} ${toToken.symbol} ($${(Number(amountReceived) * Number(toTokenPrice)).toFixed(
+								2
+							)})`}</Box>
+						) : (
+							<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${toToken.symbol} = ${toTokenValue} ${
+								fromToken.symbol
+							} ($${(Number(toTokenValue) * Number(fromTokenPrice)).toFixed(2)})`}</Box>
+						)}
 						<AccordionIcon />
 					</AccordionButton>
 
