@@ -233,6 +233,11 @@ const SelectWrapper = styled.div`
 	padding: 12px;
 	display: flex;
 	flex-direction: column;
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		& input {
+			font-size: 16px;
+		}
+	}
 `;
 
 const SwapWrapper = styled.div`
