@@ -365,15 +365,17 @@ export function AggregatorContainer({ tokenlist }) {
 		return (
 			chainTokenList
 				?.concat(savedTokens)
-				.map((token) => ({
-					...token,
-					amount:
-						tokenBalances?.[selectedChain?.id]?.find((t) => t.address.toLowerCase() === token?.address?.toLowerCase())
-							?.amount ?? 0,
-					balanceUSD:
-						tokenBalances?.[selectedChain?.id]?.find((t) => t.address.toLowerCase() === token?.address?.toLowerCase())
-							?.balanceUSD ?? 0
-				}))
+				.map((token) => {
+					const tokenBalance = tokenBalances?.[selectedChain?.id]?.find(
+						(t) => t.address.toLowerCase() === token?.address?.toLowerCase()
+					);
+
+					return {
+						...token,
+						amount: tokenBalance?.amount ?? 0,
+						balanceUSD: tokenBalance?.balanceUSD ?? 0
+					};
+				})
 				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
 		);
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
@@ -447,13 +449,13 @@ export function AggregatorContainer({ tokenlist }) {
 			({ fromAmount, amount: toAmount, isFailed }) =>
 				Number(toAmount) && amountWithDecimals === fromAmount && isFailed !== true
 		)
-		.sort((a, b) =>{
-			if(a.gasUsd === 'Unknown'){
-				return 1
-			} else if(b.gasUsd === 'Unknown'){
-				return -1
+		.sort((a, b) => {
+			if (a.gasUsd === 'Unknown') {
+				return 1;
+			} else if (b.gasUsd === 'Unknown') {
+				return -1;
 			}
-			return b.netOut - a.netOut
+			return b.netOut - a.netOut;
 		})
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
