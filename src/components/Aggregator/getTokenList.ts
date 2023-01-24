@@ -178,7 +178,7 @@ export async function getTokenList() {
 		props: {
 			tokenlist
 		},
-		revalidate: 5 * 60 // 5 minutes
+		//revalidate: 5 * 60 // 5 minutes
 	};
 }
 
