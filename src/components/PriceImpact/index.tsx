@@ -10,6 +10,7 @@ import {
 	Box,
 	Text
 } from '@chakra-ui/react';
+import BigNumber from 'bignumber.js';
 import { useState } from 'react';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from '../Aggregator/constants';
 
@@ -62,15 +63,15 @@ export function PriceImpact({
 		return null;
 	}
 
-	const amountReceived = (Number(+amountReturnedInSelectedRoute / 10 ** +toToken.decimals) / Number(amount)).toFixed(4);
+	const totalAmountReceived = BigNumber(amountReturnedInSelectedRoute).div(10 ** +toToken.decimals);
 
-	const toTokenValue = (1 / Number(amountReceived)).toFixed(4);
+	const amountReceived = BigNumber(totalAmountReceived).div(amount);
 
-	const totalAmountReceived = Number(+amountReturnedInSelectedRoute / 10 ** +toToken.decimals).toFixed(4);
+	const toTokenValue = BigNumber(1).div(amountReceived);
 
 	const minimumReceived =
 		totalAmountReceived && !Number.isNaN(Number(totalAmountReceived))
-			? Number(totalAmountReceived) - (Number(totalAmountReceived) / 100) * Number(slippage)
+			? BigNumber(totalAmountReceived).minus(BigNumber(totalAmountReceived).div(100).multipliedBy(slippage))
 			: null;
 
 	const isPriceImpactNotKnown = !selectedRoutesPriceImpact && selectedRoutesPriceImpact !== 0;
@@ -83,13 +84,15 @@ export function PriceImpact({
 						{priceOrder === 1 ? (
 							<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${
 								fromToken.symbol
-							} = ${amountReceived} ${toToken.symbol} ($${(Number(amountReceived) * Number(toTokenPrice)).toFixed(
-								2
-							)})`}</Box>
+							} = ${amountReceived.toFixed(4)} ${toToken.symbol} ($${(
+								Number(amountReceived) * Number(toTokenPrice)
+							).toFixed(2)})`}</Box>
 						) : (
-							<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${toToken.symbol} = ${toTokenValue} ${
-								fromToken.symbol
-							} ($${(Number(toTokenValue) * Number(fromTokenPrice)).toFixed(2)})`}</Box>
+							<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${
+								toToken.symbol
+							} = ${toTokenValue.toFixed(4)} ${fromToken.symbol} ($${(
+								Number(toTokenValue) * Number(fromTokenPrice)
+							).toFixed(2)})`}</Box>
 						)}
 						<AccordionIcon />
 					</AccordionButton>
@@ -107,7 +110,7 @@ export function PriceImpact({
 					>
 						<Text display="flex" justifyContent="space-between" gap="8px" alignItems="center">
 							<span>Expected Output</span>
-							<span>{totalAmountReceived ? `${totalAmountReceived} ${toToken.symbol}` : '-'}</span>
+							<span>{totalAmountReceived ? `${totalAmountReceived.toFixed(4)} ${toToken.symbol}` : '-'}</span>
 						</Text>
 						<Text
 							display="flex"
