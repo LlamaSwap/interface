@@ -25,19 +25,10 @@ export const chainToId = {
 export const name = 'Uniswap';
 export const token = 'UNI';
 
-function countDecimals(x: number) {
-	if (Math.floor(x) === x) {
-		return 0;
-	}
-	return x.toString().split('.')[1].length || 0;
-}
-export function fromReadableAmount(amount: number, decimals: number): JSBI {
-	const extraDigits = Math.pow(10, countDecimals(amount));
-	const adjustedAmount = amount * extraDigits;
-	return JSBI.divide(
-		JSBI.multiply(JSBI.BigInt(adjustedAmount), JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))),
-		JSBI.BigInt(extraDigits)
-	);
+export function fromReadableAmount(amount: string, decimals: number): JSBI {
+	const value = ethers.utils.parseUnits(amount, decimals);
+
+	return JSBI.BigInt(value);
 }
 
 export const uniToken = (address, decimals, chain) => {
@@ -62,7 +53,7 @@ export async function getQuote(chain: string, from: string, to: string, _: strin
 	};
 
 	const route = await router.route(
-		CurrencyAmount.fromRawAmount(fromToken, fromReadableAmount(+extra.amount, extra.fromToken.decimals).toString()),
+		CurrencyAmount.fromRawAmount(fromToken, fromReadableAmount(extra.amount, extra.fromToken.decimals).toString()),
 		toToken,
 		TradeType.EXACT_INPUT,
 		options
@@ -72,7 +63,7 @@ export async function getQuote(chain: string, from: string, to: string, _: strin
 	if (chain === 'arbitrum')
 		gas =
 			route === null ? null : await applyArbitrumFees(route.methodParameters.to, route.methodParameters.calldata, gas);
-	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
+	if (chain === 'optimism') gas = BigNumber(7).times(gas).toFixed(0, 1);
 	return {
 		amountReturned: +route.trade.outputAmount.toExact() * 10 ** extra.toToken.decimals,
 		estimatedGas: gas,
