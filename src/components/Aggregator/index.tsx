@@ -48,7 +48,6 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
-import { formattedNum } from '~/utils';
 import { useEstimateGas } from './hooks/useEstimateGas';
 import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
@@ -114,7 +113,7 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	max-width: 30rem;
 	border: 1px solid #2f333c;
 	align-self: flex-start;
-	
+
 	z-index: 1;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
@@ -198,7 +197,7 @@ const BodyWrapper = styled.div`
 	position: relative;
 
 	& > * {
-		flex: 1;
+		margin: 0 auto;
 	}
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
@@ -206,6 +205,11 @@ const BodyWrapper = styled.div`
 		align-items: flex-start;
 		justify-content: center;
 		gap: 24px;
+
+		& > * {
+			flex: 1;
+			margin: 0;
+		}
 	}
 `;
 
@@ -889,18 +893,18 @@ export function AggregatorContainer({ tokenlist }) {
 						slippage={slippage}
 					/>
 
-					{aggregator==="CowSwap" ? (
+					{aggregator === 'CowSwap' ? (
 						<>
-						{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 2? 
+							{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 2 ? (
 								<Alert status="warning" borderRadius="0.375rem" py="8px">
 									<AlertIcon />
 									Swaps from {finalSelectedFromToken.symbol} on CowSwap need to have slippage higher than 2%.
 								</Alert>
-						: null}
-						<Alert status="warning" borderRadius="0.375rem" py="8px">
-							<AlertIcon />
-							CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
-						</Alert>
+							) : null}
+							<Alert status="warning" borderRadius="0.375rem" py="8px">
+								<AlertIcon />
+								CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
+							</Alert>
 						</>
 					) : null}
 
