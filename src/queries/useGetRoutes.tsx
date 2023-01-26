@@ -52,7 +52,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 	try {
 		let price;
-		if (extra.isPrivacyEnabled) {
+		if (extra.isPrivacyEnabled || adapter.name === 'Uniswap') {
 			price = await redirectQuoteReq(adapter.name, chain, from, to, amount, extra);
 		} else {
 			price = await adapter.getQuote(chain, from, to, amount, {
