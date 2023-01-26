@@ -48,7 +48,7 @@ export async function getQuote(chain: string, from: string, to: string, _: strin
 
 	const options: SwapOptionsSwapRouter02 = {
 		recipient: extra.userAddress,
-		slippageTolerance: new Percent(+extra.slippage * 1000, 10000),
+		slippageTolerance: new Percent(+extra.slippage * 1000, 100000),
 		deadline: Math.floor(Date.now() / 1000 + 1800),
 		type: SwapType.SWAP_ROUTER_02
 	};
