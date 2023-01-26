@@ -1,0 +1,101 @@
+import { CurrencyAmount, Ether, Percent, Token, TradeType } from '@uniswap/sdk-core';
+import { AlphaRouter, ChainId, SwapOptionsSwapRouter02, SwapType } from '@uniswap/smart-order-router';
+import JSBI from 'jsbi';
+import { ethers } from 'ethers';
+import { providers } from '../../rpcs';
+import { sendTx } from '../../utils/sendTx';
+import { applyArbitrumFees } from '../../utils/arbitrumFees';
+import BigNumber from 'bignumber.js';
+
+export const chainToId = {
+	ethereum: ChainId.MAINNET,
+	polygon: ChainId.POLYGON,
+	arbitrum: ChainId.ARBITRUM_ONE,
+	optimism: ChainId.OPTIMISM
+};
+
+export const name = 'Uniswap';
+export const token = 'UNI';
+
+function countDecimals(x: number) {
+	if (Math.floor(x) === x) {
+		return 0;
+	}
+	return x.toString().split('.')[1].length || 0;
+}
+export function fromReadableAmount(amount: number, decimals: number): JSBI {
+	const extraDigits = Math.pow(10, countDecimals(amount));
+	const adjustedAmount = amount * extraDigits;
+	return JSBI.divide(
+		JSBI.multiply(JSBI.BigInt(adjustedAmount), JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))),
+		JSBI.BigInt(extraDigits)
+	);
+}
+
+export const uniToken = (address, decimals, chain) => {
+	if (address === ethers.constants.AddressZero) return Ether.onChain(chainToId[chain]);
+	return new Token(chainToId[chain], address, decimals);
+};
+
+export async function getQuote(chain: string, from: string, to: string, _: string, extra) {
+	const fromToken = uniToken(from, extra.fromToken.decimals, chain);
+	const toToken = uniToken(to, extra.toToken.decimals, chain);
+
+	const router = new AlphaRouter({
+		chainId: chainToId[chain],
+		provider: providers[chain]
+	});
+
+	const options: SwapOptionsSwapRouter02 = {
+		recipient: extra.userAddress,
+		slippageTolerance: new Percent(+extra.slippage * 1000, 10000),
+		deadline: Math.floor(Date.now() / 1000 + 1800),
+		type: SwapType.SWAP_ROUTER_02
+	};
+
+	const route = await router.route(
+		CurrencyAmount.fromRawAmount(fromToken, fromReadableAmount(+extra.amount, extra.fromToken.decimals).toString()),
+		toToken,
+		TradeType.EXACT_INPUT,
+		options
+	);
+
+	let gas = route.estimatedGasUsed.toString();
+	if (chain === 'arbitrum')
+		gas =
+			route === null ? null : await applyArbitrumFees(route.methodParameters.to, route.methodParameters.calldata, gas);
+	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
+	return {
+		amountReturned: +route.trade.outputAmount.toExact() * 10 ** extra.toToken.decimals,
+		estimatedGas: gas,
+		tokenApprovalAddress: route.methodParameters.to,
+		rawQuote: {
+			tx: {
+				data: route.methodParameters.calldata,
+				value: route.methodParameters.value,
+				to: route.methodParameters.to
+			},
+			gasLimit: gas
+		}
+	};
+}
+
+export async function swap({ chain, signer, rawQuote }) {
+	const fromAddress = await signer.getAddress();
+
+	const tx = await sendTx(signer, chain, {
+		from: fromAddress,
+		...rawQuote.tx,
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+	});
+
+	return tx;
+}
+
+export const getTxData = ({ rawQuote }) => rawQuote?.tx?.data;
+
+export const getTx = ({ rawQuote }) => ({
+	to: rawQuote?.tx?.to,
+	data: rawQuote?.tx?.data,
+	value: rawQuote?.tx?.value
+});

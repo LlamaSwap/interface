@@ -1,11 +1,13 @@
 import * as matcha from './adapters/0x';
 import * as inch from './adapters/1inch';
 import * as cowswap from './adapters/cowswap';
-import * as firebird from './adapters/firebird';
+// import * as firebird from './adapters/firebird';
 import * as kyberswap from './adapters/kyberswap';
+import * as uniswap from './adapters/uniswap';
+
 import * as openocean from './adapters/openocean';
 import * as paraswap from './adapters/paraswap';
-import * as lifi from './adapters/lifi';
+// import * as lifi from './adapters/lifi';
 // import * as rango from './adapters/rango';
 
 // import * as unidex from "./adapters/unidex" - disabled, their api is broken
@@ -17,9 +19,16 @@ import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap];
+export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, uniswap];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, kyberswap.name, paraswap.name];
+export const inifiniteApprovalAllowed = [
+	matcha.name,
+	inch.name,
+	cowswap.name,
+	kyberswap.name,
+	paraswap.name,
+	uniswap.name
+];
 
 const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
 
