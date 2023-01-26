@@ -1,11 +1,19 @@
-import { CurrencyAmount, Ether, Percent, Token, TradeType } from '@uniswap/sdk-core';
-import { AlphaRouter, ChainId, SwapOptionsSwapRouter02, SwapType } from '@uniswap/smart-order-router';
+import { CurrencyAmount, Ether, Percent, Token, TradeType, WETH9 } from '@uniswap/sdk-core';
+import {
+	AlphaRouter,
+	ChainId,
+	SwapOptionsSwapRouter02,
+	SwapType,
+	SWAP_ROUTER_02_ADDRESS
+} from '@uniswap/smart-order-router';
 import JSBI from 'jsbi';
 import { ethers } from 'ethers';
 import { providers } from '../../rpcs';
 import { sendTx } from '../../utils/sendTx';
 import { applyArbitrumFees } from '../../utils/arbitrumFees';
 import BigNumber from 'bignumber.js';
+
+WETH9[137] = new Token(137, '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', 18, 'WMATIC', 'Wrapped Matic');
 
 export const chainToId = {
 	ethereum: ChainId.MAINNET,
@@ -68,7 +76,7 @@ export async function getQuote(chain: string, from: string, to: string, _: strin
 	return {
 		amountReturned: +route.trade.outputAmount.toExact() * 10 ** extra.toToken.decimals,
 		estimatedGas: gas,
-		tokenApprovalAddress: route.methodParameters.to,
+		tokenApprovalAddress: SWAP_ROUTER_02_ADDRESS,
 		rawQuote: {
 			tx: {
 				data: route.methodParameters.calldata,
