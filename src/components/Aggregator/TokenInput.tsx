@@ -95,9 +95,12 @@ export const TokenInput = ({ setAmount, amount, onMaxClick, ...props }) => {
 			<InputElem
 				placeholder="Token amount"
 				type="text"
-				pattern="\d+((\.|,)\d+)?"
 				onChange={(val) => {
-					setAmount(val.target.value);
+					setAmount(val.target.value
+						.replace(/[^0-9.,]/g, '')
+						.replace(/,/g, '.')
+						);
+						
 				}}
 				value={amount}
 				{...props}
