@@ -211,6 +211,7 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 				p="16px"
 				borderRadius="16px"
 				bg="#212429"
+				color="white"
 			>
 				<Header>
 					<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
