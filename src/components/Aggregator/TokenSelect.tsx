@@ -195,7 +195,7 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 		count: filteredData.length,
 		getScrollElement: () => parentRef.current,
 		estimateSize: (index) => (filteredData[index].isGeckoToken ? 72 : 40),
-		overscan: 5
+		overscan: 10
 	});
 
 	return (
