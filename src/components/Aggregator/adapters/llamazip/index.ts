@@ -35,6 +35,9 @@ function normalize(token:string, weth:string){
 
 // https://docs.uniswap.org/sdk/v3/guides/quoting
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: any) {
+if(to.toLowerCase() === weth[chain].toLowerCase()){
+return {} // We don't support swaps to WETH
+}
   const provider = providers[chain];
   const quoterContract = new ethers.Contract(quoter[chain], 
     ["function quoteExactInputSingle(address tokenIn,address tokenOut,uint24 fee,uint256 amountIn,uint160 sqrtPriceLimitX96) external returns (uint256 amountOut)"],
@@ -60,6 +63,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
   const inputIsETH = from === ethers.constants.AddressZero;
   const slippage = BigNumber.from((100-Number(extra.slippage))*1e4)
   const calldata = encode(pair.pairId, token0isTokenIn, quotedAmountOut.mul(slippage).div(1e6), inputIsETH, false, amount)
+if(calldata.length > (256/4 + 2)){
+return {} // LlamaZip doesn't support calldata that's bigger than one EVM word
+}
 
   return {
     amountReturned: quotedAmountOut.toString(),
