@@ -52,6 +52,32 @@ export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chains
 	moonbeam: 1284
 };
 
+export const chainGasToken: Record<keyof typeof chainsMap, string> = {
+	ethereum: 'ethereum',
+	bsc: 'binancecoin',
+	polygon: 'matic-network',
+	optimism: 'ethereum',
+	arbitrum: 'ethereum',
+	avax: 'avalanche-2',
+	gnosis: 'xdai',
+	fantom: 'fantom',
+	klaytn: 'klay-token',
+	aurora: 'ethereum',
+	celo: 'celo',
+	cronos: 'crypto-com-chain',
+	dogechain: 'dogecoin',
+	moonriver: 'moonriver',
+	bttc: 'bittorrent',
+	oasis: 'oasis-network',
+	velas: 'velas',
+	heco: 'huobi-token',
+	harmony: 'harmony',
+	boba: 'ethereum',
+	okexchain: 'oec-token',
+	fuse: 'fuse-network-token',
+	moonbeam: 'moonbeam'
+};
+
 export const llamaToGeckoChainsMap = Object.fromEntries(
 	Object.entries(chainsMap)
 		.map(([lllamaChainName, chainId]) => {
