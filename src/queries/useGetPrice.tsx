@@ -35,7 +35,7 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 		]);
 
 		if (cgPrices[0].status === 'fulfilled') {
-			gasTokenPrice = cgPrices[0].value[rawChain]?.['usd'];
+			gasTokenPrice = cgPrices[0].value[chainGasToken[rawChain]]?.['usd'];
 		}
 
 		if (cgPrices[1].status === 'fulfilled') {
