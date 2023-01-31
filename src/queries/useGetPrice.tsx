@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { llamaToGeckoChainsMap } from '~/components/Aggregator/constants';
 import { providers } from '~/components/Aggregator/rpcs';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -27,9 +28,9 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 
 	try {
 		const cgPrices = await Promise.allSettled([
-			fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${rawChain}&vs_currencies=usd
+			fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${llamaToGeckoChainsMap[rawChain]}&vs_currencies=usd
 	`).then((res) => res.json()),
-			fetch(`https://api.coingecko.com/api/v3/simple/token_price/${rawChain}?contract_addresses=${fromToken}%2C${toToken}&vs_currencies=usd
+			fetch(`https://api.coingecko.com/api/v3/simple/token_price/${llamaToGeckoChainsMap[rawChain]}?contract_addresses=${fromToken}%2C${toToken}&vs_currencies=usd
 	`).then((res) => res.json())
 		]);
 

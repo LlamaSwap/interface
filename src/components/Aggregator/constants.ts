@@ -52,6 +52,19 @@ export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chains
 	moonbeam: 1284
 };
 
+export const llamaToGeckoChainsMap = Object.fromEntries(
+	Object.entries(chainsMap)
+		.map(([lllamaChainName, chainId]) => {
+			const gchain = Object.entries(geckoChainsMap).find((geckoChain) => chainId === geckoChain[1]);
+
+			if (gchain) {
+				return [lllamaChainName, gchain[0]];
+			}
+			return null;
+		})
+		.filter((c) => c !== null)
+);
+
 export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], string> = {
 	1: 'ether',
 	56: 'bsc',
