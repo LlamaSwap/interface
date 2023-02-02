@@ -1,8 +1,8 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
 import { omit } from 'lodash';
+import { adapters } from '~/components/Aggregator/adapters';
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
-import { adapters } from '~/components/Aggregator/router';
 
 interface IGetListRoutesProps {
 	chain: string;

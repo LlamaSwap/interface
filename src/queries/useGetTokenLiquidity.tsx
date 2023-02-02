@@ -1,12 +1,12 @@
 import { useQueries, useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { initialLiquidity } from '~/components/Aggregator/constants';
-import { adapters } from '~/components/Aggregator/router';
 import type { IToken } from '~/types';
 import { getAdapterRoutes } from './useGetRoutes';
 import { getTopRoute } from '~/utils/getTopRoute';
 import { useMemo } from 'react';
 import { ethers } from 'ethers';
+import { adapters } from '~/components/Aggregator/adapters';
 
 async function getInitialLiquidityRoutes({
 	chain,
