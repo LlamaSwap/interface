@@ -39,7 +39,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}&skipValidation=true`,
 		{
 			headers: {
-				'0x-api-key': process.env['0X_API_KEY']
+				'0x-api-key': process.env.OX_API_KEY
 			}
 		}
 	).then((r) => r.json());
