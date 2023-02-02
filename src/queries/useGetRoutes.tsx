@@ -1,5 +1,6 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
 import { omit } from 'lodash';
+import { name as matcha0xName } from '~/components/Aggregator/adapters/0x';
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
 import { adapters } from '~/components/Aggregator/router';
@@ -52,7 +53,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 	try {
 		let price;
-		if (extra.isPrivacyEnabled) {
+		if (extra.isPrivacyEnabled || adapter.name === matcha0xName) {
 			price = await redirectQuoteReq(adapter.name, chain, from, to, amount, extra);
 		} else {
 			price = await adapter.getQuote(chain, from, to, amount, {
