@@ -6,13 +6,15 @@ export const redirectQuoteReq = async (
 	amount: string,
 	extra: any
 ) => {
-	const data = await fetch(
-		`./api/dexAggregatorQuote?protocol=${protocol}&chain=${chain}&from=${from}&to=${to}&amount=${amount}`,
-		{
-			method: 'POST',
-			body: JSON.stringify(extra)
-		}
-	).then((res) => res.json());
+	// TODO: Add lambda url
+	const api = process.env.LAMBDA_URL
+		? `${process.env.LAMBDA_URL}/dexAggregatorQuote`
+		: 'http://localhost:3001/prod/dexAggregatorQuote';
+
+	const data = await fetch(`${api}/?protocol=${protocol}&chain=${chain}&from=${from}&to=${to}&amount=${amount}`, {
+		method: 'POST',
+		body: JSON.stringify(extra)
+	}).then((res) => res.json());
 
 	return data;
 };
