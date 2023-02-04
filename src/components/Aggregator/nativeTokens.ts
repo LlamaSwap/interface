@@ -180,7 +180,7 @@ const avax = {
 	mcap: Number.MAX_SAFE_INTEGER,
 	address: ethers.constants.AddressZero,
 	chainId: 43114,
-	logoURI: chainIconUrl('avalanche'),
+	logoURI: chainIconUrl('avax'),
 	name: 'Avalanche',
 	symbol: 'AVAX',
 	decimals: 18
