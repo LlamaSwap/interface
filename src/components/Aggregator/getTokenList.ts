@@ -127,7 +127,6 @@ export async function getTokenList() {
 	// fetch name, symbol, decimals fo coingecko tokens
 	const geckoTokensList = await Promise.allSettled(
 		Object.entries(geckoListByChain)
-			.filter(([chain]) => chain !== '43114')
 			.map(([chain, tokens]: [string, Set<string>]) => getTokensData([chain, Array.from(tokens || new Set())]))
 	);
 
