@@ -27,11 +27,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const gasPrice = ethers.BigNumber.from(extra.gasPriceData.gasPrice);
 
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
+	const expectedAmount = data[0][data[0].length - 1]
+	data[0][data[0].length - 1] = BigNumber(expectedAmount)
+		.times(1 - Number(extra.slippage) / 100)
+		.toFixed(0);
 
 	const gas = data.gasEstimate.add(21000);
 
 	return {
-		amountReturned: data[0][data[0].length - 1].toString(),
+		amountReturned: expectedAmount.toString(),
 		estimatedGas: gas.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic.
 		rawQuote: data,
 		tokenApprovalAddress: '0xC4729E56b831d74bBc18797e0e17A295fA77488c',
