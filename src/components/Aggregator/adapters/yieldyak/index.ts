@@ -28,7 +28,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken[chain] : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken[chain] : to;
 
-	const gasPrice = ethers.BigNumber.from(extra.gasPriceData.gasPrice);
+	const gasPrice = ethers.BigNumber.from(extra.gasPriceData?.gasPrice ?? '1062500000000');
 
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
 
