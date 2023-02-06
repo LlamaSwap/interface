@@ -91,7 +91,7 @@ export const useEstimateGas = ({
 			?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
 			.reduce((acc, r) => ({ ...acc, [r.data.name]: r.data }), {} as Record<string, EstimationRes>) ?? {};
 	return {
-		isLoading: res.some((r) => r.status === 'loading'),
+		isLoading: res.some((r) => r.status === 'loading') || traceRpcs[chain] === undefined,
 		data
 	};
 };

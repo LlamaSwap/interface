@@ -6,7 +6,8 @@ import { ABI } from './abi';
 
 // Source https://github.com/yieldyak/yak-aggregator
 export const chainToId = {
-	avax: '0xC4729E56b831d74bBc18797e0e17A295fA77488c'
+	avax: '0xC4729E56b831d74bBc18797e0e17A295fA77488c',
+	canto : '0xE9A2a22c92949d52e963E43174127BEb50739dcF',
 };
 
 export const name = 'YieldYak';
@@ -16,13 +17,16 @@ export function approvalAddress(chain: string) {
 	return chainToId[chain];
 }
 
-const nativeToken = '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7';
+const nativeToken = {
+	avax: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
+	canto: '0x826551890dc65655a0aceca109ab11abdbd7a07b'
+}
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: any) {
 	const provider = providers[chain];
 	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, provider);
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken[chain] : from;
+	const tokenTo = to === ethers.constants.AddressZero ? nativeToken[chain] : to;
 
 	const gasPrice = ethers.BigNumber.from(extra.gasPriceData.gasPrice);
 
@@ -34,7 +38,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: data[0][data[0].length - 1].toString(),
 		estimatedGas: gas.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic.
 		rawQuote: data,
-		tokenApprovalAddress: '0xC4729E56b831d74bBc18797e0e17A295fA77488c',
+		tokenApprovalAddress: chainToId[chain],
 		logo: 'https://assets.coingecko.com/coins/images/17654/small/yieldyak.png?1665824438'
 	};
 }
