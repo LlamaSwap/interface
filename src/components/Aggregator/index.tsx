@@ -594,7 +594,8 @@ export function AggregatorContainer({ tokenlist }) {
 			  debouncedAmount &&
 			  amountWithDecimals &&
 			  amount === debouncedAmount &&
-			  +amountWithDecimals > +balance.data.value.toString()
+			  (+amountWithDecimals > +balance.data.value.toString() ||
+					+selectedRoute.fromAmount > +balance.data.value.toString())
 			: false;
 
 	const forceRefreshTokenBalance = () => {
@@ -629,7 +630,8 @@ export function AggregatorContainer({ tokenlist }) {
 			chain: string;
 			from: string;
 			to: string;
-			amount: string;
+			amount: string | number;
+			amountUsd: string;
 			adapter: string;
 			signer: ethers.Signer;
 			slippage: string;
@@ -666,9 +668,9 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(debouncedAmount),
+						amount: String(variables.amount),
+						amountUsd: +variables.amountUsd || 0,
 						errorData: {},
-						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
 						slippage,
 						routePlace: String(variables?.index)
 					});
@@ -735,9 +737,9 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(debouncedAmount),
+						amount: String(variables.amount),
+						amountUsd: +variables.amountUsd || 0,
 						errorData: {},
-						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
 						slippage,
 						routePlace: String(variables?.index)
 					});
@@ -767,9 +769,9 @@ export function AggregatorContainer({ tokenlist }) {
 					isError: true,
 					quote: variables.rawQuote,
 					txUrl: '',
-					amount: String(debouncedAmount),
+					amount: String(variables.amount),
+					amountUsd: +variables.amountUsd || 0,
 					errorData: err,
-					amountUsd: fromTokenPrice * +debouncedAmount || 0,
 					slippage,
 					routePlace: String(variables?.index)
 				});
@@ -783,13 +785,14 @@ export function AggregatorContainer({ tokenlist }) {
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
 				to: finalSelectedToToken.value,
-				amount: amountWithDecimals,
 				signer,
 				slippage,
 				adapter: selectedRoute.name,
 				rawQuote: selectedRoute.price.rawQuote,
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
-				index: selectedRoute.index
+				index: selectedRoute.index,
+				amountUsd: selectedRoute.amountUsd,
+				amount: selectedRoute.amount
 			});
 		}
 	};
@@ -1074,7 +1077,7 @@ export function AggregatorContainer({ tokenlist }) {
 						{normalizedRoutes?.length ? 'Best route is selected based on net output after gas fees' : null}
 					</span>
 
-					{isLoading && debouncedAmount && finalSelectedFromToken && finalSelectedToToken ? (
+					{isLoading && (debouncedAmount || debouncedAmountOut) && finalSelectedFromToken && finalSelectedToToken ? (
 						<Loader />
 					) : (!debouncedAmount && !debouncedAmountOut) ||
 					  !finalSelectedFromToken ||
@@ -1162,7 +1165,7 @@ export function AggregatorContainer({ tokenlist }) {
 																	if (
 																		balance.data &&
 																		!Number.isNaN(Number(balance.data.formatted)) &&
-																		+debouncedAmount > +balance.data.formatted
+																		+selectedRoute.amountIn > +balance.data.formatted
 																	)
 																		return;
 
