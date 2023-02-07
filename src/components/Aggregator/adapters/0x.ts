@@ -16,6 +16,7 @@ export const chainToId = {
 
 export const name = 'Matcha/0x';
 export const token = 'ZRX';
+export const isOutputAvailable = true;
 
 export function approvalAddress() {
 	// https://docs.0x.org/0x-api-swap/guides/swap-tokens-with-0x-api
@@ -29,10 +30,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const amountParam =
+		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
+
 	const data = await fetch(
-		`${
-			chainToId[chain]
-		}swap/v1/quote?buyToken=${tokenTo}&sellToken=${tokenFrom}&sellAmount=${amount}&slippagePercentage=${
+		`${chainToId[chain]}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
 			extra.slippage / 100 || 1
 		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
 			extra.userAddress
@@ -48,6 +50,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: data?.buyAmount || 0,
+		amountIn: data?.sellAmount || 0,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.to,
 		rawQuote: { ...data, gasLimit: gas },

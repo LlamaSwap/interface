@@ -1,3 +1,4 @@
+import { QuestionIcon, SearchIcon } from '@chakra-ui/icons';
 import styled from 'styled-components';
 
 const InputElem = styled.input`
@@ -5,7 +6,7 @@ const InputElem = styled.input`
 	display: block;
 	height: 48px;
 	width: 100%;
-	padding: 8px 16px;
+	padding: 8px 36px;
 	line-height: 25px;
 	font-size: 14px;
 	font-weight: 500;
@@ -38,14 +39,16 @@ const InputWrapper = styled.div`
 	button {
 		white-space: nowrap;
 		display: block;
-		&:not(:first-child):not(:last-child) {
-			border-radius: 0;
-		}
-		&:first-child {
+
+		&:nth-child(2) {
 			border-radius: 12px 0 0 12px;
 		}
+
 		&:last-child {
 			border-radius: 0 12px 12px 0;
+		}
+		&:nth-child(2):last-child {
+			border-radius: 12px;
 		}
 		&:only-child {
 			border-radius: 12px;
@@ -89,24 +92,39 @@ const InputWrapper = styled.div`
 	}
 `;
 
-export const TokenInput = ({ setAmount, amount, onMaxClick, ...props }) => {
+const iconStyles = {
+	width: '20px',
+	height: '20px',
+	marginRight: 8,
+	borderRadius: '50%',
+	aspectRatio: 1,
+	position: 'absolute',
+	top: '14px',
+	left: '10px',
+	zIndex: 2
+} as const;
+
+export const TokenInput = ({ setAmount, amount, onMaxClick = null, iconUrl = null, ...props }) => {
 	return (
 		<InputWrapper>
+			{iconUrl ? (
+				<img src={iconUrl} style={iconStyles} alt="" />
+			) : (
+				<div>
+					<QuestionIcon {...iconStyles} />
+				</div>
+			)}
 			<InputElem
 				placeholder="Token amount"
 				type="text"
 				onChange={(val) => {
-					setAmount(val.target.value
-						.replace(/[^0-9.,]/g, '')
-						.replace(/,/g, '.')
-						);
-						
+					setAmount(val.target.value.replace(/[^0-9.,]/g, '').replace(/,/g, '.'));
 				}}
 				value={amount}
 				{...props}
 			/>
 
-			<button onClick={onMaxClick}>Max</button>
+			{onMaxClick ? <button onClick={onMaxClick}>Max</button> : null}
 		</InputWrapper>
 	);
 };
