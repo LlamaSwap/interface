@@ -34,7 +34,7 @@ import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import TokenSelect from './TokenSelect';
-import Tooltip from '../Tooltip';
+import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
@@ -1034,7 +1034,9 @@ export function AggregatorContainer({ tokenlist }) {
 					{normalizedRoutes?.length ? (
 						<Flex alignItems="center" justifyContent="space-between">
 							<FormHeader>Select a route to perform a swap </FormHeader>
-							<RepeatIcon focusable cursor="pointer" width="20px" height="20px" onClick={refetch} />
+							<Tooltip2 content="Refresh aggregator quotes">
+								<RepeatIcon focusable cursor="pointer" width="20px" height="20px" onClick={refetch} />
+							</Tooltip2>
 						</Flex>
 					) : !isLoading &&
 					  amount &&
