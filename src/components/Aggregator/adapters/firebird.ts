@@ -46,7 +46,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const isFromNative = from === ethers.constants.AddressZero;
 	const tokenFrom = isFromNative ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const receiver = extra.userAddress || ethers.constants.AddressZero;
+	const receiver = extra.userAddress || defillamaReferrerAddress;
 
 	// amount should include decimals
 	const result = await fetch(
