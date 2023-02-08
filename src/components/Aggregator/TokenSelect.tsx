@@ -1,13 +1,13 @@
 import { ethers } from 'ethers';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure } from '@chakra-ui/react';
 import { QuestionIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import ReactSelect from '../MultiSelect';
-import { Header, IconImage, ModalWrapper, PairRow, ModalOverlay } from './Search';
+import { Header, IconImage, PairRow } from './Search';
 import { Input } from './TokenInput';
 import { useToken } from 'wagmi';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
-import { CloseBtn } from '../CloseBtn';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
@@ -161,7 +161,7 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 	);
 };
 
-const SelectModal = ({ close, data, onClick, selectedChain }) => {
+const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 	const [input, setInput] = useState('');
 	const onInputChange = (e) => {
 		setInput(e?.target?.value);
@@ -195,17 +195,29 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 		count: filteredData.length,
 		getScrollElement: () => parentRef.current,
 		estimateSize: (index) => (filteredData[index].isGeckoToken ? 72 : 40),
-		overscan: 5
+		overscan: 10
 	});
 
 	return (
-		<ModalOverlay>
-			<ModalWrapper>
+		<Modal isCentered isOpen={isOpen} onClose={onClose}>
+			<ModalOverlay />
+			<ModalContent
+				display="flex"
+				flexDir="column"
+				maxW="540px"
+				maxH="500px"
+				w="100%"
+				h="100%"
+				p="16px"
+				borderRadius="16px"
+				bg="#212429"
+				color="white"
+			>
 				<Header>
 					<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
 						Select Token
 					</Text>
-					<CloseBtn onClick={close} />
+					<ModalCloseButton bg="none" pos="absolute" top="-4px" right="-8px" onClick={close} />
 				</Header>
 				<div>
 					<Input placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
@@ -247,26 +259,32 @@ const SelectModal = ({ close, data, onClick, selectedChain }) => {
 						))}
 					</div>
 				</div>
-			</ModalWrapper>
-		</ModalOverlay>
+			</ModalContent>
+		</Modal>
 	);
 };
 
 const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
-	const [isOpen, setOpen] = useState(false);
+	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const onTokenClick = (token) => {
 		onClick(token);
-		setOpen(false);
+		onClose();
 	};
 
 	return (
 		<>
-			<span style={{ cursor: 'pointer' }} onClick={() => setOpen(true)}>
+			<span style={{ cursor: 'pointer' }} onClick={() => onOpen()}>
 				<ReactSelect openMenuOnClick={false} value={token} isDisabled />
 			</span>
 			{isOpen ? (
-				<SelectModal close={() => setOpen(false)} data={tokens} onClick={onTokenClick} selectedChain={selectedChain} />
+				<SelectModal
+					isOpen={isOpen}
+					onClose={onClose}
+					data={tokens}
+					onClick={onTokenClick}
+					selectedChain={selectedChain}
+				/>
 			) : null}
 		</>
 	);

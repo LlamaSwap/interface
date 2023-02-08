@@ -34,7 +34,14 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			chainToId[chain]
 		}swap/v1/quote?buyToken=${tokenTo}&sellToken=${tokenFrom}&sellAmount=${amount}&slippagePercentage=${
 			extra.slippage / 100 || 1
-		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false`
+		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
+			extra.userAddress
+		}&skipValidation=true`,
+		{
+			headers: {
+				'0x-api-key': process.env.OX_API_KEY
+			}
+		}
 	).then((r) => r.json());
 
 	const gas = chain === 'optimism' ? BigNumber(3.5).times(data.gas).toFixed(0, 1) : data.gas;

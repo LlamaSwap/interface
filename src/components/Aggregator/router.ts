@@ -1,7 +1,7 @@
 import * as matcha from './adapters/0x';
 import * as inch from './adapters/1inch';
 import * as cowswap from './adapters/cowswap';
-// import * as firebird from './adapters/firebird';
+import * as firebird from './adapters/firebird';
 import * as kyberswap from './adapters/kyberswap';
 import * as uniswap from './adapters/uniswap';
 
@@ -19,7 +19,7 @@ import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, uniswap];
+export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, firebird, uniswap];
 
 export const inifiniteApprovalAllowed = [
 	matcha.name,
