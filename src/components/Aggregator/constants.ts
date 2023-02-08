@@ -23,7 +23,8 @@ export const chainsMap = {
 	boba: 288,
 	okexchain: 66,
 	fuse: 122,
-	moonbeam: 1284
+	moonbeam: 1284,
+	canto: 7700,
 } as const;
 
 export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chainsMap]> = {
@@ -49,7 +50,8 @@ export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chains
 	boba: 288,
 	'okex-chain': 66,
 	fuse: 122,
-	moonbeam: 1284
+	moonbeam: 1284,
+	canto: 7700,
 };
 
 export const chainGasToken: Record<keyof typeof chainsMap, string> = {
@@ -75,7 +77,8 @@ export const chainGasToken: Record<keyof typeof chainsMap, string> = {
 	boba: 'ethereum',
 	okexchain: 'oec-token',
 	fuse: 'fuse-network-token',
-	moonbeam: 'moonbeam'
+	moonbeam: 'moonbeam',
+	canto: 'canto',
 };
 
 export const llamaToGeckoChainsMap = Object.fromEntries(
@@ -114,7 +117,8 @@ export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], 
 	122: 'fuse',
 	1284: 'moonbeam',
 	199: 'bittorrent',
-	8217: 'klay'
+	8217: 'klay',
+	7700: 'canto',
 };
 
 export const chainIdToName = (chainId) => {
