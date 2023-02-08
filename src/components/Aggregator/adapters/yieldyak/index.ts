@@ -31,13 +31,20 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const gasPrice = ethers.BigNumber.from(extra.gasPriceData?.gasPrice ?? '1062500000000');
 
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
+	const expectedAmount = data[0][data[0].length - 1]
+	const minAmountOut = BigNumber(expectedAmount.toString())
+		.times(1 - Number(extra.slippage) / 100)
+		.toFixed(0);
 
 	const gas = data.gasEstimate.add(21000);
 
 	return {
-		amountReturned: data[0][data[0].length - 1].toString(),
+		amountReturned: expectedAmount.toString(),
 		estimatedGas: gas.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic.
-		rawQuote: data,
+		rawQuote: {
+			offer: data,
+			minAmountOut
+		},
 		tokenApprovalAddress: chainToId[chain],
 		logo: 'https://assets.coingecko.com/coins/images/17654/small/yieldyak.png?1665824438'
 	};
@@ -55,10 +62,10 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 	})();
 
 	const tx = await swapFunc(
-		[rawQuote[0][0], rawQuote[0][rawQuote[0].length - 1], rawQuote[2], rawQuote[1]],
+		[rawQuote.offer[0][0], rawQuote.minAmountOut, rawQuote.offer[2], rawQuote.offer[1]],
 		fromAddress,
 		0,
-		from === ethers.constants.AddressZero ? { value: rawQuote[0][0] } : {}
+		from === ethers.constants.AddressZero ? { value: rawQuote.offer[0][0] } : {}
 	);
 
 	const res = await sendTx(signer, chain, tx);
