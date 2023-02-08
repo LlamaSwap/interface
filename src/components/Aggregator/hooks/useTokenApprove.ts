@@ -56,7 +56,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		address: token,
 		abi: erc20ABI,
 		functionName: 'approve',
-		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
+		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount).mul(101).div(99) : ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token
 	});
 

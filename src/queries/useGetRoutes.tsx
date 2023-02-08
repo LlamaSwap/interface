@@ -101,7 +101,7 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 				return {
 					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: 20_000,
+					refetchInterval: 25_000,
 					refetchOnWindowFocus: false,
 					refetchIntervalInBackground: false
 				};
@@ -110,6 +110,7 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 
 	return {
 		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
-		data: res?.filter((r) => r.status === 'success' && !!r.data && r.data.price).map((r) => r.data) ?? []
+		data: res?.filter((r) => r.status === 'success' && !!r.data && r.data.price).map((r) => r.data) ?? [],
+		refetch: () => res?.forEach((r) => r.refetch())
 	};
 }

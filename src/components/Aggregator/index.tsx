@@ -53,6 +53,7 @@ import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
+import { RepeatIcon } from '@chakra-ui/icons';
 
 /*
 Integrated:
@@ -403,7 +404,11 @@ export function AggregatorContainer({ tokenlist }) {
 		);
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
 
-	const { data: routes = [], isLoading } = useGetRoutes({
+	const {
+		data: routes = [],
+		isLoading,
+		refetch
+	} = useGetRoutes({
 		chain: selectedChain?.value,
 		from: finalSelectedFromToken?.value,
 		to: finalSelectedToToken?.value,
@@ -1028,7 +1033,8 @@ export function AggregatorContainer({ tokenlist }) {
 				<Routes ref={routesRef}>
 					{normalizedRoutes?.length ? (
 						<Flex alignItems="center" justifyContent="space-between">
-							<FormHeader>Select a route to perform a swap</FormHeader>
+							<FormHeader>Select a route to perform a swap </FormHeader>
+							<RepeatIcon focusable cursor="pointer" width="20px" height="20px" onClick={refetch} />
 						</Flex>
 					) : !isLoading &&
 					  amount &&
