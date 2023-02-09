@@ -1,5 +1,5 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
-import { omit } from 'lodash';
+import { first, omit } from 'lodash';
 import { name as matcha0xName } from '~/components/Aggregator/adapters/0x';
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
@@ -37,6 +37,8 @@ export interface IRoute {
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
 	adapter: any;
 }
+
+export const REFETCH_INTERVAL = 25_000;
 
 export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
 	if (!chain || !from || !to || !amount || amount === '0') {
@@ -101,16 +103,17 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 				return {
 					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: 25_000,
+					refetchInterval: REFETCH_INTERVAL,
 					refetchOnWindowFocus: false,
 					refetchIntervalInBackground: false
 				};
 			})
 	});
-
+	const data = res.filter((r) => r.status === 'success') ?? [];
 	return {
-		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
+		isLoading: data.length >= 1 ? false : true,
 		data: res?.filter((r) => r.status === 'success' && !!r.data && r.data.price).map((r) => r.data) ?? [],
-		refetch: () => res?.forEach((r) => r.refetch())
+		refetch: () => res?.forEach((r) => r.refetch()),
+		lastFetched: first(data.map((d) => d.dataUpdatedAt))
 	};
 }

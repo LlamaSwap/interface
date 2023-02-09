@@ -20,7 +20,8 @@ import {
 	Text,
 	ToastId,
 	Alert,
-	AlertIcon
+	AlertIcon,
+	CircularProgress
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
@@ -29,7 +30,7 @@ import { getAllChains, inifiniteApprovalAllowed, swap } from './router';
 import { TokenInput } from './TokenInput';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
-import { useGetRoutes } from '~/queries/useGetRoutes';
+import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
@@ -53,7 +54,7 @@ import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
-import { RepeatIcon } from '@chakra-ui/icons';
+import { useCountdown } from '~/hooks/useCountdown';
 
 /*
 Integrated:
@@ -407,7 +408,8 @@ export function AggregatorContainer({ tokenlist }) {
 	const {
 		data: routes = [],
 		isLoading,
-		refetch
+		refetch,
+		lastFetched
 	} = useGetRoutes({
 		chain: selectedChain?.value,
 		from: finalSelectedFromToken?.value,
@@ -423,6 +425,9 @@ export function AggregatorContainer({ tokenlist }) {
 			isPrivacyEnabled
 		}
 	});
+
+	const secondsToRefresh = useCountdown(lastFetched + REFETCH_INTERVAL);
+
 	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
 		routes,
 		token: finalSelectedFromToken?.address,
@@ -1034,8 +1039,16 @@ export function AggregatorContainer({ tokenlist }) {
 					{normalizedRoutes?.length ? (
 						<Flex alignItems="center" justifyContent="space-between">
 							<FormHeader>Select a route to perform a swap </FormHeader>
-							<Tooltip2 content="Refresh aggregator quotes">
-								<RepeatIcon focusable cursor="pointer" width="20px" height="20px" onClick={refetch} />
+							<Tooltip2
+								content={`Displayed data will auto-refresh after ${secondsToRefresh} seconds. Click here to update manually`}
+							>
+								<CircularProgress
+									value={100 - (secondsToRefresh / (REFETCH_INTERVAL / 1000)) * 100}
+									color="blue.400"
+									onClick={refetch}
+									size="24px"
+								></CircularProgress>
+								{/* <RepeatIcon focusable cursor="pointer" width="24px" height="24px" onClick={refetch} /> */}
 							</Tooltip2>
 						</Flex>
 					) : !isLoading &&
