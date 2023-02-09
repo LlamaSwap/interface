@@ -417,6 +417,26 @@ const polygon = {
 	testnet: false
 };
 
+const canto = {
+	id: 7700,
+	name: 'Canto',
+	network: 'Canto',
+	iconUrl: chainIconUrl('canto'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Canto',
+		symbol: 'CANTO'
+	},
+	rpcUrls: {
+		default: 'https://canto.neobase.one'
+	},
+	blockExplorers: {
+		default: { name: 'CantoScan', url: 'https://evm.explorer.canto.io' }
+	},
+	testnet: false
+};
+
 const arbirum = {
 	...chain.arbitrum,
 	rpcUrls: {
@@ -466,5 +486,6 @@ export const allChains: Array<IChain> = [
 	arbirum,
 	ethereum,
 	moonbeam,
-	fuse
+	fuse,
+	canto
 ];

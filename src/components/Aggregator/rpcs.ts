@@ -216,6 +216,10 @@ export const rpcUrls = {
 		default: 'https://evm.astar.network',
 		astar1: 'https://rpc.astar.network:8545',
 		astar2: 'https://astar.api.onfinality.io/public'
+	},
+	7700: {
+		default: 'https://canto.neobase.one',
+		slingshot: 'https://canto.slingshot.finance',
 	}
 };
 
@@ -277,5 +281,6 @@ export const providers = {
 	syscoin: createProvider('syscoin', getUrls(57), 57),
 	moonbeam: createProvider('moonbeam', getUrls(1284), 1284),
 	curio: createProvider('curio', getUrls(836542336838601), 836542336838601),
-	astar: createProvider('astar', getUrls(592), 592)
+	astar: createProvider('astar', getUrls(592), 592),
+	canto: createProvider('canto', getUrls(7700), 7700)
 };

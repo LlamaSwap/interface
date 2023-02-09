@@ -44,4 +44,5 @@ export const chainToCoingeckoId = {
   sx: "sx-network",
   velas: "velas",
   milkomeda: "milkomeda-cardano",
+  canto: "canto",
 }

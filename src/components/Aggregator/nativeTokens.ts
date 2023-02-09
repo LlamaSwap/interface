@@ -224,6 +224,16 @@ const polygon = {
 	decimals: 18
 }
 
+const canto = {
+	mcap: Number.MAX_SAFE_INTEGER,
+	address: ethers.constants.AddressZero,
+	chainId: 7700,
+	name: 'Canto',
+	symbol: 'CANTO',
+	logoURI: chainIconUrl('canto'),
+	decimals: 18
+}
+
 export const nativeTokens = [
 	ethereum,
 	arbitrum,
@@ -247,5 +257,6 @@ export const nativeTokens = [
 	boba,
 	okx,
 	moonbeam,
-	fuse
+	fuse,
+	canto
 ]
