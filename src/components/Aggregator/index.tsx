@@ -1048,7 +1048,6 @@ export function AggregatorContainer({ tokenlist }) {
 									onClick={refetch}
 									size="24px"
 								></CircularProgress>
-								{/* <RepeatIcon focusable cursor="pointer" width="24px" height="24px" onClick={refetch} /> */}
 							</Tooltip2>
 						</Flex>
 					) : !isLoading &&
