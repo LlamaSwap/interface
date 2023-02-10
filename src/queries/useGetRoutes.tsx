@@ -110,10 +110,18 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 			})
 	});
 	const data = res.filter((r) => r.status === 'success') ?? [];
+	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
+
 	return {
 		isLoading: data.length >= 1 ? false : true,
-		data: res?.filter((r) => r.status === 'success' && !!r.data && r.data.price).map((r) => r.data) ?? [],
+		data: resData?.map((r) => r.data) ?? [],
 		refetch: () => res?.forEach((r) => r.refetch()),
-		lastFetched: first(data.map((d) => d.dataUpdatedAt))
+		lastFetched:
+			first(
+				data
+					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
+					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)
+					.map((d) => d.dataUpdatedAt)
+			) || null
 	};
 }
