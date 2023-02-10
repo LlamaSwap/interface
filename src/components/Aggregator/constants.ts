@@ -23,7 +23,8 @@ export const chainsMap = {
 	boba: 288,
 	okexchain: 66,
 	fuse: 122,
-	moonbeam: 1284
+	moonbeam: 1284,
+	canto: 7700,
 } as const;
 
 export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chainsMap]> = {
@@ -49,8 +50,49 @@ export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chains
 	boba: 288,
 	'okex-chain': 66,
 	fuse: 122,
-	moonbeam: 1284
+	moonbeam: 1284,
+	canto: 7700,
 };
+
+export const chainGasToken: Record<keyof typeof chainsMap, string> = {
+	ethereum: 'ethereum',
+	bsc: 'binancecoin',
+	polygon: 'matic-network',
+	optimism: 'ethereum',
+	arbitrum: 'ethereum',
+	avax: 'avalanche-2',
+	gnosis: 'xdai',
+	fantom: 'fantom',
+	klaytn: 'klay-token',
+	aurora: 'ethereum',
+	celo: 'celo',
+	cronos: 'crypto-com-chain',
+	dogechain: 'dogecoin',
+	moonriver: 'moonriver',
+	bttc: 'bittorrent',
+	oasis: 'oasis-network',
+	velas: 'velas',
+	heco: 'huobi-token',
+	harmony: 'harmony',
+	boba: 'ethereum',
+	okexchain: 'oec-token',
+	fuse: 'fuse-network-token',
+	moonbeam: 'moonbeam',
+	canto: 'canto',
+};
+
+export const llamaToGeckoChainsMap = Object.fromEntries(
+	Object.entries(chainsMap)
+		.map(([lllamaChainName, chainId]) => {
+			const gchain = Object.entries(geckoChainsMap).find((geckoChain) => chainId === geckoChain[1]);
+
+			if (gchain) {
+				return [lllamaChainName, gchain[0]];
+			}
+			return null;
+		})
+		.filter((c) => c !== null)
+);
 
 export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], string> = {
 	1: 'ether',
@@ -75,7 +117,8 @@ export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], 
 	122: 'fuse',
 	1284: 'moonbeam',
 	199: 'bittorrent',
-	8217: 'klay'
+	8217: 'klay',
+	7700: 'canto',
 };
 
 export const chainIdToName = (chainId) => {

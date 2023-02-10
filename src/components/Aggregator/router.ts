@@ -18,7 +18,7 @@ import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, llamazip];
+export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, firebird, llamazip];
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, kyberswap.name, paraswap.name];
 

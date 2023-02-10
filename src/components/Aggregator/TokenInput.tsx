@@ -69,8 +69,8 @@ const InputWrapper = styled.div`
 		}
 	}
 
-	input[type='number']::-webkit-outer-spin-button,
-	input[type='number']::-webkit-inner-spin-button {
+	input[type='text']::-webkit-outer-spin-button,
+	input[type='text']::-webkit-inner-spin-button {
 		-webkit-appearance: none;
 		margin: 0;
 	}
@@ -94,10 +94,13 @@ export const TokenInput = ({ setAmount, amount, onMaxClick, ...props }) => {
 		<InputWrapper>
 			<InputElem
 				placeholder="Token amount"
-				type="number"
-				pattern="\d+((\.|,)\d+)?"
+				type="text"
 				onChange={(val) => {
-					setAmount(val.target.value);
+					setAmount(val.target.value
+						.replace(/[^0-9.,]/g, '')
+						.replace(/,/g, '.')
+						);
+						
 				}}
 				value={amount}
 				{...props}
