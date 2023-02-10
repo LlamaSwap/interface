@@ -1042,6 +1042,7 @@ export function AggregatorContainer({ tokenlist }) {
 							<FormHeader>Select a route to perform a swap </FormHeader>
 							<Tooltip2
 								content={`Displayed data will auto-refresh after ${secondsToRefresh} seconds. Click here to update manually`}
+								style={{cursor:'pointer'}}
 							>
 								<RepeatIcon style={{ position: 'absolute' }} w="16px" h="16px" mt="4px" ml="4px" />
 								<CircularProgress
