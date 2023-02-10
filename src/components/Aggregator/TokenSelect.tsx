@@ -217,7 +217,7 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 					<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
 						Select Token
 					</Text>
-					<ModalCloseButton bg="none" pos="absolute" top="-4px" right="-8px" onClick={close} />
+					<ModalCloseButton bg="none" pos="absolute" top="-4px" right="-8px" onClick={onClose} />
 				</Header>
 				<div>
 					<Input placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />

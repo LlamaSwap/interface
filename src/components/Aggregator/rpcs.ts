@@ -218,8 +218,8 @@ export const rpcUrls = {
 		astar2: 'https://astar.api.onfinality.io/public'
 	},
 	7700: {
-		default: 'https://canto.neobase.one',
-		slingshot: 'https://canto.slingshot.finance',
+		default: 'https://canto.slingshot.finance',
+		neobase: 'https://canto.neobase.one',
 	}
 };
 
