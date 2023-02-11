@@ -5,7 +5,6 @@ import { configureChains, createClient, WagmiConfig, chain } from 'wagmi';
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import styled from 'styled-components';
 import { allChains } from './chains';
-import { SafeConnector } from '@gnosis.pm/safe-apps-wagmi';
 
 const { provider, chains } = configureChains(
 	[
@@ -45,12 +44,11 @@ const { connectors } = getDefaultWallets({
 
 const wagmiClient = createClient({
 	autoConnect: true,
-	connectors: [...connectors(), new SafeConnector({ chains })],
+	connectors,
 	provider
 });
 
 export const WalletWrapper = ({ children }: { children: React.ReactNode }) => {
-	console.log(connectors);
 	return (
 		<WagmiConfig client={wagmiClient}>
 			<Provider>
