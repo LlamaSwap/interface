@@ -454,7 +454,7 @@ const ethereum = {
 const optimism = {
 	...chain.optimism,
 	rpcUrls: {
-		default: 'https://optimism-mainnet.public.blastapi.io'
+		default: 'https://optimism.blockpi.network/v1/rpc/public'
 	},
 	iconUrl: chainIconUrl('optimism')
 };

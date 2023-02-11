@@ -5,6 +5,7 @@ import { configureChains, createClient, WagmiConfig, chain } from 'wagmi';
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import styled from 'styled-components';
 import { allChains } from './chains';
+import { SafeConnector } from '@gnosis.pm/safe-apps-wagmi';
 
 const { provider, chains } = configureChains(
 	[
@@ -12,13 +13,13 @@ const { provider, chains } = configureChains(
 		{
 			...chain.mainnet,
 			rpcUrls: {
-				default: 'https://eth-mainnet.public.blastapi.io'
+				default: 'https://eth.llamarpc.com'
 			}
 		},
 		{
 			...chain.optimism,
 			rpcUrls: {
-				default: 'https://optimism-mainnet.public.blastapi.io'
+				default: 'https://optimism.blockpi.network/v1/rpc/public'
 			}
 		},
 		...allChains
@@ -44,11 +45,12 @@ const { connectors } = getDefaultWallets({
 
 const wagmiClient = createClient({
 	autoConnect: true,
-	connectors,
+	connectors: [...connectors(), new SafeConnector({ chains })],
 	provider
 });
 
 export const WalletWrapper = ({ children }: { children: React.ReactNode }) => {
+	console.log(connectors);
 	return (
 		<WagmiConfig client={wagmiClient}>
 			<Provider>
