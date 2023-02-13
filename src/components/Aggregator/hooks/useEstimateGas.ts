@@ -24,7 +24,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				: {
 						...(await tokenContract.populateTransaction.approve(
 							route.price.tokenApprovalAddress,
-							"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+							'0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 						)),
 						from: userAddress
 				  };
@@ -46,7 +46,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				gas: (Number(swapTx.trace[0].result.gasUsed) + 21e3).toString(), // ignores calldata and accesslist costs
 				isFailed: swapTx.trace[0]?.error === 'Reverted',
 				aggGas: route.price?.estimatedGas,
-				name: route.name,
+				name: route.name
 			};
 		} catch (e) {
 			console.log(e);
@@ -65,7 +65,8 @@ export const useEstimateGas = ({
 	userAddress,
 	chain,
 	amount,
-	hasEnoughBalance
+	hasEnoughBalance,
+	routesLoaded
 }: {
 	routes: Array<IRoute>;
 	token: string;
@@ -73,7 +74,9 @@ export const useEstimateGas = ({
 	chain: string;
 	amount: string;
 	hasEnoughBalance: boolean;
+	routesLoaded: boolean;
 }) => {
+	console.log(routesLoaded);
 	const res = useQueries({
 		queries: routes
 			.filter((route) => !!route?.tx?.to)
@@ -81,7 +84,7 @@ export const useEstimateGas = ({
 				return {
 					queryKey: ['estimateGas', route.name, chain, route?.tx?.data],
 					queryFn: () => estimateGas({ route, token, userAddress, chain, amount }),
-					enabled: traceRpcs[chain] !== undefined && hasEnoughBalance
+					enabled: traceRpcs[chain] !== undefined && hasEnoughBalance && routesLoaded
 				};
 			})
 	});

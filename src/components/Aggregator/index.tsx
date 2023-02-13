@@ -403,7 +403,11 @@ export function AggregatorContainer({ tokenlist }) {
 		);
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
 
-	const { data: routes = [], isLoading } = useGetRoutes({
+	const {
+		data: routes = [],
+		isLoading,
+		isLoaded
+	} = useGetRoutes({
 		chain: selectedChain?.value,
 		from: finalSelectedFromToken?.value,
 		to: finalSelectedToToken?.value,
@@ -424,7 +428,8 @@ export function AggregatorContainer({ tokenlist }) {
 		userAddress: address,
 		chain: selectedChain.value,
 		amount: amountWithDecimals,
-		hasEnoughBalance: +debouncedAmount < +balance?.data?.formatted
+		hasEnoughBalance: +debouncedAmount < +balance?.data?.formatted,
+		routesLoaded: isLoaded
 	});
 	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
