@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
-import { defillamaReferrerAddress } from '../constants';
+import { chainsMap, defillamaReferrerAddress } from '../constants';
 import { ExtraData } from '../types';
 import { providers } from '../rpcs';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
@@ -14,7 +14,8 @@ export const chainToId = {
 	arbitrum: 42161,
 	avax: 43114,
 	fantom: 250,
-	cronos: 25
+	cronos: 25,
+	canto: chainsMap.canto,
 };
 
 const approvalAddresses = {
@@ -25,7 +26,8 @@ const approvalAddresses = {
 	arbitrum: '0x0c6134Abc08A1EafC3E2Dc9A5AD023Bb08Da86C3',
 	avax: '0xe0C38b2a8D09aAD53f1C67734B9A95E43d5981c0',
 	fantom: '0xe0C38b2a8D09aAD53f1C67734B9A95E43d5981c0',
-	cronos: '0x4A5a7331dA84d3834C030a9b8d4f3d687A3b788b'
+	cronos: '0x4A5a7331dA84d3834C030a9b8d4f3d687A3b788b',
+	canto: '0x984742Be1901fcbed70d7B5847bee5BE006d91C8',
 };
 
 export const name = 'Firebird';
