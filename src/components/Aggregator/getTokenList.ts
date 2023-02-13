@@ -52,11 +52,12 @@ export async function getTokenList() {
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
-	const [uniList, sushiList, geckoList, logos] = await Promise.all([
+	const [uniList, sushiList, geckoList, logos, ownList] = await Promise.all([
 		fetch('https://tokens.uniswap.org/').then((r) => r.json()),
 		fetch('https://token-list.sushi.com/').then((r) => r.json()),
-		fetch('https://datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
-		fetch('https://datasets.llama.fi/tokenlist/logos.json').then((res) => res.json())
+		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
+		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
+		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json').then((res) => res.json()),
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -69,7 +70,7 @@ export async function getTokenList() {
 		.flat();
 
 	const tokensByChain = mapValues(
-		groupBy([...nativeTokens, ...uniList.tokens, ...sushiList.tokens, ...oneInchList], 'chainId'),
+		groupBy([...nativeTokens, ...uniList.tokens, ...sushiList.tokens, ...oneInchList, ...ownList], 'chainId'),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
@@ -126,9 +127,9 @@ export async function getTokenList() {
 
 	// fetch name, symbol, decimals fo coingecko tokens
 	const geckoTokensList = await Promise.allSettled(
-		Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
-			getTokensData([chain, Array.from(tokens || new Set())])
-		)
+		Object.entries(geckoListByChain)
+			.filter(([chain]) => chain !== '43114')
+			.map(([chain, tokens]: [string, Set<string>]) => getTokensData([chain, Array.from(tokens || new Set())]))
 	);
 
 	const formatAndSortTokens = (tokens, chain) => {
@@ -177,14 +178,18 @@ export async function getTokenList() {
 	return {
 		props: {
 			tokenlist
-		},
-		revalidate: 5 * 60 // 5 minutes
+		}
+		//revalidate: 5 * 60 // 5 minutes
 	};
 }
 
 // use multicall to fetch tokens name, symbol and decimals
 const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promise<[string, Array<IToken>]> => {
 	const chainName = chainIdToName(chainId);
+
+	if (process.env.NODE_ENV === 'development') {
+		return [chainId, []];
+	}
 
 	if (!chainName) {
 		return [chainId, []];

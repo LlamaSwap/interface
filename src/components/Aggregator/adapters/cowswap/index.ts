@@ -6,6 +6,8 @@ import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainn
 
 import { ethers } from 'ethers';
 import { ABI } from './abi';
+import BigNumber from 'bignumber.js';
+import { chainsMap } from '../../constants';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
@@ -48,8 +50,9 @@ const waitForOrder = (uid, provider, trader) => async (onSuccess) => {
 
 // https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/2.-query-the-fee-endpoint
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
+	const isEthflowOrder = from === ethers.constants.AddressZero;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const tokenFrom = from === ethers.constants.AddressZero ? wrappedTokens[chain] : from;
+	const tokenFrom = isEthflowOrder ? wrappedTokens[chain] : from;
 	// amount should include decimals
 	const data = await fetch(`${chainToId[chain]}/api/v1/quote`, {
 		method: 'POST',
@@ -63,8 +66,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			buyTokenBalance: 'erc20',
 			from: extra.userAddress,
 			//"priceQuality": "fast",
-			signingScheme: 'ethsign',
-			//"onchainOrder": false,
+			signingScheme: isEthflowOrder ? 'eip1271' : 'eip712', // for selling directly ether, another signature type is required
+			onchainOrder: isEthflowOrder ? true : false, // for selling directly ether, we have to quote for onchain orders
 			kind: 'sell',
 			sellAmountBeforeFee: amount
 		}),
@@ -72,13 +75,22 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			'Content-Type': 'application/json'
 		}
 	}).then((r) => r.json());
+	// These orders should never be sent, but if they ever are signed they could be used to drain account
+	// Source: https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/4.-signing-the-order
+	if (data.quote.sellAmount === 0 && data.quote.buyAmount === 0 && data.quote.partiallyFillable === false) {
+		throw new Error('Buggy quote from cowswap');
+	}
+
+	const expectedBuyAmount = data.quote.buyAmount;
+	data.quote.buyAmount = BigNumber(expectedBuyAmount)
+		.times(1 - Number(extra.slippage) / 100)
+		.toFixed(0);
 
 	return {
-		amountReturned: data.quote?.buyAmount || 0,
-		estimatedGas: 0,
-		feeAmount: data.quote?.feeAmount || 0,
+		amountReturned: expectedBuyAmount,
+		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
-		rawQuote: data,
+		rawQuote: { ...data, slippage: extra.slippage },
 		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
 		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589'
 	};
@@ -89,6 +101,10 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 
 	if (from === ethers.constants.AddressZero) {
 		const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer);
+
+		if (rawQuote.slippage < 2) {
+			throw { reason: 'Slippage for ETH orders on CowSwap needs to be higher than 2%' };
+		}
 
 		const tx = await nativeSwap.createOrder(
 			[
@@ -102,7 +118,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 				rawQuote.quote.partiallyFillable,
 				rawQuote.id
 			],
-			{ value: Number(rawQuote.quote.sellAmount) + Number(rawQuote.quote.feeAmount) }
+			{ value: BigNumber(rawQuote.quote.sellAmount).plus(rawQuote.quote.feeAmount).toFixed(0) }
 		);
 
 		return tx;
@@ -121,10 +137,10 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 		};
 
 		const rawSignature = await signOrder(
-			domain(1, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
+			domain(chainsMap[chain], '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
 			order,
 			signer,
-			SigningScheme.ETHSIGN
+			SigningScheme.EIP712
 		);
 
 		const signature = ethers.utils.joinSignature(rawSignature.data);
@@ -134,7 +150,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 			body: JSON.stringify({
 				...rawQuote.quote,
 				signature,
-				signingScheme: 'ethsign'
+				signingScheme: 'eip712'
 			}),
 			headers: {
 				'Content-Type': 'application/json'

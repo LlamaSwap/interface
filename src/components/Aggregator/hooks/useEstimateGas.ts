@@ -6,9 +6,9 @@ import { erc20ABI } from 'wagmi';
 import { IRoute } from '~/queries/useGetRoutes';
 
 const traceRpcs = {
-	ethereum: 'https://eth-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
-	bsc: 'https://bsc-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
-	gnosis: 'https://gnosis-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
+	ethereum: 'https://eth-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
+	bsc: 'https://bsc-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
+	gnosis: 'https://gnosis-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 	polygon: 'https://polygon.llamarpc.com'
 };
 
@@ -24,7 +24,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				: {
 						...(await tokenContract.populateTransaction.approve(
 							route.price.tokenApprovalAddress,
-							ethers.constants.MaxUint256.toHexString()
+							"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 						)),
 						from: userAddress
 				  };
@@ -36,18 +36,17 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 						data: txData.data,
 						...(isNative ? { value: '0x' + BigNumber(amount).toString(16) } : {})
 					},
-					['trace', 'vmTrace']
+					['trace']
 				]),
 				'latest'
 			];
 			const res = await provider.send('trace_callMany', callParams);
 			const swapTx = last<{ trace: Array<{ result: { gasUsed: string }; error: string }> }>(res);
 			return {
-				gas: BigNumber(swapTx.trace[0].result.gasUsed).plus(21e3).toString(), // ignores calldata and accesslist costs
+				gas: (Number(swapTx.trace[0].result.gasUsed) + 21e3).toString(), // ignores calldata and accesslist costs
 				isFailed: swapTx.trace[0]?.error === 'Reverted',
 				aggGas: route.price?.estimatedGas,
 				name: route.name,
-				swapTx
 			};
 		} catch (e) {
 			console.log(e);
@@ -82,7 +81,7 @@ export const useEstimateGas = ({
 				return {
 					queryKey: ['estimateGas', route.name, chain, route?.tx?.data],
 					queryFn: () => estimateGas({ route, token, userAddress, chain, amount }),
-					enabled: Object.keys(traceRpcs).includes(chain) && hasEnoughBalance
+					enabled: traceRpcs[chain] !== undefined && hasEnoughBalance
 				};
 			})
 	});
@@ -92,7 +91,7 @@ export const useEstimateGas = ({
 			?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
 			.reduce((acc, r) => ({ ...acc, [r.data.name]: r.data }), {} as Record<string, EstimationRes>) ?? {};
 	return {
-		isLoading: res.filter((r) => r.status === 'loading').length >= 1 ? true : false,
+		isLoading: res.some((r) => r.status === 'loading') || traceRpcs[chain] === undefined,
 		data
 	};
 };

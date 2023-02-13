@@ -23,6 +23,9 @@ const InputElem = styled.input`
 		outline: none;
 		border-color: ${({ theme }) => (theme.mode === 'dark' ? '#949494' : '#8e8e8e')};
 	}
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		font-size: 16px;
+	}
 `;
 
 const InputWrapper = styled.div`
@@ -60,9 +63,14 @@ const InputWrapper = styled.div`
 		margin-top: 0;
 		margin-bottom: 0;
 	}
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		& > input {
+			font-size: 16px;
+		}
+	}
 
-	input[type='number']::-webkit-outer-spin-button,
-	input[type='number']::-webkit-inner-spin-button {
+	input[type='text']::-webkit-outer-spin-button,
+	input[type='text']::-webkit-inner-spin-button {
 		-webkit-appearance: none;
 		margin: 0;
 	}
@@ -86,10 +94,13 @@ export const TokenInput = ({ setAmount, amount, onMaxClick, ...props }) => {
 		<InputWrapper>
 			<InputElem
 				placeholder="Token amount"
-				type="number"
-				pattern="\d+((\.|,)\d+)?"
+				type="text"
 				onChange={(val) => {
-					setAmount(val.target.value);
+					setAmount(val.target.value
+						.replace(/[^0-9.,]/g, '')
+						.replace(/,/g, '.')
+						);
+						
 				}}
 				value={amount}
 				{...props}

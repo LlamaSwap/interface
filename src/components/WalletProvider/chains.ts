@@ -320,7 +320,7 @@ const avax = {
 	id: 43114,
 	name: 'AVAX',
 	network: 'avax',
-	iconUrl: chainIconUrl('avalanche'),
+	iconUrl: chainIconUrl('avax'),
 	iconBackground: '#000',
 	nativeCurrency: {
 		decimals: 18,
@@ -417,6 +417,26 @@ const polygon = {
 	testnet: false
 };
 
+const canto = {
+	id: 7700,
+	name: 'Canto',
+	network: 'Canto',
+	iconUrl: chainIconUrl('canto'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Canto',
+		symbol: 'CANTO'
+	},
+	rpcUrls: {
+		default: 'https://canto.neobase.one'
+	},
+	blockExplorers: {
+		default: { name: 'CantoScan', url: 'https://evm.explorer.canto.io' }
+	},
+	testnet: false
+};
+
 const arbirum = {
 	...chain.arbitrum,
 	rpcUrls: {
@@ -434,7 +454,7 @@ const ethereum = {
 const optimism = {
 	...chain.optimism,
 	rpcUrls: {
-		default: 'https://optimism-mainnet.public.blastapi.io'
+		default: 'https://optimism.blockpi.network/v1/rpc/public'
 	},
 	iconUrl: chainIconUrl('optimism')
 };
@@ -466,5 +486,6 @@ export const allChains: Array<IChain> = [
 	arbirum,
 	ethereum,
 	moonbeam,
-	fuse
+	fuse,
+	canto
 ];

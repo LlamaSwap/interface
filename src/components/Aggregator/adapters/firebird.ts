@@ -38,7 +38,7 @@ export function approvalAddress(chain: string) {
 const routerAPI = 'https://router.firebird.finance/aggregator/v2';
 const headers = {
 	'content-type': 'application/json',
-	'api-key': 'firebird_defillama',
+	'api-key': 'firebird_defillama'
 };
 const nativeToken = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
@@ -46,40 +46,43 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const isFromNative = from === ethers.constants.AddressZero;
 	const tokenFrom = isFromNative ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const receiver = extra.userAddress || ethers.constants.AddressZero;
-	const slippage = extra.slippage ? Number(extra.slippage) / 100 : undefined;
+	const receiver = extra.userAddress || defillamaReferrerAddress;
 
 	// amount should include decimals
 	const result = await fetch(
-		`${routerAPI}/quote?chainId=${chainToId[chain]}&from=${tokenFrom}&to=${tokenTo}&amount=${amount}&receiver=${receiver}&slippage=${slippage}&source=defillama&ref=${defillamaReferrerAddress}`,
+		`${routerAPI}/quote?chainId=${
+			chainToId[chain]
+		}&from=${tokenFrom}&to=${tokenTo}&amount=${amount}&receiver=${receiver}&slippage=${
+			+extra.slippage / 100 || 0.005
+		}&source=defillama&ref=${defillamaReferrerAddress}`,
 		{ headers }
 	).then((r) => r.json());
 	const data = result.quoteData;
 
-	const { encodedData } = await fetch(
-		`${routerAPI}/encode`,
-		{
-			method: 'POST',
-			headers,
-			body: JSON.stringify(result)
-		}
-	).then((r) => r.json());
+	const { encodedData } = await fetch(`${routerAPI}/encode`, {
+		method: 'POST',
+		headers,
+		body: JSON.stringify(result)
+	}).then((r) => r.json());
 
 	let estimatedGas;
 	let value = isFromNative ? amount : undefined;
 	try {
-		estimatedGas = (await providers[chain].estimateGas({
-			to: encodedData.router,
-			data: encodedData.data,
-			value,
-		})).toFixed(0, 1);
+		estimatedGas = (
+			await providers[chain].estimateGas({
+				to: encodedData.router,
+				data: encodedData.data,
+				value
+			})
+		).toFixed(0, 1);
 	} catch (e) {
-		estimatedGas = data.maxReturn.totalGas
+		estimatedGas = data.maxReturn.totalGas;
 	}
 
 	if (estimatedGas) {
 		if (chain === 'optimism') estimatedGas = BigNumber(3.5).times(estimatedGas).toFixed(0, 1);
-		if (chain === 'arbitrum') estimatedGas = await applyArbitrumFees(encodedData.router, encodedData.data, estimatedGas);
+		if (chain === 'arbitrum')
+			estimatedGas = await applyArbitrumFees(encodedData.router, encodedData.data, estimatedGas);
 	}
 
 	return {

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { chainGasToken, llamaToGeckoChainsMap } from '~/components/Aggregator/constants';
 import { providers } from '~/components/Aggregator/rpcs';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -17,23 +18,92 @@ interface IPrice {
 	gasPriceData?: {};
 }
 
-export async function getPrice({ chain, fromToken, toToken }: IGetPriceProps) {
-	if (!fromToken || !toToken || !chain) {
-		return { gasTokenPrice: 0, fromTokenPrice: 0, toTokenPrice: 0 };
-	}
-	const [{ coins }, gasPriceData] = await Promise.all([
-		fetch(
-			`https://coins.llama.fi/prices/current/${chain}:${toToken},${chain}:${ZERO_ADDRESS},${chain}:${fromToken}`
-		).then((r) => r.json()),
-		providers[chain].getFeeData()
-	]);
+function convertChain(chain: string) {
+	if (chain === 'gnosis') return 'xdai';
+	return chain;
+}
 
-	return {
-		gasTokenPrice: coins[`${chain}:${ZERO_ADDRESS}`]?.price,
-		fromTokenPrice: coins[`${chain}:${fromToken}`]?.price,
-		toTokenPrice: coins[`${chain}:${toToken}`]?.price,
-		gasPriceData
-	};
+async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceProps) {
+	let gasTokenPrice, fromTokenPrice, toTokenPrice;
+
+	try {
+		const cgPrices = await Promise.allSettled([
+			fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${chainGasToken[rawChain]}&vs_currencies=usd
+	`).then((res) => res.json()),
+			fetch(`https://api.coingecko.com/api/v3/simple/token_price/${llamaToGeckoChainsMap[rawChain]}?contract_addresses=${fromToken}%2C${toToken}&vs_currencies=usd
+	`).then((res) => res.json())
+		]);
+
+		if (cgPrices[0].status === 'fulfilled') {
+			gasTokenPrice = cgPrices[0].value[chainGasToken[rawChain]]?.['usd'];
+		}
+
+		if (cgPrices[1].status === 'fulfilled') {
+			fromTokenPrice = cgPrices[1].value[fromToken]?.['usd'];
+			toTokenPrice = cgPrices[1].value[toToken]?.['usd'];
+		}
+
+		let llamaApi = [];
+
+		if (!gasTokenPrice) {
+			llamaApi.push(`${rawChain}:${ZERO_ADDRESS}`);
+		}
+
+		if (!fromTokenPrice) {
+			llamaApi.push(`${rawChain}:${fromToken}`);
+		}
+
+		if (!toTokenPrice) {
+			llamaApi.push(`${rawChain}:${toToken}`);
+		}
+
+		if (llamaApi.length > 0) {
+			const { coins } = await fetch(`https://coins.llama.fi/prices/current/${llamaApi.join(',')}`).then((r) =>
+				r.json()
+			);
+
+			gasTokenPrice = gasTokenPrice || coins[`${rawChain}:${ZERO_ADDRESS}`]?.price;
+			fromTokenPrice = fromTokenPrice || coins[`${rawChain}:${fromToken}`]?.price;
+			toTokenPrice = toTokenPrice || coins[`${rawChain}:${toToken}`]?.price;
+		}
+
+		return {
+			gasTokenPrice,
+			fromTokenPrice,
+			toTokenPrice
+		};
+	} catch (error) {
+		console.log(error);
+		return {
+			gasTokenPrice,
+			fromTokenPrice,
+			toTokenPrice
+		};
+	}
+}
+
+export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPriceProps) {
+	try {
+		if (!fromToken || !toToken || !rawChain) {
+			return {};
+		}
+		const chain = convertChain(rawChain);
+
+		const [{ gasTokenPrice, fromTokenPrice, toTokenPrice }, gasPriceData] = await Promise.all([
+			getCoinsPrice({ chain: rawChain, fromToken, toToken }),
+			providers[chain].getFeeData()
+		]);
+
+		return {
+			gasTokenPrice,
+			fromTokenPrice,
+			toTokenPrice,
+			gasPriceData
+		};
+	} catch (error) {
+		console.log(error);
+		return {};
+	}
 }
 
 export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPriceProps) {

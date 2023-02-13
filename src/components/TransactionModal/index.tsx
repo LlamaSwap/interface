@@ -21,9 +21,9 @@ export const TransactionModal = ({ open, setOpen, link }) => {
 		>
 			<ModalOverlay />
 			<ModalContent>
-				<ModalCloseButton />
+				<ModalCloseButton color="white" />
 
-				<ModalBody display="flex" gap="8px" flexDir="column" alignItems="center" marginY="4rem">
+				<ModalBody display="flex" gap="8px" flexDir="column" alignItems="center" marginY="4rem" color="white">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="80"
