@@ -113,6 +113,7 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
 
 	return {
+		isLoaded: res.filter((r) => r.status === 'loading').length === 0,
 		isLoading: data.length >= 1 ? false : true,
 		data: resData?.map((r) => r.data) ?? [],
 		refetch: () => res?.forEach((r) => r.refetch()),

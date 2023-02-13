@@ -24,7 +24,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				: {
 						...(await tokenContract.populateTransaction.approve(
 							route.price.tokenApprovalAddress,
-							"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+							'0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 						)),
 						from: userAddress
 				  };
@@ -46,7 +46,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				gas: (Number(swapTx.trace[0].result.gasUsed) + 21e3).toString(), // ignores calldata and accesslist costs
 				isFailed: swapTx.trace[0]?.error === 'Reverted',
 				aggGas: route.price?.estimatedGas,
-				name: route.name,
+				name: route.name
 			};
 		} catch (e) {
 			console.log(e);

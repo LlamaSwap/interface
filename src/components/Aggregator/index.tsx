@@ -409,6 +409,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const {
 		data: routes = [],
 		isLoading,
+		isLoaded,
 		refetch,
 		lastFetched
 	} = useGetRoutes({
@@ -447,7 +448,9 @@ export function AggregatorContainer({ tokenlist }) {
 	// format routes
 	const fillRoute = (route: typeof routes[0]) => {
 		if (!route?.price) return null;
-		const gasEstimation = +(gasData?.[route.name]?.gas ? gasData?.[route.name]?.gas : route.price.estimatedGas);
+		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
+			? gasData?.[route.name]?.gas
+			: route.price.estimatedGas);
 		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
 		// CowSwap native token swap
