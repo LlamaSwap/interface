@@ -65,8 +65,7 @@ export const useEstimateGas = ({
 	userAddress,
 	chain,
 	amount,
-	hasEnoughBalance,
-	routesLoaded
+	hasEnoughBalance
 }: {
 	routes: Array<IRoute>;
 	token: string;
@@ -74,7 +73,6 @@ export const useEstimateGas = ({
 	chain: string;
 	amount: string;
 	hasEnoughBalance: boolean;
-	routesLoaded: boolean;
 }) => {
 	const res = useQueries({
 		queries: routes
@@ -83,7 +81,7 @@ export const useEstimateGas = ({
 				return {
 					queryKey: ['estimateGas', route.name, chain, route?.tx?.data],
 					queryFn: () => estimateGas({ route, token, userAddress, chain, amount }),
-					enabled: traceRpcs[chain] !== undefined && hasEnoughBalance && routesLoaded
+					enabled: traceRpcs[chain] !== undefined && hasEnoughBalance
 				};
 			})
 	});

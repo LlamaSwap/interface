@@ -436,8 +436,7 @@ export function AggregatorContainer({ tokenlist }) {
 		userAddress: address,
 		chain: selectedChain.value,
 		amount: amountWithDecimals,
-		hasEnoughBalance: +debouncedAmount < +balance?.data?.formatted,
-		routesLoaded: isLoaded
+		hasEnoughBalance: +debouncedAmount < +balance?.data?.formatted
 	});
 	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
@@ -449,7 +448,7 @@ export function AggregatorContainer({ tokenlist }) {
 	// format routes
 	const fillRoute = (route: typeof routes[0]) => {
 		if (!route?.price) return null;
-		const gasEstimation = +(!isGasDataLoading && gasData?.[route.name]?.gas
+		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
 			? gasData?.[route.name]?.gas
 			: route.price.estimatedGas);
 		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
