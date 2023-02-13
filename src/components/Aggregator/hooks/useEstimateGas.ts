@@ -76,7 +76,6 @@ export const useEstimateGas = ({
 	hasEnoughBalance: boolean;
 	routesLoaded: boolean;
 }) => {
-	console.log(routesLoaded);
 	const res = useQueries({
 		queries: routes
 			.filter((route) => !!route?.tx?.to)
