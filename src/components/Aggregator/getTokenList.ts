@@ -148,7 +148,7 @@ export async function getTokenList() {
 					label: t.symbol,
 					value: t.address,
 					geckoId,
-					logoURI: `https://icons.llamao.fi/icons/tokens/${t.chainId}/${t.address}?h=20&w=20`,
+					logoURI: t.logoURI || logos[geckoId] || null,
 					volume24h
 				};
 			})

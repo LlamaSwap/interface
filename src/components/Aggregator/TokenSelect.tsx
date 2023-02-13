@@ -23,7 +23,10 @@ const Row = ({ chain, token, onClick }) => {
 			data-defaultcursor={token.isGeckoToken ? true : false}
 			onClick={() => !token.isGeckoToken && onClick(token)}
 		>
-			<IconImage src={token.logoURI || '/placeholder.png'} />
+			<IconImage
+				src={token.logoURI || '/placeholder.png'}
+				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+			/>
 
 			<Text display="flex" flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
 				<Text
