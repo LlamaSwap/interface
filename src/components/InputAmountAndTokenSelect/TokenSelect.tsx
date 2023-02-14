@@ -294,17 +294,15 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 			borderRadius="8px"
 			bg="#222429"
 			_hover={{ bg: '#2d3037' }}
-			maxW={{ base: '100%', md: '8rem' }}
-			pl="12px"
+			maxW={{ base: '100%', md: '9rem' }}
+			pl={token && token.logoURI ? '12px' : '0px'}
 		>
-			{token && token.logoURI ? (
+			{token && token.logoURI && (
 				<IconImage
 					src={token?.logoURI ?? '/placeholder.png'}
 					onError={(e) => (e.currentTarget.src = '/placeholder.png')}
-					style={{ marginRight: '-10px', zIndex: 1 }}
+					style={{ marginRight: '-6px', zIndex: 1 }}
 				/>
-			) : (
-				<Box w="20px" h="20px" />
 			)}
 
 			<Select
@@ -321,9 +319,13 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 				textOverflow="ellipsis"
 				w="100%"
 			>
-				{token && (
+				{token ? (
 					<option value={token.address} hidden>
 						{token.symbol}
+					</option>
+				) : (
+					<option value="" hidden>
+						Select Token
 					</option>
 				)}
 			</Select>
