@@ -296,6 +296,7 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 			_hover={{ bg: '#2d3037' }}
 			maxW={{ base: '100%', md: '9rem' }}
 			pl={token && token.logoURI ? '12px' : '0px'}
+			onClick={() => onOpen()}
 		>
 			{token && token.logoURI && (
 				<IconImage
@@ -306,7 +307,6 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 			)}
 
 			<Select
-				onClick={() => onOpen()}
 				color="white"
 				border="none"
 				borderRadius="8px"
