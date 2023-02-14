@@ -41,7 +41,7 @@ async function getInitialLiquidityRoutes({
 			if (item.status === 'fulfilled') {
 				const [liquidity, routes] = item.value;
 
-				const topRoute = getTopRoute({ routes, gasPriceData, gasTokenPrice, fromToken, toToken, toTokenPrice });
+				const topRoute = getTopRoute({ routes: routes.filter(r=>r.name!=="CowSwap"), gasPriceData, gasTokenPrice, fromToken, toToken, toTokenPrice });
 
 				topRoutes.push([Number(liquidity), topRoute]);
 			}
