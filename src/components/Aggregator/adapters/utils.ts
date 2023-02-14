@@ -31,6 +31,7 @@ interface SwapEvent {
 	amountUsd: number;
 	slippage: string;
 	routePlace: string;
+	route: any;
 }
 
 export const sendSwapEvent = async (event: SwapEvent) => {
