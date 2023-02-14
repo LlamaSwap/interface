@@ -12,14 +12,22 @@ import * as lifi from './adapters/lifi';
 // import * as airswap from './adapters/airswap' cors
 // import * as odos from './adapters/odos';
 import * as yieldyak from './adapters/yieldyak';
+import * as dodo from './adapters/dodo';
 import { capitalizeFirstLetter } from '~/utils';
 import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, firebird];
+export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, firebird, dodo];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, kyberswap.name, paraswap.name];
+export const inifiniteApprovalAllowed = [
+	matcha.name,
+	inch.name,
+	cowswap.name,
+	kyberswap.name,
+	paraswap.name,
+	dodo.name
+];
 
 const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
 
