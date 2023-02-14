@@ -4,7 +4,7 @@ import { useAccount, useFeeData, useNetwork, useQueryClient, useSigner, useSwitc
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
-import { ArrowRight } from 'react-feather';
+import { ArrowDown } from 'react-feather';
 import styled from 'styled-components';
 import {
 	Heading,
@@ -26,14 +26,12 @@ import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import SwapRoute from '~/components/SwapRoute';
 import { getAllChains, inifiniteApprovalAllowed, swap } from './router';
-import { TokenInput } from './TokenInput';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
 import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
-import TokenSelect from './TokenSelect';
 import Tooltip from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
@@ -53,6 +51,7 @@ import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
+import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
 
 /*
 Integrated:
@@ -213,12 +212,6 @@ const BodyWrapper = styled.div`
 	}
 `;
 
-const TokenSelectBody = styled.div`
-	display: grid;
-	grid-column-gap: 8px;
-	grid-template-columns: 5fr 1fr 5fr;
-`;
-
 const FormHeader = styled.div`
 	font-weight: bold;
 	font-size: 16px;
@@ -228,19 +221,6 @@ const FormHeader = styled.div`
 	.chakra-switch__track,
 	.chakra-switch__thumb {
 		height: 10px;
-	}
-`;
-
-const SelectWrapper = styled.div`
-	border: ${({ theme }) => (theme.mode === 'dark' ? '2px solid #373944;' : '2px solid #c6cae0;')};
-	border-radius: 16px;
-	padding: 12px;
-	display: flex;
-	flex-direction: column;
-	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-		& input {
-			font-size: 16px;
-		}
 	}
 `;
 
@@ -336,7 +316,7 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 	// final tokens data
 	const { finalSelectedFromToken, finalSelectedToToken } = useMemo(() => {
-		const finalSelectedFromToken =
+		const finalSelectedFromToken: IToken =
 			!selectedFromToken && fromToken2
 				? {
 						name: fromToken2.name || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
@@ -351,7 +331,7 @@ export function AggregatorContainer({ tokenlist }) {
 				  }
 				: selectedFromToken;
 
-		const finalSelectedToToken =
+		const finalSelectedToToken: IToken =
 			!selectedToToken && toToken2
 				? {
 						name: toToken2.name || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
@@ -406,6 +386,13 @@ export function AggregatorContainer({ tokenlist }) {
 				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
 		);
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
+
+	const { fromTokensList, toTokensList } = useMemo(() => {
+		return {
+			fromTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
+			toTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)
+		};
+	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
 
 	const { data: routes = [], isLoading } = useGetRoutes({
 		chain: selectedChain?.value,
@@ -838,81 +825,58 @@ export function AggregatorContainer({ tokenlist }) {
 						<ReactSelect options={chains} value={selectedChain} onChange={onChainChange} />
 					</div>
 
-					<SelectWrapper>
-						<FormHeader>Select Tokens</FormHeader>
-						<TokenSelectBody>
-							<TokenSelect
-								tokens={tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address)}
-								token={finalSelectedFromToken}
-								onClick={onFromTokenChange}
-								selectedChain={selectedChain}
-							/>
-
-							<IconButton
-								onClick={() =>
-									router.push(
-										{
-											pathname: router.pathname,
-											query: { ...router.query, to: finalSelectedFromToken.address, from: finalSelectedToToken.address }
-										},
-										undefined,
-										{ shallow: true }
-									)
-								}
-								bg="none"
-								icon={<ArrowRight size={16} />}
-								aria-label="Switch Tokens"
-								marginTop="auto"
-							/>
-
-							<TokenSelect
-								tokens={tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)}
-								token={finalSelectedToToken}
-								onClick={onToTokenChange}
-								selectedChain={selectedChain}
-							/>
-						</TokenSelectBody>
-					</SelectWrapper>
-
-					<Flex as="label" flexDir="column">
-						<Text as="span" fontWeight="bold" fontSize="1rem" ml="4px">
-							Amount In
-						</Text>
-						<TokenInput
-							setAmount={(n) => setAmount([n, ''])}
+					<Flex flexDir="column" gap="4px" pos="relative">
+						<InputAmountAndTokenSelect
+							setAmount={setAmount}
+							type="amountIn"
 							amount={selectedRoute?.amountIn || amount}
+							tokens={fromTokensList}
+							token={finalSelectedFromToken}
+							onSelectTokenChange={onFromTokenChange}
+							selectedChain={selectedChain}
+							balance={balance.data?.formatted}
 							onMaxClick={onMaxClick}
-							iconUrl={finalSelectedFromToken?.logoURI}
 						/>
 
-						{balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted)) ? (
-							<Button
-								textDecor="underline"
-								bg="none"
-								p={0}
-								fontWeight="400"
-								fontSize="0.875rem"
-								ml="auto"
-								h="initial"
-								mt="8px"
-								onClick={onMaxClick}
-								_hover={{ bg: 'none' }}
-								_focus={{ bg: 'none' }}
-							>
-								Balance: {(+balance.data.formatted).toFixed(3)}
-							</Button>
-						) : (
-							<Box h="16.8px" mt="8px"></Box>
-						)}
-					</Flex>
-					<Flex as="label" flexDir="column">
-						<Text as="span" fontWeight="bold" fontSize="1rem" ml="4px">
-							Amount Out
-						</Text>
-						<TokenInput
-							setAmount={(n) => setAmount(['', n])}
+						<IconButton
+							onClick={() =>
+								router.push(
+									{
+										pathname: router.pathname,
+										query: { ...router.query, to: finalSelectedFromToken.address, from: finalSelectedToToken.address }
+									},
+									undefined,
+									{ shallow: true }
+								)
+							}
+							icon={<ArrowDown size={14} />}
+							aria-label="Switch Tokens"
+							marginTop="auto"
+							w="2.25rem"
+							h="2.25rem"
+							minW={0}
+							p="0"
+							pos="absolute"
+							top="0"
+							bottom="0"
+							right="0"
+							left="0"
+							m="auto"
+							borderRadius="8px"
+							bg="#222429"
+							_hover={{ bg: '#2d3037' }}
+							color="white"
+							zIndex={1}
+						/>
+
+						<InputAmountAndTokenSelect
+							setAmount={setAmount}
+							type="amountOut"
 							amount={selectedRoute?.amount || amountOut}
-							iconUrl={finalSelectedToToken?.logoURI}
+							tokens={toTokensList}
+							token={finalSelectedToToken}
+							onSelectTokenChange={onToTokenChange}
+							selectedChain={selectedChain}
 						/>
 					</Flex>
 

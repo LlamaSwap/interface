@@ -1,11 +1,18 @@
 import { ethers } from 'ethers';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure } from '@chakra-ui/react';
+import {
+	Modal,
+	ModalOverlay,
+	ModalContent,
+	ModalCloseButton,
+	useDisclosure,
+	Select,
+	Input,
+	Box
+} from '@chakra-ui/react';
 import { QuestionIcon, WarningTwoIcon } from '@chakra-ui/icons';
-import ReactSelect from '../MultiSelect';
-import { Header, IconImage, PairRow } from './Search';
-import { Input } from './TokenInput';
+import { Header, IconImage, PairRow } from '../Aggregator/Search';
 import { useToken } from 'wagmi';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -220,7 +227,13 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 					<ModalCloseButton bg="none" pos="absolute" top="-4px" right="-8px" onClick={close} />
 				</Header>
 				<div>
-					<Input placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
+					<Input
+						bg="#141619"
+						placeholder="Search... (Symbol or Address)"
+						_focusVisible={{ outline: 'none' }}
+						onChange={onInputChange}
+						autoFocus
+					/>
 				</div>
 				{ethers.utils.isAddress(input) && filteredData.length === 0 ? (
 					<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
@@ -264,7 +277,7 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 	);
 };
 
-const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
+export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const onTokenClick = (token) => {
@@ -273,10 +286,48 @@ const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 	};
 
 	return (
-		<>
-			<span style={{ cursor: 'pointer' }} onClick={() => onOpen()}>
-				<ReactSelect openMenuOnClick={false} value={token} isDisabled />
-			</span>
+		<Flex
+			pos="relative"
+			flexWrap="nowrap"
+			alignItems="center"
+			w="100%"
+			borderRadius="8px"
+			bg="#222429"
+			_hover={{ bg: '#2d3037' }}
+			maxW={{ base: '100%', md: '8rem' }}
+			pl="12px"
+		>
+			{token && token.logoURI ? (
+				<IconImage
+					src={token?.logoURI ?? '/placeholder.png'}
+					onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+					style={{ marginRight: '-10px', zIndex: 1 }}
+				/>
+			) : (
+				<Box w="20px" h="20px" />
+			)}
+
+			<Select
+				onClick={() => onOpen()}
+				color="white"
+				border="none"
+				borderRadius="8px"
+				bg="none"
+				_focusVisible={{ outline: 'none' }}
+				cursor="pointer"
+				aria-label="Select Token"
+				overflow="hidden"
+				whiteSpace="nowrap"
+				textOverflow="ellipsis"
+				w="100%"
+			>
+				{token && (
+					<option value={token.address} hidden>
+						{token.symbol}
+					</option>
+				)}
+			</Select>
+
 			{isOpen ? (
 				<SelectModal
 					isOpen={isOpen}
@@ -286,8 +337,6 @@ const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 					selectedChain={selectedChain}
 				/>
 			) : null}
-		</>
+		</Flex>
 	);
 };
-
-export default TokenSelect;
