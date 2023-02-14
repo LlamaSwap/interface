@@ -635,6 +635,7 @@ export function AggregatorContainer({ tokenlist }) {
 			rawQuote: any;
 			tokens: { toToken: IToken; fromToken: IToken };
 			index: number;
+			route: any;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -669,7 +670,8 @@ export function AggregatorContainer({ tokenlist }) {
 						errorData: {},
 						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
 						slippage,
-						routePlace: String(variables?.index)
+						routePlace: String(variables?.index),
+						route: variables.route
 					});
 				});
 			}
@@ -738,7 +740,8 @@ export function AggregatorContainer({ tokenlist }) {
 						errorData: {},
 						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
 						slippage,
-						routePlace: String(variables?.index)
+						routePlace: String(variables?.index),
+						route: variables.route
 					});
 				});
 		},
@@ -770,7 +773,8 @@ export function AggregatorContainer({ tokenlist }) {
 					errorData: err,
 					amountUsd: fromTokenPrice * +debouncedAmount || 0,
 					slippage,
-					routePlace: String(variables?.index)
+					routePlace: String(variables?.index),
+					route: variables.route
 				});
 			}
 		}
@@ -788,7 +792,8 @@ export function AggregatorContainer({ tokenlist }) {
 				adapter: selectedRoute.name,
 				rawQuote: selectedRoute.price.rawQuote,
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
-				index: selectedRoute.index
+				index: selectedRoute.index,
+				route: selectedRoute
 			});
 		}
 	};
