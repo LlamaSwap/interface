@@ -362,6 +362,8 @@ export function AggregatorContainer({ tokenlist }) {
 
 	// selected from token's balances
 	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
+	// selected from token's balances
+	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain.id });
 	const { data: tokenBalances } = useTokenBalances(address);
 	const { data: gasPriceData } = useFeeData({
 		chainId: selectedChain?.id,
@@ -877,6 +879,7 @@ export function AggregatorContainer({ tokenlist }) {
 							token={finalSelectedToToken}
 							onSelectTokenChange={onToTokenChange}
 							selectedChain={selectedChain}
+							balance={toTokenBalance.data?.formatted}
 						/>
 					</Flex>
 
