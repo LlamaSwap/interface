@@ -1,16 +1,7 @@
 import { ethers } from 'ethers';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import {
-	Modal,
-	ModalOverlay,
-	ModalContent,
-	ModalCloseButton,
-	useDisclosure,
-	Select,
-	Input,
-	Box
-} from '@chakra-ui/react';
+import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure, Input } from '@chakra-ui/react';
 import { QuestionIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import { Header, IconImage, PairRow } from '../Aggregator/Search';
 import { useToken } from 'wagmi';
@@ -20,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import coingecko from '~/public/coingecko.svg';
 import { allChains } from '../WalletProvider/chains';
+import { ChevronDown } from 'react-feather';
 
 const Row = ({ chain, token, onClick }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
@@ -286,50 +278,33 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 	};
 
 	return (
-		<Flex
-			pos="relative"
-			flexWrap="nowrap"
-			alignItems="center"
-			w="100%"
-			borderRadius="8px"
-			bg="#222429"
-			_hover={{ bg: '#2d3037' }}
-			maxW={{ base: '100%', md: '9rem' }}
-			pl={token && token.logoURI ? '12px' : '0px'}
-			onClick={() => onOpen()}
-		>
-			{token && token.logoURI && (
-				<IconImage
-					src={token?.logoURI ?? '/placeholder.png'}
-					onError={(e) => (e.currentTarget.src = '/placeholder.png')}
-					style={{ marginRight: '-6px', zIndex: 1 }}
-				/>
-			)}
-
-			<Select
-				color="white"
-				border="none"
-				borderRadius="8px"
-				bg="none"
-				_focusVisible={{ outline: 'none' }}
-				cursor="pointer"
-				aria-label="Select Token"
-				overflow="hidden"
-				whiteSpace="nowrap"
-				textOverflow="ellipsis"
+		<>
+			<Button
+				display="flex"
+				gap="6px"
+				flexWrap="nowrap"
+				alignItems="center"
 				w="100%"
+				borderRadius="8px"
+				bg="#222429"
+				_hover={{ bg: '#2d3037' }}
+				maxW={{ base: '100%', md: '9rem' }}
+				p="12px"
+				onClick={() => onOpen()}
 			>
-				{token ? (
-					<option value={token.address} hidden>
-						{token.symbol}
-					</option>
-				) : (
-					<option value="" hidden>
-						Select Token
-					</option>
+				{token && token.logoURI && (
+					<IconImage
+						src={token?.logoURI ?? '/placeholder.png'}
+						onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+					/>
 				)}
-			</Select>
 
+				<Text as="span" color="white" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis" fontWeight={400}>
+					{token ? token.symbol : 'Select Token'}
+				</Text>
+
+				<ChevronDown size={16} style={{ marginLeft: 'auto' }} />
+			</Button>
 			{isOpen ? (
 				<SelectModal
 					isOpen={isOpen}
@@ -339,6 +314,6 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 					selectedChain={selectedChain}
 				/>
 			) : null}
-		</Flex>
+		</>
 	);
 };
