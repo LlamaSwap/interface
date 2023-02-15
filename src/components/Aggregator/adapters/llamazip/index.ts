@@ -99,7 +99,6 @@ return {} // LlamaZip doesn't support calldata that's bigger than one EVM word
         to: chainToId[chain],
         data: calldata,
         ...(inputIsETH ? { value: amount } : {}),
-        gasLimit: 300e3.toString()
       }
     },
     tokenApprovalAddress: chainToId[chain],
@@ -114,7 +113,6 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit })
 	});
 	return tx;
 }
