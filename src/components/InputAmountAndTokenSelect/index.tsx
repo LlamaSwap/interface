@@ -1,6 +1,8 @@
 import { Flex, Input, Text, Button } from '@chakra-ui/react';
+import BigNumber from 'bignumber.js';
 import type { Dispatch, SetStateAction } from 'react';
 import type { IToken } from '~/types';
+import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../Aggregator/constants';
 import { TokenSelect } from './TokenSelect';
 
 export function InputAmountAndTokenSelect({
@@ -12,7 +14,9 @@ export function InputAmountAndTokenSelect({
 	onSelectTokenChange,
 	selectedChain,
 	balance,
-	onMaxClick
+	onMaxClick,
+	tokenPrice,
+	priceImpact
 }: {
 	amount: string | number;
 	setAmount: Dispatch<SetStateAction<[string | number, string | number]>>;
@@ -29,69 +33,121 @@ export function InputAmountAndTokenSelect({
 	};
 	balance?: string;
 	onMaxClick?: () => void;
+	tokenPrice?: number;
+	priceImpact?: number;
 }) {
+	const amountUsd =
+		amount && tokenPrice && !Number.isNaN(Number(amount)) && !Number.isNaN(Number(tokenPrice))
+			? BigNumber(amount).times(tokenPrice).toFixed(2)
+			: null;
+
 	return (
 		<Flex
-			flexDir={{ base: 'column-reverse', md: 'row' }}
-			gap={{ base: '12px', md: '8px' }}
+			flexDir="column"
+			gap="8px"
 			bg="#141619"
 			color="white"
 			borderRadius="12px"
-			p="20px"
-			pb="36px"
+			p="16px"
 			border="1px solid transparent"
 			_focusWithin={{ border: '1px solid white' }}
-			pos="relative"
 		>
-			<Input
-				type="text"
-				value={amount}
-				focusBorderColor="transparent"
-				border="none"
-				bg="#141619"
-				color="white"
-				_focusVisible={{ outline: 'none' }}
-				fontSize="2.25rem"
-				p="0"
-				placeholder="0"
-				_placeholder={{ color: '#5c5c5c' }}
-				onChange={(e) => {
-					const value = e.target.value.replace(/[^0-9.,]/g, '').replace(/,/g, '.');
-					if (type === 'amountOut') {
-						setAmount(['', value]);
-					} else {
-						setAmount([value, '']);
-					}
-				}}
-				overflow="hidden"
-				whiteSpace="nowrap"
-				textOverflow="ellipsis"
-			/>
+			<Text fontSize="0.875rem" fontWeight={400} color="#a2a2a2" whiteSpace="nowrap" minH="1.375rem">
+				{type === 'amountIn' ? 'You sell' : 'You buy'}
+			</Text>
 
-			<TokenSelect tokens={tokens} token={token} onClick={onSelectTokenChange} selectedChain={selectedChain} />
+			<Flex flexDir={{ base: 'column-reverse', md: 'row' }} gap={{ base: '12px', md: '8px' }}>
+				<Input
+					type="text"
+					value={amount}
+					focusBorderColor="transparent"
+					border="none"
+					bg="#141619"
+					color="white"
+					_focusVisible={{ outline: 'none' }}
+					fontSize="2.25rem"
+					p="0"
+					placeholder="0"
+					_placeholder={{ color: '#5c5c5c' }}
+					onChange={(e) => {
+						const value = e.target.value.replace(/[^0-9.,]/g, '').replace(/,/g, '.');
+						if (type === 'amountOut') {
+							setAmount(['', value]);
+						} else {
+							setAmount([value, '']);
+						}
+					}}
+					overflow="hidden"
+					whiteSpace="nowrap"
+					textOverflow="ellipsis"
+				/>
 
-			{balance && (
-				<Flex pos="absolute" right="20px" bottom="8px" alignItems="center" gap="8px">
-					<Text fontSize="0.875rem" fontWeight={300} color="#a2a2a2">{`Balance: ${Number(balance).toFixed(4)}`}</Text>
+				<TokenSelect tokens={tokens} token={token} onClick={onSelectTokenChange} selectedChain={selectedChain} />
+			</Flex>
 
-					{onMaxClick && (
-						<Button
-							onClick={onMaxClick}
-							p="0"
-							minH={0}
-							minW={0}
-							h="fit-content"
-							bg="none"
-							_hover={{ bg: 'none' }}
-							fontSize="0.875rem"
-							fontWeight={500}
-							color="#1f72e5"
-						>
-							Max
-						</Button>
+			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem">
+				<Text
+					fontSize="0.875rem"
+					fontWeight={300}
+					color="#a2a2a2"
+					overflow="hidden"
+					whiteSpace="nowrap"
+					textOverflow="ellipsis"
+				>
+					{token?.name}
+				</Text>
+				<Text
+					fontSize="0.875rem"
+					fontWeight={300}
+					color="#a2a2a2"
+					overflow="hidden"
+					whiteSpace="nowrap"
+					textOverflow="ellipsis"
+				>
+					{amountUsd && (
+						<>
+							<span>{`~$${amountUsd}`}</span>
+							<Text
+								as="span"
+								color={
+									priceImpact >= PRICE_IMPACT_HIGH_THRESHOLD
+										? 'red.500'
+										: priceImpact >= PRICE_IMPACT_MEDIUM_THRESHOLD
+										? 'yellow.500'
+										: '#a2a2a2'
+								}
+							>
+								{priceImpact && !Number.isNaN(priceImpact) ? ` (-${priceImpact.toFixed(2)}%)` : ''}
+							</Text>
+						</>
 					)}
-				</Flex>
-			)}
+				</Text>
+			</Flex>
+
+			<Flex alignItems="center" justifyContent="flex-end" flexWrap="wrap" gap="8px" minH="1.375rem">
+				{balance && (
+					<>
+						<Text fontSize="0.875rem" fontWeight={300} color="#a2a2a2">{`Balance: ${Number(balance).toFixed(4)}`}</Text>
+
+						{onMaxClick && (
+							<Button
+								onClick={onMaxClick}
+								p="0"
+								minH={0}
+								minW={0}
+								h="fit-content"
+								bg="none"
+								_hover={{ bg: 'none' }}
+								fontSize="0.875rem"
+								fontWeight={500}
+								color="#1f72e5"
+							>
+								Max
+							</Button>
+						)}
+					</>
+				)}
+			</Flex>
 		</Flex>
 	);
 }

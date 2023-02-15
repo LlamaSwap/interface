@@ -838,6 +838,7 @@ export function AggregatorContainer({ tokenlist }) {
 							selectedChain={selectedChain}
 							balance={balance.data?.formatted}
 							onMaxClick={onMaxClick}
+							tokenPrice={fromTokenPrice}
 						/>
 
 						<IconButton
@@ -880,6 +881,8 @@ export function AggregatorContainer({ tokenlist }) {
 							onSelectTokenChange={onToTokenChange}
 							selectedChain={selectedChain}
 							balance={toTokenBalance.data?.formatted}
+							tokenPrice={toTokenPrice}
+							priceImpact={selectedRoutesPriceImpact}
 						/>
 					</Flex>
 
