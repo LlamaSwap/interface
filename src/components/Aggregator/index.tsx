@@ -635,6 +635,7 @@ export function AggregatorContainer({ tokenlist }) {
 			chain: string;
 			from: string;
 			to: string;
+			amount: string | number;
 			adapter: string;
 			signer: ethers.Signer;
 			slippage: string;
@@ -798,7 +799,8 @@ export function AggregatorContainer({ tokenlist }) {
 				rawQuote: selectedRoute.price.rawQuote,
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
 				index: selectedRoute.index,
-				route: selectedRoute
+				route: selectedRoute,
+				amount: selectedRoute.amount
 			});
 		}
 	};
