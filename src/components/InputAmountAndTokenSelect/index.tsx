@@ -2,6 +2,7 @@ import { Flex, Input, Text, Button } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
 import type { Dispatch, SetStateAction } from 'react';
 import type { IToken } from '~/types';
+import { formattedNum } from '~/utils';
 import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../Aggregator/constants';
 import { TokenSelect } from './TokenSelect';
 
@@ -106,7 +107,7 @@ export function InputAmountAndTokenSelect({
 				>
 					{amountUsd && (
 						<>
-							<span>{`~$${amountUsd}`}</span>
+							<span>{`~$${formattedNum(amountUsd)}`}</span>
 							<Text
 								as="span"
 								color={
