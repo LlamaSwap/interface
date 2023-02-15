@@ -87,16 +87,33 @@ export function InputAmountAndTokenSelect({
 			</Flex>
 
 			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem">
-				<Text
-					fontSize="0.875rem"
-					fontWeight={300}
-					color="#a2a2a2"
-					overflow="hidden"
-					whiteSpace="nowrap"
-					textOverflow="ellipsis"
-				>
-					{token?.name}
-				</Text>
+				<Flex alignItems="center" justifyContent="flex-start" flexWrap="nowrap" gap="8px">
+					{balance && (
+						<>
+							<Text fontSize="0.875rem" fontWeight={300} color="#a2a2a2">{`Balance: ${Number(balance).toFixed(
+								4
+							)}`}</Text>
+
+							{onMaxClick && (
+								<Button
+									onClick={onMaxClick}
+									p="0"
+									minH={0}
+									minW={0}
+									h="fit-content"
+									bg="none"
+									_hover={{ bg: 'none' }}
+									fontSize="0.875rem"
+									fontWeight={500}
+									color="#1f72e5"
+								>
+									Max
+								</Button>
+							)}
+						</>
+					)}
+				</Flex>
+
 				<Text
 					fontSize="0.875rem"
 					fontWeight={300}
@@ -123,31 +140,6 @@ export function InputAmountAndTokenSelect({
 						</>
 					)}
 				</Text>
-			</Flex>
-
-			<Flex alignItems="center" justifyContent="flex-end" flexWrap="wrap" gap="8px" minH="1.375rem">
-				{balance && (
-					<>
-						<Text fontSize="0.875rem" fontWeight={300} color="#a2a2a2">{`Balance: ${Number(balance).toFixed(4)}`}</Text>
-
-						{onMaxClick && (
-							<Button
-								onClick={onMaxClick}
-								p="0"
-								minH={0}
-								minW={0}
-								h="fit-content"
-								bg="none"
-								_hover={{ bg: 'none' }}
-								fontSize="0.875rem"
-								fontWeight={500}
-								color="#1f72e5"
-							>
-								Max
-							</Button>
-						)}
-					</>
-				)}
 			</Flex>
 		</Flex>
 	);
