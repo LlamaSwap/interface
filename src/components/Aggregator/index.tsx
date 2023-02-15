@@ -583,6 +583,7 @@ export function AggregatorContainer({ tokenlist }) {
 			  debouncedAmount &&
 			  amountWithDecimals &&
 			  amount === debouncedAmount &&
+			  selectedRoute?.fromAmount &&
 			  (+amountWithDecimals > +balance.data.value.toString() ||
 					+selectedRoute.fromAmount > +balance.data.value.toString())
 			: false;
