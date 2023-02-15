@@ -581,6 +581,7 @@ export function AggregatorContainer({ tokenlist }) {
 		toTokenPrice &&
 		priceImpactRoute &&
 		priceImpactRoute.amountUsd &&
+		priceImpactRoute.amountInUsd &&
 		(debouncedAmount || debouncedAmountOut) &&
 		!Number.isNaN(Number(priceImpactRoute.amountUsd))
 			? 100 - (Number(priceImpactRoute.amountUsd) / Number(priceImpactRoute.amountInUsd)) * 100
@@ -634,8 +635,6 @@ export function AggregatorContainer({ tokenlist }) {
 			chain: string;
 			from: string;
 			to: string;
-			amount: string | number;
-			amountUsd: string;
 			adapter: string;
 			signer: ethers.Signer;
 			slippage: string;
@@ -673,8 +672,8 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(variables.amount),
-						amountUsd: +variables.amountUsd || 0,
+						amount: String(debouncedAmount),
+						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
 						errorData: {},
 						slippage,
 						routePlace: String(variables?.index),
@@ -743,8 +742,8 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(variables.amount),
-						amountUsd: +variables.amountUsd || 0,
+						amount: String(debouncedAmount),
+						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
 						errorData: {},
 						slippage,
 						routePlace: String(variables?.index),
@@ -776,8 +775,8 @@ export function AggregatorContainer({ tokenlist }) {
 					isError: true,
 					quote: variables.rawQuote,
 					txUrl: '',
-					amount: String(variables.amount),
-					amountUsd: +variables.amountUsd || 0,
+					amount: String(debouncedAmount),
+					amountUsd: +fromTokenPrice * +debouncedAmount || 0,
 					errorData: err,
 					slippage,
 					routePlace: String(variables?.index),
