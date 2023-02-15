@@ -12,13 +12,13 @@ const { provider, chains } = configureChains(
 		{
 			...chain.mainnet,
 			rpcUrls: {
-				default: 'https://eth-mainnet.public.blastapi.io'
+				default: 'https://eth.llamarpc.com'
 			}
 		},
 		{
 			...chain.optimism,
 			rpcUrls: {
-				default: 'https://optimism-mainnet.public.blastapi.io'
+				default: 'https://optimism.blockpi.network/v1/rpc/public'
 			}
 		},
 		...allChains

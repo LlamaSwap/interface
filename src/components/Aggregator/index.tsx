@@ -20,7 +20,8 @@ import {
 	Text,
 	ToastId,
 	Alert,
-	AlertIcon
+	AlertIcon,
+	CircularProgress
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
@@ -28,11 +29,11 @@ import SwapRoute from '~/components/SwapRoute';
 import { getAllChains, inifiniteApprovalAllowed, swap } from './router';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
-import { useGetRoutes } from '~/queries/useGetRoutes';
+import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
-import Tooltip from '../Tooltip';
+import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
@@ -52,6 +53,8 @@ import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
+import { useCountdown } from '~/hooks/useCountdown';
+import { RepeatIcon } from '@chakra-ui/icons';
 
 /*
 Integrated:
@@ -396,7 +399,13 @@ export function AggregatorContainer({ tokenlist }) {
 		};
 	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
 
-	const { data: routes = [], isLoading } = useGetRoutes({
+	const {
+		data: routes = [],
+		isLoading,
+		isLoaded,
+		refetch,
+		lastFetched
+	} = useGetRoutes({
 		chain: selectedChain?.value,
 		from: finalSelectedFromToken?.value,
 		to: finalSelectedToToken?.value,
@@ -412,6 +421,9 @@ export function AggregatorContainer({ tokenlist }) {
 			amountOut: amountOutWithDecimals
 		}
 	});
+
+	const secondsToRefresh = useCountdown(lastFetched + REFETCH_INTERVAL);
+
 	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
 		routes,
 		token: finalSelectedFromToken?.address,
@@ -430,7 +442,9 @@ export function AggregatorContainer({ tokenlist }) {
 	// format routes
 	const fillRoute = (route: typeof routes[0]) => {
 		if (!route?.price) return null;
-		const gasEstimation = +(isGasDataLoading ? route.price.estimatedGas : gasData?.[route.name]?.gas);
+		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
+			? gasData?.[route.name]?.gas
+			: route.price.estimatedGas);
 		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
 		// CowSwap native token swap
@@ -628,6 +642,7 @@ export function AggregatorContainer({ tokenlist }) {
 			rawQuote: any;
 			tokens: { toToken: IToken; fromToken: IToken };
 			index: number;
+			route: any;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -662,7 +677,8 @@ export function AggregatorContainer({ tokenlist }) {
 						amountUsd: +variables.amountUsd || 0,
 						errorData: {},
 						slippage,
-						routePlace: String(variables?.index)
+						routePlace: String(variables?.index),
+						route: variables.route
 					});
 				});
 			}
@@ -731,7 +747,8 @@ export function AggregatorContainer({ tokenlist }) {
 						amountUsd: +variables.amountUsd || 0,
 						errorData: {},
 						slippage,
-						routePlace: String(variables?.index)
+						routePlace: String(variables?.index),
+						route: variables.route
 					});
 				});
 		},
@@ -763,7 +780,8 @@ export function AggregatorContainer({ tokenlist }) {
 					amountUsd: +variables.amountUsd || 0,
 					errorData: err,
 					slippage,
-					routePlace: String(variables?.index)
+					routePlace: String(variables?.index),
+					route: variables.route
 				});
 			}
 		}
@@ -781,8 +799,7 @@ export function AggregatorContainer({ tokenlist }) {
 				rawQuote: selectedRoute.price.rawQuote,
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
 				index: selectedRoute.index,
-				amountUsd: selectedRoute.amountUsd,
-				amount: selectedRoute.amount
+				route: selectedRoute
 			});
 		}
 	};
@@ -1032,7 +1049,19 @@ export function AggregatorContainer({ tokenlist }) {
 				<Routes ref={routesRef}>
 					{normalizedRoutes?.length ? (
 						<Flex alignItems="center" justifyContent="space-between">
-							<FormHeader>Select a route to perform a swap</FormHeader>
+							<FormHeader>Select a route to perform a swap </FormHeader>
+							<Tooltip2
+								content={`Displayed data will auto-refresh after ${secondsToRefresh} seconds. Click here to update manually`}
+							>
+								<RepeatIcon pos="absolute" w="16px" h="16px" mt="4px" ml="4px" />
+								<CircularProgress
+									value={100 - (secondsToRefresh / (REFETCH_INTERVAL / 1000)) * 100}
+									color="blue.400"
+									onClick={refetch}
+									size="24px"
+									as="button"
+								/>
+							</Tooltip2>
 						</Flex>
 					) : !isLoading &&
 					  amount &&
