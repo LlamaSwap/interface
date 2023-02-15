@@ -7,7 +7,7 @@ export const name = 'LlamaZip';
 export const token = 'none';
 
 export const chainToId = {
-  optimism: '0x1214687e3AA359EfF691d719971d81c9D8F0eB32',
+  optimism: '0xDc18115b29118c1A8890cf6fC4AF3EB2ed32f91B',
 };
 
 // https://docs.uniswap.org/contracts/v3/reference/deployments
