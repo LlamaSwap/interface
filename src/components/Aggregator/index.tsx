@@ -848,6 +848,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 					<Flex flexDir="column" gap="4px" pos="relative">
 						<InputAmountAndTokenSelect
+							placeholder={normalizedRoutes[0]?.amountIn}
 							setAmount={setAmount}
 							type="amountIn"
 							amount={selectedRoute?.amountIn && amountOut !== '' ? selectedRoute.amountIn : amount}
@@ -892,6 +893,7 @@ export function AggregatorContainer({ tokenlist }) {
 						/>
 
 						<InputAmountAndTokenSelect
+							placeholder={normalizedRoutes[0]?.amount}
 							setAmount={setAmount}
 							type="amountOut"
 							amount={selectedRoute?.amount && amount !== '' ? selectedRoute.amount : amountOut}
@@ -934,6 +936,14 @@ export function AggregatorContainer({ tokenlist }) {
 								CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
 							</Alert>
 						</>
+					) : null}
+
+					{!selectedRoute?.isOutputAvailable && amountOut !== '' && selectedRoute?.amount ? (
+						<Alert status="warning" borderRadius="0.375rem" py="8px">
+							<AlertIcon />
+							The output amount of this route is defferent from your input because {selectedRoute?.name} doesn't support
+							setting amount received.
+						</Alert>
 					) : null}
 
 					<SwapWrapper>

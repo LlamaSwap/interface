@@ -17,7 +17,8 @@ export function InputAmountAndTokenSelect({
 	balance,
 	onMaxClick,
 	tokenPrice,
-	priceImpact
+	priceImpact,
+	placeholder
 }: {
 	amount: string | number;
 	setAmount: Dispatch<SetStateAction<[string | number, string | number]>>;
@@ -36,6 +37,7 @@ export function InputAmountAndTokenSelect({
 	onMaxClick?: () => void;
 	tokenPrice?: number;
 	priceImpact?: number;
+	placeholder?: string | number;
 }) {
 	const amountUsd =
 		amount && tokenPrice && !Number.isNaN(Number(amount)) && !Number.isNaN(Number(tokenPrice))
@@ -68,7 +70,7 @@ export function InputAmountAndTokenSelect({
 					_focusVisible={{ outline: 'none' }}
 					fontSize="2.25rem"
 					p="0"
-					placeholder="0"
+					placeholder={(placeholder && String(placeholder)) || '0'}
 					_placeholder={{ color: '#5c5c5c' }}
 					onChange={(e) => {
 						const value = e.target.value.replace(/[^0-9.,]/g, '').replace(/,/g, '.');
