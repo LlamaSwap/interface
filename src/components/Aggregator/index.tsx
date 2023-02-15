@@ -831,7 +831,7 @@ export function AggregatorContainer({ tokenlist }) {
 						<InputAmountAndTokenSelect
 							setAmount={setAmount}
 							type="amountIn"
-							amount={selectedRoute?.amountIn || amount}
+							amount={selectedRoute?.amountIn && amountOut !== '' ? selectedRoute.amountIn : amount}
 							tokens={fromTokensList}
 							token={finalSelectedFromToken}
 							onSelectTokenChange={onFromTokenChange}
@@ -875,7 +875,7 @@ export function AggregatorContainer({ tokenlist }) {
 						<InputAmountAndTokenSelect
 							setAmount={setAmount}
 							type="amountOut"
-							amount={selectedRoute?.amount || amountOut}
+							amount={selectedRoute?.amount && amount !== '' ? selectedRoute.amount : amountOut}
 							tokens={toTokensList}
 							token={finalSelectedToToken}
 							onSelectTokenChange={onToTokenChange}
