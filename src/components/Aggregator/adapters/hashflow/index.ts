@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { Contract, ethers } from 'ethers';
 import { providers } from '../../rpcs';
+import { applyArbitrumFees } from '../../utils/arbitrumFees';
 import { sendTx } from '../../utils/sendTx';
 import { ABI } from './abi';
 
@@ -45,6 +46,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const gas = chain === 'optimism' ? BigNumber(3.5).times(data.gasEstimate).toFixed(0, 1) : data.gasEstimate;
 
 	const router = new Contract(routerAddress[chainToId[chain]], ABI, providers[chain]);
+
 	// https://docs.hashflow.com/hashflow/taker/getting-started#5.-execute-quote-on-chain
 	const txData = await router.populateTransaction.tradeSingleHop([
 		data.quoteData.pool,
@@ -62,13 +64,16 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		data.signature
 	]);
 
+	let estimatedGas = gas;
+	if (chain === 'arbitrum') estimatedGas = await applyArbitrumFees(router.address, txData.data, gas);
+
 	return {
 		amountReturned: data?.quoteData?.quoteTokenAmount || 0,
-		estimatedGas: gas,
+		estimatedGas,
 		tokenApprovalAddress: routerAddress[chainToId[chain]],
 		rawQuote: {
 			...data,
-			gasLimit: gas,
+			gasLimit: estimatedGas,
 			tx: { ...txData, ...(from === ethers.constants.AddressZero ? { value: data.quoteData.baseTokenAmount } : {}) }
 		}
 	};
@@ -80,8 +85,6 @@ export async function swap({ signer, rawQuote, chain }) {
 
 		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit })
 	});
-
-	console.log(tx);
 
 	return tx;
 }
