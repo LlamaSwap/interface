@@ -45,7 +45,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const gas = chain === 'optimism' ? BigNumber(3.5).times(data.gasEstimate).toFixed(0, 1) : data.gasEstimate;
 
 	const router = new Contract(routerAddress[chainToId[chain]], ABI, providers[chain]);
-
 	// https://docs.hashflow.com/hashflow/taker/getting-started#5.-execute-quote-on-chain
 	const txData = await router.populateTransaction.tradeSingleHop([
 		data.quoteData.pool,
