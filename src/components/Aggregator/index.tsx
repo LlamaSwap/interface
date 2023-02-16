@@ -626,7 +626,7 @@ export function AggregatorContainer({ tokenlist }) {
 	} = useTokenApprove(
 		finalSelectedFromToken?.address,
 		selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
-		amountWithDecimals
+		selectedRoute?.fromAmount
 	);
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
@@ -1114,7 +1114,7 @@ export function AggregatorContainer({ tokenlist }) {
 								selected={aggregator === r.name}
 								setRoute={() => setAggregator(r.name)}
 								toToken={finalSelectedToToken}
-								amountFrom={amountWithDecimals}
+								amountFrom={r?.fromAmount}
 								fromToken={finalSelectedFromToken}
 								selectedChain={selectedChain.label}
 								gasTokenPrice={gasTokenPrice}
