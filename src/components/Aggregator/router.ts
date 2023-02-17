@@ -22,7 +22,7 @@ import { appsSdk } from '~/misc/gnosis';
 
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, firebird];
+export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird];
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, kyberswap.name, paraswap.name];
 
