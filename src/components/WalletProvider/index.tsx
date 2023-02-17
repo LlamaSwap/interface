@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { darkTheme, getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { SafeConnector } from '@gnosis.pm/safe-apps-wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
 import { configureChains, createClient, WagmiConfig, chain } from 'wagmi';
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
@@ -43,8 +44,7 @@ const { connectors } = getDefaultWallets({
 });
 
 const wagmiClient = createClient({
-	autoConnect: true,
-	connectors,
+	connectors: [...connectors(), new SafeConnector({ chains })],
 	provider
 });
 

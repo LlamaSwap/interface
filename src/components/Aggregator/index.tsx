@@ -56,6 +56,8 @@ import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { useCountdown } from '~/hooks/useCountdown';
 import { RepeatIcon } from '@chakra-ui/icons';
+import { useIsGnosisSafe } from '~/queries/useIsGnosisSafe';
+import GnosisModal from './GnosisModal';
 
 /*
 Integrated:
@@ -318,6 +320,8 @@ export function AggregatorContainer({ tokenlist }) {
 		tokens: tokenlist
 	});
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
+
+	const { data: isGnosisSafe } = useIsGnosisSafe(address, selectedChain?.value);
 
 	// data of selected token not in chain's tokenlist
 	const { data: fromToken2 } = useToken({
@@ -797,9 +801,12 @@ export function AggregatorContainer({ tokenlist }) {
 			});
 		}
 	};
+	const isConfirming = isConfirmingResetApproval || isConfirmingApproval || isConfirmingInfiniteApproval;
+	const confirmingText = isConfirming ? 'Confirming' : 'Preparing transaction';
 
 	return (
 		<Wrapper>
+			{isGnosisSafe ? <GnosisModal account={address} chain={selectedChain?.value} /> : null}
 			<Heading>Meta-Aggregator</Heading>
 
 			<Text fontSize="1rem" fontWeight="500">
@@ -965,7 +972,7 @@ export function AggregatorContainer({ tokenlist }) {
 													</Text>
 													<Button
 														isLoading={isApproveResetLoading}
-														loadingText={isConfirmingResetApproval ? 'Confirming' : 'Preparing transaction'}
+														loadingText={confirmingText}
 														colorScheme={'messenger'}
 														onClick={() => {
 															if (approveReset) approveReset();
@@ -982,7 +989,7 @@ export function AggregatorContainer({ tokenlist }) {
 											) : (
 												<Button
 													isLoading={swapMutation.isLoading || isApproveLoading}
-													loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+													loadingText={confirmingText}
 													colorScheme={'messenger'}
 													onClick={() => {
 														//scroll Routes into view
@@ -1019,7 +1026,7 @@ export function AggregatorContainer({ tokenlist }) {
 											{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
 												<Button
 													colorScheme={'messenger'}
-													loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+													loadingText={confirmingText}
 													isLoading={isApproveInfiniteLoading}
 													onClick={() => {
 														if (approveInfinite) approveInfinite();
@@ -1134,7 +1141,7 @@ export function AggregatorContainer({ tokenlist }) {
 																</Text>
 																<Button
 																	isLoading={isApproveResetLoading}
-																	loadingText={isConfirmingResetApproval ? 'Confirming' : 'Preparing transaction'}
+																	loadingText={confirmingText}
 																	colorScheme={'messenger'}
 																	onClick={() => {
 																		if (approveReset) approveReset();
@@ -1151,7 +1158,7 @@ export function AggregatorContainer({ tokenlist }) {
 														) : (
 															<Button
 																isLoading={swapMutation.isLoading || isApproveLoading}
-																loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+																loadingText={confirmingText}
 																colorScheme={'messenger'}
 																onClick={() => {
 																	if (approve) approve();
@@ -1184,7 +1191,7 @@ export function AggregatorContainer({ tokenlist }) {
 														{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
 															<Button
 																colorScheme={'messenger'}
-																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+																loadingText={confirmingText}
 																isLoading={isApproveInfiniteLoading}
 																onClick={() => {
 																	if (approveInfinite) approveInfinite();

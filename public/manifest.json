@@ -1,6 +1,7 @@
 {
 	"short_name": "Llama Swap",
 	"name": "Llama Swap: Meta DEX aggregator",
+	"description": "LlamaSwap looks for the best route for your trade among a variety of Dex Aggregators, guaranteeing you the best execution prices in DeFi.",
 	"icons": [
 		{
 			"src": "favicon.ico",
@@ -11,5 +12,6 @@
 	"start_url": ".",
 	"display": "standalone",
 	"theme_color": "#000000",
-	"background_color": "#ffffff"
+	"background_color": "#ffffff",
+	"iconPath": "./favicon-32x32.png"
 }
