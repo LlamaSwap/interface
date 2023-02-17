@@ -50,7 +50,7 @@ function GnosisModal({ account, chain }) {
 		>
 			<AlertDialogOverlay />
 
-			<AlertDialogContent>
+			<AlertDialogContent color="white">
 				<AlertDialogHeader>Gnosis Safe connection</AlertDialogHeader>
 				<AlertDialogBody>
 					You have connected Gnosis Safe wallet, to use LlamaSwap you need to go to Gnosis site or disconnect your
