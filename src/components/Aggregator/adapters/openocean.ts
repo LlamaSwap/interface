@@ -50,6 +50,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let gas = data.estimatedGas;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
+	if (chain === 'arbitrum') gas = await applyArbitrumFees(data.to, data.data, gas);
 
 	if (chain === 'arbitrum') gas = await applyArbitrumFees(data.to, data.data, gas);
 
