@@ -72,6 +72,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: data?.quoteData?.quoteTokenAmount || 0,
 		estimatedGas,
 		tokenApprovalAddress: routerAddress[chainToId[chain]],
+		validTo: data.quoteData.quoteExpiry,
 		rawQuote: {
 			...data,
 			gasLimit: estimatedGas,
