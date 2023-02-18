@@ -17,6 +17,7 @@ export const chainToId = {
 export const name = 'Hashflow';
 export const token = 'HFT';
 
+// from https://docs.hashflow.com/hashflow/taker/getting-started#5.-execute-quote-on-chain
 const routerAddress = {
 	1: '0xF6a94dfD0E6ea9ddFdFfE4762Ad4236576136613',
 	10: '0xb3999F658C0391d94A37f7FF328F3feC942BcADC',
