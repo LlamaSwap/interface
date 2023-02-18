@@ -321,7 +321,7 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 
-	const { data: isGnosisSafe } = useIsGnosisSafe(address, selectedChain?.value);
+	const { isGnosisSafe, isIframe, isGnosisSafeApp } = useIsGnosisSafe(address, selectedChain?.value);
 
 	// data of selected token not in chain's tokenlist
 	const { data: fromToken2 } = useToken({
@@ -806,7 +806,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	return (
 		<Wrapper>
-			{isGnosisSafe ? <GnosisModal account={address} chain={selectedChain?.value} /> : null}
+			{isGnosisSafe && !isIframe ? <GnosisModal account={address} chain={selectedChain?.value} /> : null}
 			<Heading>Meta-Aggregator</Heading>
 
 			<Text fontSize="1rem" fontWeight="500">
@@ -994,6 +994,10 @@ export function AggregatorContainer({ tokenlist }) {
 													onClick={() => {
 														//scroll Routes into view
 														!selectedRoute && routesRef.current.scrollIntoView({ behavior: 'smooth' });
+														if (isGnosisSafeApp) {
+															handleSwap();
+															return;
+														}
 
 														if (approve) approve();
 
@@ -1007,42 +1011,44 @@ export function AggregatorContainer({ tokenlist }) {
 														if (isApproved) handleSwap();
 													}}
 													disabled={
-														isUSDTNotApprovedOnEthereum ||
 														swapMutation.isLoading ||
-														isApproveLoading ||
-														isApproveResetLoading ||
+														(!isGnosisSafe &&
+															(isApproveLoading || isApproveResetLoading || isUSDTNotApprovedOnEthereum)) ||
 														!(debouncedAmount && finalSelectedFromToken && finalSelectedToToken) ||
 														!selectedRoute
 													}
 												>
 													{!selectedRoute
 														? 'Select Aggregator'
-														: isApproved
+														: isApproved || isGnosisSafeApp
 														? `Swap via ${selectedRoute.name}`
 														: 'Approve'}
 												</Button>
 											)}
 
-											{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
-												<Button
-													colorScheme={'messenger'}
-													loadingText={confirmingText}
-													isLoading={isApproveInfiniteLoading}
-													onClick={() => {
-														if (approveInfinite) approveInfinite();
-													}}
-													disabled={
-														isUSDTNotApprovedOnEthereum ||
-														swapMutation.isLoading ||
-														isApproveLoading ||
-														isApproveResetLoading ||
-														isApproveInfiniteLoading ||
-														!selectedRoute
-													}
-												>
-													{'Approve Infinite'}
-												</Button>
-											)}
+											{!isApproved &&
+												selectedRoute &&
+												inifiniteApprovalAllowed.includes(selectedRoute.name) &&
+												!isGnosisSafeApp && (
+													<Button
+														colorScheme={'messenger'}
+														loadingText={confirmingText}
+														isLoading={isApproveInfiniteLoading}
+														onClick={() => {
+															if (approveInfinite) approveInfinite();
+														}}
+														disabled={
+															isUSDTNotApprovedOnEthereum ||
+															swapMutation.isLoading ||
+															isApproveLoading ||
+															isApproveResetLoading ||
+															isApproveInfiniteLoading ||
+															!selectedRoute
+														}
+													>
+														{'Approve Infinite'}
+													</Button>
+												)}
 										</>
 									</>
 								)}
@@ -1222,7 +1228,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 			<FAQs />
 
-			<TransactionModal open={txModalOpen} setOpen={setTxModalOpen} link={txUrl} />
+			<TransactionModal open={txModalOpen} isGnosisSafeApp={isGnosisSafeApp} setOpen={setTxModalOpen} link={txUrl} />
 		</Wrapper>
 	);
 }

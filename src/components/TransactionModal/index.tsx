@@ -10,7 +10,7 @@ import {
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import {} from 'react-feather';
 
-export const TransactionModal = ({ open, setOpen, link }) => {
+export const TransactionModal = ({ open, setOpen, link, isGnosisSafeApp }) => {
 	return (
 		<Modal
 			isCentered
@@ -40,7 +40,7 @@ export const TransactionModal = ({ open, setOpen, link }) => {
 						<line x1="12" y1="16" x2="12" y2="8"></line>
 					</svg>
 					<Text as="h1" fontSize="xl" fontWeight="600">
-						Transaction Submitted
+						{isGnosisSafeApp ? 'The transaction is proposed for multisig, please confirm it' : 'Transaction Submitted'}
 					</Text>
 				</ModalBody>
 

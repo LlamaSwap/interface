@@ -15,6 +15,11 @@ import * as yieldyak from './adapters/yieldyak';
 import { capitalizeFirstLetter } from '~/utils';
 import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
+import { ethers } from 'ethers';
+import { erc20ABI } from 'wagmi';
+import { checkGnosisSafe } from '~/queries/useIsGnosisSafe';
+import { appsSdk } from '~/misc/gnosis';
+
 // import * as krystal from './adapters/krystal'
 
 export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, firebird];
@@ -42,6 +47,8 @@ export function getAllChains() {
 
 export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
 	const aggregator = adaptersMap[adapter];
+	const address = await signer.getAddress();
+	const { isGnosisSafeApp } = await checkGnosisSafe(address, chain);
 
 	try {
 		const res = await aggregator.swap({
@@ -54,6 +61,18 @@ export async function swap({ chain, from, to, amount, signer, slippage = '1', ad
 			rawQuote,
 			tokens
 		});
+
+		if (isGnosisSafeApp) {
+			const txArr = [];
+			if (from !== ethers.constants.AddressZero) {
+				const token = new ethers.Contract(from, erc20ABI, signer);
+				const approveTx = await token.populateTransaction.approve(res.to, amount, { value: '0' });
+				txArr.push(approveTx);
+			}
+			txArr.push(res);
+			const txs = await appsSdk.txs.send({ txs: txArr });
+			return txs;
+		}
 		return res;
 	} catch (e) {
 		throw e;
