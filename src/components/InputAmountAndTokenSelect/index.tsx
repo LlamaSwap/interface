@@ -1,4 +1,4 @@
-import { Flex, Input, Text, Button } from '@chakra-ui/react';
+import { Flex, Input, Text, Button, Box } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
 import type { Dispatch, SetStateAction } from 'react';
 import type { IToken } from '~/types';
@@ -60,30 +60,33 @@ export function InputAmountAndTokenSelect({
 			</Text>
 
 			<Flex flexDir={{ base: 'column-reverse', md: 'row' }} gap={{ base: '12px', md: '8px' }}>
-				<Input
-					type="text"
-					value={amount}
-					focusBorderColor="transparent"
-					border="none"
-					bg="#141619"
-					color="white"
-					_focusVisible={{ outline: 'none' }}
-					fontSize="2.25rem"
-					p="0"
-					placeholder={(placeholder && String(placeholder)) || '0'}
-					_placeholder={{ color: '#5c5c5c' }}
-					onChange={(e) => {
-						const value = e.target.value.replace(/[^0-9.,]/g, '').replace(/,/g, '.');
-						if (type === 'amountOut') {
-							setAmount(['', value]);
-						} else {
-							setAmount([value, '']);
-						}
-					}}
-					overflow="hidden"
-					whiteSpace="nowrap"
-					textOverflow="ellipsis"
-				/>
+				<Box pos="relative">
+					<Input
+						type="text"
+						value={amount}
+						focusBorderColor="transparent"
+						border="none"
+						bg="#141619"
+						color="white"
+						_focusVisible={{ outline: 'none' }}
+						fontSize="2.25rem"
+						p="0"
+						placeholder={(placeholder && String(placeholder)) || '0'}
+						_placeholder={{ color: '#5c5c5c' }}
+						onChange={(e) => {
+							const value = formatNumber(e.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
+
+							if (type === 'amountOut') {
+								setAmount(['', value]);
+							} else {
+								setAmount([value, '']);
+							}
+						}}
+						overflow="hidden"
+						whiteSpace="nowrap"
+						textOverflow="ellipsis"
+					/>
+				</Box>
 
 				<TokenSelect tokens={tokens} token={token} onClick={onSelectTokenChange} selectedChain={selectedChain} />
 			</Flex>
@@ -145,4 +148,12 @@ export function InputAmountAndTokenSelect({
 			</Flex>
 		</Flex>
 	);
+}
+
+function formatNumber(string) {
+	let pattern = /(?=(?!^)\d{3}(?:\b|(?:\d{3})+)\b)/g;
+	if (string.includes('.')) {
+		pattern = /(?=(?!^)\d{3}(?:\b|(?:\d{3})+)\b\.)/g;
+	}
+	return string.replace(pattern, ' ');
 }
