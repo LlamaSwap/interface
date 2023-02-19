@@ -59,7 +59,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		data.quoteData.baseTokenAmount,
 		data.quoteData.baseTokenAmount,
 		data.quoteData.quoteTokenAmount,
-		data.quoteData.quoteExpiry + 20,
+		data.quoteData.quoteExpiry,
 		data.quoteData.nonce,
 		data.quoteData.txid,
 		data.signature
