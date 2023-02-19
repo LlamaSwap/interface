@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js';
 import type { Dispatch, SetStateAction } from 'react';
 import type { IToken } from '~/types';
 import { formattedNum } from '~/utils';
-import { formatAmount } from '~/utils/formatAmount';
 import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../Aggregator/constants';
 import { TokenSelect } from './TokenSelect';
 
@@ -74,10 +73,11 @@ export function InputAmountAndTokenSelect({
 					placeholder={(placeholder && String(placeholder)) || '0'}
 					_placeholder={{ color: '#5c5c5c' }}
 					onChange={(e) => {
+						const value = e.target.value.replace(/[^0-9.,]/g, '').replace(/,/g, '.');
 						if (type === 'amountOut') {
-							setAmount(['', e.target.value]);
+							setAmount(['', value]);
 						} else {
-							setAmount([e.target.value, '']);
+							setAmount([value, '']);
 						}
 					}}
 					overflow="hidden"
@@ -88,67 +88,61 @@ export function InputAmountAndTokenSelect({
 				<TokenSelect tokens={tokens} token={token} onClick={onSelectTokenChange} selectedChain={selectedChain} />
 			</Flex>
 
-			{Number.isNaN(Number(formatAmount(amount))) ? (
-				<Text fontSize="0.875rem" fontWeight={300} color="red.500" pl="2px">
-					Invalid Input
+			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem">
+				<Text
+					fontSize="0.875rem"
+					fontWeight={300}
+					color="#a2a2a2"
+					overflow="hidden"
+					whiteSpace="nowrap"
+					textOverflow="ellipsis"
+				>
+					{amountUsd && (
+						<>
+							<span>{`~$${formattedNum(amountUsd)}`}</span>
+							<Text
+								as="span"
+								color={
+									priceImpact >= PRICE_IMPACT_HIGH_THRESHOLD
+										? 'red.500'
+										: priceImpact >= PRICE_IMPACT_MEDIUM_THRESHOLD
+										? 'yellow.500'
+										: '#a2a2a2'
+								}
+							>
+								{priceImpact && !Number.isNaN(priceImpact) ? ` (-${priceImpact.toFixed(2)}%)` : ''}
+							</Text>
+						</>
+					)}
 				</Text>
-			) : (
-				<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem">
-					<Text
-						fontSize="0.875rem"
-						fontWeight={300}
-						color="#a2a2a2"
-						overflow="hidden"
-						whiteSpace="nowrap"
-						textOverflow="ellipsis"
-					>
-						{amountUsd && (
-							<>
-								<span>{`~$${formattedNum(amountUsd)}`}</span>
-								<Text
-									as="span"
-									color={
-										priceImpact >= PRICE_IMPACT_HIGH_THRESHOLD
-											? 'red.500'
-											: priceImpact >= PRICE_IMPACT_MEDIUM_THRESHOLD
-											? 'yellow.500'
-											: '#a2a2a2'
-									}
+
+				<Flex alignItems="center" justifyContent="flex-start" flexWrap="nowrap" gap="8px">
+					{balance && (
+						<>
+							<Text fontSize="0.875rem" fontWeight={300} color="#a2a2a2">{`Balance: ${Number(balance).toFixed(
+								4
+							)}`}</Text>
+
+							{onMaxClick && (
+								<Button
+									onClick={onMaxClick}
+									p="0"
+									minH={0}
+									minW={0}
+									h="fit-content"
+									bg="none"
+									_hover={{ bg: 'none' }}
+									fontSize="0.875rem"
+									fontWeight={500}
+									color="#1f72e5"
 								>
-									{priceImpact && !Number.isNaN(priceImpact) ? ` (-${priceImpact.toFixed(2)}%)` : ''}
-								</Text>
-							</>
-						)}
-					</Text>
-
-					<Flex alignItems="center" justifyContent="flex-start" flexWrap="nowrap" gap="8px">
-						{balance && (
-							<>
-								<Text fontSize="0.875rem" fontWeight={300} color="#a2a2a2">{`Balance: ${Number(balance).toFixed(
-									4
-								)}`}</Text>
-
-								{onMaxClick && (
-									<Button
-										onClick={onMaxClick}
-										p="0"
-										minH={0}
-										minW={0}
-										h="fit-content"
-										bg="none"
-										_hover={{ bg: 'none' }}
-										fontSize="0.875rem"
-										fontWeight={500}
-										color="#1f72e5"
-									>
-										Max
-									</Button>
-								)}
-							</>
-						)}
-					</Flex>
+									Max
+								</Button>
+							)}
+						</>
+					)}
 				</Flex>
-			)}
+			</Flex>
 		</Flex>
 	);
 }

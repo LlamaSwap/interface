@@ -55,7 +55,6 @@ import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
 import { useCountdown } from '~/hooks/useCountdown';
 import { RepeatIcon } from '@chakra-ui/icons';
-import { formatAmount } from '~/utils/formatAmount';
 
 /*
 Integrated:
@@ -290,9 +289,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const toast = useToast();
 
 	// debounce input amount and limit no of queries made to aggregators api, to avoid CORS errors
-	const [debouncedAmount, debouncedAmountOut] = useDebounce([formatAmount(amount), formatAmount(amountOut)], 300);
-
-	const isInputAmountNaN = Number.isNaN(Number(debouncedAmount)) || Number.isNaN(Number(debouncedAmountOut));
+	const [debouncedAmount, debouncedAmountOut] = useDebounce([amount, amountOut], 300);
 
 	// get selected chain and tokens from URL query params
 	const routesRef = useRef(null);
@@ -356,16 +353,10 @@ export function AggregatorContainer({ tokenlist }) {
 	}, [fromToken2, selectedChain?.id, toToken2, selectedFromToken, selectedToToken]);
 
 	// format input amount of selected from token
-	const amountWithDecimals = BigNumber(
-		debouncedAmount && debouncedAmount !== '' && !Number.isNaN(Number(debouncedAmount)) ? debouncedAmount : '0'
-	)
+	const amountWithDecimals = BigNumber(debouncedAmount && debouncedAmount !== '' ? debouncedAmount : '0')
 		.times(BigNumber(10).pow(finalSelectedFromToken?.decimals || 18))
 		.toFixed(0);
-	const amountOutWithDecimals = BigNumber(
-		debouncedAmountOut && debouncedAmountOut !== '' && !Number.isNaN(Number(debouncedAmountOut))
-			? debouncedAmountOut
-			: '0'
-	)
+	const amountOutWithDecimals = BigNumber(debouncedAmountOut && debouncedAmountOut !== '' ? debouncedAmountOut : '0')
 		.times(BigNumber(10).pow(finalSelectedToToken?.decimals || 18))
 		.toFixed(0);
 
@@ -500,7 +491,7 @@ export function AggregatorContainer({ tokenlist }) {
 			return b.netOut - a.netOut;
 		})
 		.sort((a, b) => {
-			if (a.isOutputAvailable && debouncedAmountOut) {
+			if (a.isOutputAvailable && amountOut) {
 				return -1;
 			} else {
 				return 1;
@@ -606,7 +597,7 @@ export function AggregatorContainer({ tokenlist }) {
 			  amount &&
 			  debouncedAmount &&
 			  amountWithDecimals &&
-			  formatAmount(amount) === formatAmount(debouncedAmount) &&
+			  amount === debouncedAmount &&
 			  selectedRoute?.fromAmount &&
 			  (+amountWithDecimals > +balance.data.value.toString() ||
 					+selectedRoute.fromAmount > +balance.data.value.toString())
@@ -947,7 +938,7 @@ export function AggregatorContainer({ tokenlist }) {
 						</>
 					) : null}
 
-					{!selectedRoute?.isOutputAvailable && debouncedAmountOut !== '' && selectedRoute?.amount ? (
+					{!selectedRoute?.isOutputAvailable && amountOut !== '' && selectedRoute?.amount ? (
 						<Alert status="warning" borderRadius="0.375rem" py="8px">
 							<AlertIcon />
 							The output amount of this route is defferent from your input because {selectedRoute?.name} doesn't support
@@ -1022,7 +1013,6 @@ export function AggregatorContainer({ tokenlist }) {
 														if (isApproved) handleSwap();
 													}}
 													disabled={
-														isInputAmountNaN ||
 														isUSDTNotApprovedOnEthereum ||
 														swapMutation.isLoading ||
 														isApproveLoading ||
@@ -1048,7 +1038,6 @@ export function AggregatorContainer({ tokenlist }) {
 														if (approveInfinite) approveInfinite();
 													}}
 													disabled={
-														isInputAmountNaN ||
 														isUSDTNotApprovedOnEthereum ||
 														swapMutation.isLoading ||
 														isApproveLoading ||
@@ -1088,7 +1077,7 @@ export function AggregatorContainer({ tokenlist }) {
 					) : !isLoading &&
 					  amount &&
 					  debouncedAmount &&
-					  formatAmount(amount) === formatAmount(debouncedAmount) &&
+					  amount === debouncedAmount &&
 					  finalSelectedFromToken &&
 					  finalSelectedToToken &&
 					  routes &&
@@ -1194,7 +1183,6 @@ export function AggregatorContainer({ tokenlist }) {
 																	if (isApproved) handleSwap();
 																}}
 																disabled={
-																	isInputAmountNaN ||
 																	isUSDTNotApprovedOnEthereum ||
 																	swapMutation.isLoading ||
 																	isApproveLoading ||
@@ -1219,7 +1207,6 @@ export function AggregatorContainer({ tokenlist }) {
 																	if (approveInfinite) approveInfinite();
 																}}
 																disabled={
-																	isInputAmountNaN ||
 																	isUSDTNotApprovedOnEthereum ||
 																	swapMutation.isLoading ||
 																	isApproveLoading ||
