@@ -78,7 +78,7 @@ export function PriceImpact({
 
 	return (
 		<>
-			<Accordion allowToggle style={{ margin: '0 4px' }}>
+			<Accordion allowToggle style={{ margin: '0 4px' }} index={[0]}>
 				<AccordionItem borderColor="#373944" minH="2.5rem">
 					<AccordionButton onClick={() => setPriceOrder((prev) => prev * -1)}>
 						{priceOrder === 1 ? (
@@ -94,7 +94,6 @@ export function PriceImpact({
 								Number(toTokenValue) * Number(fromTokenPrice)
 							).toFixed(2)})`}</Box>
 						)}
-						<AccordionIcon />
 					</AccordionButton>
 
 					<AccordionPanel

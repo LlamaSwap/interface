@@ -94,6 +94,20 @@ export default function FaqWrapper() {
 						would be eligible for their airdrop.
 					</AccordionPanel>
 				</AccordionItem>
+				<AccordionItem>
+					<h2>
+						<AccordionButton>
+							<Box flex="1" textAlign="left">
+								I swapped ETH on CowSwap but it just disappeared, what happened?
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+					</h2>
+					<AccordionPanel pb={4}>
+						Some ETH orders on CowSwap might not get filled because price moves against you too quickly,
+						in those cases the ETH just sits in a contract until it is refunded 30 minutes after your tx.
+					</AccordionPanel>
+				</AccordionItem>
 			</Accordion>
 		</>
 	);
