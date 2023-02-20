@@ -7,11 +7,13 @@ import { ABI } from './abi';
 
 export const chainToId = {
 	ethereum: 1,
+	/*
 	bsc: 56,
 	polygon: 137,
 	arbitrum: 42161,
 	avax: 43114,
 	optimism: 10
+	*/
 };
 
 export const name = 'Hashflow';
