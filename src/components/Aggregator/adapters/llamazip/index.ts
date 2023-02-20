@@ -7,7 +7,7 @@ export const name = 'LlamaZip';
 export const token = 'none';
 
 export const chainToId = {
-  optimism: '0xf0FB7602Df6672e6DA832a8ea3BCad1EE3dd6e52',
+  optimism: '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b',
 };
 
 // https://docs.uniswap.org/contracts/v3/reference/deployments
@@ -60,9 +60,9 @@ function normalize(token:string, weth:string){
 
 // https://docs.uniswap.org/sdk/v3/guides/quoting
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: any) {
-if(to.toLowerCase() === weth[chain].toLowerCase()){
-return {} // We don't support swaps to WETH
-}
+  if (to.toLowerCase() === weth[chain].toLowerCase()) {
+    return {} // We don't support swaps to WETH
+  }
   const provider = providers[chain];
   const quoterContract = new ethers.Contract(quoter[chain], 
     ["function quoteExactInputSingle(address tokenIn,address tokenOut,uint24 fee,uint256 amountIn,uint160 sqrtPriceLimitX96) external returns (uint256 amountOut)"],
@@ -87,9 +87,9 @@ return {} // We don't support swaps to WETH
 
   const inputIsETH = from === ethers.constants.AddressZero;
   const calldata = encode(pair.pairId, token0isTokenIn, quotedAmountOut, extra.slippage ?? '0.5', inputIsETH, false, amount)
-if(calldata.length > (256/4 + 2)){
-return {} // LlamaZip doesn't support calldata that's bigger than one EVM word
-}
+  if (calldata.length > (256 / 4 + 2)) {
+    return {} // LlamaZip doesn't support calldata that's bigger than one EVM word
+  }
 
   return {
     amountReturned: quotedAmountOut.toString(),
