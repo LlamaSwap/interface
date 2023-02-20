@@ -13,13 +13,14 @@ import * as paraswap from './adapters/paraswap';
 // import * as airswap from './adapters/airswap' cors
 // import * as odos from './adapters/odos';
 import * as yieldyak from './adapters/yieldyak';
+import * as llamazip from './adapters/llamazip';
 import { capitalizeFirstLetter } from '~/utils';
 import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
 
-export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird, hashflow];
+export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird, hashflow, llamazip];
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, kyberswap.name, paraswap.name];
 
