@@ -91,6 +91,7 @@ export const IconImage = styled.img`
 	height: 20px;
 	aspect-ratio: 1;
 	flex-shrink: 0;
+	object-fit: contain;
 `;
 export const IconWrapper = styled.div`
 	display: flex;

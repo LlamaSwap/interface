@@ -1,9 +1,8 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
-import { omit } from 'lodash';
-import { name as matcha0xName } from '~/components/Aggregator/adapters/0x';
+import { first, omit } from 'lodash';
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
-import { adapters } from '~/components/Aggregator/router';
+import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/router';
 
 interface IGetListRoutesProps {
 	chain: string;
@@ -38,6 +37,8 @@ interface IGetAdapterRouteProps extends IGetListRoutesProps {
 	adapter: any;
 }
 
+export const REFETCH_INTERVAL = 25_000;
+
 export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
 	if (!chain || !from || !to || !amount || amount === '0') {
 		return {
@@ -53,7 +54,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 	try {
 		let price;
-		if (extra.isPrivacyEnabled || adapter.name === matcha0xName) {
+		if (extra.isPrivacyEnabled || adaptersWithApiKeys[adapter.name]) {
 			price = await redirectQuoteReq(adapter.name, chain, from, to, amount, extra);
 		} else {
 			price = await adapter.getQuote(chain, from, to, amount, {
@@ -101,15 +102,26 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 				return {
 					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: 20_000,
+					refetchInterval: REFETCH_INTERVAL,
 					refetchOnWindowFocus: false,
 					refetchIntervalInBackground: false
 				};
 			})
 	});
+	const data = res.filter((r) => r.status === 'success') ?? [];
+	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
 
 	return {
-		isLoading: res.filter((r) => r.status === 'success').length >= 1 ? false : true,
-		data: res?.filter((r) => r.status === 'success' && !!r.data && r.data.price).map((r) => r.data) ?? []
+		isLoaded: res.filter((r) => r.status === 'loading').length === 0,
+		isLoading: data.length >= 1 ? false : true,
+		data: resData?.map((r) => r.data) ?? [],
+		refetch: () => res?.forEach((r) => r.refetch()),
+		lastFetched:
+			first(
+				data
+					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
+					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)
+					.map((d) => d.dataUpdatedAt)
+			) || null
 	};
 }

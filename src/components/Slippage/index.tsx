@@ -1,8 +1,14 @@
-import { Button, Box, Text } from '@chakra-ui/react';
+import { Button, Box, Text, Alert, AlertIcon } from '@chakra-ui/react';
 
 export function Slippage({ slippage, setSlippage }) {
 	return (
 		<Box display="flex" flexDir="column" marginX="4px">
+			{!!slippage && slippage>1 ? (
+				<Alert status="warning" borderRadius="0.375rem" py="8px">
+					<AlertIcon />
+					High slippage! you might get sandwiched with a slippage of {slippage}%
+				</Alert>
+			) : null}
 			<Text fontWeight="400" display="flex" justifyContent="space-between" alignItems="center" fontSize="0.875rem">
 				Swap Slippage: {slippage ? slippage + '%' : ''}
 			</Text>

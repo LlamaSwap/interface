@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
+import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 
 export const chainToId = {
@@ -49,6 +50,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let gas = data.estimatedGas;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
+	if (chain === 'arbitrum') gas = await applyArbitrumFees(data.to, data.data, gas);
 
 	return {
 		amountReturned: data.outAmount,

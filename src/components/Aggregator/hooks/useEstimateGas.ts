@@ -6,9 +6,9 @@ import { erc20ABI } from 'wagmi';
 import { IRoute } from '~/queries/useGetRoutes';
 
 const traceRpcs = {
-	ethereum: 'https://eth-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
-	bsc: 'https://bsc-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
-	gnosis: 'https://gnosis-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
+	ethereum: 'https://eth-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
+	bsc: 'https://bsc-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
+	gnosis: 'https://gnosis-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 	polygon: 'https://polygon.llamarpc.com'
 };
 
@@ -24,7 +24,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				: {
 						...(await tokenContract.populateTransaction.approve(
 							route.price.tokenApprovalAddress,
-							"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+							'0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 						)),
 						from: userAddress
 				  };
@@ -46,7 +46,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				gas: (Number(swapTx.trace[0].result.gasUsed) + 21e3).toString(), // ignores calldata and accesslist costs
 				isFailed: swapTx.trace[0]?.error === 'Reverted',
 				aggGas: route.price?.estimatedGas,
-				name: route.name,
+				name: route.name
 			};
 		} catch (e) {
 			console.log(e);
