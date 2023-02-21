@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js';
 import type { Dispatch, SetStateAction } from 'react';
 import type { IToken } from '~/types';
 import { formattedNum } from '~/utils';
+import { formatAmount } from '~/utils/formatAmount';
 import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../Aggregator/constants';
 import { TokenSelect } from './TokenSelect';
 
@@ -40,8 +41,8 @@ export function InputAmountAndTokenSelect({
 	placeholder?: string | number;
 }) {
 	const amountUsd =
-		amount && tokenPrice && !Number.isNaN(Number(amount)) && !Number.isNaN(Number(tokenPrice))
-			? BigNumber(amount).times(tokenPrice).toFixed(2)
+		amount && tokenPrice && !Number.isNaN(Number(formatAmount(amount))) && !Number.isNaN(Number(tokenPrice))
+			? BigNumber(formatAmount(amount)).times(tokenPrice).toFixed(2)
 			: null;
 
 	return (

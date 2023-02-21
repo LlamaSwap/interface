@@ -852,7 +852,7 @@ export function AggregatorContainer({ tokenlist }) {
 							placeholder={normalizedRoutes[0]?.amountIn}
 							setAmount={setAmount}
 							type="amountIn"
-							amount={formatAmount(selectedRoute?.amountIn && amountOut !== '' ? selectedRoute.amountIn : amount)}
+							amount={selectedRoute?.amountIn && amountOut !== '' ? selectedRoute.amountIn : amount}
 							tokens={fromTokensList}
 							token={finalSelectedFromToken}
 							onSelectTokenChange={onFromTokenChange}
@@ -897,7 +897,7 @@ export function AggregatorContainer({ tokenlist }) {
 							placeholder={normalizedRoutes[0]?.amount}
 							setAmount={setAmount}
 							type="amountOut"
-							amount={formatAmount(selectedRoute?.amount && amount !== '' ? selectedRoute.amount : amountOut)}
+							amount={selectedRoute?.amount && amount !== '' ? selectedRoute.amount : amountOut}
 							tokens={toTokensList}
 							token={finalSelectedToToken}
 							onSelectTokenChange={onToTokenChange}
