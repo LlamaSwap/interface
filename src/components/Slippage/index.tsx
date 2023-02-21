@@ -20,7 +20,6 @@ const stablecoins = [
 ];
 
 export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
-	console.log(fromToken, toToken);
 	return (
 		<Box display="flex" flexDir="column" marginX="4px">
 			{!!slippage && slippage > 1 ? (
