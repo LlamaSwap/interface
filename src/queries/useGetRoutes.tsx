@@ -1,9 +1,9 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
 import { partial, first, omit } from 'lodash';
-import { name as matcha0xName } from '~/components/Aggregator/adapters/0x';
+
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
-import { adapters } from '~/components/Aggregator/router';
+import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/router';
 
 interface IGetListRoutesProps {
 	chain: string;
@@ -61,7 +61,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 		let amountIn = amount;
 
 		const quouteFunc =
-			extra.isPrivacyEnabled || adapter.name === matcha0xName
+			extra.isPrivacyEnabled || adaptersWithApiKeys[adapter.name]
 				? partial(redirectQuoteReq, adapter.name)
 				: adapter.getQuote;
 		if (adapter.isOutputAvailable) {
@@ -69,10 +69,16 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			amountIn = price.amountIn;
 		} else if (isOutputDefined && !adapter.isOutputAvailable) {
 			// (from -> to) ==> (to -> from)
-			const priceOut = await quouteFunc(chain, to, from, extra.amountOut, extra);
-
-			amountIn = priceOut.amountReturned;
-			price = await quouteFunc(chain, from, to, priceOut.amountReturned, extra);
+			return {
+				price: null,
+				name: adapter.name,
+				airdrop: !adapter.token,
+				fromAmount: amount,
+				txData: '',
+				l1Gas: 0,
+				tx: {},
+				isOutputAvailable: false
+			};
 		} else {
 			price = await quouteFunc(chain, from, to, amount, extra);
 		}

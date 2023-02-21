@@ -14,6 +14,8 @@ import BigNumber from 'bignumber.js';
 import { useState } from 'react';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from '../Aggregator/constants';
 
+const PRICE_IMPACT_SMOL_WARNING_THRESHOLD = 3;
+
 interface IPriceImpact {
 	isLoading: boolean;
 	fromToken?: { symbol: string; decimals: number; name: string } | null;
@@ -78,7 +80,7 @@ export function PriceImpact({
 
 	return (
 		<>
-			<Accordion allowToggle style={{ margin: '0 4px' }}>
+			<Accordion allowToggle style={{ margin: '0 4px' }} index={[0]}>
 				<AccordionItem borderColor="#373944" minH="2.5rem">
 					<AccordionButton onClick={() => setPriceOrder((prev) => prev * -1)}>
 						{priceOrder === 1 ? (
@@ -94,7 +96,6 @@ export function PriceImpact({
 								Number(toTokenValue) * Number(fromTokenPrice)
 							).toFixed(2)})`}</Box>
 						)}
-						<AccordionIcon />
 					</AccordionButton>
 
 					<AccordionPanel
@@ -120,14 +121,14 @@ export function PriceImpact({
 							color={
 								isPriceImpactNotKnown
 									? 'red.500'
-									: selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD
+									: selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD
 									? 'orange.500'
 									: 'white'
 							}
 						>
 							<span>Price impact according to CoinGecko</span>
 
-							{isPriceImpactNotKnown || selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD ? (
+							{isPriceImpactNotKnown || selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD ? (
 								<WarningTwoIcon style={{ marginLeft: 'auto' }} />
 							) : null}
 
