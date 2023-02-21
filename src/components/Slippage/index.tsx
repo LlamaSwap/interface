@@ -1,12 +1,37 @@
 import { Button, Box, Text, Alert, AlertIcon } from '@chakra-ui/react';
 
-export function Slippage({ slippage, setSlippage }) {
+const stablecoins = [
+	'USDT',
+	'USDC',
+	'BUSD',
+	'DAI',
+	'FRAX',
+	'TUSD',
+	'USDD',
+	'USDP',
+	'GUSD',
+	'LUSD',
+	'sUSD',
+	'MIM',
+	'DOLA',
+	'USP',
+	'USDX',
+	'MAI'
+];
+
+export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 	return (
 		<Box display="flex" flexDir="column" marginX="4px">
-			{!!slippage && slippage>1 ? (
+			{!!slippage && slippage > 1 ? (
 				<Alert status="warning" borderRadius="0.375rem" py="8px">
 					<AlertIcon />
-					High slippage! you might get sandwiched with a slippage of {slippage}%
+					High slippage! You might get sandwiched with a slippage of {slippage}%
+				</Alert>
+			) : null}
+			{!!slippage && slippage > 0.1 && stablecoins.includes(fromToken) && stablecoins.includes(toToken) ? (
+				<Alert status="warning" borderRadius="0.375rem" py="8px">
+					<AlertIcon />
+					You are trading stablecoins but your slippage is very high, set it to 0.1% or lower
 				</Alert>
 			) : null}
 			<Text fontWeight="400" display="flex" justifyContent="space-between" alignItems="center" fontSize="0.875rem">

@@ -902,7 +902,12 @@ export function AggregatorContainer({ tokenlist }) {
 						)}
 					</Flex>
 
-					<Slippage slippage={slippage} setSlippage={setSlippage} />
+					<Slippage
+						slippage={slippage}
+						setSlippage={setSlippage}
+						fromToken={finalSelectedFromToken?.symbol}
+						toToken={finalSelectedToToken?.symbol}
+					/>
 
 					<PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
