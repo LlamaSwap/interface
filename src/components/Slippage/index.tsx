@@ -20,6 +20,9 @@ const stablecoins = [
 ];
 
 export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
+	if (Number.isNaN(slippage)) {
+		throw new Error('Wrong slippage!');
+	}
 	return (
 		<Box display="flex" flexDir="column" marginX="4px">
 			{!!slippage && slippage > 1 ? (
