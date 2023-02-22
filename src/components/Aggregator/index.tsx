@@ -781,7 +781,7 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 
 	const handleSwap = () => {
-		if (selectedRoute && selectedRoute.price) {
+		if (selectedRoute && selectedRoute.price && !Number.isNaN(Number(slippage))) {
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -1010,13 +1010,16 @@ export function AggregatorContainer({ tokenlist }) {
 														isApproveLoading ||
 														isApproveResetLoading ||
 														!(debouncedAmount && finalSelectedFromToken && finalSelectedToToken) ||
-														!selectedRoute
+														!selectedRoute ||
+														Number.isNaN(Number(slippage))
 													}
 												>
 													{!selectedRoute
 														? 'Select Aggregator'
 														: isApproved
 														? `Swap via ${selectedRoute.name}`
+														: Number.isNaN(Number(slippage))
+														? 'Set Slippage'
 														: 'Approve'}
 												</Button>
 											)}
@@ -1175,13 +1178,16 @@ export function AggregatorContainer({ tokenlist }) {
 																	swapMutation.isLoading ||
 																	isApproveLoading ||
 																	isApproveResetLoading ||
-																	!selectedRoute
+																	!selectedRoute ||
+																	Number.isNaN(Number(slippage))
 																}
 															>
 																{!selectedRoute
 																	? 'Select Aggregator'
 																	: isApproved
 																	? `Swap via ${selectedRoute?.name}`
+																	: Number.isNaN(Number(slippage))
+																	? 'Set Slippage'
 																	: 'Approve'}
 															</Button>
 														)}
