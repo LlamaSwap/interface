@@ -17,7 +17,7 @@ export const tokens = {
 export const normalizeTokens = (t0, t1) =>
 	Number(t0) < Number(t1) ? [t0.toLowerCase(), t1.toLowerCase()] : [t1.toLowerCase(), t0.toLowerCase()];
 
-export const createPair = (t0: string, t1: string, fee: string, pairId: string, router: string) => {
+const createPair = (t0: string, t1: string, fee: string, pairId: string, router: string) => {
 	const [token0, token1] = normalizeTokens(t0, t1);
 
 	return {
