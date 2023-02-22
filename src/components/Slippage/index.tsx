@@ -56,7 +56,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 				<Box pos="relative" isolation="isolate">
 					<input
 						value={slippage}
-						type="number"
+						type="text"
 						style={{
 							width: '100%',
 							height: '2rem',
@@ -68,7 +68,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 						}}
 						placeholder="Custom"
 						onChange={(val) => {
-							setSlippage(val.target.value);
+							setSlippage(val.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
 						}}
 					/>
 					<Text pos="absolute" top="6px" right="6px" fontSize="0.875rem" zIndex={1}>
