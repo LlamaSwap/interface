@@ -15,7 +15,7 @@ export const chainToId = {
 	avax: 43114,
 	fantom: 250,
 	cronos: 25,
-	canto: chainsMap.canto,
+	canto: chainsMap.canto
 };
 
 const approvalAddresses = {
@@ -27,7 +27,7 @@ const approvalAddresses = {
 	avax: '0xe0C38b2a8D09aAD53f1C67734B9A95E43d5981c0',
 	fantom: '0xe0C38b2a8D09aAD53f1C67734B9A95E43d5981c0',
 	cronos: '0x4A5a7331dA84d3834C030a9b8d4f3d687A3b788b',
-	canto: '0x984742Be1901fcbed70d7B5847bee5BE006d91C8',
+	canto: '0x984742Be1901fcbed70d7B5847bee5BE006d91C8'
 };
 
 export const name = 'Firebird';
@@ -55,7 +55,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		`${routerAPI}/quote?chainId=${
 			chainToId[chain]
 		}&from=${tokenFrom}&to=${tokenTo}&amount=${amount}&receiver=${receiver}&slippage=${
-			+extra.slippage / 100 || 0.005
+			+extra.slippage / 100
 		}&source=defillama&ref=${defillamaReferrerAddress}`,
 		{ headers }
 	).then((r) => r.json());
