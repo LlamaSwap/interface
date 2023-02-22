@@ -33,7 +33,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		`${
 			chainToId[chain]
 		}swap/v1/quote?buyToken=${tokenTo}&sellToken=${tokenFrom}&sellAmount=${amount}&slippagePercentage=${
-			extra.slippage / 100 || 1
+			extra.slippage / 100 || '0.005'
 		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
 			extra.userAddress
 		}&skipValidation=true`,
