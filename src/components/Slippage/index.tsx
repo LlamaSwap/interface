@@ -38,7 +38,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 				</Alert>
 			) : null}
 			<Text fontWeight="400" display="flex" justifyContent="space-between" alignItems="center" fontSize="0.875rem">
-				Swap Slippage: {slippage ? slippage + '%' : ''}
+				Swap Slippage: {slippage && !Number.isNaN(Number(slippage)) ? Number(slippage) + '%' : ''}
 			</Text>
 			<Box display="flex" gap="6px" flexWrap="wrap" width="100%">
 				{['0.1', '0.5', '1'].map((slippage) => (
