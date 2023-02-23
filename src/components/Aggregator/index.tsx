@@ -596,6 +596,8 @@ export function AggregatorContainer({ tokenlist }) {
 			  +amountWithDecimals > +balance.data.value.toString()
 			: false;
 
+	const slippageIsWong = Number.isNaN(Number(slippage)) || slippage === '';
+
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
 			wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
@@ -781,7 +783,7 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 
 	const handleSwap = () => {
-		if (selectedRoute && selectedRoute.price && !Number.isNaN(Number(slippage))) {
+		if (selectedRoute && selectedRoute.price && !slippageIsWong) {
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -1011,14 +1013,14 @@ export function AggregatorContainer({ tokenlist }) {
 														isApproveResetLoading ||
 														!(debouncedAmount && finalSelectedFromToken && finalSelectedToToken) ||
 														!selectedRoute ||
-														Number.isNaN(Number(slippage))
+														slippageIsWong
 													}
 												>
 													{!selectedRoute
 														? 'Select Aggregator'
 														: isApproved
 														? `Swap via ${selectedRoute.name}`
-														: Number.isNaN(Number(slippage))
+														: slippageIsWong
 														? 'Set Slippage'
 														: 'Approve'}
 												</Button>
@@ -1179,14 +1181,14 @@ export function AggregatorContainer({ tokenlist }) {
 																	isApproveLoading ||
 																	isApproveResetLoading ||
 																	!selectedRoute ||
-																	Number.isNaN(Number(slippage))
+																	slippageIsWong
 																}
 															>
 																{!selectedRoute
 																	? 'Select Aggregator'
 																	: isApproved
 																	? `Swap via ${selectedRoute?.name}`
-																	: Number.isNaN(Number(slippage))
+																	: slippageIsWong
 																	? 'Set Slippage'
 																	: 'Approve'}
 															</Button>
