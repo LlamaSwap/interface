@@ -26,6 +26,9 @@ const gnosisSafeChainsMap = {
 const getGnosisUrl = (account, chain) =>
 	`https://app.safe.global/${gnosisSafeChainsMap[chain]}:${account}/apps?appUrl=${location.href}`;
 
+export const getGnosisTxUrl = (account, hash, chain) =>
+	`https://app.safe.global/${gnosisSafeChainsMap[chain]}:${account}/transactions/tx?id=multisig_${account}_${hash}`;
+
 function GnosisModal({ account, chain }) {
 	const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 

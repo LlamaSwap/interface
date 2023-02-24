@@ -57,7 +57,7 @@ import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { useCountdown } from '~/hooks/useCountdown';
 import { RepeatIcon } from '@chakra-ui/icons';
 import { useIsGnosisSafe } from '~/queries/useIsGnosisSafe';
-import GnosisModal from './GnosisModal';
+import GnosisModal, { getGnosisTxUrl } from './GnosisModal';
 
 /*
 Integrated:
@@ -656,7 +656,9 @@ export function AggregatorContainer({ tokenlist }) {
 				setTxUrl(txUrl);
 			} else {
 				setTxModalOpen(true);
-				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
+				txUrl = data.safeTxHash
+					? getGnosisTxUrl(address, data.safeTxHash, selectedChain.value)
+					: `https://explorer.cow.fi/orders/${data.id}`;
 				setTxUrl(txUrl);
 				data.waitForOrder(() => {
 					forceRefreshTokenBalance();
