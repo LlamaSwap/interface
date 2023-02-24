@@ -166,7 +166,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 							<img
 								src={toToken.logoURI}
 								alt=""
-								style={{ width: '20px', height: '20px', objectFit: 'cover', display: ' flex' }}
+								style={{ width: '20px', height: '20px', objectFit: 'cover', display: ' flex', borderRadius: '100%' }}
 							/>
 							<Box as="span" fontWeight={500} fontSize={16}>
 								{toToken.symbol}
@@ -220,24 +220,26 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 					>
 						<FormControl display="flex" alignItems="center" gap="8px" w="fit-content">
 							{fromToken.geckoId && router.isReady && (
-								<Switch
-									id="coinMcap"
-									checked={fromTokenMCapPercentage}
-									onChange={() => {
-										router.push(
-											{
-												pathname: router.pathname,
-												query: { ...router.query, showTokenMcap: !fromTokenMCapPercentage }
-											},
-											undefined,
-											{ shallow: true }
-										);
-									}}
-								/>
+								<React.Fragment key={'mcap switch' + fromTokenMCapPercentage}>
+									<Switch
+										id="coinMcap"
+										checked={fromTokenMCapPercentage}
+										onChange={() => {
+											router.push(
+												{
+													pathname: router.pathname,
+													query: { ...router.query, showTokenMcap: !fromTokenMCapPercentage }
+												},
+												undefined,
+												{ shallow: true }
+											);
+										}}
+									/>
+									<FormLabel htmlFor="coinMcap" mb="0">
+										{`Show % of ${fromToken.symbol} Mcap`}
+									</FormLabel>
+								</React.Fragment>
 							)}
-							<FormLabel htmlFor="coinMcap" mb="0">
-								{`Show % of ${fromToken.symbol} Mcap`}
-							</FormLabel>
 						</FormControl>
 
 						<Flex as="form" flexDir="column" gap="8px" width="100%" maxW="250px">
@@ -262,7 +264,13 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 										name="minSlippage"
 										value={lowerEndSlippage}
 										onChange={(e) => setLowerEndSlippage(e.target.value)}
-										style={{ padding: '4px', borderRadius: '8px', width: '100%', minWidth: '80px' }}
+										style={{
+											padding: '4px',
+											borderRadius: '8px',
+											width: '100%',
+											minWidth: '80px',
+											background: '#141619'
+										}}
 									/>
 									<Text pos="absolute" top="4px" right="4px">
 										%
@@ -285,7 +293,13 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 										name="maxSlippage"
 										value={higherEndSlippage}
 										onChange={(e) => setHigherEndSlippage(e.target.value)}
-										style={{ padding: '4px', borderRadius: '8px', width: '100%', minWidth: '80px' }}
+										style={{
+											padding: '4px',
+											borderRadius: '8px',
+											width: '100%',
+											minWidth: '80px',
+											background: '#141619'
+										}}
 									/>
 									<Text pos="absolute" top="4px" right="4px">
 										%
