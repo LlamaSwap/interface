@@ -77,13 +77,14 @@ export function PriceImpact({
 			: null;
 
 	const isPriceImpactNotKnown = !selectedRoutesPriceImpact && selectedRoutesPriceImpact !== 0;
+	const shouldRevertPriceOrder = fromToken && toTokenPrice && fromTokenPrice / toTokenPrice < 0.0001 ? 1 : 0;
 
 	return (
 		<>
 			<Accordion allowToggle style={{ margin: '0 4px' }} index={[0]}>
 				<AccordionItem borderColor="#373944" minH="2.5rem">
 					<AccordionButton onClick={() => setPriceOrder((prev) => prev * -1)}>
-						{priceOrder === 1 ? (
+						{priceOrder + shouldRevertPriceOrder === 1 ? (
 							<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${
 								fromToken.symbol
 							} = ${amountReceived.toFixed(4)} ${toToken.symbol} ($${(
