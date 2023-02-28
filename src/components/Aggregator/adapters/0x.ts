@@ -34,8 +34,10 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
 
 	const data = await fetch(
-		`${chainToId[chain]}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
-			extra.slippage / 100 || 1
+		`${
+			chainToId[chain]
+		}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
+			extra.slippage / 100
 		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
 			extra.userAddress
 		}&skipValidation=true`,

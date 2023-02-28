@@ -604,6 +604,8 @@ export function AggregatorContainer({ tokenlist }) {
 					+selectedRoute.fromAmount > +balance.data.value.toString())
 			: false;
 
+	const slippageIsWong = Number.isNaN(Number(slippage)) || slippage === '';
+
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
 			wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
@@ -789,7 +791,7 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 
 	const handleSwap = () => {
-		if (selectedRoute && selectedRoute.price) {
+		if (selectedRoute && selectedRoute.price && !slippageIsWong) {
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -908,7 +910,12 @@ export function AggregatorContainer({ tokenlist }) {
 						/>
 					</Flex>
 
-					<Slippage slippage={slippage} setSlippage={setSlippage} />
+					<Slippage
+						slippage={slippage}
+						setSlippage={setSlippage}
+						fromToken={finalSelectedFromToken?.symbol}
+						toToken={finalSelectedToToken?.symbol}
+					/>
 
 					<PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
@@ -1018,14 +1025,17 @@ export function AggregatorContainer({ tokenlist }) {
 														swapMutation.isLoading ||
 														isApproveLoading ||
 														isApproveResetLoading ||
-														!(selectedRoute?.amountIn && finalSelectedFromToken && finalSelectedToToken) ||
-														!selectedRoute
+														!(debouncedAmount && finalSelectedFromToken && finalSelectedToToken) ||
+														!selectedRoute ||
+														slippageIsWong
 													}
 												>
 													{!selectedRoute
 														? 'Select Aggregator'
 														: isApproved
 														? `Swap via ${selectedRoute.name}`
+														: slippageIsWong
+														? 'Set Slippage'
 														: 'Approve'}
 												</Button>
 											)}
@@ -1188,13 +1198,16 @@ export function AggregatorContainer({ tokenlist }) {
 																	swapMutation.isLoading ||
 																	isApproveLoading ||
 																	isApproveResetLoading ||
-																	!selectedRoute
+																	!selectedRoute ||
+																	slippageIsWong
 																}
 															>
 																{!selectedRoute
 																	? 'Select Aggregator'
 																	: isApproved
 																	? `Swap via ${selectedRoute?.name}`
+																	: slippageIsWong
+																	? 'Set Slippage'
 																	: 'Approve'}
 															</Button>
 														)}
