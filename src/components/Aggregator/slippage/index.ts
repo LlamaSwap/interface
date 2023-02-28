@@ -1,3 +1,5 @@
+import { stablecoins } from '~/components/Slippage/stablecoins';
+
 function maxSlippage(dvx: number, f: number, xo: number) {
 	return (
 		(dvx ** 3 *
@@ -514,25 +516,6 @@ function findSlippageWithNoLosses(vf: number, vxo: number, vdvx: number, vb: num
 	}
 	return low;
 }
-
-const stablecoins = [
-	'USDT',
-	'USDC',
-	'BUSD',
-	'DAI',
-	'FRAX',
-	'TUSD',
-	'USDD',
-	'USDP',
-	'GUSD',
-	'LUSD',
-	'sUSD',
-	'MIM',
-	'DOLA',
-	'USP',
-	'USDX',
-	'MAI'
-];
 
 const defaultSlippage = 0.5 / 100;
 export function calculateSlippage(fromToken, toToken, adapter: string, routeInfo: any) {

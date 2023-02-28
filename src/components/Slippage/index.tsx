@@ -1,23 +1,5 @@
 import { Button, Box, Text, Alert, AlertIcon } from '@chakra-ui/react';
-
-const stablecoins = [
-	'USDT',
-	'USDC',
-	'BUSD',
-	'DAI',
-	'FRAX',
-	'TUSD',
-	'USDD',
-	'USDP',
-	'GUSD',
-	'LUSD',
-	'sUSD',
-	'MIM',
-	'DOLA',
-	'USP',
-	'USDX',
-	'MAI'
-];
+import { stablecoins } from './stablecoins';
 
 export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 	if (Number.isNaN(slippage)) {
