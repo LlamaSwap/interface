@@ -1,5 +1,3 @@
-import { stablecoins } from '~/components/Slippage/stablecoins';
-
 function maxSlippage(dvx: number, f: number, xo: number) {
 	return (
 		(dvx ** 3 *
@@ -498,7 +496,7 @@ function calculateMevProfit(f: number, xo: number, b: number, dvx: number, s: nu
 	);
 }
 
-function findSlippageWithNoLosses(vf: number, vxo: number, vdvx: number, vb: number) {
+export function findSlippageWithNoLosses(vf: number, vxo: number, vdvx: number, vb: number) {
 	let high = maxSlippage(vdvx, vf, vxo);
 	if (high <= 0) {
 		return 1; // Invulnerable to sandwich attacks
@@ -515,26 +513,6 @@ function findSlippageWithNoLosses(vf: number, vxo: number, vdvx: number, vb: num
 		}
 	}
 	return low;
-}
-
-const defaultSlippage = 0.5 / 100;
-export function calculateSlippage(fromToken, toToken, adapter: string, routeInfo: any) {
-	if (stablecoins.includes(fromToken) && stablecoins.includes(toToken)) {
-		return 0.05 / 100; // Stable-stable trade
-	}
-
-	if (adapter === 'PancakeSwap') {
-		const slipNoLoss = findSlippageWithNoLosses(0.25 / 100, routeInfo.liquidity, routeInfo.amount, routeInfo.txCost); // TODO: Add token tax into fee
-		if (slipNoLoss > 0.1 / 100) {
-			return Math.max(slipNoLoss, 5 / 100); // Cap it at 5%
-		}
-	}
-	const slippageFromBaseFee = (2 * routeInfo.txCost) / routeInfo.amount;
-	if (slippageFromBaseFee > defaultSlippage) {
-		return Math.max(slippageFromBaseFee, 10 / 100);
-	}
-
-	return defaultSlippage; // default case
 }
 
 function test() {
