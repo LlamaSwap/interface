@@ -3,7 +3,7 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { providers } from '../../rpcs';
-import { findSlippageWithNoLosses } from '../../slippage';
+import { findSlippageWithNoLosses, formatSlippage } from '../../slippage';
 import { sendTx } from '../../utils/sendTx';
 import { ABI } from './abi';
 
@@ -46,7 +46,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			(extra.gasTokenPrice * extra.gasPriceData.gasPrice.toNumber() * 21e3) / (extra.fromTokenPrice * 1e18); // Assumes >21e3 gas cost for tx for a uni swap
 		const safeSlippafe = findSlippageWithNoLosses(0.25 / 100, Number(reserveIn), Number(amount), txCost) * 100;
 		if (safeSlippafe > 0.5 && !Number.isNaN(safeSlippafe)) {
-			slippage = Math.min(safeSlippafe, 5);
+			slippage = Number(formatSlippage(Math.min(safeSlippafe, 5)));
 		}
 	}
 	const minAmountOut = BigNumber(amountOut.toString())

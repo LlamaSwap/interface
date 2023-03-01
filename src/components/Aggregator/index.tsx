@@ -57,6 +57,7 @@ import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { useCountdown } from '~/hooks/useCountdown';
 import { RepeatIcon } from '@chakra-ui/icons';
 import { stablecoins } from '~/components/Slippage/stablecoins';
+import { formatSlippage } from './slippage';
 
 /*
 Integrated:
@@ -426,7 +427,7 @@ export function AggregatorContainer({ tokenlist }) {
 				(100 * 2 * gasTokenPrice * gasPriceData.gasPrice.toNumber() * 21e3) /
 				(Number(debouncedAmount) * fromTokenPrice * 1e18);
 			if (safeSlippage > Number(DEFAULT_SLIPPAGE)) {
-				slippage = String(Math.min(safeSlippage, 10));
+				slippage = formatSlippage(Math.min(safeSlippage, 10));
 			}
 		}
 	}

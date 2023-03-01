@@ -515,6 +515,10 @@ export function findSlippageWithNoLosses(vf: number, vxo: number, vdvx: number, 
 	return low;
 }
 
+export function formatSlippage(slippage: number) {
+	return String(Number(slippage.toFixed(2)));
+}
+
 function test() {
 	const time = Date.now();
 	const s = findSlippageWithNoLosses(0.3 / 100, 100e3, 5e3, 5);
