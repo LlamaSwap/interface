@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
-export { default as useAnalytics } from "./useAnalytics";
+import { useState, useEffect } from 'react';
 
 export const useIsClient = () => {
-  const [isClient, setIsClient] = useState(false);
+	const [isClient, setIsClient] = useState(false);
 
-  const windowType = typeof window;
+	const windowType = typeof window;
 
-  useEffect(() => {
-    if (windowType !== "undefined") {
-      setIsClient(true);
-    }
-  }, [windowType]);
+	useEffect(() => {
+		if (windowType !== 'undefined') {
+			setIsClient(true);
+		}
+	}, [windowType]);
 
-  return isClient;
+	return isClient;
 };
