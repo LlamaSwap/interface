@@ -417,7 +417,7 @@ export function AggregatorContainer({ tokenlist }) {
 	});
 	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
 	if (isAutoSlippage === true) {
-		if (stablecoins.includes(finalSelectedFromToken.symbol) && stablecoins.includes(finalSelectedToToken.symbol)) {
+		if (stablecoins.includes(finalSelectedFromToken?.symbol) && stablecoins.includes(finalSelectedToToken?.symbol)) {
 			slippage = '0.1'; // Stable-stable trade
 		} else if (gasTokenPrice && fromTokenPrice && gasPriceData?.gasPrice) {
 			// Calculate slippage for very smol txs

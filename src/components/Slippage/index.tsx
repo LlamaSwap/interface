@@ -41,7 +41,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken, isAutoSlip
 				))}
 				<Box pos="relative" isolation="isolate">
 					<input
-						value={slippage}
+						value={isAutoSlippage ? '' : slippage}
 						type="text"
 						style={{
 							width: '100%',
