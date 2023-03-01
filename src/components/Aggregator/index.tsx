@@ -935,6 +935,7 @@ export function AggregatorContainer({ tokenlist }) {
 						setSlippage={setSlippage}
 						fromToken={finalSelectedFromToken?.symbol}
 						toToken={finalSelectedToToken?.symbol}
+						isAutoSlippage={isAutoSlippage}
 					/>
 
 					<PriceImpact

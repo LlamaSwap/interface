@@ -1,13 +1,13 @@
 import { Button, Box, Text, Alert, AlertIcon } from '@chakra-ui/react';
 import { stablecoins } from './stablecoins';
 
-export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
+export function Slippage({ slippage, setSlippage, fromToken, toToken, isAutoSlippage }) {
 	if (Number.isNaN(slippage)) {
 		throw new Error('Wrong slippage!');
 	}
 	return (
 		<Box display="flex" flexDir="column" marginX="4px">
-			{!!slippage && slippage > 1 ? (
+			{!!slippage && slippage > 1 && !isAutoSlippage ? (
 				<Alert status="warning" borderRadius="0.375rem" py="8px">
 					<AlertIcon />
 					High slippage! You might get sandwiched with a slippage of {slippage}%
