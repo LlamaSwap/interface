@@ -43,7 +43,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	if (extra.isAutoSlippage === true && extra.gasTokenPrice && extra.fromTokenPrice && extra.gasPriceData.gasPrice) {
 		// Checks that prices aren't 0
 		const txCost =
-			(extra.gasTokenPrice * extra.gasPriceData.gasPrice.toNumber() * 50e3) / (extra.fromTokenPrice * 1e18); // Assumes 50e3 gas cost for tx for a uni swap
+			(extra.gasTokenPrice * extra.gasPriceData.gasPrice.toNumber() * 21e3) / (extra.fromTokenPrice * 1e18); // Assumes >21e3 gas cost for tx for a uni swap
 		const safeSlippafe = findSlippageWithNoLosses(0.25 / 100, Number(reserveIn), Number(amount), txCost) * 100;
 		if (safeSlippafe > 0.5 && !Number.isNaN(safeSlippafe)) {
 			slippage = Math.min(safeSlippafe, 5);

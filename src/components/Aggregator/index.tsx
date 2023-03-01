@@ -421,9 +421,9 @@ export function AggregatorContainer({ tokenlist }) {
 			slippage = '0.1'; // Stable-stable trade
 		} else if (gasTokenPrice && fromTokenPrice && gasPriceData?.gasPrice) {
 			// Calculate slippage for very smol txs
-			// Assume sandwich tx is 50e3 gas
+			// Lower bound for sandwich tx is 21e3 gas
 			const safeSlippage =
-				(100 * 2 * gasTokenPrice * gasPriceData.gasPrice.toNumber() * 50e3) /
+				(100 * 2 * gasTokenPrice * gasPriceData.gasPrice.toNumber() * 21e3) /
 				(Number(debouncedAmount) * fromTokenPrice * 1e18);
 			if (safeSlippage > Number(DEFAULT_SLIPPAGE)) {
 				slippage = String(Math.min(safeSlippage, 10));
