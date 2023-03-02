@@ -24,7 +24,6 @@ import { appsSdk } from '~/misc/gnosis';
 
 // import * as krystal from './adapters/krystal'
 
-
 export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird, hashflow, llamazip];
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, kyberswap.name, paraswap.name];
@@ -53,13 +52,22 @@ export function getAllChains() {
 	return chainsOptions;
 }
 
-export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
+export async function swap({
+	chain,
+	from,
+	to,
+	amount,
+	signer,
+	slippage = '1',
+	adapter,
+	rawQuote,
+	tokens,
+	isGnosisSafeApp
+}) {
 	const aggregator = adaptersMap[adapter];
-	const address = await signer.getAddress();
-	const { isGnosisSafeApp } = await checkGnosisSafe(address, chain);
 
 	try {
-		const res = await aggregator.swap({
+		const tx = await aggregator.swap({
 			chain,
 			from,
 			to,
@@ -74,13 +82,15 @@ export async function swap({ chain, from, to, amount, signer, slippage = '1', ad
 			const txArr = [];
 			if (from !== ethers.constants.AddressZero) {
 				const token = new ethers.Contract(from, erc20ABI, signer);
-				const approveTx = await token.populateTransaction.approve(res.to, amount, { value: '0' });
+				const approveTx = await token.populateTransaction.approve(tx.to, amount, { value: '0' });
 				txArr.push(approveTx);
 			}
-			txArr.push(res);
+			txArr.push(tx);
 			const txs = await appsSdk.txs.send({ txs: txArr });
 			return txs;
 		}
+		const res = signer.sendTransaction(tx);
+
 		return res;
 	} catch (e) {
 		throw e;

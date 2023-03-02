@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { defillamaReferrerAddress } from '../constants';
-import { sendTx } from '../utils/sendTx';
+import { prepareTx } from '../utils/prepareTx';
 
 export const chainToId = {
 	ethereum: 'https://api.0x.org/',
@@ -58,7 +58,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 export async function swap({ signer, rawQuote, chain }) {
 	const fromAddress = await signer.getAddress();
 
-	const tx = await sendTx(signer, chain, {
+	const tx = await prepareTx(signer, chain, {
 		from: fromAddress,
 		to: rawQuote.to,
 		data: rawQuote.data,

@@ -96,11 +96,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ chain, signer, rawQuote, from, to }) {
+export async function swap({ chain, signer, rawQuote, from, to, isGnosisSafeApp }) {
 	const fromAddress = await signer.getAddress();
 
 	if (from === ethers.constants.AddressZero) {
-		const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer);
+		const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer).populateTransaction;
 
 		if (rawQuote.slippage < 2) {
 			throw { reason: 'Slippage for ETH orders on CowSwap needs to be higher than 2%' };

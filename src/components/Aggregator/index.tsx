@@ -642,6 +642,7 @@ export function AggregatorContainer({ tokenlist }) {
 			tokens: { toToken: IToken; fromToken: IToken };
 			index: number;
 			route: any;
+			isGnosisSafeApp: boolean;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -801,7 +802,8 @@ export function AggregatorContainer({ tokenlist }) {
 				rawQuote: selectedRoute.price.rawQuote,
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
 				index: selectedRoute.index,
-				route: selectedRoute
+				route: selectedRoute,
+				isGnosisSafeApp
 			});
 		}
 	};

@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from "ethers";
 import { providers } from "../../rpcs";
-import { sendTx } from "../../utils/sendTx";
+import { prepareTx } from "../../utils/prepareTx";
 import { encode } from "./encode";
 
 export const name = 'LlamaZip';
@@ -106,14 +106,19 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
   };
 }
 
-export async function swap({ signer, rawQuote, chain }) {
+export async function swap({ signer, rawQuote, chain,  }) {
   const fromAddress = await signer.getAddress();
-	const tx = await sendTx(signer, chain, {
-		from: fromAddress,
-		to: rawQuote.tx.to,
-		data: rawQuote.tx.data,
-		value: rawQuote.tx.value,
-	});
+	const tx = await prepareTx(
+		signer,
+		chain,
+		{
+			from: fromAddress,
+			to: rawQuote.tx.to,
+			data: rawQuote.tx.data,
+			value: rawQuote.tx.value
+		},
+   
+	);
 	return tx;
 }
 

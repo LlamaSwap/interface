@@ -3,7 +3,7 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
-import { sendTx } from '../utils/sendTx';
+import { prepareTx } from '../utils/prepareTx';
 import { defillamaReferrerAddress } from '../constants';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
@@ -20,7 +20,6 @@ export const chainToId = {
 export const name = 'ParaSwap';
 export const token = 'PSP';
 export const partner = 'llamaswap';
-
 
 export function approvalAddress() {
 	return '0x216b4b4ba9f3e719726886d34a177484278bfcae';
@@ -85,7 +84,7 @@ export async function getQuote(
 }
 
 export async function swap({ signer, rawQuote, chain }) {
-	const tx = await sendTx(signer, chain, {
+	const tx = await prepareTx(signer, chain, {
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
