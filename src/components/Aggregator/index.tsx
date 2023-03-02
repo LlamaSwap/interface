@@ -496,13 +496,6 @@ export function AggregatorContainer({ tokenlist }) {
 		})
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
-	const medianAmount = Math.max(
-		median(normalizedRoutes.map(({ amount }) => amount)),
-		normalizedRoutes.find((r) => r.name === '1inch')?.amount ?? 0
-	);
-
-	normalizedRoutes = normalizedRoutes.filter(({ amount }) => amount < medianAmount * 3);
-
 	const selecteRouteIndex =
 		aggregator && normalizedRoutes && normalizedRoutes.length > 0
 			? normalizedRoutes.findIndex((r) => r.name === aggregator)
