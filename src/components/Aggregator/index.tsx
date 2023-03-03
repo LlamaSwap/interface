@@ -430,8 +430,8 @@ export function AggregatorContainer({ tokenlist }) {
 		token: finalSelectedFromToken?.address,
 		userAddress: address,
 		chain: selectedChain.value,
-		amount: amountWithDecimals,
-		hasEnoughBalance: +debouncedAmount < +balance?.data?.formatted
+		balance: +balance?.data?.value,
+		isOutput: amountOut && amountOut !== ''
 	});
 	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
@@ -591,17 +591,13 @@ export function AggregatorContainer({ tokenlist }) {
 	const hasPriceImapct =
 		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
 
-	//  only show insufficient balance when there is token balance data and debouncedAmount is in sync with amount
 	const insufficientBalance =
-		balance.isSuccess && balance.data && !Number.isNaN(Number(balance.data.formatted))
-			? balance.data.value &&
-			  amount &&
-			  debouncedAmount &&
-			  amountWithDecimals &&
-			  formatAmount(amount) === debouncedAmount &&
-			  selectedRoute?.fromAmount &&
-			  (+amountWithDecimals > +balance.data.value.toString() ||
-					+selectedRoute.fromAmount > +balance.data.value.toString())
+		balance.isSuccess &&
+		balance.data &&
+		!Number.isNaN(Number(balance.data.formatted)) &&
+		balance.data.value &&
+		selectedRoute
+			? +selectedRoute?.fromAmount > +balance.data.value
 			: false;
 
 	const slippageIsWong = Number.isNaN(Number(slippage)) || slippage === '';
@@ -1025,7 +1021,8 @@ export function AggregatorContainer({ tokenlist }) {
 														swapMutation.isLoading ||
 														isApproveLoading ||
 														isApproveResetLoading ||
-														!(debouncedAmount && finalSelectedFromToken && finalSelectedToToken) ||
+														!(finalSelectedFromToken && finalSelectedToToken) ||
+														insufficientBalance ||
 														!selectedRoute ||
 														slippageIsWong
 													}
