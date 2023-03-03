@@ -76,7 +76,6 @@ export const useEstimateGas = ({
 	balance: number;
 	isOutput: boolean;
 }) => {
-	console.log(isOutput);
 	const res = useQueries({
 		queries: routes
 			.filter((route) => !!route?.tx?.to)
