@@ -1,4 +1,4 @@
-import { BigNumber } from "ethers";
+import { BigNumber } from 'ethers';
 
 const chainIdToId = {
 	ethereum: 1,
@@ -48,18 +48,16 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	}).then((r) => r.json());
 
-    const gasEstimate = BigNumber.from('200000')
+	const gasEstimate = BigNumber.from('200000');
 
-    return {
-        amountReturned: data.amount_out,
-        estimateGas: gasEstimate.toString(),
-        tokenApprovalAddress: conveyorSwapAggregatorAddress[chainIdToId[chain]],
-        rawQuote: {
-            ...data,
-            gasLimit: gasEstimate.toString(),
-            tx: {...data?.tx_calldata}
-        }
-    }
-
-
+	return {
+		amountReturned: data.amount_out,
+		estimateGas: gasEstimate.toString(),
+		tokenApprovalAddress: conveyorSwapAggregatorAddress[chainIdToId[chain]],
+		rawQuote: {
+			...data,
+			gasLimit: gasEstimate.toString(),
+			tx: { ...data?.tx_calldata }
+		}
+	};
 }
