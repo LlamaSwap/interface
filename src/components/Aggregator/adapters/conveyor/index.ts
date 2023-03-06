@@ -1,5 +1,7 @@
 import { BigNumber } from 'ethers';
 
+const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
 const chainIdToId = {
 	ethereum: 1,
 	bsc: 56,
@@ -39,11 +41,10 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			amount_in: amount,
 			chain_id: chainIdToId[chain],
 			from_address: extra.userAddress ?? '0x0000000000000000000000000000000000000000',
-			token_to_eth: to === '0x00000'
+			token_to_eth: to === nativeToken
 		}),
 
 		headers: {
-			// Overwrite Axios's automatically set Content-Type
 			'Content-Type': 'application/json'
 		}
 	}).then((r) => r.json());
