@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers';
-
+import { sendTx } from '../../utils/sendTx';
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
 const chainIdToId = {
@@ -61,4 +61,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			tx: { ...data?.tx_calldata }
 		}
 	};
+}
+
+export async function swap({ signer, rawQuote, chain }) {
+	const tx = await sendTx(signer, chain, {
+		...rawQuote.tx
+	});
+
+	return tx;
 }
