@@ -19,7 +19,6 @@ import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 // import * as krystal from './adapters/krystal'
 
-
 export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird, hashflow, llamazip, kyberswap];
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, kyberswap.name, paraswap.name];
@@ -29,7 +28,12 @@ export const adaptersWithApiKeys = {
 	[hashflow.name]: true
 };
 
-const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
+export const adaptersWithPermit = {
+	[paraswap.name]: true,
+	[inch.name]: true
+};
+
+export const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
 
 export function getAllChains() {
 	const chains = new Set<string>();
@@ -48,7 +52,17 @@ export function getAllChains() {
 	return chainsOptions;
 }
 
-export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
+export async function swap({
+	chain,
+	from,
+	to,
+	amount,
+	signer,
+	slippage = '1',
+	adapter,
+	rawQuote,
+	onError = undefined
+}) {
 	const aggregator = adaptersMap[adapter];
 
 	try {
@@ -59,11 +73,11 @@ export async function swap({ chain, from, to, amount, signer, slippage = '1', ad
 			amount,
 			signer,
 			slippage,
-			rawQuote,
-			tokens
+			rawQuote
 		});
 		return res;
 	} catch (e) {
+		if (onError) onError();
 		throw e;
 	}
 }

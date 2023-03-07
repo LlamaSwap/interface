@@ -43,7 +43,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		fetch(`https://api.1inch.io/v4.0/${chainToId[chain]}/approve/spender`).then((r) => r.json()),
 		extra.userAddress !== ethers.constants.AddressZero
 			? fetch(
-					`https://api.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${extra.userAddress}&slippage=${extra.slippage}&referrerAddress=${defillamaReferrerAddress}&disableEstimate=true`
+					`https://api.1inch.io/v4.0/${
+						chainToId[chain]
+					}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${
+						extra.userAddress
+					}&slippage=${extra.slippage}&referrerAddress=${defillamaReferrerAddress}&disableEstimate=true&permit=${
+						extra.permit || ''
+					}`
 			  ).then((r) => r.json())
 			: null
 	]);
@@ -80,12 +86,12 @@ export const getTxData = ({ rawQuote }) => rawQuote?.tx?.data;
 
 export const getTx = ({ rawQuote }) => {
 	if (rawQuote === null) {
-		return {}
+		return {};
 	}
 	return {
 		from: rawQuote.tx.from,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value
-	}
+	};
 };

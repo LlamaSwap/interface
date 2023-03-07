@@ -21,7 +21,6 @@ export const name = 'ParaSwap';
 export const token = 'PSP';
 export const partner = 'llamaswap';
 
-
 export function approvalAddress() {
 	return '0x216b4b4ba9f3e719726886d34a177484278bfcae';
 }
@@ -31,7 +30,7 @@ export async function getQuote(
 	from: string,
 	to: string,
 	amount: string,
-	{ fromToken, toToken, userAddress, slippage }
+	{ fromToken, toToken, userAddress, slippage, permit }
 ) {
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
@@ -59,7 +58,8 @@ export async function getQuote(
 						partner: partner,
 						partnerAddress: defillamaReferrerAddress,
 						positiveSlippageToUser: false,
-						priceRoute: data.priceRoute
+						priceRoute: data.priceRoute,
+						permit
 					}),
 					headers: {
 						'Content-Type': 'application/json'

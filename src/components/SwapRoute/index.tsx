@@ -39,6 +39,7 @@ interface IRoute {
 	txData: string;
 	netOut: number;
 	isFetchingGasPrice: boolean;
+	isPermitAvailable: boolean;
 }
 
 const Route = ({
@@ -54,7 +55,8 @@ const Route = ({
 	amountFrom,
 	lossPercent,
 	netOut,
-	isFetchingGasPrice
+	isFetchingGasPrice,
+	isPermitAvailable
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
@@ -99,7 +101,7 @@ const Route = ({
 			</RouteRow>
 
 			<RouteRow>
-				<Flex className='mobile-column' as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
+				<Flex className="mobile-column" as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
 					<span>{`≈ ${afterFees} `}</span>
 					{isGasNotKnown && !isFetchingGasPrice ? (
 						<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
@@ -117,7 +119,7 @@ const Route = ({
 				) : null}
 
 				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
-					<Text display="flex" className='mobile-column mobile-flexend' alignItems="center" gap="4px" color="gray.400">
+					<Text display="flex" className="mobile-column mobile-flexend" alignItems="center" gap="4px" color="gray.400">
 						{name === 'CowSwap' ? (
 							<Tooltip content="Gas is taken from output amount">
 								<Text as="span" display="flex" alignItems="center" gap="4px" color="gray.400" fontWeight={500}>
@@ -133,7 +135,7 @@ const Route = ({
 						)}
 						<Text display="flex" gap="3px">
 							via
-							{isApproved ? (
+							{isApproved || isPermitAvailable ? (
 								<Tooltip content="Token is approved for this aggregator.">
 									<Unlock size={14} color="#059669" />
 								</Tooltip>
