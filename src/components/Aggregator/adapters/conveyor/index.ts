@@ -1,10 +1,7 @@
-import { BigNumber, ethers } from 'ethers';
-
+import { ethers } from 'ethers';
 import { sendTx } from '../../utils/sendTx';
 
-const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-
-const chainIdToId = {
+const chainIdToChainId = {
 	ethereum: 1,
 	bsc: 56,
 	polygon: 137,
@@ -14,7 +11,7 @@ const chainIdToId = {
 	fantom: 250
 };
 
-export const chainToApiId = {
+export const chainToId = {
 	ethereum: 'https://ethereum.conveyor.finance/',
 	bsc: 'https://bsc.conveyor.finance/',
 	polygon: 'https://polygon.conveyor.finance/',
@@ -34,14 +31,16 @@ const conveyorSwapAggregatorAddress = {
 	250: '0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83'
 };
 
+export const name = 'Conveyor';
+
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
-	const data = await fetch(chainToApiId[chain], {
+	const data = await fetch(chainToId[chain], {
 		method: 'POST',
 		body: JSON.stringify({
 			token_in: from,
 			token_out: to,
 			amount_in: amount,
-			chain_id: chainIdToId[chain],
+			chain_id: chainIdToChainId[chain],
 			from_address: extra.userAddress ?? ethers.constants.AddressZero, //Pass the zero address if no address is connected to get a quote back from the saapi
 			allowed_slippage: extra.slippage,
 		}),
@@ -54,7 +53,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	return {
 		amountReturned: data.amount_out,
 		estimateGas: data.gas_estimate,
-		tokenApprovalAddress: conveyorSwapAggregatorAddress[chainIdToId[chain]],
+		tokenApprovalAddress: conveyorSwapAggregatorAddress[chainIdToChainId[chain]],
 		rawQuote: {
 			...data,
 			gasLimit: data.gas_estimate,
