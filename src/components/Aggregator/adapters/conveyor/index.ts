@@ -1,5 +1,6 @@
 import { BigNumber } from 'ethers';
 import { sendTx } from '../../utils/sendTx';
+
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
 const chainIdToId = {
@@ -53,7 +54,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: data.amount_out,
-		estimateGas: gasEstimate.toString(),
+		estimateGas: data.gas_estimate,
 		tokenApprovalAddress: conveyorSwapAggregatorAddress[chainIdToId[chain]],
 		rawQuote: {
 			...data,
