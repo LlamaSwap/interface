@@ -41,8 +41,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			token_out: to,
 			amount_in: amount,
 			chain_id: chainIdToId[chain],
-			from_address: extra.userAddress ?? '0x0000000000000000000000000000000000000000',
-			token_to_eth: to === nativeToken
+			from_address: extra.userAddress ?? '0x0000000000000000000000000000000000000000', //Pass the zero address if no address is connected to get a quote back from the saapi
+			allowed_slippage: extra.slippage,
 		}),
 
 		headers: {
