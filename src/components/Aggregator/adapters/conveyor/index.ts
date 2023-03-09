@@ -1,4 +1,5 @@
-import { BigNumber } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
+
 import { sendTx } from '../../utils/sendTx';
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
@@ -41,7 +42,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			token_out: to,
 			amount_in: amount,
 			chain_id: chainIdToId[chain],
-			from_address: extra.userAddress ?? '0x0000000000000000000000000000000000000000', //Pass the zero address if no address is connected to get a quote back from the saapi
+			from_address: extra.userAddress ?? ethers.constants.AddressZero, //Pass the zero address if no address is connected to get a quote back from the saapi
 			allowed_slippage: extra.slippage,
 		}),
 
@@ -64,7 +65,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 export async function swap({ signer, rawQuote, chain }) {
 	const tx = await sendTx(signer, chain, {
-		...rawQuote.tx
+		...rawQuote.tx,
+		gasLimit: rawQuote.gasLimit
 	});
 
 	return tx;
