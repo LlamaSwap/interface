@@ -609,6 +609,13 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	// approve/swap tokens
+	const amountToApprove =
+		amountOut && amountOut !== ''
+			? BigNumber(selectedRoute?.fromAmount)
+					.times(100 + Number(slippage))
+					.div(100)
+					.toFixed(0)
+			: selectedRoute?.fromAmount;
 	const {
 		isApproved,
 		approve,
@@ -625,8 +632,9 @@ export function AggregatorContainer({ tokenlist }) {
 	} = useTokenApprove(
 		finalSelectedFromToken?.address,
 		selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
-		selectedRoute?.fromAmount
+		amountToApprove
 	);
+
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
 	const swapMutation = useMutation({
