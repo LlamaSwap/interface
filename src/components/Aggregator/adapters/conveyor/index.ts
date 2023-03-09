@@ -50,15 +50,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	}).then((r) => r.json());
 
-	const gasEstimate = BigNumber.from('200000');
-
 	return {
 		amountReturned: data.amount_out,
 		estimateGas: data.gas_estimate,
 		tokenApprovalAddress: conveyorSwapAggregatorAddress[chainIdToId[chain]],
 		rawQuote: {
 			...data,
-			gasLimit: gasEstimate.toString(),
+			gasLimit: data.gas_estimate,
 			tx: { ...data?.tx_calldata }
 		}
 	};
