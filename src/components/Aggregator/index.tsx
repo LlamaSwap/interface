@@ -56,6 +56,8 @@ import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { useCountdown } from '~/hooks/useCountdown';
 import { RepeatIcon } from '@chakra-ui/icons';
+import { stablecoins } from '~/components/Slippage/stablecoins';
+import { formatSlippage } from './slippage';
 
 /*
 Integrated:
@@ -284,6 +286,7 @@ const ConnectButtonWrapper = styled.div`
 `;
 
 const chains = getAllChains();
+const DEFAULT_SLIPPAGE = '0.5';
 
 export function AggregatorContainer({ tokenlist }) {
 	// wallet stuff
@@ -299,7 +302,9 @@ export function AggregatorContainer({ tokenlist }) {
 	const [aggregator, setAggregator] = useState(null);
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
 	const [amount, setAmount] = useState<number | string>('10');
-	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
+	const [storedSlippage, setSlippage] = useLocalStorage('llamaswap-slippage', 'auto');
+	let slippage = storedSlippage === 'auto' ? DEFAULT_SLIPPAGE : storedSlippage;
+	const isAutoSlippage = storedSlippage === 'auto';
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -406,6 +411,27 @@ export function AggregatorContainer({ tokenlist }) {
 		);
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
 
+	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
+		chain: selectedChain?.value,
+		toToken: finalSelectedToToken?.address,
+		fromToken: finalSelectedFromToken?.address
+	});
+	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
+	if (isAutoSlippage === true) {
+		if (stablecoins.includes(finalSelectedFromToken?.symbol) && stablecoins.includes(finalSelectedToToken?.symbol)) {
+			slippage = '0.1'; // Stable-stable trade
+		} else if (gasTokenPrice && fromTokenPrice && gasPriceData?.gasPrice) {
+			// Calculate slippage for very smol txs
+			// Lower bound for sandwich tx is 21e3 gas
+			const safeSlippage =
+				(100 * 2 * gasTokenPrice * gasPriceData.gasPrice.toNumber() * 21e3) /
+				(Number(debouncedAmount) * fromTokenPrice * 1e18);
+			if (safeSlippage > Number(DEFAULT_SLIPPAGE)) {
+				slippage = formatSlippage(Math.min(safeSlippage, 10));
+			}
+		}
+	}
+
 	const {
 		data: routes = [],
 		isLoading,
@@ -424,7 +450,10 @@ export function AggregatorContainer({ tokenlist }) {
 			fromToken: finalSelectedFromToken,
 			toToken: finalSelectedToToken,
 			slippage,
-			isPrivacyEnabled
+			isPrivacyEnabled,
+			isAutoSlippage,
+			gasTokenPrice,
+			fromTokenPrice
 		}
 	});
 
@@ -438,12 +467,6 @@ export function AggregatorContainer({ tokenlist }) {
 		amount: amountWithDecimals,
 		hasEnoughBalance: +debouncedAmount < +balance?.data?.formatted
 	});
-	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
-		chain: selectedChain?.value,
-		toToken: finalSelectedToToken?.address,
-		fromToken: finalSelectedFromToken?.address
-	});
-	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
 
 	// format routes
 	const fillRoute = (route: typeof routes[0]) => {
@@ -503,6 +526,10 @@ export function AggregatorContainer({ tokenlist }) {
 	// store selected aggregators route
 	const selectedRoute =
 		selecteRouteIndex >= 0 ? { ...normalizedRoutes[selecteRouteIndex], index: selecteRouteIndex } : null;
+
+	if (selectedRoute?.price?.appliedSlippage !== undefined) {
+		slippage = String(selectedRoute.price.appliedSlippage);
+	}
 
 	// functions to handle change in swap input fields
 	const onMaxClick = () => {
@@ -902,6 +929,7 @@ export function AggregatorContainer({ tokenlist }) {
 						setSlippage={setSlippage}
 						fromToken={finalSelectedFromToken?.symbol}
 						toToken={finalSelectedToToken?.symbol}
+						isAutoSlippage={isAutoSlippage}
 					/>
 
 					<PriceImpact

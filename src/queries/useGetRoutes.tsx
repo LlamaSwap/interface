@@ -20,6 +20,7 @@ export interface IRoute {
 		logo: string;
 		feeAmount?: number;
 		rawQuote?: {};
+		appliedSlippage?: number;
 	} | null;
 	name: string;
 	airdrop: boolean;
