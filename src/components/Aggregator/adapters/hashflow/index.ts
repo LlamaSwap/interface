@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { Contract, ethers } from 'ethers';
 import { providers } from '../../rpcs';
 import { applyArbitrumFees } from '../../utils/arbitrumFees';
-import { sendTx } from '../../utils/sendTx';
+import { prepareTx } from '../../utils/prepareTx';
 import { ABI } from './abi';
 
 export const chainToId = {
@@ -87,7 +87,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ signer, rawQuote, chain }) {
-	const tx = await sendTx(signer, chain, {
+	const tx = await prepareTx(signer, chain, {
 		...rawQuote.tx,
 
 		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit })

@@ -17,8 +17,12 @@ import * as llamazip from './adapters/llamazip';
 import { capitalizeFirstLetter } from '~/utils';
 import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
-// import * as krystal from './adapters/krystal'
+import { ethers } from 'ethers';
+import { erc20ABI } from 'wagmi';
+import { checkGnosisSafe } from '~/queries/useIsGnosisSafe';
+import { appsSdk } from '~/misc/gnosis';
 
+// import * as krystal from './adapters/krystal'
 
 export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird, hashflow, llamazip, kyberswap];
 
@@ -48,11 +52,22 @@ export function getAllChains() {
 	return chainsOptions;
 }
 
-export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
+export async function swap({
+	chain,
+	from,
+	to,
+	amount,
+	signer,
+	slippage = '1',
+	adapter,
+	rawQuote,
+	tokens,
+	isGnosisSafeApp
+}) {
 	const aggregator = adaptersMap[adapter];
 
 	try {
-		const res = await aggregator.swap({
+		const tx = await aggregator.swap({
 			chain,
 			from,
 			to,
@@ -62,6 +77,20 @@ export async function swap({ chain, from, to, amount, signer, slippage = '1', ad
 			rawQuote,
 			tokens
 		});
+
+		if (isGnosisSafeApp) {
+			const txArr = [];
+			if (from !== ethers.constants.AddressZero) {
+				const token = new ethers.Contract(from, erc20ABI, signer);
+				const approveTx = await token.populateTransaction.approve(tx.to, amount, { value: '0' });
+				txArr.push(approveTx);
+			}
+			txArr.push(tx);
+			const txs = await appsSdk.txs.send({ txs: txArr });
+			return txs;
+		}
+		const res = signer.sendTransaction(tx);
+
 		return res;
 	} catch (e) {
 		throw e;

@@ -1,13 +1,13 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { providers } from '../../rpcs';
-import { sendTx } from '../../utils/sendTx';
+import { prepareTx } from '../../utils/prepareTx';
 import { ABI } from './abi';
 
 // Source https://github.com/yieldyak/yak-aggregator
 export const chainToId = {
 	avax: '0xC4729E56b831d74bBc18797e0e17A295fA77488c',
-	canto : '0xE9A2a22c92949d52e963E43174127BEb50739dcF',
+	canto: '0xE9A2a22c92949d52e963E43174127BEb50739dcF'
 };
 
 export const name = 'YieldYak';
@@ -20,7 +20,7 @@ export function approvalAddress(chain: string) {
 const nativeToken = {
 	avax: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
 	canto: '0x826551890dc65655a0aceca109ab11abdbd7a07b'
-}
+};
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: any) {
 	const provider = providers[chain];
@@ -31,7 +31,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const gasPrice = ethers.BigNumber.from(extra.gasPriceData?.gasPrice ?? '1062500000000');
 
 	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
-	const expectedAmount = data[0][data[0].length - 1]
+	const expectedAmount = data[0][data[0].length - 1];
 	const minAmountOut = BigNumber(expectedAmount.toString())
 		.times(1 - Number(extra.slippage) / 100)
 		.toFixed(0);
@@ -68,7 +68,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 		from === ethers.constants.AddressZero ? { value: rawQuote.offer[0][0] } : {}
 	);
 
-	const res = await sendTx(signer, chain, tx);
+	const res = await prepareTx(signer, chain, tx);
 
 	return res;
 }
