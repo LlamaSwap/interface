@@ -24,7 +24,7 @@ const gnosisSafeChainsMap = {
 };
 
 const getGnosisUrl = (account, chain) =>
-	`https://app.safe.global/${gnosisSafeChainsMap[chain]}:${account}/apps?appUrl=${location.href}`;
+	`https://app.safe.global/${gnosisSafeChainsMap[chain]}:${account}/apps/open?appUrl=${location.href}`;
 
 export const getGnosisTxUrl = (account, hash, chain) =>
 	`https://app.safe.global/${gnosisSafeChainsMap[chain]}:${account}/transactions/tx?id=multisig_${account}_${hash}`;

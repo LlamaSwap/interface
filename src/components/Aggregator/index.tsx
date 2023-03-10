@@ -807,8 +807,8 @@ export function AggregatorContainer({ tokenlist }) {
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
 				index: selectedRoute.index,
 				route: selectedRoute,
-				isGnosisSafeApp
-				amount: selectedRoute.amount
+				isGnosisSafeApp,
+				amount: amountToApprove
 			});
 		}
 	};
@@ -1033,10 +1033,11 @@ export function AggregatorContainer({ tokenlist }) {
 														if (isApproved) handleSwap();
 													}}
 													disabled={
+														isUSDTNotApprovedOnEthereum ||
 														swapMutation.isLoading ||
-														(!isGnosisSafe &&
-															(isApproveLoading || isApproveResetLoading || isUSDTNotApprovedOnEthereum)) ||
-														!(debouncedAmount && finalSelectedFromToken && finalSelectedToToken) ||
+														isApproveLoading ||
+														isApproveResetLoading ||
+														!(finalSelectedFromToken && finalSelectedToToken) ||
 														insufficientBalance ||
 														!selectedRoute ||
 														slippageIsWong
@@ -1213,6 +1214,8 @@ export function AggregatorContainer({ tokenlist }) {
 																	swapMutation.isLoading ||
 																	isApproveLoading ||
 																	isApproveResetLoading ||
+																	!(finalSelectedFromToken && finalSelectedToToken) ||
+																	insufficientBalance ||
 																	!selectedRoute ||
 																	slippageIsWong
 																}

@@ -99,7 +99,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ chain, signer, rawQuote, from, to, isGnosisSafeApp }) {
+export async function swap({ chain, signer, rawQuote, from, to }) {
 	const fromAddress = await signer.getAddress();
 
 	if (from === ethers.constants.AddressZero) {
