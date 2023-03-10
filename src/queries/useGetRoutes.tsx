@@ -1,5 +1,6 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
-import { first, omit } from 'lodash';
+import { partial, first, omit } from 'lodash';
+
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
 import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/router';
@@ -31,6 +32,7 @@ export interface IRoute {
 		to: string;
 		data: string;
 	};
+	isOutputAvailable: boolean;
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
@@ -40,7 +42,7 @@ interface IGetAdapterRouteProps extends IGetListRoutesProps {
 export const REFETCH_INTERVAL = 25_000;
 
 export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
-	if (!chain || !from || !to || !amount || amount === '0') {
+	if (!chain || !from || !to || (!amount && !extra.amountOut) || (amount === '0' && extra.amountOut === '0')) {
 		return {
 			price: null,
 			name: adapter.name,
@@ -48,18 +50,36 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			fromAmount: amount,
 			txData: '',
 			l1Gas: 0,
-			tx: {}
+			tx: {},
+			isOutputAvailable: false
 		};
 	}
 
 	try {
+		const isOutputDefined = extra.amountOut && extra.amountOut !== '0';
 		let price;
-		if (extra.isPrivacyEnabled || adaptersWithApiKeys[adapter.name]) {
-			price = await redirectQuoteReq(adapter.name, chain, from, to, amount, extra);
+		let amountIn = amount;
+
+		const quouteFunc =
+			extra.isPrivacyEnabled || adaptersWithApiKeys[adapter.name]
+				? partial(redirectQuoteReq, adapter.name)
+				: adapter.getQuote;
+		if (adapter.isOutputAvailable) {
+			price = await quouteFunc(chain, from, to, amount, extra);
+			amountIn = price.amountIn;
+		} else if (isOutputDefined && !adapter.isOutputAvailable) {
+			return {
+				price: null,
+				name: adapter.name,
+				airdrop: !adapter.token,
+				fromAmount: amount,
+				txData: '',
+				l1Gas: 0,
+				tx: {},
+				isOutputAvailable: false
+			};
 		} else {
-			price = await adapter.getQuote(chain, from, to, amount, {
-				...extra
-			});
+			price = await quouteFunc(chain, from, to, amount, extra);
 		}
 
 		const txData = adapter?.getTxData?.(price) ?? '';
@@ -76,7 +96,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			tx: adapter?.getTx?.(price),
 			name: adapter.name,
 			airdrop: !adapter.token,
-			fromAmount: amount
+			fromAmount: amountIn,
+			isOutputAvailable: adapter.isOutputAvailable
 		};
 
 		return res;
@@ -89,7 +110,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			airdrop: !adapter.token,
 			fromAmount: amount,
 			txData: '',
-			tx: {}
+			tx: {},
+			isOutputAvailable: false
 		};
 	}
 }

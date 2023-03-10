@@ -5,6 +5,8 @@ import { Flex, Text } from '@chakra-ui/react';
 import { AlertCircle, Gift, Unlock } from 'react-feather';
 import { GasIcon } from '../Icons';
 import { formattedNum } from '~/utils';
+import { WarningIcon } from '@chakra-ui/icons';
+import BigNumber from 'bignumber.js';
 
 interface IToken {
 	address: string;
@@ -39,6 +41,8 @@ interface IRoute {
 	txData: string;
 	netOut: number;
 	isFetchingGasPrice: boolean;
+	isOutputAvailable: boolean;
+	amountOut: string;
 }
 
 const Route = ({
@@ -54,7 +58,9 @@ const Route = ({
 	amountFrom,
 	lossPercent,
 	netOut,
-	isFetchingGasPrice
+	isFetchingGasPrice,
+	isOutputAvailable,
+	amountOut
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
@@ -67,6 +73,13 @@ const Route = ({
 	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
 	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
 
+	const isSimulatedOutput = !isOutputAvailable && amountOut !== '0';
+
+	const inputAmount =
+		isOutputAvailable && amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0'
+			? Number(new BigNumber(amountFrom).div(10 ** fromToken.decimals).toFixed(4))
+			: null;
+
 	return (
 		<RouteWrapper
 			onClick={setRoute}
@@ -75,14 +88,32 @@ const Route = ({
 			best={index === 0}
 		>
 			<RouteRow>
-				<Flex alignItems="baseline">
-					<Text fontSize={19} fontWeight={700} color={'#FAFAFA'}>
-						{formattedNum(amount)}{' '}
-					</Text>
-					<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
-						{toToken?.symbol}
-					</Text>
-				</Flex>
+				{inputAmount ? (
+					<Flex alignItems="baseline">
+						<Text fontSize={19} fontWeight={700} color={'#FAFAFA'}>
+							{formattedNum(inputAmount)}{' '}
+						</Text>
+						<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
+							{fromToken?.symbol}{' '}
+						</Text>
+					</Flex>
+				) : (
+					<Flex alignItems="baseline">
+						<Text fontSize={19} fontWeight={700} color={'#FAFAFA'}>
+							{formattedNum(amount)}{' '}
+						</Text>
+						<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
+							{toToken?.symbol}{' '}
+						</Text>
+						{isSimulatedOutput ? (
+							<Tooltip
+								content={`The value of this route is estimated because ${name} doesn't support setting amount received.`}
+							>
+								<WarningIcon mb={'4px'} ml={'4px'} color="orange.300" />
+							</Tooltip>
+						) : null}
+					</Flex>
+				)}
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 					<Flex as="span" alignItems="center" gap="8px">
 						{index === 0 ? (
@@ -99,16 +130,22 @@ const Route = ({
 			</RouteRow>
 
 			<RouteRow>
-				<Flex className='mobile-column' as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
-					<span>{`≈ ${afterFees} `}</span>
-					{isGasNotKnown && !isFetchingGasPrice ? (
-						<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
-							<AlertCircle size="14" /> unknown gas fees
-						</Flex>
-					) : (
-						<span>after fees</span>
-					)}
-				</Flex>
+				{inputAmount ? (
+					<Flex className="mobile-column" as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
+						Input Amount
+					</Flex>
+				) : (
+					<Flex className="mobile-column" as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
+						<span>{`≈ ${afterFees} `}</span>
+						{isGasNotKnown && !isFetchingGasPrice ? (
+							<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
+								<AlertCircle size="14" /> unknown gas fees
+							</Flex>
+						) : (
+							<span>after fees</span>
+						)}
+					</Flex>
+				)}
 
 				{airdrop ? (
 					<Tooltip content="This project has no token and might airdrop one in the future">
@@ -117,7 +154,7 @@ const Route = ({
 				) : null}
 
 				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
-					<Text display="flex" className='mobile-column mobile-flexend' alignItems="center" gap="4px" color="gray.400">
+					<Text display="flex" className="mobile-column mobile-flexend" alignItems="center" gap="4px" color="gray.400">
 						{name === 'CowSwap' ? (
 							<Tooltip content="Gas is taken from output amount">
 								<Text as="span" display="flex" alignItems="center" gap="4px" color="gray.400" fontWeight={500}>
