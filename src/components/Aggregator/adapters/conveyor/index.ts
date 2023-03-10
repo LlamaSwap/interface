@@ -52,23 +52,30 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	}).then((r) => r.json());
 	console.log('Conveyor data', data);
+	console.log(from, to)
 	return {
 		amountReturned: data.amount_out,
 		estimateGas: data.gas_estimate,
 		tokenApprovalAddress: conveyorSwapAggregatorAddress[chainToChainId[chain]],
 		rawQuote: {
 			...data,
-			gasLimit: data.gas_estimate,
-			tx: { ...data?.tx_calldata }
+			from: extra.userAddress,
+			to: conveyorSwapAggregatorAddress[chainToChainId[chain]],
+			tx: { data: data?.tx_calldata, gasLimit: '300000' }
 		}
 	};
 }
 
 export async function swap({ signer, rawQuote, chain }) {
 	const tx = await sendTx(signer, chain, {
-		...rawQuote.tx,
-		gasLimit: rawQuote.gasLimit
+		from:rawQuote.from,
+		to: rawQuote.to,
+		...rawQuote.tx
 	});
 
 	return tx;
 }
+
+export const getTxData = ({ rawQuote }) => rawQuote?.tx_calldata;
+
+
