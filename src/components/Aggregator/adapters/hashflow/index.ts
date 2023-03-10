@@ -6,18 +6,17 @@ import { sendTx } from '../../utils/sendTx';
 import { ABI } from './abi';
 
 export const chainToId = {
-	ethereum: 1,
-	/*
-	bsc: 56,
-	polygon: 137,
-	arbitrum: 42161,
-	avax: 43114,
-	optimism: 10
-	*/
+	ethereum: 1
+	// bsc: 56,
+	// polygon: 137,
+	// arbitrum: 42161,
+	// avax: 43114,
+	// optimism: 10
 };
 
 export const name = 'Hashflow';
 export const token = 'HFT';
+export const isOutputAvailable = true;
 
 // from https://docs.hashflow.com/hashflow/taker/getting-started#5.-execute-quote-on-chain
 const routerAddress = {
@@ -30,6 +29,9 @@ const routerAddress = {
 };
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
+	const amountParam =
+		extra.amountOut && extra.amountOut !== '0' ? { quoteTokenAmount: extra.amountOut } : { baseTokenAmount: amount };
+
 	const data = await fetch(`https://api.hashflow.com/taker/v2/rfq`, {
 		method: 'POST',
 		body: JSON.stringify({
@@ -37,9 +39,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			source: 'defillama',
 			rfqType: 0,
 			baseToken: from,
-			baseTokenAmount: amount,
 			quoteToken: to,
-			trader: extra.userAddress
+			trader: extra.userAddress,
+			...amountParam
 		}),
 		headers: {
 			'Content-Type': 'application/json',
@@ -72,6 +74,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: data?.quoteData?.quoteTokenAmount || 0,
+		amountIn: data?.quoteData?.baseTokenAmount || 0,
 		estimatedGas,
 		tokenApprovalAddress: routerAddress[chainToId[chain]],
 		validTo: data.quoteData.quoteExpiry,

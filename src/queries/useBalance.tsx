@@ -78,5 +78,11 @@ export const useBalance = ({ address, chainId, token }) => {
 		}
 	);
 
-	return wagmiData.isLoading || wagmiData.data ? wagmiData : queryData;
+	// when token is undefined/null, wagmi tries fetch users chain token (for ex :ETH) balance, even though is isEnabled is false
+	// so hardcode data to null
+	return !isEnabled
+		? { isLoading: false, isSuccess: false, data: null }
+		: wagmiData.isLoading || wagmiData.data
+		? wagmiData
+		: queryData;
 };
