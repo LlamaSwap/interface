@@ -6,9 +6,14 @@ import { erc20ABI } from 'wagmi';
 import { IRoute } from '~/queries/useGetRoutes';
 
 const traceRpcs = {
+	// https://docs.blastapi.io/blast-documentation/trace-api
 	ethereum: 'https://eth-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
 	bsc: 'https://bsc-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
 	gnosis: 'https://gnosis-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	arbitrum: 'https://arbitrum-one.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	moonbeam: 'https://moonbeam.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	moonriver: 'https://moonriver.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	//palm: 'https://palm-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec', // we don't support it
 	polygon: 'https://polygon.llamarpc.com'
 };
 
