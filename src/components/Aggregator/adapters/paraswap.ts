@@ -20,7 +20,7 @@ export const chainToId = {
 export const name = 'ParaSwap';
 export const token = 'PSP';
 export const partner = 'llamaswap';
-export const isOutputAvailable = true;
+
 
 export function approvalAddress() {
 	return '0x216b4b4ba9f3e719726886d34a177484278bfcae';
@@ -31,17 +31,15 @@ export async function getQuote(
 	from: string,
 	to: string,
 	amount: string,
-	{ fromToken, toToken, userAddress, slippage, amountOut }
+	{ fromToken, toToken, userAddress, slippage }
 ) {
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const side = amountOut && amountOut !== '0' ? 'BUY' : 'SELL';
-	const finalAmount = side === 'BUY' ? amountOut : amount;
 	const data = await fetch(
-		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${finalAmount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=${side}&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders`
+		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${amount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=SELL&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders`
 	).then((r) => r.json());
 
 	const dataSwap =
@@ -53,13 +51,15 @@ export async function getQuote(
 						srcDecimals: data.priceRoute.srcDecimals,
 						destToken: data.priceRoute.destToken,
 						destDecimals: data.priceRoute.destDecimals,
+						srcAmount: data.priceRoute.srcAmount,
 						slippage: slippage * 100,
 						userAddress: userAddress,
+						//txOrigin: userAddress,
+						//deadline: Math.floor(Date.now() / 1000) + 300,
 						partner: partner,
 						partnerAddress: defillamaReferrerAddress,
 						positiveSlippageToUser: false,
-						priceRoute: data.priceRoute,
-						...(side === 'BUY' ? { destAmount: data.priceRoute.destAmount } : { srcAmount: data.priceRoute.srcAmount })
+						priceRoute: data.priceRoute
 					}),
 					headers: {
 						'Content-Type': 'application/json'
@@ -77,7 +77,6 @@ export async function getQuote(
 
 	return {
 		amountReturned: data.priceRoute.destAmount,
-		amountIn: data.priceRoute.srcAmount || 0,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.priceRoute.tokenTransferProxy,
 		rawQuote: { ...dataSwap, gasLimit: gas },

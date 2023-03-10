@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Input } from './TokenInput';
 import styled from 'styled-components';
 import { CloseBtn } from '../CloseBtn';
-import { Input, Text } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
 
 interface Props {
 	tokens: Array<{ symbol: string; address: string }>;
@@ -126,13 +127,7 @@ const Modal = ({ close, onInputChange, data, onClick }) => {
 					<CloseBtn onClick={close} />
 				</Header>
 				<div>
-					<Input
-						bg="#141619"
-						_focusVisible={{ outline: 'none' }}
-						placeholder="Search... (BTC-ETH)"
-						onChange={onInputChange}
-						autoFocus
-					/>
+					<Input placeholder="Search... (BTC-ETH)" onChange={onInputChange} autoFocus />
 				</div>
 
 				<Pairs>
@@ -193,8 +188,6 @@ export default function Search({ tokens, setTokens }: Props) {
 	return (
 		<>
 			<Input
-				bg="#141619"
-				_focusVisible={{ outline: 'none' }}
 				placeholder="Search... (BTC-ETH)"
 				disabled
 				onClick={() => {

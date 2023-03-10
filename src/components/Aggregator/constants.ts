@@ -137,5 +137,3 @@ export const nativeAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowe
 export const initialLiquidity = [500, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000, 500_000_000];
 
 export const PRICE_IMPACT_WARNING_THRESHOLD = 7;
-export const PRICE_IMPACT_MEDIUM_THRESHOLD = 5;
-export const PRICE_IMPACT_HIGH_THRESHOLD = 10;

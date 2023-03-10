@@ -27,7 +27,6 @@ const nativeSwapAddress = {
 export const name = 'CowSwap';
 export const token = 'COW';
 export const referral = true;
-export const isOutputAvailable = true;
 
 export function approvalAddress() {
 	return '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
@@ -54,7 +53,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const isEthflowOrder = from === ethers.constants.AddressZero;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const tokenFrom = isEthflowOrder ? wrappedTokens[chain] : from;
-	const isBuyOrder = extra.amountOut && extra.amountOut !== '0';
 	// amount should include decimals
 	const data = await fetch(`${chainToId[chain]}/api/v1/quote`, {
 		method: 'POST',
@@ -70,8 +68,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			//"priceQuality": "fast",
 			signingScheme: isEthflowOrder ? 'eip1271' : 'eip712', // for selling directly ether, another signature type is required
 			onchainOrder: isEthflowOrder ? true : false, // for selling directly ether, we have to quote for onchain orders
-			kind: isBuyOrder ? 'buy' : 'sell',
-			...(isBuyOrder ? { buyAmountAfterFee: extra.amountOut } : { sellAmountBeforeFee: amount })
+			kind: 'sell',
+			sellAmountBeforeFee: amount
 		}),
 		headers: {
 			'Content-Type': 'application/json'
@@ -90,7 +88,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: expectedBuyAmount,
-		amountIn: data?.quote.sellAmount || 0,
 		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
