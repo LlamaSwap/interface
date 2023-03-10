@@ -6,9 +6,9 @@ import { erc20ABI } from 'wagmi';
 import { IRoute } from '~/queries/useGetRoutes';
 
 const traceRpcs = {
-	ethereum: 'https://eth-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
-	bsc: 'https://bsc-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
-	gnosis: 'https://gnosis-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
+	ethereum: 'https://eth-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	bsc: 'https://bsc-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	gnosis: 'https://gnosis-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
 	polygon: 'https://polygon.llamarpc.com'
 };
 
