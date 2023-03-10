@@ -14,7 +14,7 @@ const chainIdToChainId = {
 export const chainToId = {
 	ethereum: 'https://ethereum.conveyor.finance/',
 	bsc: 'https://bsc.conveyor.finance/',
-	polygon: 'https://polygon.conveyor.finance/',
+	polygon: 'http://127.0.0.1:8080/',
 	optimism: 'https://optimism.conveyor.finance/',
 	arbitrum: 'https://arbitrum.conveyor.finance/',
 	avax: 'https://avalanche.conveyor.finance/',
