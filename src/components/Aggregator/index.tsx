@@ -436,7 +436,7 @@ export function AggregatorContainer({ tokenlist }) {
 		userAddress: address,
 		chain: selectedChain.value,
 		amount: amountWithDecimals,
-		hasEnoughBalance: +debouncedAmount < +balance?.data?.formatted
+		hasEnoughBalance: +debouncedAmount <= +balance?.data?.formatted
 	});
 	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
