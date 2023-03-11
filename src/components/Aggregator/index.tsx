@@ -578,6 +578,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const hasPriceImapct =
 		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
+	const hasMaxPriceImpact = selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 10;
 
 	//  only show insufficient balance when there is token balance data and debouncedAmount is in sync with amount
 	const insufficientBalance =
@@ -778,6 +779,14 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const handleSwap = () => {
 		if (selectedRoute && selectedRoute.price && !slippageIsWong) {
+			if (hasMaxPriceImpact) {
+				toast({
+					title: 'Price impact is too high!',
+					description: 'Swap is blocked, please try another route.',
+					status: 'error'
+				});
+				return;
+			}
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -951,6 +960,10 @@ export function AggregatorContainer({ tokenlist }) {
 						) : insufficientBalance ? (
 							<Button colorScheme={'messenger'} disabled>
 								Insufficient Balance
+							</Button>
+						) : hasMaxPriceImpact ? (
+							<Button colorScheme={'messenger'} disabled>
+								Price impact is too large
 							</Button>
 						) : (
 							<>

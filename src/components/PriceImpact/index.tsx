@@ -32,7 +32,7 @@ const NoPriceImpactAlert = ({ name: string }) => {
 	return (
 		<Alert status="warning" borderRadius="0.375rem" py="8px">
 			<AlertIcon />
-			{`Couldn't fetch price for ${string}, we aren't able to check price impact so please exercise caution`}
+			{`Couldn't fetch price for ${string}, we aren't able to check price impact so please exercise caution. Please be very careful when checking the swap cause you could lose money`}
 		</Alert>
 	);
 };
