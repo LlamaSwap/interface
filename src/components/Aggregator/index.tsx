@@ -779,6 +779,9 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const handleSwap = () => {
 		if (selectedRoute && selectedRoute.price && !slippageIsWong) {
+			if (hasMaxPriceImpact) {
+				throw new Error('Price impact too high');
+			}
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
