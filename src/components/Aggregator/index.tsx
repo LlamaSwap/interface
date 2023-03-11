@@ -491,13 +491,6 @@ export function AggregatorContainer({ tokenlist }) {
 			}
 			return b.netOut - a.netOut;
 		})
-		.sort((a, b) => {
-			if (a.isOutputAvailable && debouncedAmountOut) {
-				return -1;
-			} else {
-				return 1;
-			}
-		})
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
 	const selecteRouteIndex =

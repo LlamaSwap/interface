@@ -18,7 +18,7 @@ const traceRpcs = {
 };
 
 export const estimateGas = async ({ route, token, userAddress, chain, balance }) => {
-	if (balance < +route.fromAmount) return null;
+	if (!Number.isFinite(balance) || balance < +route.fromAmount) return null;
 
 	try {
 		const provider = new ethers.providers.JsonRpcProvider(traceRpcs[chain]);
@@ -88,7 +88,7 @@ export const useEstimateGas = ({
 				return {
 					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance],
 					queryFn: () => estimateGas({ route, token, userAddress, chain, balance }),
-					enabled: traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) // TODO: figure out why it doesn't work
+					enabled: traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) && !!userAddress // TODO: figure out why it doesn't work
 				};
 			})
 	});
