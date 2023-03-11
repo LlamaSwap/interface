@@ -566,11 +566,13 @@ export function AggregatorContainer({ tokenlist }) {
 	}, [router?.query, savedTokens]);
 
 	useEffect(() => {
-		if (lastOutputValue !== null && selectedRoute.amount / lastOutputValue <= 0.94) {
-			setAggregator(null);
+		if (selectedRoute) {
+			if (lastOutputValue !== null && selectedRoute.amount / lastOutputValue <= 0.94) {
+				setAggregator(null);
+			}
+			setLastOutputValue(selectedRoute.amount);
 		}
-		setLastOutputValue(selectedRoute.amount);
-	}, [selectedRoute.amount]);
+	}, [selectedRoute?.amount]);
 
 	const priceImpactRoute = selectedRoute ? fillRoute(selectedRoute) : null;
 
