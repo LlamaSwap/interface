@@ -300,6 +300,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
 	const [amount, setAmount] = useState<number | string>('10');
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
+	const [lastOutputValue, setLastOutputValue] = useState(null);
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -563,6 +564,13 @@ export function AggregatorContainer({ tokenlist }) {
 			onToTokenChange(undefined);
 		}
 	}, [router?.query, savedTokens]);
+
+	useEffect(() => {
+		if (lastOutputValue !== null && selectedRoute.amount / lastOutputValue <= 0.94) {
+			setAggregator(null);
+		}
+		setLastOutputValue(selectedRoute.amount);
+	}, [selectedRoute.amount]);
 
 	const priceImpactRoute = selectedRoute ? fillRoute(selectedRoute) : null;
 
