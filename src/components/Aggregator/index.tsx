@@ -578,7 +578,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const hasPriceImapct =
 		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
-	const hasMaxPriceImpact = selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > 10;
+	const hasMaxPriceImpact = selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 10;
 
 	//  only show insufficient balance when there is token balance data and debouncedAmount is in sync with amount
 	const insufficientBalance =
