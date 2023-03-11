@@ -480,8 +480,9 @@ export function AggregatorContainer({ tokenlist }) {
 		};
 	};
 
-	let normalizedRoutes = [...(routes || [])]
-		?.map(fillRoute)
+	const allRoutes = [...(routes || [])]?.map(fillRoute);
+	const failedRoutes = allRoutes.filter((r) => r.isFailed === true);
+	let normalizedRoutes = allRoutes
 		.filter(
 			({ fromAmount, amount: toAmount, isFailed }) =>
 				Number(toAmount) && amountWithDecimals === fromAmount && isFailed !== true
@@ -1080,7 +1081,15 @@ export function AggregatorContainer({ tokenlist }) {
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
 					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
-						{normalizedRoutes?.length ? 'Best route is selected based on net output after gas fees' : null}
+						{normalizedRoutes?.length ? `Best route is selected based on net output after gas fees.` : null}
+					</span>
+
+					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
+						{failedRoutes.length > 0
+							? `Routes for aggregators ${failedRoutes
+									.map((r) => r.name)
+									.join(', ')} have been hidden since they could not be executed`
+							: null}
 					</span>
 
 					{isLoading && debouncedAmount && finalSelectedFromToken && finalSelectedToToken ? (
