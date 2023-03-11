@@ -930,6 +930,11 @@ export function AggregatorContainer({ tokenlist }) {
 								<AlertIcon />
 								CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
 							</Alert>
+							<Alert status="warning" borderRadius="0.375rem" py="8px">
+								<AlertIcon />
+								CowSwap is currently quoting prices incorrectly, you can still use it with slippage {'>'}=2% but be
+								aware that you likely won't get the rates shown
+							</Alert>
 						</>
 					) : null}
 
