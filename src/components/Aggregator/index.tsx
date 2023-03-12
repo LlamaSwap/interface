@@ -567,10 +567,17 @@ export function AggregatorContainer({ tokenlist }) {
 
 	useEffect(() => {
 		if (selectedRoute) {
-			if (lastOutputValue !== null && selectedRoute.amount / lastOutputValue <= 0.94) {
+			if (
+				lastOutputValue !== null &&
+				aggregator === lastOutputValue.aggregator &&
+				selectedRoute.amount / lastOutputValue.amount <= 0.94 // >=6% drop
+			) {
 				setAggregator(null);
 			}
-			setLastOutputValue(selectedRoute.amount);
+			setLastOutputValue({
+				aggregator,
+				amount: selectedRoute.amount
+			});
 		}
 	}, [selectedRoute?.amount]);
 
