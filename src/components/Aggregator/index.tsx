@@ -501,9 +501,15 @@ export function AggregatorContainer({ tokenlist }) {
 		aggregator && normalizedRoutes && normalizedRoutes.length > 0
 			? normalizedRoutes.findIndex((r) => r.name === aggregator)
 			: -1;
+
 	// store selected aggregators route
 	const selectedRoute =
 		selecteRouteIndex >= 0 ? { ...normalizedRoutes[selecteRouteIndex], index: selecteRouteIndex } : null;
+
+	const diffBetweenSelectedRouteAndTopRoute =
+		selectedRoute && normalizedRoutes
+			? Number((100 - (selectedRoute.amount / normalizedRoutes[0].amount) * 100).toFixed(2))
+			: 0;
 
 	// functions to handle change in swap input fields
 	const onMaxClick = () => {
@@ -947,6 +953,13 @@ export function AggregatorContainer({ tokenlist }) {
 							</Alert>
 						</>
 					) : null}
+
+					{diffBetweenSelectedRouteAndTopRoute > 5 && (
+						<Alert status="warning" borderRadius="0.375rem" py="8px">
+							<AlertIcon />
+							{`There is ${diffBetweenSelectedRouteAndTopRoute}% difference between selected route and top route.`}
+						</Alert>
+					)}
 
 					<SwapWrapper>
 						{!isConnected ? (
