@@ -65,7 +65,7 @@ const Route = ({
 
 	const afterFees =
 		toTokenPrice && Number.isFinite(Number(toTokenPrice))
-			? `$${formattedNum((toTokenPrice * amount).toFixed(1), false, true)}`
+			? `$${formattedNum((toTokenPrice * amount - Number(gasUsd)).toFixed(1), false, true)}`
 			: null;
 	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
 	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
@@ -108,9 +108,9 @@ const Route = ({
 						<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
 							<AlertCircle size="14" /> unknown gas fees
 						</Flex>
-					) : (
+					) : afterFees ? (
 						<span>after fees</span>
-					)}
+					) : null}
 				</Flex>
 
 				{airdrop ? (

@@ -42,8 +42,8 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 		}
 
 		if (cgPrices[1].status === 'fulfilled') {
-			fromTokenPrice = cgPrices[1].value[fromToken]?.['usd'];
-			toTokenPrice = cgPrices[1].value[toToken]?.['usd'];
+			fromTokenPrice = fromTokenPrice || cgPrices[1].value[fromToken]?.['usd'];
+			toTokenPrice = toTokenPrice || cgPrices[1].value[toToken]?.['usd'];
 		}
 
 		let llamaApi = [];
