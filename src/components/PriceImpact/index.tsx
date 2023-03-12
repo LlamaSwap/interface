@@ -161,6 +161,12 @@ export function PriceImpact({
 					High price impact! More than {selectedRoutesPriceImpact.toFixed(2)}% drop.
 				</Alert>
 			) : null}
+			{!isLoading && toTokenPrice && Number(totalAmountReceived) * toTokenPrice > 100e3 ? (
+				<Alert status="warning" borderRadius="0.375rem" py="8px">
+					<AlertIcon />
+					Your size is size. Please be mindful of slippage
+				</Alert>
+			) : null}
 		</>
 	);
 }
