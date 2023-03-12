@@ -579,7 +579,7 @@ export function AggregatorContainer({ tokenlist }) {
 				amount: selectedRoute.amount
 			});
 		}
-	}, [selectedRoute?.amount]);
+	}, [selectedRoute?.amount, aggregator]);
 
 	const priceImpactRoute = selectedRoute ? fillRoute(selectedRoute) : null;
 
