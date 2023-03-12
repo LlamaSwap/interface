@@ -28,11 +28,13 @@ interface IPriceImpact {
 	slippage?: string;
 }
 
-const NoPriceImpactAlert = ({ name: string }) => {
+const NoPriceImpactAlert = ({ tokens }) => {
 	return (
 		<Alert status="warning" borderRadius="0.375rem" py="8px">
 			<AlertIcon />
-			{`Couldn't fetch price for ${string}, we aren't able to check price impact so please exercise caution. Please be very careful when checking the swap cause you could lose money`}
+			{`Couldn't fetch price for ${tokens.join(
+				', '
+			)}, we aren't able to check price impact so please exercise caution. Please be very careful when checking the swap cause you could lose money`}
 		</Alert>
 	);
 };
@@ -53,13 +55,12 @@ export function PriceImpact({
 		return null;
 	}
 
-	if (!fromTokenPrice || Number.isNaN(Number(fromTokenPrice))) {
-		return <NoPriceImpactAlert name={fromToken.symbol} />;
-	}
+	const tokensWithoutPrice = [
+		!fromTokenPrice || Number.isNaN(Number(fromTokenPrice)) ? fromToken.symbol : null,
+		!toTokenPrice || Number.isNaN(Number(toTokenPrice)) ? toToken.symbol : null
+	].filter(Boolean);
 
-	if (!toTokenPrice || Number.isNaN(Number(toTokenPrice))) {
-		return <NoPriceImpactAlert name={toToken.symbol} />;
-	}
+	if (tokensWithoutPrice.length > 0) return <NoPriceImpactAlert tokens={tokensWithoutPrice} />;
 
 	if (!amount || Number.isNaN(Number(amount)) || !amountReturnedInSelectedRoute) {
 		return null;

@@ -54,7 +54,6 @@ const Route = ({
 	fromToken,
 	amountFrom,
 	lossPercent,
-	netOut,
 	isFetchingGasPrice,
 	toTokenPrice
 }: IRoute) => {
