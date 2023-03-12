@@ -20,7 +20,8 @@ const stablecoins = [
 	'MAI',
 	'EURS',
 	'EURT',
-	'alUSD'
+	'alUSD',
+	'PAX'
 ];
 
 export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
