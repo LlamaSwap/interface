@@ -54,6 +54,7 @@ const Route = ({
 	fromToken,
 	amountFrom,
 	lossPercent,
+	netOut,
 	isFetchingGasPrice,
 	toTokenPrice
 }: IRoute) => {
@@ -64,8 +65,8 @@ const Route = ({
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
 	const afterFees =
-		toTokenPrice && Number.isFinite(Number(toTokenPrice))
-			? `$${formattedNum((toTokenPrice * amount - (Number(gasUsd) || 0)).toFixed(1), false, true)}`
+		toTokenPrice && Number.isFinite(Number(toTokenPrice)) && netOut && Number.isFinite(Number(netOut))
+			? `$${formattedNum(netOut.toFixed(1), false, true)}`
 			: null;
 	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
 	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
