@@ -478,10 +478,14 @@ export function AggregatorContainer({ tokenlist }) {
 			amountInUsd
 		};
 	};
-	let normalizedRoutes = [...(routes || [])]
-		?.map(fillRoute)
-		.filter(({ fromAmount, amount: toAmount, isFailed }) =>
-			amountOutWithDecimals === '0' ? Number(toAmount) && amountWithDecimals === fromAmount : true && isFailed !== true
+
+
+	const allRoutes = [...(routes || [])]?.map(fillRoute);
+	const failedRoutes = allRoutes.filter((r) => r.isFailed === true);
+	let normalizedRoutes = allRoutes
+		.filter(
+			({ fromAmount, amount: toAmount, isFailed }) =>
+			 amountOutWithDecimals === '0' ? Number(toAmount) && amountWithDecimals === fromAmount : true && isFailed !== true
 		)
 		.sort((a, b) => {
 			if (a.gasUsd === 'Unknown') {
@@ -576,6 +580,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const hasPriceImapct =
 		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
+	const hasMaxPriceImpact = selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 10;
 
 	const insufficientBalance =
 		balance.isSuccess &&
@@ -782,6 +787,14 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const handleSwap = () => {
 		if (selectedRoute && selectedRoute.price && !slippageIsWong) {
+			if (hasMaxPriceImpact) {
+				toast({
+					title: 'Price impact is too high!',
+					description: 'Swap is blocked, please try another route.',
+					status: 'error'
+				});
+				return;
+			}
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -933,6 +946,11 @@ export function AggregatorContainer({ tokenlist }) {
 								<AlertIcon />
 								CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
 							</Alert>
+							<Alert status="warning" borderRadius="0.375rem" py="8px">
+								<AlertIcon />
+								CowSwap is currently quoting prices incorrectly, you can still use it with slippage {'>'}=2% but be
+								aware that you likely won't get the rates shown
+							</Alert>
 						</>
 					) : null}
 
@@ -956,6 +974,10 @@ export function AggregatorContainer({ tokenlist }) {
 						) : insufficientBalance ? (
 							<Button colorScheme={'messenger'} disabled>
 								Insufficient Balance
+							</Button>
+						) : hasMaxPriceImpact ? (
+							<Button colorScheme={'messenger'} disabled>
+								Price impact is too large
 							</Button>
 						) : (
 							<>
@@ -1087,7 +1109,15 @@ export function AggregatorContainer({ tokenlist }) {
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
 					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
-						{normalizedRoutes?.length ? 'Best route is selected based on net output after gas fees' : null}
+						{normalizedRoutes?.length ? `Best route is selected based on net output after gas fees.` : null}
+					</span>
+
+					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
+						{failedRoutes.length > 0
+							? `Routes for aggregators ${failedRoutes
+									.map((r) => r.name)
+									.join(', ')} have been hidden since they could not be executed`
+							: null}
 					</span>
 
 					{isLoading && (debouncedAmount || debouncedAmountOut) && finalSelectedFromToken && finalSelectedToToken ? (
