@@ -35,12 +35,15 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 		]);
 
 		if (cgPrices[0].status === 'fulfilled') {
-			gasTokenPrice = cgPrices[0].value[chainGasToken[rawChain]]?.['usd'];
+			gasTokenPrice = cgPrices[0].value?.[chainGasToken[rawChain]]?.['usd'];
+
+			fromTokenPrice = fromToken === ZERO_ADDRESS ? gasTokenPrice : undefined;
+			toTokenPrice = toToken === ZERO_ADDRESS ? gasTokenPrice : undefined;
 		}
 
 		if (cgPrices[1].status === 'fulfilled') {
-			fromTokenPrice = cgPrices[1].value[fromToken]?.['usd'];
-			toTokenPrice = cgPrices[1].value[toToken]?.['usd'];
+			fromTokenPrice = fromTokenPrice || cgPrices[1].value[fromToken]?.['usd'];
+			toTokenPrice = toTokenPrice || cgPrices[1].value[toToken]?.['usd'];
 		}
 
 		let llamaApi = [];

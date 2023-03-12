@@ -1145,6 +1145,7 @@ export function AggregatorContainer({ tokenlist }) {
 								fromToken={finalSelectedFromToken}
 								selectedChain={selectedChain.label}
 								gasTokenPrice={gasTokenPrice}
+								toTokenPrice={toTokenPrice}
 								isFetchingGasPrice={fetchingTokenPrices}
 							/>
 
