@@ -479,13 +479,11 @@ export function AggregatorContainer({ tokenlist }) {
 		};
 	};
 
-
 	const allRoutes = [...(routes || [])]?.map(fillRoute);
 	const failedRoutes = allRoutes.filter((r) => r.isFailed === true);
 	let normalizedRoutes = allRoutes
-		.filter(
-			({ fromAmount, amount: toAmount, isFailed }) =>
-			 amountOutWithDecimals === '0' ? Number(toAmount) && amountWithDecimals === fromAmount : true && isFailed !== true
+		.filter(({ fromAmount, amount: toAmount, isFailed }) =>
+			amountOutWithDecimals === '0' ? Number(toAmount) && amountWithDecimals === fromAmount : true && isFailed !== true
 		)
 		.sort((a, b) => {
 			if (a.gasUsd === 'Unknown') {
@@ -603,7 +601,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const amountToApprove =
 		amountOut && amountOut !== ''
 			? BigNumber(selectedRoute?.fromAmount)
-					.times(100 + Number(slippage))
+					.times(100 + Number(slippage) * 2)
 					.div(100)
 					.toFixed(0)
 			: selectedRoute?.fromAmount;
@@ -872,7 +870,7 @@ export function AggregatorContainer({ tokenlist }) {
 								router.push(
 									{
 										pathname: router.pathname,
-										query: { ...router.query, to: finalSelectedFromToken.address, from: finalSelectedToToken.address }
+										query: { ...router.query, to: finalSelectedFromToken?.address, from: finalSelectedToToken?.address }
 									},
 									undefined,
 									{ shallow: true }
