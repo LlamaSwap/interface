@@ -29,8 +29,7 @@ const routerAddress = {
 };
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
-	const amountParam =
-		extra.amountOut && extra.amountOut !== '0' ? { quoteTokenAmount: extra.amountOut } : { baseTokenAmount: amount };
+	const amountParam = { baseTokenAmount: amount };
 
 	const data = await fetch(`https://api.hashflow.com/taker/v2/rfq`, {
 		method: 'POST',
