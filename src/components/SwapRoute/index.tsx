@@ -41,12 +41,6 @@ interface IRoute {
 	txData: string;
 	netOut: number;
 	isFetchingGasPrice: boolean;
-	
-  
-  
-  
-  
-  tAvailable: boolean;
 	amountOut: string;
 	toTokenPrice: number;
 }
@@ -65,8 +59,7 @@ const Route = ({
 	lossPercent,
 	netOut,
 	isFetchingGasPrice,
-	isOutputAvailable,
-	amountOut
+	amountOut,
 	toTokenPrice
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
@@ -82,10 +75,8 @@ const Route = ({
 	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
 	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
 
-	const isSimulatedOutput = !isOutputAvailable && amountOut !== '0';
-
 	const inputAmount =
-		isOutputAvailable && amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0'
+		amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0'
 			? Number(new BigNumber(amountFrom).div(10 ** fromToken.decimals).toFixed(4))
 			: null;
 
@@ -114,13 +105,6 @@ const Route = ({
 						<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
 							{toToken?.symbol}{' '}
 						</Text>
-						{isSimulatedOutput ? (
-							<Tooltip
-								content={`The value of this route is estimated because ${name} doesn't support setting amount received.`}
-							>
-								<WarningIcon mb={'4px'} ml={'4px'} color="orange.300" />
-							</Tooltip>
-						) : null}
 					</Flex>
 				)}
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
@@ -145,14 +129,14 @@ const Route = ({
 					</Flex>
 				) : (
 					<Flex className="mobile-column" as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
-					  {afterFees ? <span>{`≈ ${afterFees} `}</span> : null}
+						{afterFees ? <span>{`≈ ${afterFees} `}</span> : null}
 						{isGasNotKnown && !isFetchingGasPrice ? (
 							<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
 								<AlertCircle size="14" /> unknown gas fees
 							</Flex>
 						) : afterFees ? (
-						<span>after fees</span>
-					) : null}
+							<span>after fees</span>
+						) : null}
 					</Flex>
 				)}
 

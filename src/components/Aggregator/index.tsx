@@ -975,7 +975,6 @@ export function AggregatorContainer({ tokenlist }) {
 						</>
 					) : null}
 
-
 					{diffBetweenSelectedRouteAndTopRoute > 5 && (
 						<Alert status="warning" borderRadius="0.375rem" py="8px">
 							<AlertIcon />
