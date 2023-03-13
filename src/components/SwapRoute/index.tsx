@@ -41,8 +41,14 @@ interface IRoute {
 	txData: string;
 	netOut: number;
 	isFetchingGasPrice: boolean;
-	isOutputAvailable: boolean;
+	
+  
+  
+  
+  
+  tAvailable: boolean;
 	amountOut: string;
+	toTokenPrice: number;
 }
 
 const Route = ({
@@ -61,6 +67,7 @@ const Route = ({
 	isFetchingGasPrice,
 	isOutputAvailable,
 	amountOut
+	toTokenPrice
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
@@ -69,7 +76,9 @@ const Route = ({
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
 	const afterFees =
-		netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut.toFixed(1), false, true)}` : null;
+		toTokenPrice && Number.isFinite(Number(toTokenPrice)) && netOut && Number.isFinite(Number(netOut))
+			? `$${formattedNum(netOut.toFixed(1), false, true)}`
+			: null;
 	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
 	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
 
@@ -136,14 +145,14 @@ const Route = ({
 					</Flex>
 				) : (
 					<Flex className="mobile-column" as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
-						<span>{`≈ ${afterFees} `}</span>
+					  {afterFees ? <span>{`≈ ${afterFees} `}</span> : null}
 						{isGasNotKnown && !isFetchingGasPrice ? (
 							<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
 								<AlertCircle size="14" /> unknown gas fees
 							</Flex>
-						) : (
-							<span>after fees</span>
-						)}
+						) : afterFees ? (
+						<span>after fees</span>
+					) : null}
 					</Flex>
 				)}
 

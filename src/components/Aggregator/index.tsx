@@ -282,6 +282,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
 
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
+	const [lastOutputValue, setLastOutputValue] = useState(null);
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -499,9 +500,15 @@ export function AggregatorContainer({ tokenlist }) {
 		aggregator && normalizedRoutes && normalizedRoutes.length > 0
 			? normalizedRoutes.findIndex((r) => r.name === aggregator)
 			: -1;
+
 	// store selected aggregators route
 	const selectedRoute =
 		selecteRouteIndex >= 0 ? { ...normalizedRoutes[selecteRouteIndex], index: selecteRouteIndex } : null;
+
+	const diffBetweenSelectedRouteAndTopRoute =
+		selectedRoute && normalizedRoutes
+			? Number((100 - (selectedRoute.amount / normalizedRoutes[0].amount) * 100).toFixed(2))
+			: 0;
 
 	// functions to handle change in swap input fields
 	const onMaxClick = () => {
@@ -562,6 +569,22 @@ export function AggregatorContainer({ tokenlist }) {
 			onToTokenChange(undefined);
 		}
 	}, [router?.query, savedTokens]);
+
+	useEffect(() => {
+		if (selectedRoute) {
+			if (
+				lastOutputValue !== null &&
+				aggregator === lastOutputValue.aggregator &&
+				selectedRoute.amount / lastOutputValue.amount <= 0.94 // >=6% drop
+			) {
+				setAggregator(null);
+			}
+			setLastOutputValue({
+				aggregator,
+				amount: selectedRoute.amount
+			});
+		}
+	}, [selectedRoute?.amount, aggregator]);
 
 	const priceImpactRoute = selectedRoute ? fillRoute(selectedRoute) : null;
 
@@ -952,13 +975,13 @@ export function AggregatorContainer({ tokenlist }) {
 						</>
 					) : null}
 
-					{!selectedRoute?.isOutputAvailable && debouncedAmountOut !== '' && selectedRoute?.amount ? (
+
+					{diffBetweenSelectedRouteAndTopRoute > 5 && (
 						<Alert status="warning" borderRadius="0.375rem" py="8px">
 							<AlertIcon />
-							The output amount of this route is defferent from your input because {selectedRoute?.name} doesn't support
-							setting amount received.
+							{`There is ${diffBetweenSelectedRouteAndTopRoute}% difference between selected route and top route.`}
 						</Alert>
-					) : null}
+					)}
 
 					<SwapWrapper>
 						{!isConnected ? (
@@ -1148,6 +1171,7 @@ export function AggregatorContainer({ tokenlist }) {
 								fromToken={finalSelectedFromToken}
 								selectedChain={selectedChain.label}
 								gasTokenPrice={gasTokenPrice}
+								toTokenPrice={toTokenPrice}
 								isFetchingGasPrice={fetchingTokenPrices}
 								amountOut={amountOutWithDecimals}
 							/>
