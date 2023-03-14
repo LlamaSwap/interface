@@ -137,3 +137,7 @@ export const nativeAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowe
 export const initialLiquidity = [500, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000, 500_000_000];
 
 export const PRICE_IMPACT_WARNING_THRESHOLD = 4;
+
+export const WETH = {
+	ethereum: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'.toLowerCase()
+};
