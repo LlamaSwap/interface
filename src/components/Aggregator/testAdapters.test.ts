@@ -1,9 +1,9 @@
 import { chainsMap } from './constants';
 import { adapters, getAllChains } from './router';
-import { getTokenList } from './getTokenList';
 import { BigNumber, ethers } from 'ethers';
 import { redirectQuoteReq } from './adapters/utils';
 import { nativeTokens } from './nativeTokens';
+import { getTokenList } from '~/props/getTokenList';
 
 /*
 Test matrix
@@ -33,7 +33,7 @@ const CONCURRENT_TESTS = 5;
 
 export async function testAdapters(addTest: (test: any) => void) {
 	const allChains = getAllChains().map((c) => c.value);
-	const allTokenlists = (await getTokenList()).props.tokenlist;
+	const allTokenlists = await getTokenList();
 	setTimeout(() => new Array(CONCURRENT_TESTS).fill(null).map(releaseLock), 1e3); // Release locks in 1 sec
 	await Promise.all(
 		allChains.map(async (chain) => {
