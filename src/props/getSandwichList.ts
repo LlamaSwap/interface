@@ -3,7 +3,7 @@ import { dexToolsChainMap } from '~/components/Aggregator/constants';
 import { normalizeTokens } from '~/utils';
 
 const LIQUDITY_THRESHOLD_USD = 1_500_000;
-const PERCENT_SANDICHED_TRADES = 5;
+const PERCENT_SANDWICHED_TRADES = 5;
 
 export const getSandwichList = async () => {
 	const { data: sandwichData } = await fetch(
@@ -51,7 +51,7 @@ export const getSandwichList = async () => {
 			const pairId = normalizeTokens(pairData?.tokens[0]?.address, pairData?.tokens[1]?.address).join('');
 			if (
 				!pairData ||
-				(pairData.sandwiched / pairData.trades) * 100 < PERCENT_SANDICHED_TRADES ||
+				(pairData.sandwiched / pairData.trades) * 100 < PERCENT_SANDWICHED_TRADES ||
 				topPairs[pairId] ||
 				highLiqPairs.find(({ id }) => id === pairId)
 			)
