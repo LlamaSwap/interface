@@ -23,15 +23,26 @@ function convertChain(chain: string) {
 	return chain;
 }
 
+const fetchTimeout = (url, ms, options = {}) => {
+	const controller = new AbortController();
+	const promise = fetch(url, { signal: controller.signal, ...options });
+	const timeout = setTimeout(() => controller.abort(), ms);
+	return promise.finally(() => clearTimeout(timeout));
+};
+
 async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceProps) {
 	let gasTokenPrice, fromTokenPrice, toTokenPrice;
 
 	try {
 		const cgPrices = await Promise.allSettled([
-			fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${chainGasToken[rawChain]}&vs_currencies=usd
-	`).then((res) => res.json()),
-			fetch(`https://api.coingecko.com/api/v3/simple/token_price/${llamaToGeckoChainsMap[rawChain]}?contract_addresses=${fromToken}%2C${toToken}&vs_currencies=usd
-	`).then((res) => res.json())
+			fetchTimeout(
+				`https://api.coingecko.com/api/v3/simple/price?ids=${chainGasToken[rawChain]}&vs_currencies=usd`,
+				600
+			).then((res) => res.json()),
+			fetchTimeout(
+				`https://api.coingecko.com/api/v3/simple/token_price/${llamaToGeckoChainsMap[rawChain]}?contract_addresses=${fromToken}%2C${toToken}&vs_currencies=usd`,
+				600
+			).then((res) => res.json())
 		]);
 
 		if (cgPrices[0].status === 'fulfilled') {
