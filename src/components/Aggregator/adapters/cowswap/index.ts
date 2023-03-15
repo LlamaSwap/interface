@@ -90,7 +90,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: expectedBuyAmount,
-		amountIn: BigNumber(data?.quote.sellAmount).plus(data.quote.feeAmount).toString() || '0',
+		amountIn: BigNumber(data?.quote.sellAmount).plus(data.quote.feeAmount).toFixed(0) || '0',
 		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
