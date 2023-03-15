@@ -152,7 +152,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		isApproved: false,
 		approve: setOverrides(approve, customGasLimit),
 		approveInfinite: setOverrides(approveInfinite, customGasLimit),
-		approveRese: setOverrides(approveReset, customGasLimit),
+		approveReset: setOverrides(approveReset, customGasLimit),
 		isLoading: isLoading || isConfirmingApproval,
 		isConfirmingApproval,
 		isInfiniteLoading: isInfiniteLoading || isConfirmingInfiniteApproval,
