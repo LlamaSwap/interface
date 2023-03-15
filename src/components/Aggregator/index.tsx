@@ -826,6 +826,8 @@ export function AggregatorContainer({ tokenlist }) {
 		}
 	};
 
+	const phantomRugging = (window as any).phantom !== undefined;
+
 	return (
 		<Wrapper>
 			<Heading>Meta-Aggregator</Heading>
@@ -841,6 +843,13 @@ export function AggregatorContainer({ tokenlist }) {
 					discord server
 				</a>
 			</Text>
+
+			{phantomRugging ? (
+				<Text fontSize="1rem" fontWeight="500">
+					If you can't connect metamask it's because you have phantom installed which causes compatibility issues.
+					Disable it to connect metamask.
+				</Text>
+			) : null}
 
 			<BodyWrapper>
 				<Body showRoutes={finalSelectedFromToken && finalSelectedToToken ? true : false}>
