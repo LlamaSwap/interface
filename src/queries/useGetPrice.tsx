@@ -49,15 +49,15 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 		let llamaApi = [];
 
 		if (!gasTokenPrice) {
-			llamaApi.push(`${rawChain}:${ZERO_ADDRESS}`);
+			llamaApi.push(`${convertChain(rawChain)}:${ZERO_ADDRESS}`);
 		}
 
 		if (!fromTokenPrice) {
-			llamaApi.push(`${rawChain}:${fromToken}`);
+			llamaApi.push(`${convertChain(rawChain)}:${fromToken}`);
 		}
 
 		if (!toTokenPrice) {
-			llamaApi.push(`${rawChain}:${toToken}`);
+			llamaApi.push(`${convertChain(rawChain)}:${toToken}`);
 		}
 
 		if (llamaApi.length > 0) {
