@@ -25,8 +25,6 @@ export const Settings = ({ adapters, enabledAdapters, setEnabledAdapters, onClos
 	const onClick = (name) => (e) => {
 		const isChecked = e.target.checked;
 
-		console.log(name, isChecked);
-
 		setEnabledAdapters((adapters) =>
 			isChecked ? adapters.concat(name) : adapters.filter((adapterName) => adapterName !== name)
 		);
