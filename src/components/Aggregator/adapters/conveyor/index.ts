@@ -3,6 +3,8 @@ import { BigNumber, ethers } from 'ethers';
 import { chainsMap } from '../../constants';
 import { sendTx } from '../../utils/sendTx';
 
+export const name = 'Conveyor';
+
 const baseUrl = "https://api.conveyor.finance/"
 
 export const native = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' //Burn address represents native token in the api
@@ -26,8 +28,6 @@ const conveyorSwapAggregatorAddress = {
 	43114: '0xBCbCF359E55EfA0bB9422C4a6aeCF7Ef7998898C',
 	250: '0x5C5482520387E7B9875965fA1dA7888424b6c2E7'
 };
-
-export const name = 'Conveyor';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	const chainId = chainsMap[chain];
