@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 import { useState } from 'react';
-import { erc20ABI, useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
+import { erc20ABI, useAccount, useContractRead, useContractWrite, useNetwork, usePrepareContractWrite } from 'wagmi';
 import { nativeAddress } from '../constants';
 
 // To change the approve amount you first have to reduce the addresses`
@@ -41,10 +41,17 @@ export const useGetAllowance = (token: string, spender: `0x${string}`, amount: s
 	return { allowance, shouldRemoveApproval, refetch, isRefetching };
 };
 
+const setOverrides = (func, overrides) => {
+	if (!overrides) return func;
+
+	return () => func({ recklesslySetUnpreparedOverrides: overrides });
+};
+
 export const useTokenApprove = (token: string, spender: `0x${string}`, amount: string) => {
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
 	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
 	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);
+	const network = useNetwork();
 
 	const { address, isConnected } = useAccount();
 
@@ -52,13 +59,18 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 
 	const normalizedAmount = Number(amount) ? amount : '0';
 
-	const { config } = usePrepareContractWrite({
+	const { config, data } = usePrepareContractWrite({
 		address: token,
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token
 	});
+
+	const customGasLimit =
+		shouldRemoveApproval || !data?.request?.gasLimit || network.chain.id !== 1
+			? null
+			: { gasLimit: data?.request?.gasLimit.mul(140).div(100) };
 
 	const { config: configInfinite } = usePrepareContractWrite({
 		address: token,
@@ -138,9 +150,9 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 
 	return {
 		isApproved: false,
-		approve,
-		approveInfinite,
-		approveReset,
+		approve: setOverrides(approve, customGasLimit),
+		approveInfinite: setOverrides(approveInfinite, customGasLimit),
+		approveRese: setOverrides(approveReset, customGasLimit),
 		isLoading: isLoading || isConfirmingApproval,
 		isConfirmingApproval,
 		isInfiniteLoading: isInfiniteLoading || isConfirmingInfiniteApproval,
