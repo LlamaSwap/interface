@@ -10,6 +10,7 @@ interface IGetListRoutesProps {
 	to?: string;
 	amount?: string;
 	extra?: any;
+	enabledAdapters?: Array<string>;
 }
 
 export interface IRoute {
@@ -94,10 +95,10 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 	}
 }
 
-export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRoutesProps) {
+export function useGetRoutes({ chain, from, to, amount, extra = {}, enabledAdapters = [] }: IGetListRoutesProps) {
 	const res = useQueries({
 		queries: adapters
-			.filter((adap) => adap.chainToId[chain] !== undefined)
+			.filter((adap) => adap.chainToId[chain] !== undefined && enabledAdapters.includes(adap.name))
 			.map<UseQueryOptions<IRoute>>((adapter) => {
 				return {
 					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
