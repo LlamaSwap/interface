@@ -135,7 +135,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 			appData: rawQuote.quote.appData,
 			receiver: fromAddress,
 			feeAmount: rawQuote.quote.feeAmount,
-			kind: OrderKind.SELL,
+			kind: rawQuote.quote.kind,
 			partiallyFillable: rawQuote.quote.partiallyFillable
 		};
 
