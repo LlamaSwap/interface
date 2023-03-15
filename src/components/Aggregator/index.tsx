@@ -483,8 +483,10 @@ export function AggregatorContainer({ tokenlist }) {
 	const allRoutes = [...(routes || [])]?.map(fillRoute);
 	const failedRoutes = allRoutes.filter((r) => r.isFailed === true);
 	let normalizedRoutes = allRoutes
-		.filter(({ fromAmount, amount: toAmount, isFailed }) =>
-			amountOutWithDecimals === '0' ? Number(toAmount) && amountWithDecimals === fromAmount : true && isFailed !== true
+		.filter(
+			({ fromAmount, amount: toAmount, isFailed }) =>
+				(amountOutWithDecimals === '0' ? Number(toAmount) && amountWithDecimals === fromAmount : true) &&
+				isFailed !== true
 		)
 		.sort((a, b) => {
 			if (a.gasUsd === 'Unknown') {
@@ -655,6 +657,7 @@ export function AggregatorContainer({ tokenlist }) {
 			from: string;
 			to: string;
 			amount: string | number;
+			amountIn: number;
 			adapter: string;
 			signer: ethers.Signer;
 			slippage: string;
@@ -692,8 +695,8 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(debouncedAmount),
-						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
+						amount: String(variables.amountIn),
+						amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 						errorData: {},
 						slippage,
 						routePlace: String(variables?.index),
@@ -762,8 +765,8 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(debouncedAmount),
-						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
+						amount: String(variables.amountIn),
+						amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 						errorData: {},
 						slippage,
 						routePlace: String(variables?.index),
@@ -795,8 +798,8 @@ export function AggregatorContainer({ tokenlist }) {
 					isError: true,
 					quote: variables.rawQuote,
 					txUrl: '',
-					amount: String(debouncedAmount),
-					amountUsd: +fromTokenPrice * +debouncedAmount || 0,
+					amount: String(variables.amountIn),
+					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 					errorData: err,
 					slippage,
 					routePlace: String(variables?.index),
@@ -827,7 +830,8 @@ export function AggregatorContainer({ tokenlist }) {
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
 				index: selectedRoute.index,
 				route: selectedRoute,
-				amount: selectedRoute.amount
+				amount: selectedRoute.amount,
+				amountIn: selectedRoute.amountIn
 			});
 		}
 	};
