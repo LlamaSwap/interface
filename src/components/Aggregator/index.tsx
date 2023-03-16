@@ -465,7 +465,7 @@ export function AggregatorContainer({ tokenlist }) {
 		);
 
 		const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
-		const amountInUsd = fromTokenPrice ? (+amountIn * fromTokenPrice).toFixed(2) : null;
+		const amountInUsd = fromTokenPrice ? (+amountIn * fromTokenPrice).toFixed(6) : null;
 
 		const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
 
@@ -840,6 +840,8 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const phantomRugging = (window as any).phantom !== undefined;
 
+	const isAmountSynced = debouncedAmount === amount && amountOut === debouncedAmountOut;
+
 	return (
 		<Wrapper>
 			<Heading>Meta-Aggregator</Heading>
@@ -1075,7 +1077,8 @@ export function AggregatorContainer({ tokenlist }) {
 														!(finalSelectedFromToken && finalSelectedToToken) ||
 														insufficientBalance ||
 														!selectedRoute ||
-														slippageIsWong
+														slippageIsWong ||
+														!isAmountSynced
 													}
 												>
 													{!selectedRoute
@@ -1257,7 +1260,8 @@ export function AggregatorContainer({ tokenlist }) {
 																	isApproveLoading ||
 																	isApproveResetLoading ||
 																	!selectedRoute ||
-																	slippageIsWong
+																	slippageIsWong ||
+																	!isAmountSynced
 																}
 															>
 																{!selectedRoute
