@@ -25,7 +25,7 @@ import {
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
-import SwapRoute from '~/components/SwapRoute';
+import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
 import { getAllChains, inifiniteApprovalAllowed, swap } from './router';
 import { TokenInput } from './TokenInput';
 import Loader from './Loader';
@@ -40,7 +40,6 @@ import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
-import { median } from '~/utils';
 import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast } from '~/utils/formatSuccessToast';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -412,7 +411,8 @@ export function AggregatorContainer({ tokenlist }) {
 		isLoading,
 		isLoaded,
 		refetch,
-		lastFetched
+		lastFetched,
+		loadingRoutes
 	} = useGetRoutes({
 		chain: selectedChain?.value,
 		from: finalSelectedFromToken?.value,
@@ -1283,6 +1283,24 @@ export function AggregatorContainer({ tokenlist }) {
 							)}
 						</Fragment>
 					))}
+
+					{normalizedRoutes.length > 0
+						? loadingRoutes.map((r) => (
+								<Fragment
+									key={
+										'fetching quote' +
+										selectedChain?.label +
+										finalSelectedFromToken?.label +
+										finalSelectedToToken?.label +
+										amountWithDecimals +
+										gasPriceData?.formatted?.gasPrice +
+										r[0]
+									}
+								>
+									<LoadingRoute name={r[0] as string} />
+								</Fragment>
+						  ))
+						: null}
 				</Routes>
 			</BodyWrapper>
 
