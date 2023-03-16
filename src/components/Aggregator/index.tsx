@@ -840,7 +840,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const phantomRugging = (window as any).phantom !== undefined;
 
-	const isAmountSynced = debouncedAmount === amount && amountOut === debouncedAmountOut;
+	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
 
 	return (
 		<Wrapper>
