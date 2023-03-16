@@ -82,6 +82,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			price = await quouteFunc(chain, from, to, amount, extra);
 		}
 
+		if (!amountIn) throw Error('amountIn is not defined');
+
 		const txData = adapter?.getTxData?.(price) ?? '';
 		let l1Gas: number | 'Unknown' = 0;
 
