@@ -26,7 +26,7 @@ import {
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import SwapRoute from '~/components/SwapRoute';
-import { getAllChains, inifiniteApprovalAllowed, swap } from './router';
+import { adaptersNames, getAllChains, inifiniteApprovalAllowed, swap } from './router';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
 import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
@@ -54,7 +54,8 @@ import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
 import { useCountdown } from '~/hooks/useCountdown';
-import { RepeatIcon } from '@chakra-ui/icons';
+import { RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
+import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 
 /*
@@ -283,6 +284,8 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
 	const [lastOutputValue, setLastOutputValue] = useState(null);
+	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
+	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -412,6 +415,7 @@ export function AggregatorContainer({ tokenlist }) {
 		from: finalSelectedFromToken?.value,
 		to: finalSelectedToToken?.value,
 		amount: amountWithDecimals,
+		disabledAdapters,
 		extra: {
 			gasPriceData,
 			userAddress: address || ethers.constants.AddressZero,
@@ -840,11 +844,20 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const phantomRugging = (window as any).phantom !== undefined;
 
+
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
 
 	return (
 		<Wrapper>
 			<Heading>Meta-Aggregator</Heading>
+			{isSettingsModalOpen ? (
+				<Settings
+					adapters={adaptersNames}
+					disabledAdapters={disabledAdapters}
+					setDisabledAdapters={setDisabledAdapters}
+					onClose={() => setSettingsModalOpen(false)}
+				/>
+			) : null}
 
 			<Text fontSize="1rem" fontWeight="500">
 				This product is still in beta. If you run into any issue please let us know in our{' '}
@@ -884,6 +897,7 @@ export function AggregatorContainer({ tokenlist }) {
 										/>
 									</FormControl>
 								</Tooltip>
+								<SettingsIcon onClick={() => setSettingsModalOpen((open) => !open)} ml={4} mt={1} cursor="pointer" />
 							</Flex>
 						</FormHeader>
 
@@ -1158,12 +1172,17 @@ export function AggregatorContainer({ tokenlist }) {
 							: null}
 					</span>
 
-					{isLoading && (debouncedAmount || debouncedAmountOut) && finalSelectedFromToken && finalSelectedToToken ? (
+					{isLoading &&
+					(debouncedAmount || debouncedAmountOut) &&
+					finalSelectedFromToken &&
+					finalSelectedToToken &&
+					!(disabledAdapters.length === adaptersNames.length) ? (
 						<Loader />
 					) : (!debouncedAmount && !debouncedAmountOut) ||
 					  !finalSelectedFromToken ||
 					  !finalSelectedToToken ||
-					  !router.isReady ? (
+					  !router.isReady ||
+					  disabledAdapters.length === adaptersNames.length ? (
 						<RoutesPreview />
 					) : null}
 
