@@ -77,7 +77,7 @@ const Route = ({
 
 	const inputAmount =
 		amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0'
-			? Number(new BigNumber(amountFrom).div(10 ** fromToken.decimals).toFixed(6))
+			? Number(new BigNumber(amountFrom).div(10 ** fromToken.decimals))
 			: null;
 
 	return (
