@@ -304,6 +304,7 @@ export function AggregatorContainer({ tokenlist }) {
 		tokens: tokenlist
 	});
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
+	const isOutputTrade = amountOut && amountOut !== '';
 
 	// data of selected token not in chain's tokenlist
 	const { data: fromToken2 } = useToken({
@@ -500,7 +501,14 @@ export function AggregatorContainer({ tokenlist }) {
 			} else if (b.gasUsd === 'Unknown') {
 				return -1;
 			}
-			return b.netOut - a.netOut;
+			return isOutputTrade
+				? typeof a.amountInUsd === 'number' &&
+				  typeof a.gasUsd === 'number' &&
+				  typeof b.amountInUsd === 'number' &&
+				  typeof b.gasUsd === 'number'
+					? a.amountInUsd + a.gasUsd - (b.amountInUsd + b.gasUsd)
+					: Number(a.amountIn) - Number(b.amountIn)
+				: b.netOut - a.netOut;
 		})
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
@@ -843,7 +851,6 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const phantomRugging = (window as any).phantom !== undefined;
-
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
 
