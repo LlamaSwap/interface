@@ -43,6 +43,7 @@ interface IRoute {
 	isFetchingGasPrice: boolean;
 	amountOut: string;
 	toTokenPrice: number;
+	amountIn: string;
 }
 
 const Route = ({
@@ -60,7 +61,8 @@ const Route = ({
 	netOut,
 	isFetchingGasPrice,
 	amountOut,
-	toTokenPrice
+	toTokenPrice,
+	amountIn
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
@@ -75,11 +77,7 @@ const Route = ({
 	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
 	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
 
-	const inputAmount =
-		amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0'
-			? Number(new BigNumber(amountFrom).div(10 ** fromToken.decimals))
-			: null;
-
+	const inputAmount = amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0' ? amountIn : null;
 	return (
 		<RouteWrapper
 			onClick={setRoute}

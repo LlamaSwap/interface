@@ -460,10 +460,12 @@ export function AggregatorContainer({ tokenlist }) {
 		gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
 
 		const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
-		const amountIn = +route.fromAmount / 10 ** +finalSelectedFromToken?.decimals;
+		const amountIn = (+route.fromAmount / 10 ** +finalSelectedFromToken?.decimals).toFixed(
+			finalSelectedFromToken?.decimals
+		);
 
 		const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
-		const amountInUsd = fromTokenPrice ? (amountIn * fromTokenPrice).toFixed(2) : null;
+		const amountInUsd = fromTokenPrice ? (+amountIn * fromTokenPrice).toFixed(2) : null;
 
 		const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
 
@@ -657,7 +659,7 @@ export function AggregatorContainer({ tokenlist }) {
 			from: string;
 			to: string;
 			amount: string | number;
-			amountIn: number;
+			amountIn: string;
 			adapter: string;
 			signer: ethers.Signer;
 			slippage: string;
@@ -1186,6 +1188,7 @@ export function AggregatorContainer({ tokenlist }) {
 								toTokenPrice={toTokenPrice}
 								isFetchingGasPrice={fetchingTokenPrices}
 								amountOut={amountOutWithDecimals}
+								amountIn={r?.amountIn}
 							/>
 
 							{aggregator === r.name && (
