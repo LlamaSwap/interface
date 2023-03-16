@@ -302,7 +302,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const [amount, setAmount] = useState<number | string>('10');
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
 	const [lastOutputValue, setLastOutputValue] = useState(null);
-	const [enabledAdapters, setEnabledAdapters] = useLocalStorage('llamaswap-enabledadapters', adaptersNames);
+	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 
 	// post swap states
@@ -421,7 +421,7 @@ export function AggregatorContainer({ tokenlist }) {
 		from: finalSelectedFromToken?.value,
 		to: finalSelectedToToken?.value,
 		amount: amountWithDecimals,
-		enabledAdapters,
+		disabledAdapters,
 		extra: {
 			gasPriceData,
 			userAddress: address || ethers.constants.AddressZero,
@@ -838,8 +838,8 @@ export function AggregatorContainer({ tokenlist }) {
 			{isSettingsModalOpen ? (
 				<Settings
 					adapters={adaptersNames}
-					enabledAdapters={enabledAdapters}
-					setEnabledAdapters={setEnabledAdapters}
+					disabledAdapters={disabledAdapters}
+					setDisabledAdapters={setDisabledAdapters}
 					onClose={() => setSettingsModalOpen(false)}
 				/>
 			) : null}
@@ -1157,13 +1157,17 @@ export function AggregatorContainer({ tokenlist }) {
 							: null}
 					</span>
 
-					{isLoading && debouncedAmount && finalSelectedFromToken && finalSelectedToToken && enabledAdapters.length ? (
+					{isLoading &&
+					debouncedAmount &&
+					finalSelectedFromToken &&
+					finalSelectedToToken &&
+					!(disabledAdapters.length === adaptersNames.length) ? (
 						<Loader />
 					) : !debouncedAmount ||
 					  !finalSelectedFromToken ||
 					  !finalSelectedToToken ||
 					  !router.isReady ||
-					  !enabledAdapters.length ? (
+					  disabledAdapters.length === adaptersNames.length ? (
 						<RoutesPreview />
 					) : null}
 

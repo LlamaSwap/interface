@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react';
 import { chunk } from 'lodash';
 
-export const Settings = ({ adapters, enabledAdapters, setEnabledAdapters, onClose: onExternalClose }) => {
+export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onClose: onExternalClose }) => {
 	const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 	const onCloseClick = () => {
 		onExternalClose();
@@ -25,8 +25,8 @@ export const Settings = ({ adapters, enabledAdapters, setEnabledAdapters, onClos
 	const onClick = (name) => (e) => {
 		const isChecked = e.target.checked;
 
-		setEnabledAdapters((adapters) =>
-			isChecked ? adapters.concat(name) : adapters.filter((adapterName) => adapterName !== name)
+		setDisabledAdapters((adaptersState) =>
+			isChecked ? adaptersState.filter((adapterName) => adapterName !== name) : adaptersState.concat(name)
 		);
 	};
 	const aggregatorChunks = chunk(adapters, 5);
@@ -45,7 +45,7 @@ export const Settings = ({ adapters, enabledAdapters, setEnabledAdapters, onClos
 								<List key={aggs.join(',')} spacing={1.5}>
 									{aggs.map((name: string) => (
 										<ListItem key={name}>
-											<Checkbox mr={2} isChecked={enabledAdapters.includes(name)} onChange={onClick(name)} />
+											<Checkbox mr={2} isChecked={!disabledAdapters.includes(name)} onChange={onClick(name)} />
 											{name}
 										</ListItem>
 									))}
