@@ -47,7 +47,7 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	// 	return symbol ? `< ${currencySymbol}0.0001` : '< 0.0001'
 	// }
 
-	let maximumFractionDigits = num < 1 ? 7 : 4;
+	let maximumFractionDigits = num < 1 ? 8 : 4;
 	maximumFractionDigits = num > 100000 ? 2 : maximumFractionDigits;
 	formattedNum = num.toLocaleString('en-US', { maximumFractionDigits });
 
