@@ -500,6 +500,7 @@ export function AggregatorContainer({ tokenlist }) {
 			} else if (b.gasUsd === 'Unknown') {
 				return -1;
 			}
+			if (amountOut && amountOut !== '0') return +a.amountInUsd - +b.amountInUsd;
 			return b.netOut - a.netOut;
 		})
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
@@ -843,7 +844,6 @@ export function AggregatorContainer({ tokenlist }) {
 	};
 
 	const phantomRugging = (window as any).phantom !== undefined;
-
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
 
