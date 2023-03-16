@@ -84,13 +84,20 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	}
 
 	const expectedBuyAmount = data.quote.buyAmount;
-	data.quote.buyAmount = BigNumber(expectedBuyAmount)
-		.times(1 - Number(extra.slippage) / 100)
-		.toFixed(0);
+	const expectedSellAmount = BigNumber(data?.quote.sellAmount).plus(data.quote.feeAmount).toFixed(0);
+	if (isBuyOrder) {
+		data.quote.sellAmount = BigNumber(data.quote.sellAmount)
+			.times(1 + Number(extra.slippage) / 100)
+			.toFixed(0);
+	} else {
+		data.quote.buyAmount = BigNumber(expectedBuyAmount)
+			.times(1 - Number(extra.slippage) / 100)
+			.toFixed(0);
+	}
 
 	return {
 		amountReturned: expectedBuyAmount,
-		amountIn: BigNumber(data?.quote.sellAmount).plus(data.quote.feeAmount).toFixed(0) || '0',
+		amountIn: expectedSellAmount || '0',
 		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
