@@ -76,7 +76,7 @@ const pairs = {
 				pairId: '6'
 			}
 		},
-		'0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f': {
+		['0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase()]: {
 			['0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()]: {
 				fee: '500',
 				pairId: '2'
