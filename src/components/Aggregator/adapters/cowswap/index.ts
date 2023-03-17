@@ -102,7 +102,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
 		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
-		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589'
+		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589',
+		isMEVSafe: true
 	};
 }
 

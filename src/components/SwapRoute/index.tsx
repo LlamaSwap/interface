@@ -2,11 +2,9 @@ import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
 import { Flex, Skeleton, Text } from '@chakra-ui/react';
-import { AlertCircle, Gift, Unlock } from 'react-feather';
+import { AlertCircle, Gift, Unlock, ZapOff } from 'react-feather';
 import { GasIcon } from '../Icons';
 import { formattedNum } from '~/utils';
-import { WarningIcon } from '@chakra-ui/icons';
-import BigNumber from 'bignumber.js';
 
 interface IToken {
 	address: string;
@@ -21,6 +19,7 @@ interface IPrice {
 	tokenApprovalAddress: string;
 	logo: string;
 	rawQuote?: {};
+	isMEVSafe?: boolean;
 }
 
 interface IRoute {
@@ -169,6 +168,11 @@ const Route = ({
 								' '
 							)}
 							{name}
+							{price.isMEVSafe === true ? (
+								<Tooltip content="This aggregator protects from MEV.">
+									<ZapOff size={14} color="#059669" />
+								</Tooltip>
+							) : null}
 						</Text>
 					</Text>
 				</Text>
