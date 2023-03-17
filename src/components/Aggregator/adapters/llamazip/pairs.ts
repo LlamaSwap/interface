@@ -11,6 +11,16 @@ export const tokens = {
 		usdt: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
 		perp: '0x9e1028F5F1D5eDE59748FFceE5532509976840E0',
 		velo: '0x3c8B650257cFb5f272f799F5e2b4e65093a11a05'
+	},
+	arbitrum: {
+		weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+		usdc: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+		usdt: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+		gmx: '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a',
+		dai: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
+		wbtc: '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f',
+		gns: '0x18c11FD286C5EC11c3b683Caa813B77f5163A122',
+		magic: '0x539bdE0d7Dbd336b79148AA742883198BBF60342'
 	}
 };
 
@@ -40,17 +50,30 @@ export const pairs = {
 			// pool 3 is ignored because we already have one with same tokens
 			createPair(chainTokens.usdc, chainTokens.dai, '100', '4', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
 			createPair(chainTokens.snx, chainTokens.weth, '3000', '5', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.weth, chainTokens.dai, '3000', '6', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
+			createPair(chainTokens.weth, chainTokens.dai, '3000', '6', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b')
 
-			// TODO: add to llamazip contract
-			createPair(chainTokens.susd, chainTokens.usdc, '100', '7', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.weth, chainTokens.wbtc, '3000', '8', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.weth, chainTokens.thales, '3000', '9', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.usdc, chainTokens.thales, '3000', '10', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.weth, chainTokens.perp, '3000', '12', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.weth, chainTokens.velo, '10000', '13', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.weth, chainTokens.usdt, '500', '14', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.weth, chainTokens.wbtc, '500', '15', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b')
+			// // TODO: add to llamazip contract
+			// createPair(chainTokens.susd, chainTokens.usdc, '100', '7', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
+			// createPair(chainTokens.weth, chainTokens.wbtc, '3000', '8', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
+			// createPair(chainTokens.weth, chainTokens.thales, '3000', '9', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
+			// createPair(chainTokens.usdc, chainTokens.thales, '3000', '10', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
+			// createPair(chainTokens.weth, chainTokens.perp, '3000', '12', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
+			// createPair(chainTokens.weth, chainTokens.velo, '10000', '13', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
+			// createPair(chainTokens.weth, chainTokens.usdt, '500', '14', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
+			// createPair(chainTokens.weth, chainTokens.wbtc, '500', '15', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b')
+		];
+	})(),
+	arbitrum: (() => {
+		const chainTokens = tokens.arbitrum;
+
+		return [
+			createPair(chainTokens.weth, chainTokens.usdc, '500', '0', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
+			createPair(chainTokens.weth, chainTokens.usdt, '500', '1', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
+			createPair(chainTokens.weth, chainTokens.wbtc, '500', '2', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
+			createPair(chainTokens.weth, chainTokens.gmx, '3000', '3', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
+			createPair(chainTokens.weth, chainTokens.gns, '3000', '4', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
+			createPair(chainTokens.weth, chainTokens.magic, '10000', '5', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
+			createPair(chainTokens.weth, chainTokens.dai, '500', '6', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7')
 		];
 	})()
 };

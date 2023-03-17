@@ -8,16 +8,19 @@ export const name = 'LlamaZip';
 export const token = 'none';
 
 export const chainToId = {
-	optimism: '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'
+	optimism: '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b',
+	arbitrum: '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'
 };
 
 // https://docs.uniswap.org/contracts/v3/reference/deployments
 const quoter = {
-	optimism: '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
+	optimism: '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6',
+	arbitrum: '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
 };
 
 const weth = {
-	optimism: '0x4200000000000000000000000000000000000006'
+	optimism: '0x4200000000000000000000000000000000000006',
+	arbitrum: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
 };
 
 function normalize(token: string, weth: string) {
@@ -42,7 +45,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenTo = normalize(to, weth[chain]);
 
 	const token0isTokenIn = BigNumber.from(tokenFrom).lt(tokenTo);
-	const pair = pairs[chain as keyof typeof pairs].find(({ name }) => name === normalizeTokens(from, to).join('-'));
+
+	const pair = pairs[chain as keyof typeof pairs].find(
+		({ name }) => name === normalizeTokens(tokenFrom, tokenTo).join('-')
+	);
+
 	if (pair === undefined) {
 		return {};
 	}
