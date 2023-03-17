@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
-import { Flex, Text } from '@chakra-ui/react';
+import { Flex, Skeleton, Text } from '@chakra-ui/react';
 import { AlertCircle, Gift, Unlock } from 'react-feather';
 import { GasIcon } from '../Icons';
 import { formattedNum } from '~/utils';
@@ -177,7 +177,23 @@ const Route = ({
 	);
 };
 
-const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
+export const LoadingRoute = ({ name }: { name: string }) => {
+	return (
+		<RouteWrapper>
+			<RouteRow>
+				<Skeleton height="28.5px" w="full" colorScheme="dark" />
+			</RouteRow>
+
+			<RouteRow>
+				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
+					{name}
+				</Text>
+			</RouteRow>
+		</RouteWrapper>
+	);
+};
+
+const RouteWrapper = styled.div<{ selected?: boolean; best?: boolean }>`
 	display: grid;
 	grid-row-gap: 4px;
 	margin-top: 16px;

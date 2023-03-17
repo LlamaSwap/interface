@@ -1,4 +1,4 @@
-import { useQueries, UseQueryOptions } from '@tanstack/react-query';
+import { useQueries, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
 import { partial, first, omit } from 'lodash';
 
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
@@ -133,11 +133,15 @@ export function useGetRoutes({ chain, from, to, amount, extra = {}, disabledAdap
 				};
 			})
 	});
-	const data = res.filter((r) => r.status === 'success') ?? [];
+	const data = res?.filter((r) => r.status === 'success') ?? [];
 	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
+	const loadingRoutes =
+		res
+			?.map((r, i) => [adapters[i].name, r])
+			?.filter((r: [string, UseQueryResult<IRoute>]) => r[1].status === 'loading') ?? [];
 
 	return {
-		isLoaded: res.filter((r) => r.status === 'loading').length === 0,
+		isLoaded: loadingRoutes.length === 0,
 		isLoading: data.length >= 1 ? false : true,
 		data: resData?.map((r) => r.data) ?? [],
 		refetch: () => res?.forEach((r) => r.refetch()),
@@ -147,6 +151,7 @@ export function useGetRoutes({ chain, from, to, amount, extra = {}, disabledAdap
 					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
 					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)
 					.map((d) => d.dataUpdatedAt)
-			) || null
+			) || null,
+		loadingRoutes
 	};
 }
