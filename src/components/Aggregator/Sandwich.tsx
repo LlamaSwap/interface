@@ -10,7 +10,7 @@ export const Sandwich = ({ sandiwichData }) => {
 			<AlertIcon />
 			<div>
 				{`${sandwichPercent}% of the swaps of this pair were affected by a sandwich attack. We suggest you to reduce the slippage.`}
-				<Text mt={2} color="gray.300">
+				<Text mt={2} color="gray.300" textAlign="right" fontSize={'11px'}>
 					Sandwich data provided by{' '}
 					<Link isExternal href="https://twitter.com/EigenPhi" textDecoration="underline">
 						EigenPhi
