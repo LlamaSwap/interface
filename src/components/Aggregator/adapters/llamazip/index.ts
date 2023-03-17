@@ -2,6 +2,7 @@ import { BigNumber, ethers } from 'ethers';
 import { providers } from '../../rpcs';
 import { sendTx } from '../../utils/sendTx';
 import { encode } from './encode';
+import { normalizeTokens, pairs } from './pairs';
 
 export const name = 'LlamaZip';
 export const token = 'none';
@@ -20,81 +21,6 @@ const quoter = {
 const weth = {
 	optimism: '0x4200000000000000000000000000000000000006',
 	arbitrum: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
-};
-
-// Smaller token first, addresses always in lowercase
-const pairs = {
-	optimism: {
-		'0x4200000000000000000000000000000000000006': {
-			['0x7F5c764cBc14f9669B88837ca1490cCa17c31607'.toLowerCase()]: {
-				fee: '500',
-				pairId: '0'
-			},
-			['0x4200000000000000000000000000000000000042'.toLowerCase()]: {
-				fee: '3000',
-				pairId: '1'
-			},
-			// pool 3 is ignored because we already have one with same tokens
-			['0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4'.toLowerCase()]: {
-				fee: '3000',
-				pairId: '5'
-			},
-			['0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1'.toLowerCase()]: {
-				fee: '3000',
-				pairId: '6'
-			}
-		},
-		'0x4200000000000000000000000000000000000042': {
-			['0x7F5c764cBc14f9669B88837ca1490cCa17c31607'.toLowerCase()]: {
-				fee: '3000',
-				pairId: '2'
-			}
-		},
-		['0x7F5c764cBc14f9669B88837ca1490cCa17c31607'.toLowerCase()]: {
-			['0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1'.toLowerCase()]: {
-				fee: '100',
-				pairId: '4'
-			}
-		}
-	},
-	arbitrum: {
-		'0x82af49447d8a07e3bd95bd0d56f35241523fbab1': {
-			['0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8'.toLowerCase()]: {
-				fee: '500',
-				pairId: '0'
-			},
-			['0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9'.toLowerCase()]: {
-				fee: '500',
-				pairId: '1'
-			},
-			['0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a'.toLowerCase()]: {
-				fee: '3000',
-				pairId: '3'
-			},
-			['0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1'.toLowerCase()]: {
-				fee: '3000',
-				pairId: '6'
-			}
-		},
-		['0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase()]: {
-			['0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()]: {
-				fee: '500',
-				pairId: '2'
-			}
-		},
-		['0x18c11FD286C5EC11c3b683Caa813B77f5163A122'.toLowerCase()]: {
-			['0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()]: {
-				fee: '3000',
-				pairId: '4'
-			}
-		},
-		['0x539bdE0d7Dbd336b79148AA742883198BBF60342'.toLowerCase()]: {
-			['0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()]: {
-				fee: '10000',
-				pairId: '5'
-			}
-		}
-	}
 };
 
 function normalize(token: string, weth: string) {
@@ -119,7 +45,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenTo = normalize(to, weth[chain]);
 
 	const token0isTokenIn = BigNumber.from(tokenFrom).lt(tokenTo);
-	const pair = pairs[chain][token0isTokenIn ? tokenFrom : tokenTo]?.[token0isTokenIn ? tokenTo : tokenFrom];
+
+	const pair = pairs[chain as keyof typeof pairs].find(
+		({ name }) => name === normalizeTokens(tokenFrom, tokenTo).join('-')
+	);
+
 	if (pair === undefined) {
 		return {};
 	}
@@ -133,7 +63,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	);
 
 	const inputIsETH = from === ethers.constants.AddressZero;
-	const calldata = encode(pair.pairId, token0isTokenIn, quotedAmountOut, extra.slippage, inputIsETH, false, amount);
+	const calldata = encode(
+		pair.pairId,
+		token0isTokenIn,
+		quotedAmountOut,
+		extra.slippage ?? '0.5',
+		inputIsETH,
+		false,
+		amount
+	);
 	if (calldata.length > 256 / 4 + 2) {
 		return {}; // LlamaZip doesn't support calldata that's bigger than one EVM word
 	}
@@ -143,18 +81,19 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		estimatedGas: (200e3).toString(), // random approximation
 		rawQuote: {
 			tx: {
-				to: chainToId[chain],
+				to: pair.router,
 				data: calldata,
 				...(inputIsETH ? { value: amount } : {})
 			}
 		},
-		tokenApprovalAddress: chainToId[chain],
+		tokenApprovalAddress: pair.router,
 		logo: 'https://raw.githubusercontent.com/DefiLlama/memes/master/bussin.jpg'
 	};
 }
 
 export async function swap({ signer, rawQuote, chain }) {
 	const fromAddress = await signer.getAddress();
+
 	const tx = await sendTx(signer, chain, {
 		from: fromAddress,
 		to: rawQuote.tx.to,
