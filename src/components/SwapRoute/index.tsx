@@ -185,7 +185,7 @@ export const LoadingRoute = ({ name }: { name: string }) => {
 			</RouteRow>
 
 			<RouteRow>
-				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} mr="auto">
+				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
 					{name}
 				</Text>
 			</RouteRow>
