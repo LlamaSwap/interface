@@ -25,6 +25,8 @@ const weth = {
 
 function normalize(token: string, weth: string) {
 	return (token === ethers.constants.AddressZero ? weth : token).toLowerCase();
+function normalize(token: string, weth: string) {
+	return (token === ethers.constants.AddressZero ? weth : token).toLowerCase();
 }
 
 // https://docs.uniswap.org/sdk/v3/guides/quoting
@@ -40,7 +42,20 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		],
 		provider
 	);
+	if (to.toLowerCase() === weth[chain].toLowerCase()) {
+		return {}; // We don't support swaps to WETH
+	}
+	const provider = providers[chain];
+	const quoterContract = new ethers.Contract(
+		quoter[chain],
+		[
+			'function quoteExactInputSingle(address tokenIn,address tokenOut,uint24 fee,uint256 amountIn,uint160 sqrtPriceLimitX96) external returns (uint256 amountOut)'
+		],
+		provider
+	);
 
+	const tokenFrom = normalize(from, weth[chain]);
+	const tokenTo = normalize(to, weth[chain]);
 	const tokenFrom = normalize(from, weth[chain]);
 	const tokenTo = normalize(to, weth[chain]);
 
@@ -61,7 +76,27 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amount,
 		0
 	);
+	const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
+		tokenFrom,
+		tokenTo,
+		pair.fee,
+		amount,
+		0
+	);
 
+	const inputIsETH = from === ethers.constants.AddressZero;
+	const calldata = encode(
+		pair.pairId,
+		token0isTokenIn,
+		quotedAmountOut,
+		extra.slippage ?? '0.5',
+		inputIsETH,
+		false,
+		amount
+	);
+	if (calldata.length > 256 / 4 + 2) {
+		return {}; // LlamaZip doesn't support calldata that's bigger than one EVM word
+	}
 	const inputIsETH = from === ethers.constants.AddressZero;
 	const calldata = encode(
 		pair.pairId,
@@ -89,14 +124,29 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		tokenApprovalAddress: pair.router,
 		logo: 'https://raw.githubusercontent.com/DefiLlama/memes/master/bussin.jpg'
 	};
+	return {
+		amountReturned: quotedAmountOut.toString(),
+		estimatedGas: (200e3).toString(), // random approximation
+		rawQuote: {
+			tx: {
+				to: pair.router,
+				data: calldata,
+				...(inputIsETH ? { value: amount } : {})
+			}
+		},
+		tokenApprovalAddress: pair.router,
+		logo: 'https://raw.githubusercontent.com/DefiLlama/memes/master/bussin.jpg'
+	};
 }
 
 export async function swap({ signer, rawQuote, chain }) {
+	const fromAddress = await signer.getAddress();
 	const fromAddress = await signer.getAddress();
 	const tx = await sendTx(signer, chain, {
 		from: fromAddress,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
+		value: rawQuote.tx.value
 		value: rawQuote.tx.value
 	});
 	return tx;
