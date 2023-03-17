@@ -58,17 +58,18 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 		}
 
 		let llamaApi = [];
+		const llamaChain = convertChain(rawChain);
 
 		if (!gasTokenPrice) {
-			llamaApi.push(`${rawChain}:${ZERO_ADDRESS}`);
+			llamaApi.push(`${llamaChain}:${ZERO_ADDRESS}`);
 		}
 
 		if (!fromTokenPrice) {
-			llamaApi.push(`${rawChain}:${fromToken}`);
+			llamaApi.push(`${llamaChain}:${fromToken}`);
 		}
 
 		if (!toTokenPrice) {
-			llamaApi.push(`${rawChain}:${toToken}`);
+			llamaApi.push(`${llamaChain}:${toToken}`);
 		}
 
 		if (llamaApi.length > 0) {
@@ -76,9 +77,9 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 				r.json()
 			);
 
-			gasTokenPrice = gasTokenPrice || coins[`${rawChain}:${ZERO_ADDRESS}`]?.price;
-			fromTokenPrice = fromTokenPrice || coins[`${rawChain}:${fromToken}`]?.price;
-			toTokenPrice = toTokenPrice || coins[`${rawChain}:${toToken}`]?.price;
+			gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
+			fromTokenPrice = fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price;
+			toTokenPrice = toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price;
 		}
 
 		return {

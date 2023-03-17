@@ -17,7 +17,9 @@ const traceRpcs = {
 	polygon: 'https://polygon.llamarpc.com'
 };
 
-export const estimateGas = async ({ route, token, userAddress, chain, amount }) => {
+export const estimateGas = async ({ route, token, userAddress, chain, balance }) => {
+	if (!Number.isFinite(balance) || balance < +route.fromAmount) return null;
+
 	try {
 		const provider = new ethers.providers.JsonRpcProvider(traceRpcs[chain]);
 		const tokenContract = new ethers.Contract(token, erc20ABI, provider);
@@ -39,7 +41,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 						from: userAddress,
 						to: txData.to,
 						data: txData.data,
-						...(isNative ? { value: '0x' + BigNumber(amount).toString(16) } : {})
+						...(isNative ? { value: '0x' + BigNumber(route.fromAmount).toString(16) } : {})
 					},
 					['trace']
 				]),
@@ -69,24 +71,24 @@ export const useEstimateGas = ({
 	token,
 	userAddress,
 	chain,
-	amount,
-	hasEnoughBalance
+	balance,
+	isOutput
 }: {
 	routes: Array<IRoute>;
 	token: string;
 	userAddress: string;
 	chain: string;
-	amount: string;
-	hasEnoughBalance: boolean;
+	balance: number;
+	isOutput: boolean;
 }) => {
 	const res = useQueries({
 		queries: routes
 			.filter((route) => !!route?.tx?.to)
 			.map<UseQueryOptions<Awaited<ReturnType<typeof estimateGas>>>>((route) => {
 				return {
-					queryKey: ['estimateGas', route.name, chain, route?.tx?.data],
-					queryFn: () => estimateGas({ route, token, userAddress, chain, amount }),
-					enabled: traceRpcs[chain] !== undefined && hasEnoughBalance
+					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance],
+					queryFn: () => estimateGas({ route, token, userAddress, chain, balance }),
+					enabled: traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) && !!userAddress // TODO: figure out why it doesn't work
 				};
 			})
 	});
