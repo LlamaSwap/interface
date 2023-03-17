@@ -27,7 +27,7 @@ export const tokens = {
 export const normalizeTokens = (t0, t1) =>
 	Number(t0) < Number(t1) ? [t0.toLowerCase(), t1.toLowerCase()] : [t1.toLowerCase(), t0.toLowerCase()];
 
-const createPair = (t0: string, t1: string, fee: string, pairId: string, router: string) => {
+const createPair = (t0: string, t1: string, fee: string, pairId: string) => {
 	const [token0, token1] = normalizeTokens(t0, t1);
 
 	return {
@@ -35,8 +35,7 @@ const createPair = (t0: string, t1: string, fee: string, pairId: string, router:
 		pairId,
 		token0,
 		token1,
-		fee,
-		router
+		fee
 	};
 };
 
@@ -44,36 +43,26 @@ export const pairs = {
 	optimism: (() => {
 		const chainTokens = tokens.optimism;
 		return [
-			createPair(chainTokens.weth, chainTokens.usdc, '500', '0', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.weth, chainTokens.op, '3000', '1', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.op, chainTokens.usdc, '3000', '2', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
+			createPair(chainTokens.weth, chainTokens.usdc, '500', '0'),
+			createPair(chainTokens.weth, chainTokens.op, '3000', '1'),
+			createPair(chainTokens.op, chainTokens.usdc, '3000', '2'),
 			// pool 3 is ignored because we already have one with same tokens
-			createPair(chainTokens.usdc, chainTokens.dai, '100', '4', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.snx, chainTokens.weth, '3000', '5', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			createPair(chainTokens.weth, chainTokens.dai, '3000', '6', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b')
-
-			// // TODO: add to llamazip contract
-			// createPair(chainTokens.susd, chainTokens.usdc, '100', '7', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			// createPair(chainTokens.weth, chainTokens.wbtc, '3000', '8', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			// createPair(chainTokens.weth, chainTokens.thales, '3000', '9', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			// createPair(chainTokens.usdc, chainTokens.thales, '3000', '10', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			// createPair(chainTokens.weth, chainTokens.perp, '3000', '12', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			// createPair(chainTokens.weth, chainTokens.velo, '10000', '13', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			// createPair(chainTokens.weth, chainTokens.usdt, '500', '14', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b'),
-			// createPair(chainTokens.weth, chainTokens.wbtc, '500', '15', '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b')
+			createPair(chainTokens.usdc, chainTokens.dai, '100', '4'),
+			createPair(chainTokens.snx, chainTokens.weth, '3000', '5'),
+			createPair(chainTokens.weth, chainTokens.dai, '3000', '6')
 		];
 	})(),
 	arbitrum: (() => {
 		const chainTokens = tokens.arbitrum;
 
 		return [
-			createPair(chainTokens.weth, chainTokens.usdc, '500', '0', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
-			createPair(chainTokens.weth, chainTokens.usdt, '500', '1', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
-			createPair(chainTokens.weth, chainTokens.wbtc, '500', '2', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
-			createPair(chainTokens.weth, chainTokens.gmx, '3000', '3', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
-			createPair(chainTokens.weth, chainTokens.gns, '3000', '4', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
-			createPair(chainTokens.weth, chainTokens.magic, '10000', '5', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'),
-			createPair(chainTokens.weth, chainTokens.dai, '500', '6', '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7')
+			createPair(chainTokens.weth, chainTokens.usdc, '500', '0'),
+			createPair(chainTokens.weth, chainTokens.usdt, '500', '1'),
+			createPair(chainTokens.weth, chainTokens.wbtc, '500', '2'),
+			createPair(chainTokens.weth, chainTokens.gmx, '3000', '3'),
+			createPair(chainTokens.weth, chainTokens.gns, '3000', '4'),
+			createPair(chainTokens.weth, chainTokens.magic, '10000', '5'),
+			createPair(chainTokens.weth, chainTokens.dai, '3000', '6')
 		];
 	})()
 };

@@ -81,12 +81,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		estimatedGas: (200e3).toString(), // random approximation
 		rawQuote: {
 			tx: {
-				to: pair.router,
+				to: chainToId[chain],
 				data: calldata,
 				...(inputIsETH ? { value: amount } : {})
 			}
 		},
-		tokenApprovalAddress: pair.router,
+		tokenApprovalAddress: chainToId[chain],
 		logo: 'https://raw.githubusercontent.com/DefiLlama/memes/master/bussin.jpg'
 	};
 }
