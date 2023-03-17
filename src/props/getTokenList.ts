@@ -1,9 +1,9 @@
 import { groupBy, mapValues, uniqBy } from 'lodash';
 import { IToken } from '~/types';
-import { chainIdToName, dexToolsChainMap, geckoChainsMap } from './constants';
-import { nativeTokens } from './nativeTokens';
 import { multiCall } from '@defillama/sdk/build/abi';
 import { ethers } from 'ethers';
+import { nativeTokens } from '~/components/Aggregator/nativeTokens';
+import { chainIdToName, dexToolsChainMap, geckoChainsMap } from '~/components/Aggregator/constants';
 
 const tokensToRemove = {
 	1: {
@@ -174,12 +174,7 @@ export async function getTokenList() {
 		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])];
 	}
 
-	return {
-		props: {
-			tokenlist
-		}
-		//revalidate: 5 * 60 // 5 minutes
-	};
+	return tokenlist;
 }
 
 // use multicall to fetch tokens name, symbol and decimals

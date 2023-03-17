@@ -89,7 +89,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			...data,
 			gasLimit: estimatedGas,
 			tx: { ...txData, ...(from === ethers.constants.AddressZero ? { value: data.quoteData.baseTokenAmount } : {}) }
-		}
+		},
+		isMEVSafe: true
 	};
 }
 

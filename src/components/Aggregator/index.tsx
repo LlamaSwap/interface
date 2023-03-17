@@ -32,12 +32,13 @@ import { useTokenApprove } from './hooks';
 import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
-import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
+import { PRICE_IMPACT_WARNING_THRESHOLD, WETH } from './constants';
 import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
+import { normalizeTokens } from '~/utils';
 import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast } from '~/utils/formatSuccessToast';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -53,6 +54,7 @@ import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
 import { useCountdown } from '~/hooks/useCountdown';
+import { Sandwich } from './Sandwich';
 import { RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
@@ -266,7 +268,7 @@ const ConnectButtonWrapper = styled.div`
 
 const chains = getAllChains();
 
-export function AggregatorContainer({ tokenlist }) {
+export function AggregatorContainer({ tokenList, sandwichList }) {
 	// wallet stuff
 	const { data: signer } = useSigner();
 	const { address, isConnected } = useAccount();
@@ -300,7 +302,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const router = useRouter();
 	const { fromTokenAddress, toTokenAddress } = useQueryParams();
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useSelectedChainAndTokens({
-		tokens: tokenlist
+		tokens: tokenList
 	});
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
@@ -850,6 +852,17 @@ export function AggregatorContainer({ tokenlist }) {
 		}
 	};
 
+	const pairSandwichData =
+		sandwichList?.[selectedChain?.value]?.[
+			normalizeTokens(
+				finalSelectedFromToken?.address === ethers.constants.AddressZero
+					? WETH[selectedChain?.value]
+					: finalSelectedFromToken?.address,
+				finalSelectedToToken?.address === ethers.constants.AddressZero
+					? WETH[selectedChain?.value]
+					: finalSelectedToToken?.address
+			).join('')
+		];
 	const phantomRugging = (window as any).phantom !== undefined;
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
@@ -1012,6 +1025,7 @@ export function AggregatorContainer({ tokenlist }) {
 							</Alert>
 						</>
 					) : null}
+					<Sandwich sandiwichData={pairSandwichData} />
 
 					{diffBetweenSelectedRouteAndTopRoute > 5 && (
 						<Alert status="warning" borderRadius="0.375rem" py="8px">
