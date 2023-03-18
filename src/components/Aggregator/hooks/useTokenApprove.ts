@@ -12,6 +12,12 @@ const oldErc = [
 	'0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32'.toLowerCase() // LDO
 ];
 
+const chainsWithDefaltGasLimit = {
+	fantom: true,
+	optimism: true,
+	arbitrum: true
+};
+
 export const useGetAllowance = (token: string, spender: `0x${string}`, amount: string) => {
 	const { address, isConnected } = useAccount();
 
@@ -68,7 +74,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 	});
 
 	const customGasLimit =
-		shouldRemoveApproval || !data?.request?.gasLimit || network.chain.id !== 1
+		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaltGasLimit[network.chain.network]
 			? null
 			: { gasLimit: data?.request?.gasLimit.mul(140).div(100) };
 
