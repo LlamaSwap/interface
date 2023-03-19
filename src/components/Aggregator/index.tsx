@@ -1097,8 +1097,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 														if (
 															balance.data &&
-															!Number.isNaN(Number(balance.data.formatted)) &&
-															+selectedRoute?.amountIn > +balance.data.formatted
+															!Number.isNaN(Number(balance.data.value)) &&
+															+selectedRoute?.fromAmount > +balance?.data?.value?.toString()
 														)
 															return;
 
