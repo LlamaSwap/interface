@@ -800,7 +800,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			degenRoutes.length &&
 			degenRoutes[0]?.name === 'LlamaZip' &&
 			finalSelectedFromToken.address !== ETHEREUM.address
-		)
+		) {
 			if (+degenRoutes[0].fromAmount > 11 * 10 ** 18) {
 				toast({
 					title: 'Your size is size. Please use swap.defillama.com',
@@ -815,20 +815,21 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				});
 				return;
 			}
-		swapMutation.mutate({
-			chain: selectedChain.network,
-			from: finalSelectedFromToken.value,
-			to: finalSelectedToToken.value,
-			signer,
-			slippage,
-			adapter: degenRoutes[0].name,
-			rawQuote: degenRoutes[0].price.rawQuote,
-			tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
-			index: 0,
-			route: degenRoutes[0],
-			amount: degenRoutes[0].price.amountReturned,
-			amountIn: degenRoutes[0].fromAmount
-		});
+			swapMutation.mutate({
+				chain: selectedChain.network,
+				from: finalSelectedFromToken.value,
+				to: finalSelectedToToken.value,
+				signer,
+				slippage,
+				adapter: degenRoutes[0].name,
+				rawQuote: degenRoutes[0].price.rawQuote,
+				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
+				index: 0,
+				route: degenRoutes[0],
+				amount: degenRoutes[0].price.amountReturned,
+				amountIn: degenRoutes[0].fromAmount
+			});
+		}
 	};
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
