@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+
 export const tokens = {
 	optimism: {
 		weth: '0x4200000000000000000000000000000000000006',
@@ -25,7 +27,7 @@ export const tokens = {
 };
 
 export const normalizeTokens = (t0, t1) =>
-	Number(t0) < Number(t1) ? [t0.toLowerCase(), t1.toLowerCase()] : [t1.toLowerCase(), t0.toLowerCase()];
+	BigNumber(t0).lt(t1) ? [t0.toLowerCase(), t1.toLowerCase()] : [t1.toLowerCase(), t0.toLowerCase()];
 
 const createPair = (t0: string, t1: string, fee: string, pairId: string) => {
 	const [token0, token1] = normalizeTokens(t0, t1);
