@@ -68,5 +68,3 @@ export const pairs = {
 		];
 	})()
 };
-
-console.log(pairs.optimism);
