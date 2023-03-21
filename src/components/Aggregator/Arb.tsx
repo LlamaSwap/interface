@@ -958,7 +958,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							tokens={fromTokensList}
 							token={finalSelectedFromToken}
 							onSelectTokenChange={onFromTokenChange}
-							selectedChain={selectedChain}
+							selectedChain={selectedChain as any}
 							balance={balance.data?.formatted}
 							onMaxClick={onMaxClick}
 							tokenPrice={fromTokenPrice}
@@ -1028,7 +1028,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							tokens={toTokensList}
 							token={finalSelectedToToken}
 							onSelectTokenChange={onToTokenChange}
-							selectedChain={selectedChain}
+							selectedChain={selectedChain as any}
 							balance={toTokenBalance.data?.formatted}
 							tokenPrice={toTokenPrice}
 							disabled
