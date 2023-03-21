@@ -6,6 +6,10 @@ export function chainIconUrl(chain) {
 	return `${ICONS_CDN}/agg_icons/${chain.toLowerCase()}?w=24&h=24`;
 }
 
+export function protoclIconUrl(protocol) {
+	return `${ICONS_CDN}/protocols/${protocol}?w=24&h=24`;
+}
+
 export function getSavedTokens() {
 	return JSON.parse(localStorage.getItem('savedTokens') || '{}');
 }

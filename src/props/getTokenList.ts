@@ -4,6 +4,7 @@ import { multiCall } from '@defillama/sdk/build/abi';
 import { ethers } from 'ethers';
 import { nativeTokens } from '~/components/Aggregator/nativeTokens';
 import { chainIdToName, dexToolsChainMap, geckoChainsMap } from '~/components/Aggregator/constants';
+import { protoclIconUrl } from '~/utils';
 
 const tokensToRemove = {
 	1: {
@@ -36,6 +37,10 @@ const fixTotkens = (tokenlist) => {
 	// XDAI -> DAI
 	tokenlist[1].find(({ address }) => address.toLowerCase() === '0x6b175474e89094c44da98b954eedeac495271d0f').symbol =
 		'DAI';
+
+	tokenlist[1].find(
+		({ address }) => address.toLowerCase() === '0x249cA82617eC3DfB2589c4c17ab7EC9765350a18'.toLowerCase()
+	).logoURI = protoclIconUrl('verse');
 
 	return tokenlist;
 };
