@@ -937,6 +937,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		start();
 	}
 
+	const sizeIsSize = +amountWithDecimals > 11_000 * 10 ** 18;
+	const degenSizeIsSize = +degenRoutes?.[0]?.fromAmount > 11_000 * 10 ** 18;
+
 	return (
 		<Wrapper>
 			<Heading>Arbitrum Airdrop X DefiLlama</Heading>
@@ -1010,13 +1013,19 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								onClick={() => {
 									handleDegenSwap();
 								}}
-								disabled={!isApproved || finalSelectedFromToken.address === ETHEREUM.address}
+								disabled={!isApproved || finalSelectedFromToken.address === ETHEREUM.address || degenSizeIsSize}
 								w="100%"
 							>
 								{'Sell all ARB airdrop (Degen mode)'}
 							</Button>
 						</Box>
 					</div>
+					{degenSizeIsSize ? (
+						<Alert status="warning" borderRadius="0.375rem" py="8px" fontSize={'16px'}>
+							<AlertIcon />
+							Your size is size. Please use swap.defillama.com
+						</Alert>
+					) : null}
 					<HStack justifyContent="center">
 						<Text fontWeight={'bold'} fontSize={'16'}>
 							OR
@@ -1144,6 +1153,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						fromToken={finalSelectedFromToken?.symbol}
 						toToken={finalSelectedToToken?.symbol}
 					/>
+
+					{sizeIsSize ? (
+						<Alert status="warning" borderRadius="0.375rem" py="8px" fontSize={'16px'}>
+							<AlertIcon />
+							Your size is size. Please use swap.defillama.com
+						</Alert>
+					) : null}
+
 					{/* <PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
 						fromTokenPrice={fromTokenPrice}
@@ -1209,7 +1226,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														insufficientBalance ||
 														!selectedRoute ||
 														slippageIsWong ||
-														!isAmountSynced
+														!isAmountSynced ||
+														sizeIsSize
 													}
 												>
 													{isApproved ? `Swap via LlamaZip` : slippageIsWong ? 'Set Slippage' : 'Approve'}
