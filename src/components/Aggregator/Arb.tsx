@@ -78,6 +78,7 @@ import { formatAmount } from '~/utils/formatAmount';
 import { allChains } from '~/components/WalletProvider/chains';
 import { IconImage } from './Search';
 import { CLAIM_ABI } from './claimAbi';
+import { chainToId } from './adapters/llamazip';
 
 const Body = styled.div<{ showRoutes: boolean }>`
 	display: flex;
@@ -581,13 +582,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	};
 
 	// approve/swap tokens
-	const amountToApprove =
-		amountOut && amountOut !== ''
-			? BigNumber(selectedRoute?.fromAmount)
-					.times(100 + Number(slippage) * 2)
-					.div(100)
-					.toFixed(0)
-			: selectedRoute?.fromAmount;
+	const amountToApprove = amountWithDecimals;
+
 	const {
 		isApproved,
 		approve,
@@ -598,11 +594,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		isConfirmingApproval,
 		isConfirmingInfiniteApproval,
 		shouldRemoveApproval
-	} = useTokenApprove(
-		finalSelectedFromToken?.address,
-		selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
-		amountToApprove
-	);
+	} = useTokenApprove(finalSelectedFromToken?.address, chainToId.arbitrum as any, amountToApprove);
 
 	useEffect(() => {
 		if (isConnected && chainOnWallet.id !== 42161) {
@@ -894,6 +886,22 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							</Text>
 						</HStack>
 						<Box display="flex" justifyContent={'space-between'} textAlign="center" lineHeight={2.5} mt="8px">
+							{!isConnected ? (
+								<>
+									<Button
+										colorScheme={'messenger'}
+										loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+										isLoading={isApproveInfiniteLoading}
+										onClick={() => {
+											openConnectModal();
+										}}
+										w="45%"
+									>
+										Connect
+									</Button>
+									<ChevronRightIcon w="28px" h="28px" mt="6px" />
+								</>
+							) : null}
 							<Button
 								colorScheme={'messenger'}
 								loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
@@ -932,7 +940,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							<Button
 								colorScheme={'messenger'}
 								loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
-								isLoading={isApproveInfiniteLoading}
+								isLoading={swapMutation.isLoading}
 								onClick={() => {
 									handleDegenSwap();
 								}}
@@ -1138,7 +1146,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														!isAmountSynced
 													}
 												>
-													{isApproved ? `Swap via ${selectedRoute.name}` : slippageIsWong ? 'Set Slippage' : 'Approve'}
+													{isApproved ? `Swap via LlamaZip` : slippageIsWong ? 'Set Slippage' : 'Approve'}
 												</Button>
 											)}
 
