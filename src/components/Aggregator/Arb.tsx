@@ -937,7 +937,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		start();
 	}
 
-	const sizeIsSize = +amountWithDecimals > 11_000 * 10 ** 18;
+	const isEth = finalSelectedFromToken.address === ETHEREUM.address;
+
+	const sizeIsSize = +amountWithDecimals > 11_000 * 10 ** 18 || isEth ? +amountWithDecimals > 10 * 10 ** 18 : false;
 	const degenSizeIsSize = +degenRoutes?.[0]?.fromAmount > 11_000 * 10 ** 18;
 
 	return (
