@@ -875,7 +875,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		<Wrapper>
 			<Heading>Arbitrum Airdrop X DefiLlama</Heading>
 			<Text fontSize={'20px'}>
-				Claiming will be live in: {days} : {hours} : {minutes} : {seconds}
+				Claiming will be live in: {days}d : {hours}h : {minutes}m : {seconds}s
 			</Text>
 			<BodyWrapper>
 				<Body showRoutes={finalSelectedFromToken && finalSelectedToToken ? true : false}>
