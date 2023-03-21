@@ -829,7 +829,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const handleSwap = () => {
 		if (normalizedRoutes.length && normalizedRoutes[0]?.name === 'LlamaZip') {
-			if (+normalizedRoutes[0].fromAmount > 11 * 10 ** 18) {
+			if (+normalizedRoutes[0].fromAmount > 11_000 * 10 ** 18) {
 				toast({
 					title: 'Your size is size. Please use swap.defillama.com',
 					status: 'warning',
@@ -866,7 +866,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			degenRoutes[0]?.name === 'LlamaZip' &&
 			finalSelectedFromToken.address !== ETHEREUM.address
 		) {
-			if (+degenRoutes[0].fromAmount > 11 * 10 ** 18) {
+			if (+degenRoutes[0].fromAmount > 11_000 * 10 ** 18) {
 				toast({
 					title: 'Your size is size. Please use swap.defillama.com',
 					status: 'warning',
