@@ -46,7 +46,7 @@ export const pairs = {
 			createPair(chainTokens.weth, chainTokens.usdc, '500', '0'),
 			createPair(chainTokens.weth, chainTokens.op, '3000', '1'),
 			createPair(chainTokens.op, chainTokens.usdc, '3000', '2'),
-			createPair(chainTokens.op, chainTokens.weth, '500', '3'),
+			createPair(chainTokens.weth, chainTokens.op, '500', '3'),
 			createPair(chainTokens.usdc, chainTokens.dai, '100', '4'),
 			createPair(chainTokens.snx, chainTokens.weth, '3000', '5'),
 			createPair(chainTokens.weth, chainTokens.dai, '3000', '6')
@@ -66,3 +66,5 @@ export const pairs = {
 		];
 	})()
 };
+
+console.log(pairs.optimism);
