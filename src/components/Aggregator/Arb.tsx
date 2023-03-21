@@ -65,7 +65,6 @@ import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
 import { useEstimateGas } from './hooks/useEstimateGas';
-import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
@@ -289,6 +288,72 @@ const ETHEREUM = {
 const weth = ethers.constants.AddressZero;
 
 const AIRDROP_BLOCK = 16890400;
+
+const stablecoins = [
+	'USDT',
+	'USDC',
+	'BUSD',
+	'DAI',
+	'FRAX',
+	'TUSD',
+	'USDD',
+	'USDP',
+	'GUSD',
+	'LUSD',
+	'sUSD',
+	'FPI',
+	'MIM',
+	'DOLA',
+	'USP',
+	'USDX',
+	'MAI',
+	'EURS',
+	'EURT',
+	'alUSD',
+	'PAX'
+];
+
+export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
+	if (Number.isNaN(slippage)) {
+		throw new Error('Wrong slippage!');
+	}
+	return (
+		<Box display="flex" flexDir="column" marginX="4px">
+			{!!slippage && slippage > 1 ? (
+				<Alert status="warning" borderRadius="0.375rem" py="8px">
+					<AlertIcon />
+					High slippage! You might get sandwiched with a slippage of {slippage}%
+				</Alert>
+			) : null}
+			{!!slippage && slippage > 0.05 && stablecoins.includes(fromToken) && stablecoins.includes(toToken) ? (
+				<Alert status="warning" borderRadius="0.375rem" py="8px">
+					<AlertIcon />
+					You are trading stablecoins but your slippage is very high, we recommend setting it to 0.05% or lower
+				</Alert>
+			) : null}
+			<Text fontWeight="400" display="flex" justifyContent="space-between" alignItems="center" fontSize="0.875rem">
+				Swap Slippage: {slippage && !Number.isNaN(Number(slippage)) ? Number(slippage) + '%' : ''}
+			</Text>
+			<Box display="flex" gap="6px" flexWrap="wrap" width="100%">
+				{['0.1', '0.5', '1', '5'].map((slippage) => (
+					<Button
+						fontSize="0.875rem"
+						fontWeight="500"
+						p="8px"
+						bg="#38393e"
+						height="2rem"
+						onClick={() => {
+							setSlippage(slippage);
+						}}
+						key={'slippage-btn' + slippage}
+					>
+						{slippage}%
+					</Button>
+				))}
+			</Box>
+		</Box>
+	);
+}
 
 export function AggregatorContainer({ tokenList, sandwichList }) {
 	// wallet stuff
@@ -1079,7 +1144,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						fromToken={finalSelectedFromToken?.symbol}
 						toToken={finalSelectedToToken?.symbol}
 					/>
-					<PriceImpact
+					{/* <PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
 						fromTokenPrice={fromTokenPrice}
 						fromToken={finalSelectedFromToken}
@@ -1091,7 +1156,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						selectedRoutesPriceImpact={selectedRoutesPriceImpact}
 						amount={selectedRoute?.amountIn}
 						slippage={slippage}
-					/>
+					/> */}
 					<SwapWrapper>
 						{!isConnected ? (
 							<Button colorScheme={'messenger'} onClick={openConnectModal}>
