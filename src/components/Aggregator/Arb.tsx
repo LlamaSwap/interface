@@ -911,7 +911,7 @@ export function AggregatorContainer() {
 								w="30%"
 								mr={'8px'}
 							>
-								{'Approve'}
+								{'Approve 11k'}
 							</Button>
 							<Text mr={'8px'} mt={'4px'} fontWeight={'bold'}>
 								OR
@@ -926,7 +926,7 @@ export function AggregatorContainer() {
 								disabled={!approveNonInfinite}
 								w="45%"
 							>
-								{'Approve Infinite'}
+								{'Approve 30k'}
 							</Button>
 							<ChevronRightIcon w="28px" h="28px" mt="6px" />
 							<Button
