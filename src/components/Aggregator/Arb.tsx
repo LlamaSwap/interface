@@ -960,7 +960,7 @@ export function AggregatorContainer() {
 								disabled={!isDegenApproved || degenSizeIsSize || !isValidDegenSwap}
 								w="100%"
 							>
-								{'Sell all ARB airdrop (Degen mode)'}
+								{'Sell all ARB (Degen mode)'}
 							</Button>
 						</Box>
 					</div>
