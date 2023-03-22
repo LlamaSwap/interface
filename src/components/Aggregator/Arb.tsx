@@ -100,6 +100,18 @@ const Wrapper = styled.div`
 		font-weight: 500;
 	}
 
+	#gib-img-l,
+	#gib-img-r {
+		display: none;
+	}
+
+	@media screen and (min-width: 768px) {
+		#gib-img-l,
+		#gib-img-r {
+			display: initial;
+		}
+	}
+
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
 		top: 0px;
 	}
@@ -150,23 +162,12 @@ const SwapWrapper = styled.div`
 `;
 
 const Gib = () => {
-	const [isWide, setIsWide] = useState(null);
-
-	useEffect(() => {
-		const mql = window.matchMedia('(min-width: 768px)');
-		const onChange = () => setIsWide(!!mql.matches);
-
-		mql.addListener(onChange);
-		setIsWide(mql.matches);
-
-		return () => mql.removeListener(onChange);
-	}, []);
-	return isWide ? (
+	return (
 		<>
-			<Image src={gibr.src} w="128px" position={'fixed'} bottom={'0px'} left={'0px'} alt="" />
-			<Image src={gib.src} w="128px" position={'fixed'} bottom="0px" right={'0px'} alt="" />
+			<Image src={gibr.src} w="128px" position={'fixed'} bottom={'0px'} left={'0px'} alt="" id="gib-img-l" />
+			<Image src={gib.src} w="128px" position={'fixed'} bottom="0px" right={'0px'} alt="" id="gib-img-r" />
 		</>
-	) : null;
+	);
 };
 
 const icons = {
@@ -266,6 +267,11 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 	);
 }
 
+const { selectedChain, chainTokenList } = {
+	selectedChain: allChains.find(({ id }) => id === 42161),
+	chainTokenList: []
+};
+
 export function AggregatorContainer() {
 	// wallet stuff
 	const { data: signer } = useSigner();
@@ -305,11 +311,7 @@ export function AggregatorContainer() {
 		fromTokenAddress: ARBITRUM.address,
 		toTokenAddress: ETHEREUM.address
 	});
-	const { selectedChain, chainTokenList } = {
-		selectedChain: allChains.find(({ id }) => id === 42161),
 
-		chainTokenList: []
-	};
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
 
@@ -357,7 +359,7 @@ export function AggregatorContainer() {
 				})
 				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
 		);
-	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
+	}, [tokenBalances, savedTokens]);
 
 	const { fromTokensList, toTokensList } = useMemo(() => {
 		return {
@@ -390,9 +392,9 @@ export function AggregatorContainer() {
 	});
 
 	const { data: degenRoutes = [] } = useGetRoutes({
-		chain: selectedChain?.network,
-		from: finalSelectedFromToken?.value,
-		to: finalSelectedToToken?.value,
+		chain: selectedChain.network,
+		from: ARBITRUM.value,
+		to: ETHEREUM.value,
 		amount: balance?.data?.value.toString(),
 		disabledAdapters: adaptersNames.filter((name) => name !== 'LlamaZip'),
 		customRefetchInterval: 5_000,
@@ -400,8 +402,8 @@ export function AggregatorContainer() {
 			gasPriceData,
 			userAddress: address || ethers.constants.AddressZero,
 			amount: balance?.data?.formatted,
-			fromToken: finalSelectedFromToken,
-			toToken: finalSelectedToToken,
+			fromToken: ARBITRUM,
+			toToken: ETHEREUM,
 			slippage,
 			isPrivacyEnabled,
 			amountOut: amountOutWithDecimals
@@ -785,12 +787,10 @@ export function AggregatorContainer() {
 		}
 	};
 
+	const isValidDegenSwap = degenRoutes.length && degenRoutes[0]?.name === 'LlamaZip';
+
 	const handleDegenSwap = () => {
-		if (
-			degenRoutes.length &&
-			degenRoutes[0]?.name === 'LlamaZip' &&
-			finalSelectedFromToken.address !== ETHEREUM.address
-		) {
+		if (isValidDegenSwap) {
 			if (+degenRoutes[0].fromAmount > 11_000 * 10 ** 18) {
 				toast({
 					title: 'Your size is size. Please use swap.defillama.com',
@@ -807,13 +807,13 @@ export function AggregatorContainer() {
 			}
 			swapMutation.mutate({
 				chain: selectedChain.network,
-				from: finalSelectedFromToken.value,
-				to: finalSelectedToToken.value,
+				from: ARBITRUM.value,
+				to: ETHEREUM.value,
 				signer,
 				slippage,
 				adapter: degenRoutes[0].name,
 				rawQuote: degenRoutes[0].price.rawQuote,
-				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
+				tokens: { fromToken: ARBITRUM, toToken: ETHEREUM },
 				index: 0,
 				route: degenRoutes[0],
 				amount: degenRoutes[0].price.amountReturned,
@@ -980,7 +980,12 @@ export function AggregatorContainer() {
 								onClick={() => {
 									handleDegenSwap();
 								}}
-								disabled={!isDegenApproved || finalSelectedFromToken.address === ETHEREUM.address || degenSizeIsSize}
+								disabled={
+									!isDegenApproved ||
+									finalSelectedFromToken.address === ETHEREUM.address ||
+									degenSizeIsSize ||
+									!isValidDegenSwap
+								}
 								w="100%"
 							>
 								{'Sell all ARB airdrop (Degen mode)'}
