@@ -532,6 +532,7 @@ export function AggregatorContainer() {
 
 	// approve/swap tokens
 	const amountToApprove = BigNumber(11000).times(1e18).toFixed(0);
+	const amountToInfiniteApprove = BigNumber(30000).times(1e18).toFixed(0);
 
 	const [isWide, setIsWide] = useState(null);
 
@@ -557,6 +558,12 @@ export function AggregatorContainer() {
 		shouldRemoveApproval,
 		allowance
 	} = useTokenApprove(finalSelectedFromToken?.address, chainToId.arbitrum as any, amountToApprove);
+
+	const { approve: approveNonInfinite, isLoading: isApproveNonInfiniteLoading } = useTokenApprove(
+		finalSelectedFromToken?.address,
+		chainToId.arbitrum as any,
+		amountToInfiniteApprove
+	);
 
 	useEffect(() => {
 		if (isConnected && chainOnWallet.id !== 42161) {
@@ -866,7 +873,7 @@ export function AggregatorContainer() {
 					<div id="dexscreener-embed" style={{ position: 'relative', maxWidth: '600px', height: '677px' }}>
 						<iframe
 							style={{ position: 'absolute', width: '600px', height: '677px', top: 0, left: 0, borderRadius: '16px' }}
-							src="https://dexscreener.com/optimism/0xa8328bf492ba1b77ad6381b3f7567d942b000baf?embed=1&trades=0&info=0"
+							src="https://dexscreener.com/arbitrum/0xa8328bf492ba1b77ad6381b3f7567d942b000baf?embed=1&trades=0&info=0"
 						></iframe>
 					</div>
 				) : null}
@@ -912,11 +919,11 @@ export function AggregatorContainer() {
 							<Button
 								colorScheme={'messenger'}
 								loadingText={'Confirming'}
-								isLoading={isApproveInfiniteLoading}
+								isLoading={isApproveNonInfiniteLoading}
 								onClick={() => {
-									if (approveInfinite) approveInfinite();
+									if (approveNonInfinite) approveNonInfinite?.();
 								}}
-								disabled={!approveInfinite}
+								disabled={!approveNonInfinite}
 								w="45%"
 							>
 								{'Approve Infinite'}
