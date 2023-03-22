@@ -760,6 +760,7 @@ export function AggregatorContainer() {
 				route: normalizedRoutes[0],
 				amount: normalizedRoutes[0].amount,
 				amountIn: (+normalizedRoutes[0].amountIn / 1e18).toFixed(0)
+
 			});
 		}
 	};
