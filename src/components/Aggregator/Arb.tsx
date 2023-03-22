@@ -795,7 +795,7 @@ export function AggregatorContainer() {
 				index: 0,
 				route: degenRoutes[0],
 				amount: degenRoutes[0].price.amountReturned,
-				amountIn: degenRoutes[0].fromAmount
+				amountIn: (+degenRoutes[0].fromAmount / 1e18).toFixed(0)
 			});
 		}
 	};
