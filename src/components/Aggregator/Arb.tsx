@@ -293,7 +293,7 @@ export function AggregatorContainer() {
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
 
-	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
+	const [slippage, setSlippage] = useLocalStorage('arbidrop-slippage', '0.5');
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
