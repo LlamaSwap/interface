@@ -62,8 +62,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		0
 	);
 
-	console.log(quotedAmountOut);
-
 	const inputIsETH = from === ethers.constants.AddressZero;
 	const calldata = encode(pair.pairId, token0isTokenIn, quotedAmountOut, extra.slippage, inputIsETH, false, amount);
 	if (calldata.length > 256 / 4 + 2) {
