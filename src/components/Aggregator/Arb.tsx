@@ -12,8 +12,7 @@ import {
 	usePrepareContractWrite,
 	useQueryClient,
 	useSigner,
-	useSwitchNetwork,
-	useToken
+	useSwitchNetwork
 } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
@@ -24,56 +23,35 @@ import {
 	Heading,
 	useToast,
 	Button,
-	FormControl,
-	FormLabel,
-	Switch,
 	Flex,
 	Box,
-	Spacer,
 	IconButton,
 	Text,
 	ToastId,
 	Alert,
 	AlertIcon,
-	CircularProgress,
-	VStack,
-	Divider,
 	HStack,
 	Image
 } from '@chakra-ui/react';
-import ReactSelect from '~/components/MultiSelect';
-import FAQs from '~/components/FAQs';
-import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
-import { adaptersNames, getAllChains, inifiniteApprovalAllowed, swap } from './router';
-import Loader from './Loader';
+import { adaptersNames, inifiniteApprovalAllowed, swap } from './router';
 import { useTokenApprove } from './hooks';
-import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
+import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
-import { PRICE_IMPACT_WARNING_THRESHOLD, WETH } from './constants';
-import Tooltip, { Tooltip2 } from '../Tooltip';
+import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
-import { normalizeTokens } from '~/utils';
-import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast } from '~/utils/formatSuccessToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
-import { useEstimateGas } from './hooks/useEstimateGas';
-import { PriceImpact } from '../PriceImpact';
-import { useQueryParams } from '~/hooks/useQueryParams';
-import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
-import { useCountdown, useCountdownFull } from '~/hooks/useCountdown';
-import { Sandwich } from './Sandwich';
-import { ChevronRightIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
-import { Settings } from './Settings';
+import { useCountdownFull } from '~/hooks/useCountdown';
+import { ChevronRightIcon } from '@chakra-ui/icons';
 import { formatAmount } from '~/utils/formatAmount';
 import { allChains } from '~/components/WalletProvider/chains';
 import { IconImage } from './Search';
@@ -132,37 +110,6 @@ const Wrapper = styled.div`
 	}
 `;
 
-const Routes = styled.div`
-	display: flex;
-	flex-direction: column;
-	padding: 16px;
-	border-radius: 16px;
-	text-align: left;
-	overflow-y: scroll;
-	width: 100%;
-	min-height: 100%;
-	overflow-x: hidden;
-	align-self: stretch;
-	max-width: 30rem;
-	border: 1px solid #2f333c;
-
-	& > *:first-child {
-		margin-bottom: -6px;
-	}
-
-	box-shadow: ${({ theme }) =>
-		theme.mode === 'dark'
-			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
-			: '10px 0px 50px 10px rgba(211, 211, 211, 0.9);'};
-
-	&::-webkit-scrollbar {
-		display: none;
-	}
-
-	-ms-overflow-style: none; /* IE and Edge */
-	scrollbar-width: none; /* Firefox */
-`;
-
 const BodyWrapper = styled.div`
 	display: flex;
 	flex-direction: column;
@@ -189,18 +136,6 @@ const BodyWrapper = styled.div`
 	}
 `;
 
-const FormHeader = styled.div`
-	font-weight: bold;
-	font-size: 16px;
-	margin-bottom: 4px;
-	margin-left: 4px;
-	.chakra-switch,
-	.chakra-switch__track,
-	.chakra-switch__thumb {
-		height: 10px;
-	}
-`;
-
 const SwapWrapper = styled.div`
 	margin-top: auto;
 	min-height: 40px;
@@ -211,29 +146,6 @@ const SwapWrapper = styled.div`
 
 	& > button {
 		flex: 1;
-	}
-`;
-
-const SwapUnderRoute = styled(SwapWrapper)`
-	margin-top: 16px;
-	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
-		display: none;
-	}
-`;
-
-const ConnectButtonWrapper = styled.div`
-	min-height: 40px;
-	width: 100%;
-	display: flex;
-	flex-wrap: wrap;
-
-	& button {
-		width: 100%;
-		text-align: center !important;
-	}
-
-	& > div {
-		width: 100%;
 	}
 `;
 
@@ -251,8 +163,8 @@ const Gib = () => {
 	}, []);
 	return isWide ? (
 		<>
-			<Image src={gibr.src} w="128px" position={'fixed'} bottom={'0px'} left={'0px'} />
-			<Image src={gib.src} w="128px" position={'fixed'} bottom="0px" right={'0px'} />
+			<Image src={gibr.src} w="128px" position={'fixed'} bottom={'0px'} left={'0px'} alt="" />
+			<Image src={gib.src} w="128px" position={'fixed'} bottom="0px" right={'0px'} alt="" />
 		</>
 	) : null;
 };
@@ -285,8 +197,6 @@ const ETHEREUM = {
 	chainId: 42161,
 	geckoId: null
 };
-
-const weth = ethers.constants.AddressZero;
 
 const AIRDROP_BLOCK = 16890400;
 
@@ -356,7 +266,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 	);
 }
 
-export function AggregatorContainer({ tokenList, sandwichList }) {
+export function AggregatorContainer() {
 	// wallet stuff
 	const { data: signer } = useSigner();
 	const { address, isConnected } = useAccount();
@@ -378,7 +288,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
 
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
-	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -1224,19 +1133,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							Your size is size. Please use swap.defillama.com
 						</Alert>
 					) : null}
-					{/* <PriceImpact
-						isLoading={isLoading || fetchingTokenPrices}
-						fromTokenPrice={fromTokenPrice}
-						fromToken={finalSelectedFromToken}
-						toTokenPrice={toTokenPrice}
-						toToken={finalSelectedToToken}
-						amountReturnedInSelectedRoute={
-							priceImpactRoute && priceImpactRoute.price && priceImpactRoute.price.amountReturned
-						}
-						selectedRoutesPriceImpact={selectedRoutesPriceImpact}
-						amount={selectedRoute?.amountIn}
-						slippage={slippage}
-					/> */}
+
 					<SwapWrapper>
 						{!isConnected ? (
 							<Button colorScheme={'messenger'} onClick={openConnectModal}>
@@ -1290,7 +1187,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														!selectedRoute ||
 														slippageIsWong ||
 														!isAmountSynced ||
-														sizeIsSize
+														sizeIsSize ||
+														fetchingTokenPrices
 													}
 												>
 													{isApproved ? `Swap via LlamaZip` : slippageIsWong ? 'Set Slippage' : 'Approve'}
@@ -1311,7 +1209,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														isApproveLoading ||
 														isApproveResetLoading ||
 														isApproveInfiniteLoading ||
-														!selectedRoute
+														!selectedRoute ||
+														fetchingTokenPrices
 													}
 												>
 													{'Approve Infinite'}
