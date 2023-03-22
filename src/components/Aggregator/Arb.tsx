@@ -795,7 +795,7 @@ export function AggregatorContainer() {
 				index: 0,
 				route: degenRoutes[0],
 				amount: degenRoutes[0].price.amountReturned,
-				amountIn: BigNumber(degenRoutes[0].fromAmount).div(1e18).toString()
+				amountIn: (+degenRoutes[0].fromAmount / 1e18).toFixed(6)
 			});
 		}
 	};
