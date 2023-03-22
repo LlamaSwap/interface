@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
-import evil from '~/public/evil.png';
-import evilr from '~/public/evilr.png';
+import gib from '~/public/gib.png';
+import gibr from '~/public/gibr.png';
 import { useMutation } from '@tanstack/react-query';
 import {
 	useAccount,
@@ -236,7 +236,7 @@ const ConnectButtonWrapper = styled.div`
 	}
 `;
 
-const Evils = () => {
+const Gib = () => {
 	const [isWide, setIsWide] = useState(null);
 
 	useEffect(() => {
@@ -250,8 +250,8 @@ const Evils = () => {
 	}, []);
 	return isWide ? (
 		<>
-			<Image src={evil.src} w="96px" position={'fixed'} bottom={'0px'} left={'0px'} />
-			<Image src={evilr.src} w="96px" position={'fixed'} bottom="0px" right={'0px'} />
+			<Image src={gibr.src} w="128px" position={'fixed'} bottom={'0px'} left={'0px'} />
+			<Image src={gib.src} w="128px" position={'fixed'} bottom="0px" right={'0px'} />
 		</>
 	) : null;
 };
@@ -265,8 +265,8 @@ const ARBITRUM = {
 	name: 'Arbitrum',
 	label: 'Arbitrum',
 	symbol: 'ARB',
-	address: '0x912CE59144191C1204E64559FE8253a0e49E6548'.toLowerCase(),
-	value: '0x912CE59144191C1204E64559FE8253a0e49E6548'.toLowerCase(),
+	address: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1'.toLowerCase(),
+	value: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1'.toLowerCase(),
 	decimals: 18,
 	logoURI: icons.arb,
 	chainId: 42161,
@@ -1265,7 +1265,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				</Body>
 			</BodyWrapper>
 			<TransactionModal open={txModalOpen} setOpen={setTxModalOpen} link={txUrl} />
-			<Evils />
+			<Gib />
 		</Wrapper>
 	);
 }
