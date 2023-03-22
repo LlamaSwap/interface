@@ -61,7 +61,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}))
 	);
 
-	const bestPair = quotedAmountOuts.sort((a, b) => b.output - a.output)[0]; // might need to use bignum
+	const bestPair = quotedAmountOuts.sort((a, b) => (b.output.gt(a.output) ? 1 : -1))[0];
 	const pair = bestPair.pair;
 	const quotedAmountOut = bestPair.output;
 
