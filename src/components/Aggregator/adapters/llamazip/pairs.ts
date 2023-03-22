@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import { BigNumber } from 'ethers';
 
 export const tokens = {
 	optimism: {
@@ -27,7 +27,7 @@ export const tokens = {
 };
 
 export const normalizeTokens = (t0, t1) =>
-	BigNumber(t0).lt(t1) ? [t0.toLowerCase(), t1.toLowerCase()] : [t1.toLowerCase(), t0.toLowerCase()];
+	BigNumber.from(t0).lt(t1) ? [t0.toLowerCase(), t1.toLowerCase()] : [t1.toLowerCase(), t0.toLowerCase()];
 
 const createPair = (t0: string, t1: string, fee: string, pairId: string) => {
 	const [token0, token1] = normalizeTokens(t0, t1);
