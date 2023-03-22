@@ -54,12 +54,21 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		return {};
 	}
 
-	const quotedAmountOuts = await Promise.all(
-		possiblePairs.map(async (pair) => ({
-			output: await quoterContract.callStatic.quoteExactInputSingle(tokenFrom, tokenTo, pair.fee, amount, 0),
-			pair
-		}))
-	);
+	const quotedAmountOuts = (
+		await Promise.all(
+			possiblePairs.map(async (pair) => {
+				try {
+					return {
+						output: await quoterContract.callStatic.quoteExactInputSingle(tokenFrom, tokenTo, pair.fee, amount, 0),
+						pair
+					};
+				} catch (e) {
+					if (pair.mayFail === true) return null;
+					throw e;
+				}
+			})
+		)
+	).filter((t) => t !== null);
 
 	const bestPair = quotedAmountOuts.sort((a, b) => (b.output.gt(a.output) ? 1 : -1))[0];
 	const pair = bestPair.pair;
