@@ -177,8 +177,8 @@ const ARBITRUM = {
 	name: 'Arbitrum',
 	label: 'Arbitrum',
 	symbol: 'ARB',
-	address: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1'.toLowerCase(),
-	value: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1'.toLowerCase(),
+	address: '0x912CE59144191C1204E64559FE8253a0e49E6548'.toLowerCase(),
+	value: '0x912CE59144191C1204E64559FE8253a0e49E6548'.toLowerCase(),
 	decimals: 18,
 	logoURI: icons.arb,
 	chainId: 42161,
@@ -196,8 +196,6 @@ const ETHEREUM = {
 	chainId: 42161,
 	geckoId: null
 };
-
-const weth = ethers.constants.AddressZero;
 
 const AIRDROP_BLOCK = 16890400;
 
@@ -267,7 +265,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 	);
 }
 
-export function AggregatorContainer({ tokenList, sandwichList }) {
+export function AggregatorContainer() {
 	// wallet stuff
 	const { data: signer } = useSigner();
 	const { address, isConnected } = useAccount();
@@ -289,7 +287,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
 
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
-	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -927,7 +924,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								onClick={() => {
 									handleDegenSwap();
 								}}
-								disabled={!isApproved || finalSelectedFromToken.address === ETHEREUM.address || degenSizeIsSize}
+								disabled={
+									!isApproved ||
+									finalSelectedFromToken.address === ETHEREUM.address ||
+									degenSizeIsSize ||
+									fetchingTokenPrices
+								}
 								w="100%"
 							>
 								{'Sell all ARB airdrop (Degen mode)'}
@@ -1075,19 +1077,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						</Alert>
 					) : null}
 
-					{/* <PriceImpact
-						isLoading={isLoading || fetchingTokenPrices}
-						fromTokenPrice={fromTokenPrice}
-						fromToken={finalSelectedFromToken}
-						toTokenPrice={toTokenPrice}
-						toToken={finalSelectedToToken}
-						amountReturnedInSelectedRoute={
-							priceImpactRoute && priceImpactRoute.price && priceImpactRoute.price.amountReturned
-						}
-						selectedRoutesPriceImpact={selectedRoutesPriceImpact}
-						amount={selectedRoute?.amountIn}
-						slippage={slippage}
-					/> */}
 					<SwapWrapper>
 						{!isConnected ? (
 							<Button colorScheme={'messenger'} onClick={openConnectModal}>
@@ -1141,7 +1130,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														!selectedRoute ||
 														slippageIsWong ||
 														!isAmountSynced ||
-														sizeIsSize
+														sizeIsSize ||
+														fetchingTokenPrices
 													}
 												>
 													{isApproved ? `Swap via LlamaZip` : slippageIsWong ? 'Set Slippage' : 'Approve'}
@@ -1162,7 +1152,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														isApproveLoading ||
 														isApproveResetLoading ||
 														isApproveInfiniteLoading ||
-														!selectedRoute
+														!selectedRoute ||
+														fetchingTokenPrices
 													}
 												>
 													{'Approve Infinite'}
