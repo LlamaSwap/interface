@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import {
 	useAccount,
 	useBlockNumber,
+	useContractRead,
 	useContractWrite,
 	useFeeData,
 	useNetwork,
@@ -166,10 +167,10 @@ const BodyWrapper = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 16px;
 	width: 100%;
 	z-index: 1;
 	position: relative;
+	justify-content: center;
 
 	& > * {
 		margin: 0 auto;
@@ -459,7 +460,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const {
 		data: routes = [],
 		isLoading,
-		isLoaded
+		isLoaded,
+		refetch
 	} = useGetRoutes({
 		chain: selectedChain?.network,
 		from: finalSelectedFromToken?.value,
@@ -484,6 +486,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		to: finalSelectedToToken?.value,
 		amount: balance?.data?.value.toString(),
 		disabledAdapters: adaptersNames.filter((name) => name !== 'LlamaZip'),
+		customRefetchInterval: 5_000,
 		extra: {
 			gasPriceData,
 			userAddress: address || ethers.constants.AddressZero,
@@ -647,7 +650,19 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	};
 
 	// approve/swap tokens
-	const amountToApprove = amountWithDecimals;
+	const amountToApprove = BigNumber(11000).times(1e18).toFixed(0);
+
+	const [isWide, setIsWide] = useState(null);
+
+	useEffect(() => {
+		const mql = window.matchMedia('(min-width: 1386px)');
+		const onChange = () => setIsWide(!!mql.matches);
+
+		mql.addListener(onChange);
+		setIsWide(mql.matches);
+
+		return () => mql.removeListener(onChange);
+	}, []);
 
 	const {
 		isApproved,
@@ -658,7 +673,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		isResetLoading: isApproveResetLoading,
 		isConfirmingApproval,
 		isConfirmingInfiniteApproval,
-		shouldRemoveApproval
+		shouldRemoveApproval,
+		allowance
 	} = useTokenApprove(finalSelectedFromToken?.address, chainToId.arbitrum as any, amountToApprove);
 
 	useEffect(() => {
@@ -899,6 +915,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
 
+	const { data: claimableTokens } = useContractRead({
+		address: '0x67a24CE4321aB3aF51c2D0a4801c3E111D88C9d9',
+		abi: CLAIM_ABI,
+		functionName: 'claimableTokens',
+		args: [address]
+	});
+
 	const { config } = usePrepareContractWrite({
 		address: '0x67a24CE4321aB3aF51c2D0a4801c3E111D88C9d9',
 		abi: CLAIM_ABI,
@@ -942,6 +965,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const sizeIsSize = +amountWithDecimals > 11_000 * 10 ** 18 || isEth ? +amountWithDecimals > 10 * 10 ** 18 : false;
 	const degenSizeIsSize = +degenRoutes?.[0]?.fromAmount > 11_000 * 10 ** 18;
 
+	const isClaimable = claimableTokens && (claimableTokens as any)?.gt(0);
+
+	const isDegenApproved = allowance && +allowance?.toString() / 1e18 > +balance.data?.formatted;
+
 	return (
 		<Wrapper>
 			<Heading>Arbitrum Airdrop X DefiLlama</Heading>
@@ -949,6 +976,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				Claiming will be live in: {days}d : {hours}h : {minutes}m : {seconds}s
 			</Text>
 			<BodyWrapper>
+				{isWide && blocksTillAirdrop < 0 ? (
+					<div id="dexscreener-embed" style={{ position: 'relative', maxWidth: '600px', height: '677px' }}>
+						<iframe
+							style={{ position: 'absolute', width: '600px', height: '677px', top: 0, left: 0, borderRadius: '16px' }}
+							src="https://dexscreener.com/optimism/0xa8328bf492ba1b77ad6381b3f7567d942b000baf?embed=1&trades=0&info=0"
+						></iframe>
+					</div>
+				) : null}
 				<Body showRoutes={finalSelectedFromToken && finalSelectedToToken ? true : false}>
 					<Box>
 						<HStack justifyContent={'center'}>
@@ -956,26 +991,41 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								Step 1.
 							</Text>
 						</HStack>
+						{!isConnected ? (
+							<>
+								<Button
+									colorScheme={'messenger'}
+									loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+									isLoading={isApproveInfiniteLoading}
+									onClick={() => {
+										openConnectModal?.();
+									}}
+									w="100%"
+								>
+									Connect
+								</Button>
+							</>
+						) : null}
 						<Box display="flex" justifyContent={'space-between'} textAlign="center" lineHeight={2.5} mt="8px">
-							{!isConnected ? (
-								<>
-									<Button
-										colorScheme={'messenger'}
-										loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
-										isLoading={isApproveInfiniteLoading}
-										onClick={() => {
-											openConnectModal();
-										}}
-										w="45%"
-									>
-										Connect
-									</Button>
-									<ChevronRightIcon w="28px" h="28px" mt="6px" />
-								</>
-							) : null}
 							<Button
 								colorScheme={'messenger'}
-								loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+								loadingText={'Confirming'}
+								isLoading={isApproveLoading}
+								onClick={() => {
+									if (approve) approve();
+								}}
+								disabled={!approve}
+								w="30%"
+								mr={'8px'}
+							>
+								{'Approve'}
+							</Button>
+							<Text mr={'8px'} mt={'4px'} fontWeight={'bold'}>
+								OR
+							</Text>
+							<Button
+								colorScheme={'messenger'}
+								loadingText={'Confirming'}
 								isLoading={isApproveInfiniteLoading}
 								onClick={() => {
 									if (approveInfinite) approveInfinite();
@@ -983,7 +1033,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								disabled={!approveInfinite}
 								w="45%"
 							>
-								{'Approve'}
+								{'Approve Infinite'}
 							</Button>
 							<ChevronRightIcon w="28px" h="28px" mt="6px" />
 							<Button
@@ -996,7 +1046,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								w="45%"
 								disabled={!claim}
 							>
-								{'Claim'}
+								{isClaimable ? (
+									<>
+										Claim <>({+claimableTokens?.toString() / 10 ** 18} ARB)</>
+									</>
+								) : (
+									<>Nothing to claim</>
+								)}
 							</Button>
 						</Box>
 					</Box>
@@ -1015,7 +1071,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								onClick={() => {
 									handleDegenSwap();
 								}}
-								disabled={!isApproved || finalSelectedFromToken.address === ETHEREUM.address || degenSizeIsSize}
+								disabled={!isDegenApproved || finalSelectedFromToken.address === ETHEREUM.address || degenSizeIsSize}
 								w="100%"
 							>
 								{'Sell all ARB airdrop (Degen mode)'}
@@ -1033,7 +1089,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							OR
 						</Text>
 					</HStack>
-
 					<Flex flexDir="column" gap="4px" pos="relative">
 						<InputAmountAndTokenSelect
 							placeholder={normalizedRoutes[0]?.amountIn}
@@ -1149,12 +1204,19 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							}
 						/>
 					</Flex>
-					<Slippage
-						slippage={slippage}
-						setSlippage={setSlippage}
-						fromToken={finalSelectedFromToken?.symbol}
-						toToken={finalSelectedToToken?.symbol}
-					/>
+					<HStack justifyContent={'space-between'}>
+						<Slippage
+							slippage={slippage}
+							setSlippage={setSlippage}
+							fromToken={finalSelectedFromToken?.symbol}
+							toToken={finalSelectedToToken?.symbol}
+						/>
+						<div style={{ marginTop: '12px' }}>
+							<Button colorScheme={'messenger'} onClick={() => refetch?.()}>
+								Refresh Price
+							</Button>
+						</div>
+					</HStack>
 
 					{sizeIsSize ? (
 						<Alert status="warning" borderRadius="0.375rem" py="8px" fontSize={'16px'}>
@@ -1162,7 +1224,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							Your size is size. Please use swap.defillama.com
 						</Alert>
 					) : null}
-
 					{/* <PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
 						fromTokenPrice={fromTokenPrice}
@@ -1264,6 +1325,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					</SwapWrapper>
 				</Body>
 			</BodyWrapper>
+
 			<TransactionModal open={txModalOpen} setOpen={setTxModalOpen} link={txUrl} />
 			<Gib />
 		</Wrapper>

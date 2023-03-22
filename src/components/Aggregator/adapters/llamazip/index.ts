@@ -9,7 +9,7 @@ export const token = 'none';
 
 export const chainToId = {
 	optimism: '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b',
-	arbitrum: '0x90F1963153E29E87Cd4A58cBB7850ED96FDEA050'
+	arbitrum: '0x973bf562407766e77f885c1cd1a8060e5303C745'
 };
 
 // https://docs.uniswap.org/contracts/v3/reference/deployments

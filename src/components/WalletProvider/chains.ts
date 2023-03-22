@@ -440,7 +440,7 @@ const canto = {
 const arbirum = {
 	...chain.arbitrum,
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/arbitrum'
+		default: 'https://arb-mainnet.g.alchemy.com/v2/1liDkmMh70Ds8fwF3-vDUGkXsOR8IAJO'
 	},
 	iconUrl: chainIconUrl('arbitrum')
 };

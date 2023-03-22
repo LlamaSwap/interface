@@ -86,7 +86,7 @@ export const rpcUrls = {
 		default: 'https://opt-mainnet.g.alchemy.com/v2/CMDWPZtTF2IsTOH0TE-8WNm8CTjPWz1H'
 	},
 	42161: {
-		default: 'https://arb1.arbitrum.io/rpc'
+		default: 'https://arb-mainnet.g.alchemy.com/v2/1liDkmMh70Ds8fwF3-vDUGkXsOR8IAJO'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
@@ -219,7 +219,7 @@ export const rpcUrls = {
 	},
 	7700: {
 		default: 'https://canto.slingshot.finance',
-		neobase: 'https://canto.neobase.one',
+		neobase: 'https://canto.neobase.one'
 	}
 };
 
