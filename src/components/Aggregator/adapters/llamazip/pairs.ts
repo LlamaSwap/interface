@@ -22,14 +22,15 @@ export const tokens = {
 		dai: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
 		wbtc: '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f',
 		gns: '0x18c11FD286C5EC11c3b683Caa813B77f5163A122',
-		magic: '0x539bdE0d7Dbd336b79148AA742883198BBF60342'
+		magic: '0x539bdE0d7Dbd336b79148AA742883198BBF60342',
+		arb: '0x912CE59144191C1204E64559FE8253a0e49E6548'
 	}
 };
 
 export const normalizeTokens = (t0, t1) =>
 	BigNumber.from(t0).lt(t1) ? [t0.toLowerCase(), t1.toLowerCase()] : [t1.toLowerCase(), t0.toLowerCase()];
 
-const createPair = (t0: string, t1: string, fee: string, pairId: string) => {
+const createPair = (t0: string, t1: string, fee: string, pairId: string, mayFail: boolean = false) => {
 	const [token0, token1] = normalizeTokens(t0, t1);
 
 	return {
@@ -37,7 +38,8 @@ const createPair = (t0: string, t1: string, fee: string, pairId: string) => {
 		pairId,
 		token0,
 		token1,
-		fee
+		fee,
+		mayFail
 	};
 };
 
@@ -64,7 +66,11 @@ export const pairs = {
 			createPair(chainTokens.weth, chainTokens.gmx, '3000', '3'),
 			createPair(chainTokens.weth, chainTokens.gns, '3000', '4'),
 			createPair(chainTokens.weth, chainTokens.magic, '10000', '5'),
-			createPair(chainTokens.weth, chainTokens.dai, '3000', '6')
+			createPair(chainTokens.weth, chainTokens.dai, '3000', '6'),
+			createPair(chainTokens.weth, chainTokens.arb, '10000', '7'),
+			createPair(chainTokens.weth, chainTokens.arb, '3000', '8', true),
+			createPair(chainTokens.weth, chainTokens.arb, '500', '9', true),
+			createPair(chainTokens.weth, chainTokens.arb, '100', '10', true)
 		];
 	})()
 };
