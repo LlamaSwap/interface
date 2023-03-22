@@ -86,7 +86,7 @@ export const rpcUrls = {
 		default: 'https://opt-mainnet.g.alchemy.com/v2/CMDWPZtTF2IsTOH0TE-8WNm8CTjPWz1H'
 	},
 	42161: {
-		default: 'https://arb-mainnet.g.alchemy.com/v2/1liDkmMh70Ds8fwF3-vDUGkXsOR8IAJO'
+		default: 'https://arb-mainnet.g.alchemy.com/v2/62Gs3DfuCosNP-0oZmA1FpDa9LlChN8n'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
