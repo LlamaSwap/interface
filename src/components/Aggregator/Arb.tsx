@@ -37,7 +37,6 @@ import { adaptersNames, inifiniteApprovalAllowed, swap } from './router';
 import { useTokenApprove } from './hooks';
 import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
-import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
@@ -179,8 +178,8 @@ const ARBITRUM = {
 	name: 'Arbitrum',
 	label: 'Arbitrum',
 	symbol: 'ARB',
-	address: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1'.toLowerCase(),
-	value: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1'.toLowerCase(),
+	address: '0x912CE59144191C1204E64559FE8253a0e49E6548'.toLowerCase(),
+	value: '0x912CE59144191C1204E64559FE8253a0e49E6548'.toLowerCase(),
 	decimals: 18,
 	logoURI: icons.arb,
 	chainId: 42161,
