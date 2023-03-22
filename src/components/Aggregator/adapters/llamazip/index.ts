@@ -46,21 +46,24 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const token0isTokenIn = BigNumber.from(tokenFrom).lt(tokenTo);
 
-	const pair = pairs[chain as keyof typeof pairs].find(
+	const possiblePairs = pairs[chain as keyof typeof pairs].filter(
 		({ name }) => name === normalizeTokens(tokenFrom, tokenTo).join('-')
 	);
 
-	if (pair === undefined) {
+	if (possiblePairs.length === 0) {
 		return {};
 	}
 
-	const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
-		tokenFrom,
-		tokenTo,
-		pair.fee,
-		amount,
-		0
+	const quotedAmountOuts = await Promise.all(
+		possiblePairs.map(async (pair) => ({
+			output: await quoterContract.callStatic.quoteExactInputSingle(tokenFrom, tokenTo, pair.fee, amount, 0),
+			pair
+		}))
 	);
+
+	const bestPair = quotedAmountOuts.sort((a, b) => (b.output.gt(a.output) ? 1 : -1))[0];
+	const pair = bestPair.pair;
+	const quotedAmountOut = bestPair.output;
 
 	const inputIsETH = from === ethers.constants.AddressZero;
 	const calldata = encode(pair.pairId, token0isTokenIn, quotedAmountOut, extra.slippage, inputIsETH, false, amount);
