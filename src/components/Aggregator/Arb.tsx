@@ -267,10 +267,10 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 	);
 }
 
-const { selectedChain, chainTokenList } = {
-	selectedChain: allChains.find(({ id }) => id === 42161),
-	chainTokenList: []
-};
+const selectedChain = allChains.find(({ id }) => id === 42161);
+const fromTokensList = [];
+const toTokensList = [];
+const disabledAdapters = adaptersNames.filter((name) => name !== 'LlamaZip');
 
 export function AggregatorContainer() {
 	// wallet stuff
@@ -329,44 +329,15 @@ export function AggregatorContainer() {
 		.times(BigNumber(10).pow(finalSelectedToToken?.decimals || 18))
 		.toFixed(0);
 
-	// saved tokens list
-	const savedTokens = useGetSavedTokens(selectedChain?.id);
-
 	// selected from token's balances
 	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
 	// selected from token's balances
 	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain.id });
-	const { data: tokenBalances } = useTokenBalances(address);
+
 	const { data: gasPriceData } = useFeeData({
-		chainId: selectedChain?.id,
-		enabled: selectedChain ? true : false
+		chainId: selectedChain.id,
+		enabled: true
 	});
-
-	const tokensInChain = useMemo(() => {
-		return (
-			chainTokenList
-				?.concat(savedTokens)
-				.map((token) => {
-					const tokenBalance = tokenBalances?.[selectedChain?.id]?.find(
-						(t) => t.address.toLowerCase() === token?.address?.toLowerCase()
-					);
-
-					return {
-						...token,
-						amount: tokenBalance?.amount ?? 0,
-						balanceUSD: tokenBalance?.balanceUSD ?? 0
-					};
-				})
-				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
-		);
-	}, [tokenBalances, savedTokens]);
-
-	const { fromTokensList, toTokensList } = useMemo(() => {
-		return {
-			fromTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
-			toTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)
-		};
-	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
 
 	const {
 		data: routes = [],
@@ -374,11 +345,11 @@ export function AggregatorContainer() {
 		isLoaded,
 		refetch
 	} = useGetRoutes({
-		chain: selectedChain?.network,
+		chain: selectedChain.network,
 		from: finalSelectedFromToken?.value,
 		to: finalSelectedToToken?.value,
 		amount: amountWithDecimals,
-		disabledAdapters: adaptersNames.filter((name) => name !== 'LlamaZip'),
+		disabledAdapters,
 		extra: {
 			gasPriceData,
 			userAddress: address || ethers.constants.AddressZero,
@@ -396,7 +367,7 @@ export function AggregatorContainer() {
 		from: ARBITRUM.value,
 		to: ETHEREUM.value,
 		amount: balance?.data?.value.toString(),
-		disabledAdapters: adaptersNames.filter((name) => name !== 'LlamaZip'),
+		disabledAdapters,
 		customRefetchInterval: 5_000,
 		extra: {
 			gasPriceData,
@@ -787,7 +758,8 @@ export function AggregatorContainer() {
 		}
 	};
 
-	const isValidDegenSwap = degenRoutes.length && degenRoutes[0]?.name === 'LlamaZip';
+	const isValidDegenSwap =
+		degenRoutes.length && degenRoutes[0]?.name === 'LlamaZip' && balance.data && balance.data.formatted !== '0.0';
 
 	const handleDegenSwap = () => {
 		if (isValidDegenSwap) {
@@ -876,7 +848,13 @@ export function AggregatorContainer() {
 
 	const isClaimable = claimableTokens && (claimableTokens as any)?.gt(0);
 
-	const isDegenApproved = allowance && +allowance?.toString() / 1e18 > +balance.data?.formatted;
+	const isDegenApproved =
+		allowance &&
+		balance.data &&
+		!Number.isNaN(Number(balance.data.formatted)) &&
+		!Number.isNaN(Number(+allowance.toString() / 1e18))
+			? +allowance.toString() / 1e18 > +balance.data.formatted
+			: false;
 
 	return (
 		<Wrapper>
@@ -980,12 +958,7 @@ export function AggregatorContainer() {
 								onClick={() => {
 									handleDegenSwap();
 								}}
-								disabled={
-									!isDegenApproved ||
-									finalSelectedFromToken.address === ETHEREUM.address ||
-									degenSizeIsSize ||
-									!isValidDegenSwap
-								}
+								disabled={!isDegenApproved || degenSizeIsSize || !isValidDegenSwap}
 								w="100%"
 							>
 								{'Sell all ARB airdrop (Degen mode)'}
