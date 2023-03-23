@@ -31,7 +31,8 @@ import {
 	Alert,
 	AlertIcon,
 	HStack,
-	Image
+	Image,
+	VStack
 } from '@chakra-ui/react';
 import { adaptersNames, inifiniteApprovalAllowed, swap } from './router';
 import { useTokenApprove } from './hooks';
@@ -871,6 +872,9 @@ export function AggregatorContainer() {
 	const arbPriceUsd = isEth
 		? fromTokenPrice / (normalizedRoutes?.[0]?.price.amountReturned / +normalizedRoutes?.[0]?.fromAmount)
 		: toTokenPrice / (+normalizedRoutes?.[0]?.fromAmount / normalizedRoutes?.[0]?.price?.amountReturned);
+	const degenPriceUsd = isEth
+		? fromTokenPrice / (degenRoutes?.[0]?.price?.amountReturned / +degenRoutes?.[0]?.fromAmount)
+		: toTokenPrice / (+degenRoutes?.[0]?.fromAmount / degenRoutes?.[0]?.price?.amountReturned);
 
 	return (
 		<Wrapper>
@@ -966,13 +970,20 @@ export function AggregatorContainer() {
 							</Text>
 						</HStack>
 
-						<HStack justifyContent={'center'}>
+						<VStack justifyContent={'center'}>
 							{Number.isFinite(arbPriceUsd) ? (
 								<Text fontWeight={'bold'} fontSize="16">
 									Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
+									<br />
 								</Text>
 							) : null}
-						</HStack>
+							{Number.isFinite(degenPriceUsd) ? (
+								<Text fontWeight={'bold'} fontSize="16">
+									Degen Mode Price 1 ARB = {degenPriceUsd.toFixed(3)}$
+									<br />
+								</Text>
+							) : null}
+						</VStack>
 
 						<Box display="flex" justifyContent={'center'} textAlign="center" lineHeight={2.5} mt="8px">
 							<Button
