@@ -30,7 +30,8 @@ import {
 	ToastId,
 	Alert,
 	AlertIcon,
-	Image
+	Image,
+	VStack
 } from '@chakra-ui/react';
 import { adaptersNames, inifiniteApprovalAllowed, swap } from './router';
 import { useTokenApprove } from './hooks';
@@ -856,11 +857,18 @@ export function AggregatorContainer() {
 		? fromTokenPrice / (normalizedRoutes?.[0]?.price.amountReturned / +normalizedRoutes?.[0]?.fromAmount)
 		: toTokenPrice / (+normalizedRoutes?.[0]?.fromAmount / normalizedRoutes?.[0]?.price?.amountReturned);
 
+	const degenPriceUsd = isEth
+		? fromTokenPrice / (degenRoutes?.[0]?.price?.amountReturned / +degenRoutes?.[0]?.fromAmount)
+		: toTokenPrice / (+degenRoutes?.[0]?.fromAmount / degenRoutes?.[0]?.price?.amountReturned);
+
 	return (
 		<Wrapper>
 			<Heading>Arbitrum Airdrop X DefiLlama</Heading>
 			<Text fontSize={'20px'}>
 				Claiming will be live in: {days}d : {hours}h : {minutes}m : {seconds}s
+			</Text>
+			<Text color={'orange.400'} fontSize="16px" mb={'8px'}>
+				There's large pool imbalances on ARB pools currently, please wait a few minutes after launch to buy/sell
 			</Text>
 			<BodyWrapper>
 				{blocksTillAirdrop < 0 ? (
@@ -967,12 +975,21 @@ export function AggregatorContainer() {
 						<Text fontWeight={'bold'} fontSize={'20px'} textAlign={'center'}>
 							Step 2.
 						</Text>
-            
-            {Number.isFinite(arbPriceUsd) ? (
-							<Text fontWeight={'bold'} fontSize="16" textAlign={'center'}>
-								Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
-							</Text>
-						) : null}
+
+						<VStack justifyContent={'center'}>
+							{Number.isFinite(arbPriceUsd) ? (
+								<Text fontWeight={'bold'} fontSize="16">
+									Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
+									<br />
+								</Text>
+							) : null}
+							{Number.isFinite(degenPriceUsd) ? (
+								<Text fontWeight={'bold'} fontSize="16">
+									Degen Mode Price 1 ARB = {degenPriceUsd.toFixed(3)}$
+									<br />
+								</Text>
+							) : null}
+						</VStack>
 
 						<Button
 							colorScheme={'messenger'}
