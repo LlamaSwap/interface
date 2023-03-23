@@ -67,11 +67,7 @@ export async function swap({ signer, from, rawQuote, chain }) {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
 		data: rawQuote.encodedSwapData,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit }),
-		...(chain === 'arbitrum' && {
-			maxFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any,
-			maxPriorityFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any
-		})
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
 	};
 
 	if (from === ethers.constants.AddressZero) transactionOption.value = rawQuote.inputAmount;

@@ -103,11 +103,7 @@ export async function swap({ signer, rawQuote, chain }) {
 		from: fromAddress,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
-		value: rawQuote.tx.value,
-		...(chain === 'arbitrum' && {
-			maxFeePerGas: BigNumber2(10).times(1e9).toFixed(0, 1) as any,
-			maxPriorityFeePerGas: BigNumber2(10).times(1e9).toFixed(0, 1) as any
-		})
+		value: rawQuote.tx.value
 	});
 	return tx;
 }

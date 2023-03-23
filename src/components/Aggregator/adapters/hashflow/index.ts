@@ -97,11 +97,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 export async function swap({ signer, rawQuote, chain }) {
 	const tx = await sendTx(signer, chain, {
 		...rawQuote.tx,
-		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit }),
-		...(chain === 'arbitrum' && {
-			maxFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any,
-			maxPriorityFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any
-		})
+		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit })
 	});
 
 	return tx;

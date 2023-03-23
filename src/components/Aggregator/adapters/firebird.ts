@@ -102,11 +102,7 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote.tx.router,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit }),
-		...(chain === 'arbitrum' && {
-			maxFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any,
-			maxPriorityFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any
-		})
+		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
 	});
 
 	return tx;
