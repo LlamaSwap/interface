@@ -30,8 +30,7 @@ import {
 	ToastId,
 	Alert,
 	AlertIcon,
-	HStack,
-	VStack
+	VStack,
 	Image
 } from '@chakra-ui/react';
 import { adaptersNames, inifiniteApprovalAllowed, swap } from './router';
@@ -972,8 +971,8 @@ export function AggregatorContainer() {
 						<Text fontWeight={'bold'} fontSize={'20px'} textAlign={'center'}>
 							Step 2.
 						</Text>
-            
-            {Number.isFinite(arbPriceUsd) ? (
+
+						{Number.isFinite(arbPriceUsd) ? (
 							<Text fontWeight={'bold'} fontSize="16" textAlign={'center'}>
 								Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
 							</Text>
