@@ -804,7 +804,11 @@ export function AggregatorContainer() {
 		address: '0x67a24CE4321aB3aF51c2D0a4801c3E111D88C9d9',
 		abi: CLAIM_ABI,
 		functionName: 'claim',
-		enabled: isConnected
+		enabled: isConnected,
+		overrides: {
+			maxFeePerGas: BigNumber(40).times(1e9).toFixed(0, 1) as any,
+			maxPriorityFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any
+		}
 	});
 
 	const { write: claim, isLoading: isClaimLoading } = useContractWrite({
