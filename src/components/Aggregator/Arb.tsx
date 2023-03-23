@@ -966,13 +966,11 @@ export function AggregatorContainer() {
 							</Text>
 						</HStack>
 
-						<HStack justifyContent={'center'}>
-							{Number.isFinite(arbPriceUsd) ? (
-								<Text fontWeight={'bold'} fontSize="16">
-									Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
-								</Text>
-							) : null}
-						</HStack>
+						{Number.isFinite(arbPriceUsd) ? (
+							<Text fontWeight={'bold'} fontSize="16" textAlign={'center'}>
+								Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
+							</Text>
+						) : null}
 
 						<Box display="flex" justifyContent={'center'} textAlign="center" lineHeight={2.5} mt="8px">
 							<Button
