@@ -63,7 +63,10 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		functionName: 'approve',
 		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token,
-		overrides: { gasLimit: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined }
+		overrides: {
+			maxFeePerGas: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined,
+			maxPriorityFeePerGas: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined
+		}
 	});
 
 	const { config: configInfinite } = usePrepareContractWrite({
@@ -72,7 +75,10 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		functionName: 'approve',
 		args: [spender, ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token,
-		overrides: { gasLimit: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined }
+		overrides: {
+			maxFeePerGas: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined,
+			maxPriorityFeePerGas: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined
+		}
 	});
 
 	const { config: configReset } = usePrepareContractWrite({
@@ -81,7 +87,10 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		functionName: 'approve',
 		args: [spender, BigNumber.from('0')],
 		enabled: isConnected && !!spender && !!token && shouldRemoveApproval,
-		overrides: { gasLimit: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined }
+		overrides: {
+			maxFeePerGas: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined,
+			maxPriorityFeePerGas: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined
+		}
 	});
 
 	const { write: approve, isLoading } = useContractWrite({

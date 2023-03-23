@@ -805,7 +805,10 @@ export function AggregatorContainer() {
 		abi: CLAIM_ABI,
 		functionName: 'claim',
 		enabled: isConnected,
-		overrides: { gasLimit: BigNumber(10).times(1e9).toFixed(0, 1) as any }
+		overrides: {
+			maxFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any,
+			maxPriorityFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any
+		}
 	});
 
 	const { write: claim, isLoading: isClaimLoading } = useContractWrite({
@@ -879,7 +882,7 @@ export function AggregatorContainer() {
 						pos="relative"
 						maxW="600px"
 						height="739px"
-						display={{ base: 'none', lg: 'block' }}
+						display={{ base: 'none', xl: 'block' }}
 					>
 						<iframe
 							style={{ position: 'absolute', width: '600px', height: '739px', top: 0, left: 0, borderRadius: '16px' }}
