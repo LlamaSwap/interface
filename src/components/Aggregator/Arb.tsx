@@ -867,6 +867,9 @@ export function AggregatorContainer() {
 			<Text fontSize={'20px'}>
 				Claiming will be live in: {days}d : {hours}h : {minutes}m : {seconds}s
 			</Text>
+			<Text color={'orange.400'} fontSize="16px" mb={'8px'}>
+				There's large pool imbalances on ARB pools currently, please wait a few minutes after launch to buy/sell
+			</Text>
 			<BodyWrapper>
 				{blocksTillAirdrop < 0 ? (
 					<Box
