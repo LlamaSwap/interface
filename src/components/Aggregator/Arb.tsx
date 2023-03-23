@@ -957,7 +957,7 @@ export function AggregatorContainer() {
 								onClick={() => {
 									if (claim) claim();
 								}}
-								disabled={!claim}
+								disabled={!claim || !isClaimable}
 								w={{ base: '100%', md: '40%' }}
 							>
 								{isClaimable ? (
