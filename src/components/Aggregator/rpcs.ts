@@ -86,7 +86,8 @@ export const rpcUrls = {
 		default: 'https://opt-mainnet.g.alchemy.com/v2/CMDWPZtTF2IsTOH0TE-8WNm8CTjPWz1H'
 	},
 	42161: {
-		default: 'https://1rpc.io/arb'
+		default: 'https://1rpc.io/arb',
+		second: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
