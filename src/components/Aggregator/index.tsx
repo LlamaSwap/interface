@@ -58,6 +58,9 @@ import { Sandwich } from './Sandwich';
 import { RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
+import Announcement from '../Announcement';
+import Link from 'next/link';
+import Image from 'next/image';
 
 /*
 Integrated:
@@ -890,7 +893,37 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					discord server
 				</a>
 			</Text>
-
+			<Announcement>
+				<Image
+					src="https://icons.llamao.fi/icons/memes/gib?w=36&h=36"
+					alt="Gib"
+					width={18}
+					height={18}
+					unoptimized
+					style={{ marginRight: '0.25rem', display: 'inline' }}
+				/>
+				{'  '}Seamlessly claim and trade your{' '}
+				<Link href={`/arb`}>
+					<a
+						style={{
+							textDecoration: 'underline',
+							fontWeight: 'bold'
+						}}
+					>
+						{/* <Image
+							src="https://icons.llamao.fi/icons/protocols/arbitrum?w=36&h=36"
+							alt="Arbitrum"
+							width={18}
+							height={18}
+							unoptimized
+							// full round boarder
+							style={{ display: 'inline', borderRadius: '50%' }}
+						/> */}
+						Arbitrum airdrop here
+					</a>
+				</Link>
+				{'!'}
+			</Announcement>
 			{phantomRugging ? (
 				<Text fontSize="1rem" fontWeight="500">
 					If you can't connect metamask it's because you have phantom installed which causes compatibility issues.
