@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-function createProvider(name: string, defaultRpc: string, chainId: number) {
+function createProvider(name: string, defaultRpc: string, chainId: number, random = false) {
 	if (process.env.HISTORICAL) {
 		if (chainId === 1) {
 			console.log('RPC providers set to historical, only the first RPC provider will be used');
@@ -19,7 +19,7 @@ function createProvider(name: string, defaultRpc: string, chainId: number) {
 					name,
 					chainId
 				}),
-				priority: i
+				priority: random ? 0 : i
 			})),
 			1
 		);
@@ -86,7 +86,9 @@ export const rpcUrls = {
 		default: 'https://opt-mainnet.g.alchemy.com/v2/CMDWPZtTF2IsTOH0TE-8WNm8CTjPWz1H'
 	},
 	42161: {
-		default: 'https://arbitrum-one.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec'
+		ankr: 'https://rpc.ankr.com/arbitrum/37742898ec8646ad93a8c1a20ab47ac5d777a81bfbb20345df3c40f5ce03e84c',
+		default: 'https://arbitrum-one.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+		second: 'https://arbitrum-one.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
@@ -240,7 +242,7 @@ export const providers = {
 	thundercore: createProvider('thundercore', getUrls(108), 108),
 	okexchain: createProvider('okexchain', getUrls(66), 66),
 	optimism: createProvider('optimism', getUrls(10), 10),
-	arbitrum: createProvider('arbitrum', getUrls(42161), 42161),
+	arbitrum: createProvider('arbitrum', getUrls(42161), 42161, true),
 	kcc: createProvider('kcc', getUrls(321), 321),
 	celo: createProvider('celo', getUrls(42220), 42220),
 	iotex: createProvider('iotex', getUrls(4689), 4689),

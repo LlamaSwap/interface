@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import gib from '~/public/gib.png';
 import gibr from '~/public/gibr.png';
 import { useMutation } from '@tanstack/react-query';
@@ -30,7 +30,6 @@ import {
 	ToastId,
 	Alert,
 	AlertIcon,
-	HStack,
 	Image
 } from '@chakra-ui/react';
 import { adaptersNames, inifiniteApprovalAllowed, swap } from './router';
@@ -44,7 +43,6 @@ import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
 import { formatSuccessToast } from '~/utils/formatSuccessToast';
 import { useDebounce } from '~/hooks/useDebounce';
-import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
@@ -60,7 +58,7 @@ import { chainToId } from './adapters/llamazip';
 const Body = styled.div<{ showRoutes: boolean }>`
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
+	gap: 20px;
 	padding: 16px;
 	width: 100%;
 	max-width: 30rem;
@@ -91,9 +89,7 @@ const Wrapper = styled.div`
 	display: flex;
 	flex-direction: column;
 	grid-row-gap: 24px;
-	margin: -5px auto 40px;
-	position: relative;
-	top: 36px;
+	margin: 60px auto;
 
 	h1 {
 		font-weight: 500;
@@ -224,7 +220,7 @@ const stablecoins = [
 	'PAX'
 ];
 
-export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
+function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 	if (Number.isNaN(slippage)) {
 		throw new Error('Wrong slippage!');
 	}
@@ -534,18 +530,6 @@ export function AggregatorContainer() {
 	const amountToApprove = BigNumber(11000).times(1e18).toFixed(0);
 	const amountToInfiniteApprove = BigNumber(30000).times(1e18).toFixed(0);
 
-	const [isWide, setIsWide] = useState(null);
-
-	useEffect(() => {
-		const mql = window.matchMedia('(min-width: 1386px)');
-		const onChange = () => setIsWide(!!mql.matches);
-
-		mql.addListener(onChange);
-		setIsWide(mql.matches);
-
-		return () => mql.removeListener(onChange);
-	}, []);
-
 	const {
 		isApproved,
 		approve,
@@ -570,6 +554,12 @@ export function AggregatorContainer() {
 			switchNetwork?.(42161);
 		}
 	}, [chainOnWallet]);
+
+	useEffect(() => {
+		if (isConnected && chainOnWallet.id !== 42161) {
+			switchNetwork?.(42161);
+		}
+	}, []);
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
@@ -862,6 +852,10 @@ export function AggregatorContainer() {
 			? +allowance.toString() / 1e18 > +balance.data.formatted
 			: false;
 
+	const arbPriceUsd = isEth
+		? fromTokenPrice / (normalizedRoutes?.[0]?.price.amountReturned / +normalizedRoutes?.[0]?.fromAmount)
+		: toTokenPrice / (+normalizedRoutes?.[0]?.fromAmount / normalizedRoutes?.[0]?.price?.amountReturned);
+
 	return (
 		<Wrapper>
 			<Heading>Arbitrum Airdrop X DefiLlama</Heading>
@@ -869,21 +863,27 @@ export function AggregatorContainer() {
 				Claiming will be live in: {days}d : {hours}h : {minutes}m : {seconds}s
 			</Text>
 			<BodyWrapper>
-				{isWide && blocksTillAirdrop < 0 ? (
-					<div id="dexscreener-embed" style={{ position: 'relative', maxWidth: '600px', height: '677px' }}>
+				{blocksTillAirdrop < 0 ? (
+					<Box
+						id="dexscreener-embed"
+						pos="relative"
+						maxW="600px"
+						height="739px"
+						display={{ base: 'none', lg: 'block' }}
+					>
 						<iframe
-							style={{ position: 'absolute', width: '600px', height: '677px', top: 0, left: 0, borderRadius: '16px' }}
+							style={{ position: 'absolute', width: '600px', height: '739px', top: 0, left: 0, borderRadius: '16px' }}
 							src="https://dexscreener.com/arbitrum/0xa8328bf492ba1b77ad6381b3f7567d942b000baf?embed=1&trades=0&info=0"
 						></iframe>
-					</div>
+					</Box>
 				) : null}
+
 				<Body showRoutes={finalSelectedFromToken && finalSelectedToToken ? true : false}>
-					<Box>
-						<HStack justifyContent={'center'}>
-							<Text fontWeight={'bold'} fontSize={'20'} mb={'4px'} ml={'4px'}>
-								Step 1.
-							</Text>
-						</HStack>
+					<Flex flexDir="column" gap="8px">
+						<Text fontWeight={'bold'} fontSize={'20px'} textAlign="center">
+							Step 1.
+						</Text>
+
 						{!isConnected ? (
 							<>
 								<Button
@@ -893,13 +893,19 @@ export function AggregatorContainer() {
 									onClick={() => {
 										openConnectModal?.();
 									}}
-									w="100%"
+									flex={1}
 								>
 									Connect
 								</Button>
 							</>
 						) : null}
-						<Box display="flex" justifyContent={'space-between'} textAlign="center" lineHeight={2.5} mt="8px">
+
+						<Flex
+							flexDir={{ base: 'column', md: 'row' }}
+							alignItems="center"
+							justifyContent={'space-between'}
+							gap="8px"
+						>
 							<Button
 								colorScheme={'messenger'}
 								loadingText={'Confirming'}
@@ -908,14 +914,13 @@ export function AggregatorContainer() {
 									if (approve) approve();
 								}}
 								disabled={!approve}
-								w="30%"
-								mr={'8px'}
+								w={{ base: '100%', md: '30%' }}
 							>
 								{'Approve 11k'}
 							</Button>
-							<Text mr={'8px'} mt={'4px'} fontWeight={'bold'}>
-								OR
-							</Text>
+
+							<Text fontWeight={'bold'}>OR</Text>
+
 							<Button
 								colorScheme={'messenger'}
 								loadingText={'Confirming'}
@@ -924,11 +929,19 @@ export function AggregatorContainer() {
 									if (approveNonInfinite) approveNonInfinite?.();
 								}}
 								disabled={!approveNonInfinite}
-								w="45%"
+								w={{ base: '100%', md: '30%' }}
 							>
 								{'Approve 30k'}
 							</Button>
-							<ChevronRightIcon w="28px" h="28px" mt="6px" />
+
+							<ChevronRightIcon
+								w="28px"
+								h="28px"
+								mx="-8px"
+								my="-2px"
+								transform={{ base: 'rotate(90deg)', md: 'rotate(0deg)' }}
+							/>
+
 							<Button
 								colorScheme={'messenger'}
 								loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
@@ -936,52 +949,56 @@ export function AggregatorContainer() {
 								onClick={() => {
 									if (claim) claim();
 								}}
-								w="45%"
 								disabled={!claim}
+								w={{ base: '100%', md: '40%' }}
 							>
 								{isClaimable ? (
 									<>
-										Claim <>({+claimableTokens?.toString() / 10 ** 18} ARB)</>
+										Claim <>({(+claimableTokens?.toString() / 10 ** 18).toFixed(0)} ARB)</>
 									</>
 								) : (
 									<>Nothing to claim</>
 								)}
 							</Button>
-						</Box>
-					</Box>
-					<div>
-						<HStack mt={'10px'} justifyContent="center">
-							<Text fontWeight={'bold'} fontSize={'20'} mb={'4px'} ml={'4px'}>
-								Step 2.
-							</Text>
-						</HStack>
+						</Flex>
+					</Flex>
 
-						<Box display="flex" justifyContent={'center'} textAlign="center" lineHeight={2.5} mt="8px">
-							<Button
-								colorScheme={'messenger'}
-								loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
-								isLoading={swapMutation.isLoading}
-								onClick={() => {
-									handleDegenSwap();
-								}}
-								disabled={!isDegenApproved || degenSizeIsSize || !isValidDegenSwap}
-								w="100%"
-							>
-								{'Sell all ARB (Degen mode)'}
-							</Button>
-						</Box>
-					</div>
+					<Flex flexDir={'column'} gap="8px">
+						<Text fontWeight={'bold'} fontSize={'20px'} textAlign={'center'}>
+							Step 2.
+						</Text>
+            
+            {Number.isFinite(arbPriceUsd) ? (
+							<Text fontWeight={'bold'} fontSize="16" textAlign={'center'}>
+								Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
+							</Text>
+						) : null}
+
+						<Button
+							colorScheme={'messenger'}
+							loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+							isLoading={swapMutation.isLoading}
+							onClick={() => {
+								handleDegenSwap();
+							}}
+							disabled={!isDegenApproved || degenSizeIsSize || !isValidDegenSwap}
+							w="100%"
+						>
+							{'Sell all ARB (Degen mode)'}
+						</Button>
+					</Flex>
+
 					{degenSizeIsSize ? (
 						<Alert status="warning" borderRadius="0.375rem" py="8px" fontSize={'16px'}>
 							<AlertIcon />
 							Your size is size. Please use swap.defillama.com
 						</Alert>
 					) : null}
-					<HStack justifyContent="center">
-						<Text fontWeight={'bold'} fontSize={'16'}>
-							OR
-						</Text>
-					</HStack>
+
+					<Text fontWeight={'bold'} fontSize={'16'} textAlign={'center'}>
+						OR
+					</Text>
+
 					<Flex flexDir="column" gap="4px" pos="relative">
 						<InputAmountAndTokenSelect
 							placeholder={normalizedRoutes[0]?.amountIn}
@@ -1097,19 +1114,17 @@ export function AggregatorContainer() {
 							}
 						/>
 					</Flex>
-					<HStack justifyContent={'space-between'}>
-						<Slippage
-							slippage={slippage}
-							setSlippage={setSlippage}
-							fromToken={finalSelectedFromToken?.symbol}
-							toToken={finalSelectedToToken?.symbol}
-						/>
-						<div style={{ marginTop: '12px' }}>
-							<Button colorScheme={'messenger'} onClick={() => refetch?.()}>
-								Refresh Price
-							</Button>
-						</div>
-					</HStack>
+
+					<Button colorScheme={'messenger'} onClick={() => refetch?.()} w="fit-content" ml="auto">
+						Refresh Price
+					</Button>
+
+					<Slippage
+						slippage={slippage}
+						setSlippage={setSlippage}
+						fromToken={finalSelectedFromToken?.symbol}
+						toToken={finalSelectedToToken?.symbol}
+					/>
 
 					{sizeIsSize ? (
 						<Alert status="warning" borderRadius="0.375rem" py="8px" fontSize={'16px'}>
