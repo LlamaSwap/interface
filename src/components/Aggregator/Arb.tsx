@@ -30,8 +30,7 @@ import {
 	ToastId,
 	Alert,
 	AlertIcon,
-	Image,
-	VStack
+	Image
 } from '@chakra-ui/react';
 import { adaptersNames, inifiniteApprovalAllowed, swap } from './router';
 import { useTokenApprove } from './hooks';
