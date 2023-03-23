@@ -868,7 +868,7 @@ export function AggregatorContainer() {
 				Claiming will be live in: {days}d : {hours}h : {minutes}m : {seconds}s
 			</Text>
 			<Text color={'orange.400'} fontSize="16px" mb={'8px'}>
-				There's large pool imbalances on ARB pools currently, please wait a few minutes after launch to buy/sell
+				There's large pool imbalances on ARB pools currently, please wait a few minutes after launch to buy/sell. Compare price on uniswap/aggregators to ensure you get the best fill.
 			</Text>
 			<BodyWrapper>
 				{blocksTillAirdrop < 0 ? (
