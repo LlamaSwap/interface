@@ -3,6 +3,7 @@ import { providers } from '../../rpcs';
 import { sendTx } from '../../utils/sendTx';
 import { encode } from './encode';
 import { normalizeTokens, pairs } from './pairs';
+import BigNumber2 from 'bignumber.js';
 
 export const name = 'LlamaZip';
 export const token = 'none';
@@ -102,7 +103,11 @@ export async function swap({ signer, rawQuote, chain }) {
 		from: fromAddress,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
-		value: rawQuote.tx.value
+		value: rawQuote.tx.value,
+		...(chain === 'arbitrum' && {
+			maxFeePerGas: BigNumber2(10).times(1e9).toFixed(0, 1) as any,
+			maxPriorityFeePerGas: BigNumber2(10).times(1e9).toFixed(0, 1) as any
+		})
 	});
 	return tx;
 }

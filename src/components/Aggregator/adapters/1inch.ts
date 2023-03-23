@@ -71,7 +71,11 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit })
+		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit }),
+		...(chain === 'arbitrum' && {
+			maxFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any,
+			maxPriorityFeePerGas: BigNumber(10).times(1e9).toFixed(0, 1) as any
+		})
 	});
 	return tx;
 }
@@ -80,12 +84,12 @@ export const getTxData = ({ rawQuote }) => rawQuote?.tx?.data;
 
 export const getTx = ({ rawQuote }) => {
 	if (rawQuote === null) {
-		return {}
+		return {};
 	}
 	return {
 		from: rawQuote.tx.from,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value
-	}
+	};
 };
