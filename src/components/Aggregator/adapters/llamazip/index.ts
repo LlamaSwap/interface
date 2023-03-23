@@ -4,6 +4,27 @@ import { sendTx } from '../../utils/sendTx';
 import { encode } from './encode';
 import { normalizeTokens, pairs } from './pairs';
 
+import { CurrencyAmount, Ether, Percent, Token, TradeType, WETH9 } from '@uniswap/sdk-core';
+import { AlphaRouter, ChainId, SwapOptionsSwapRouter02, SwapType } from '@uniswap/smart-order-router';
+import JSBI from 'jsbi';
+
+export function fromReadableAmount(amount: string, decimals: number): JSBI {
+	const value = ethers.utils.parseUnits(amount, decimals);
+
+	return JSBI.BigInt(value);
+}
+
+export const chainToIdUni = {
+	ethereum: ChainId.MAINNET,
+	polygon: ChainId.POLYGON,
+	arbitrum: ChainId.ARBITRUM_ONE,
+	optimism: ChainId.OPTIMISM
+};
+export const uniToken = (address, decimals, chain) => {
+	if (address === ethers.constants.AddressZero) return Ether.onChain(chainToIdUni[chain]);
+	return new Token(chainToIdUni[chain], address, decimals);
+};
+
 export const name = 'LlamaZip';
 export const token = 'none';
 
@@ -44,6 +65,36 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenFrom = normalize(from, weth[chain]);
 	const tokenTo = normalize(to, weth[chain]);
 
+	let uniRes = null;
+
+	try {
+		const fromTokenUni = uniToken(from, extra.fromToken.decimals, chain);
+		const toTokenUni = uniToken(to, extra.toToken.decimals, chain);
+
+		const router = new AlphaRouter({
+			chainId: chainToIdUni[chain],
+			provider: providers[chain]
+		});
+
+		const options: SwapOptionsSwapRouter02 = {
+			recipient: extra.userAddress,
+			slippageTolerance: new Percent(+extra.slippage * 1000, 100000),
+			deadline: Math.floor(Date.now() / 1000 + 1800),
+			type: SwapType.SWAP_ROUTER_02
+		};
+
+		const route = await router.route(
+			CurrencyAmount.fromRawAmount(fromTokenUni, fromReadableAmount(extra.amount, extra.fromToken.decimals).toString()),
+			toTokenUni,
+			TradeType.EXACT_INPUT,
+			options
+		);
+
+		uniRes = +route.trade.outputAmount.toExact() * 10 ** extra.toToken.decimals;
+	} catch (e) {
+		console.log(e);
+	}
+
 	const token0isTokenIn = BigNumber.from(tokenFrom).lt(tokenTo);
 
 	const possiblePairs = pairs[chain as keyof typeof pairs].filter(
@@ -82,6 +133,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: quotedAmountOut.toString(),
+		uniRes,
 		estimatedGas: (200e3).toString(), // random approximation
 		rawQuote: {
 			tx: {

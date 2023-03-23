@@ -989,6 +989,14 @@ export function AggregatorContainer() {
 									<br />
 								</Text>
 							) : null}
+
+							{Number.isFinite((normalizedRoutes as any)?.[0]?.price?.uniRes) ? (
+								<Text fontWeight={'bold'} fontSize="16">
+									Uniswap Price = {((normalizedRoutes as any)?.[0]?.price?.uniRes / 1e18).toFixed(4)}{' '}
+									{finalSelectedToToken?.symbol}
+									<br />
+								</Text>
+							) : null}
 						</VStack>
 
 						<Button
