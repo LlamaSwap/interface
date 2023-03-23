@@ -1,7 +1,8 @@
 import { BigNumber, ethers } from 'ethers';
 import { useState } from 'react';
-import { erc20ABI, useAccount, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
+import { erc20ABI, useAccount, useContractRead, useContractWrite, useNetwork, usePrepareContractWrite } from 'wagmi';
 import { nativeAddress } from '../constants';
+import BigNumber2 from 'bignumber.js';
 
 // To change the approve amount you first have to reduce the addresses`
 //  allowance to zero by calling `approve(_spender, 0)` if it is not
@@ -46,7 +47,11 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
 	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);
 
+	const { chain } = useNetwork();
+
 	const { address, isConnected } = useAccount();
+
+	const isArbitrum = chain?.id === 42161 ? true : false;
 
 	const { allowance, shouldRemoveApproval, refetch } = useGetAllowance(token, spender, amount);
 
@@ -57,7 +62,8 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
-		enabled: isConnected && !!spender && !!token
+		enabled: isConnected && !!spender && !!token,
+		overrides: { gasLimit: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined }
 	});
 
 	const { config: configInfinite } = usePrepareContractWrite({
@@ -65,7 +71,8 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, ethers.constants.MaxUint256],
-		enabled: isConnected && !!spender && !!token
+		enabled: isConnected && !!spender && !!token,
+		overrides: { gasLimit: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined }
 	});
 
 	const { config: configReset } = usePrepareContractWrite({
@@ -73,7 +80,8 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, BigNumber.from('0')],
-		enabled: isConnected && !!spender && !!token && shouldRemoveApproval
+		enabled: isConnected && !!spender && !!token && shouldRemoveApproval,
+		overrides: { gasLimit: isArbitrum ? (BigNumber2(10).times(1e9).toFixed(0, 1) as any) : undefined }
 	});
 
 	const { write: approve, isLoading } = useContractWrite({
