@@ -987,12 +987,6 @@ export function AggregatorContainer() {
 									<br />
 								</Text>
 							) : null}
-							{Number.isFinite(degenPriceUsd) ? (
-								<Text fontWeight={'bold'} fontSize="16">
-									Degen Mode Price 1 ARB = {degenPriceUsd.toFixed(3)}$
-									<br />
-								</Text>
-							) : null}
 						</VStack>
 
 						<Button
