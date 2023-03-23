@@ -3,7 +3,6 @@ import { providers } from '../../rpcs';
 import { sendTx } from '../../utils/sendTx';
 import { encode } from './encode';
 import { normalizeTokens, pairs } from './pairs';
-import BigNumber2 from 'bignumber.js';
 
 export const name = 'LlamaZip';
 export const token = 'none';
