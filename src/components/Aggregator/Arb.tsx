@@ -868,7 +868,8 @@ export function AggregatorContainer() {
 				Claiming will be live in: {days}d : {hours}h : {minutes}m : {seconds}s
 			</Text>
 			<Text color={'orange.400'} fontSize="16px" mb={'8px'}>
-				There's large pool imbalances on ARB pools currently, please wait a few minutes after launch to buy/sell. Compare price on uniswap/aggregators to ensure you get the best fill.
+				There's large pool imbalances on ARB pools currently, please wait a few minutes after launch to buy/sell.
+				Compare price on uniswap/aggregators to ensure you get the best fill.
 			</Text>
 			<BodyWrapper>
 				{blocksTillAirdrop < 0 ? (
@@ -901,7 +902,7 @@ export function AggregatorContainer() {
 									onClick={() => {
 										openConnectModal?.();
 									}}
-									flex={1}
+									w="100%"
 								>
 									Connect
 								</Button>
@@ -976,20 +977,19 @@ export function AggregatorContainer() {
 							Step 2.
 						</Text>
 
-						<VStack justifyContent={'center'}>
-							{Number.isFinite(arbPriceUsd) ? (
-								<Text fontWeight={'bold'} fontSize="16">
-									Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
-									<br />
-								</Text>
-							) : null}
-							{Number.isFinite(degenPriceUsd) ? (
-								<Text fontWeight={'bold'} fontSize="16">
-									Degen Mode Price 1 ARB = {degenPriceUsd.toFixed(3)}$
-									<br />
-								</Text>
-							) : null}
-						</VStack>
+						{Number.isFinite(arbPriceUsd) ? (
+							<Text fontWeight={'bold'} fontSize="16" textAlign="center">
+								Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
+								<br />
+							</Text>
+						) : null}
+
+						{Number.isFinite(degenPriceUsd) ? (
+							<Text fontWeight={'bold'} fontSize="16" textAlign="center">
+								Degen Mode Price 1 ARB = {degenPriceUsd.toFixed(3)}$
+								<br />
+							</Text>
+						) : null}
 
 						<Button
 							colorScheme={'messenger'}
@@ -1035,10 +1035,9 @@ export function AggregatorContainer() {
 									gap="6px"
 									flexWrap="nowrap"
 									alignItems="center"
-									w="100px"
+									w="120px"
 									borderRadius="8px"
 									bg="#222429"
-									maxW={{ base: '100%', md: '9rem' }}
 									p="12px"
 								>
 									<IconImage
@@ -1106,10 +1105,9 @@ export function AggregatorContainer() {
 									gap="6px"
 									flexWrap="nowrap"
 									alignItems="center"
-									w="100px"
+									w="120px"
 									borderRadius="8px"
 									bg="#222429"
-									maxW={{ base: '100%', md: '9rem' }}
 									p="12px"
 								>
 									<IconImage
