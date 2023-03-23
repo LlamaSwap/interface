@@ -87,8 +87,7 @@ export const rpcUrls = {
 	},
 	42161: {
 		ankr: 'https://rpc.ankr.com/arbitrum/37742898ec8646ad93a8c1a20ab47ac5d777a81bfbb20345df3c40f5ce03e84c',
-		default: 'https://arbitrum-one.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
-		second: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88'
+		default: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'

@@ -440,7 +440,7 @@ const canto = {
 const arbirum = {
 	...chain.arbitrum,
 	rpcUrls: {
-		default: 'https://arbitrum-one.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec'
+		default: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88'
 	},
 	iconUrl: chainIconUrl('arbitrum')
 };
