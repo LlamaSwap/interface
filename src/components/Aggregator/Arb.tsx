@@ -571,6 +571,12 @@ export function AggregatorContainer() {
 		}
 	}, [chainOnWallet]);
 
+	useEffect(() => {
+		if (isConnected && chainOnWallet.id !== 42161) {
+			switchNetwork?.(42161);
+		}
+	}, []);
+
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
 	const swapMutation = useMutation({
@@ -862,6 +868,10 @@ export function AggregatorContainer() {
 			? +allowance.toString() / 1e18 > +balance.data.formatted
 			: false;
 
+	const arbPriceUsd = isEth
+		? fromTokenPrice / (normalizedRoutes?.[0]?.price.amountReturned / +normalizedRoutes?.[0]?.fromAmount)
+		: toTokenPrice / (+normalizedRoutes?.[0]?.fromAmount / normalizedRoutes?.[0]?.price?.amountReturned);
+
 	return (
 		<Wrapper>
 			<Heading>Arbitrum Airdrop X DefiLlama</Heading>
@@ -941,7 +951,7 @@ export function AggregatorContainer() {
 							>
 								{isClaimable ? (
 									<>
-										Claim <>({+claimableTokens?.toString() / 10 ** 18} ARB)</>
+										Claim <>({(+claimableTokens?.toString() / 10 ** 18).toFixed(0)} ARB)</>
 									</>
 								) : (
 									<>Nothing to claim</>
@@ -954,6 +964,14 @@ export function AggregatorContainer() {
 							<Text fontWeight={'bold'} fontSize={'20'} mb={'4px'} ml={'4px'}>
 								Step 2.
 							</Text>
+						</HStack>
+
+						<HStack justifyContent={'center'}>
+							{Number.isFinite(arbPriceUsd) ? (
+								<Text fontWeight={'bold'} fontSize="16">
+									Current price: 1 ARB = {arbPriceUsd.toFixed(3)}$
+								</Text>
+							) : null}
 						</HStack>
 
 						<Box display="flex" justifyContent={'center'} textAlign="center" lineHeight={2.5} mt="8px">
