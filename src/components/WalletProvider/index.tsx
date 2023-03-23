@@ -1,28 +1,13 @@
 import * as React from 'react';
 import { darkTheme, getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import { configureChains, createClient, WagmiConfig, chain } from 'wagmi';
+import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import styled from 'styled-components';
 import { allChains } from './chains';
 
 const { provider, chains } = configureChains(
-	[
-		chain.arbitrum,
-		{
-			...chain.mainnet,
-			rpcUrls: {
-				default: 'https://eth.llamarpc.com'
-			}
-		},
-		{
-			...chain.optimism,
-			rpcUrls: {
-				default: 'https://optimism.blockpi.network/v1/rpc/public'
-			}
-		},
-		...allChains
-	],
+	[...allChains],
 	[
 		jsonRpcProvider({
 			rpc: (chain) => ({ http: chain.rpcUrls.default })
