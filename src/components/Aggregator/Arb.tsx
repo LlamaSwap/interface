@@ -856,21 +856,21 @@ export function AggregatorContainer() {
 		!Number.isNaN(Number(+allowance.toString() / 1e18))
 			? +allowance.toString() / 1e18 > +balance.data.formatted
 			: false;
+	const enoughApproval = !isEth
+		? allowance &&
+		  normalizedRoutes?.[0]?.fromAmount &&
+		  !Number.isNaN(Number(+allowance?.toString())) &&
+		  +allowance.toString() >= +balance?.data?.value?.toString()
+		: true;
 
 	const arbPriceUsd = isEth
 		? fromTokenPrice / (normalizedRoutes?.[0]?.price.amountReturned / +normalizedRoutes?.[0]?.fromAmount)
 		: toTokenPrice / (+normalizedRoutes?.[0]?.fromAmount / normalizedRoutes?.[0]?.price?.amountReturned);
 
-	const degenPriceUsd = isEth
-		? fromTokenPrice / (degenRoutes?.[0]?.price?.amountReturned / +degenRoutes?.[0]?.fromAmount)
-		: toTokenPrice / (+degenRoutes?.[0]?.fromAmount / degenRoutes?.[0]?.price?.amountReturned);
-
 	return (
 		<Wrapper>
 			<Heading>Arbitrum Airdrop X DefiLlama</Heading>
-			<Text fontSize={'20px'}>
-				Claiming will be live in: {days}d : {hours}h : {minutes}m : {seconds}s
-			</Text>
+
 			<Text color={'orange.400'} fontSize="16px" mb={'8px'}>
 				To get your txs accepted you need to increase priority fee and max fee in metamask.
 			</Text>
@@ -1181,7 +1181,7 @@ export function AggregatorContainer() {
 														//scroll Routes into view
 														!selectedRoute && routesRef.current.scrollIntoView({ behavior: 'smooth' });
 
-														if (approve) approve();
+														if (!enoughApproval) approve();
 
 														if (
 															balance.data &&
@@ -1190,7 +1190,7 @@ export function AggregatorContainer() {
 														)
 															return;
 
-														if (isApproved) handleSwap();
+														handleSwap();
 													}}
 													disabled={
 														swapMutation.isLoading ||
@@ -1205,7 +1205,7 @@ export function AggregatorContainer() {
 														fetchingTokenPrices
 													}
 												>
-													{isApproved ? `Swap via LlamaZip` : slippageIsWong ? 'Set Slippage' : 'Approve'}
+													{enoughApproval ? `Swap via LlamaZip` : slippageIsWong ? 'Set Slippage' : 'Approve'}
 												</Button>
 											)}
 
