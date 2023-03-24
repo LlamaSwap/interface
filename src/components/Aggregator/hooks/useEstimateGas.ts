@@ -10,7 +10,6 @@ const traceRpcs = {
 	ethereum: 'https://eth-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 	bsc: 'https://bsc-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 	gnosis: 'https://gnosis-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
-	arbitrum: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 	moonbeam: 'https://moonbeam.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 	moonriver: 'https://moonriver.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 	//palm: 'https://palm-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88', // we don't support it
