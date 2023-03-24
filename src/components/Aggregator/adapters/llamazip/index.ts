@@ -102,9 +102,7 @@ export async function swap({ signer, rawQuote, chain }) {
 		from: fromAddress,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
-		value: rawQuote.tx.value,
-		maxPriorityFeePerGas: BigNumber.from('15000000000'),
-		maxFeePerGas: BigNumber.from('40000000000')
+		value: rawQuote.tx.value
 	});
 	return tx;
 }
