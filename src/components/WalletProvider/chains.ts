@@ -1,5 +1,6 @@
 import { Chain, chain } from 'wagmi';
 import { chainIconUrl } from '~/utils/index';
+import { rpcUrls as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
 
 const okx = {
 	id: 66,
@@ -488,4 +489,4 @@ export const allChains: Array<IChain> = [
 	moonbeam,
 	fuse,
 	canto
-];
+].map((chain) => ({ ...chain, rpcUrls: { ...chain.rpcUrls, ...(rpcsUrlsMap[chain.id] || {}) } }));
