@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { mapKeys, mapValues, uniq } from 'lodash';
 
 function createProvider(name: string, defaultRpc: string, chainId: number, random = false) {
 	if (process.env.HISTORICAL) {
@@ -240,6 +241,20 @@ export const rpcUrls = {
 		plexnode: 'https://mainnode.plexnode.org:8545'
 	}
 };
+
+export const rpcsMap = Object.entries(rpcUrls).reduce((acc, [chainId, rpcs]) => {
+	const normalizedRpcs = Object.values(rpcs).reduce(
+		(innerAcc, rpc, i) => ({ ...innerAcc, [i === 0 ? 'default' : i]: rpc }),
+		{}
+	);
+	return { ...acc, [chainId]: normalizedRpcs };
+}, {});
+
+export const rpcsKeys = uniq(
+	Object.values(rpcsMap)
+		.map((obj) => Object.keys(obj))
+		.flat()
+);
 
 const getUrls = (chainId: keyof typeof rpcUrls) => Object.values(rpcUrls[chainId]).join(',');
 
