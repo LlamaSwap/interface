@@ -432,7 +432,7 @@ const canto = {
 		default: 'https://canto.neobase.one'
 	},
 	blockExplorers: {
-		default: { name: 'CantoScan', url: 'https://evm.explorer.canto.io' }
+		default: { name: 'CantoScan', url: 'https://tuber.build' }
 	},
 	testnet: false
 };
