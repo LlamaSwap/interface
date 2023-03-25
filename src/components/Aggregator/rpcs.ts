@@ -103,8 +103,7 @@ export const rpcUrls = {
 		default: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 		onerpc: 'https://1rpc.io/arb',
 		omniatech: 'https://endpoints.omniatech.io/v1/arbitrum/one/public',
-		arb: 'https://arb1.arbitrum.io/rpc',
-		alchemy: 'https://arb-mainnet.g.alchemy.com/v2/demo'
+		arb: 'https://arb1.arbitrum.io/rpc'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
