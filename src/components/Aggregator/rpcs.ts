@@ -28,12 +28,12 @@ function createProvider(name: string, defaultRpc: string, chainId: number, rando
 
 export const rpcUrls = {
 	1: {
-		default: 'https://eth.llamarewqpc.com',
+		default: 'https://eth.llamarpc.com',
 		ankr: 'https://rpc.ankr.com/eth',
 		pokt: 'https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79',
 		cloudflare: 'https://cloudflare-eth.com',
 		linkpool: 'https://main-light.eth.linkpool.io',
-		mycryptoapi: 'https://api.mycryptoapi.com/eth',
+		flashbots: 'https://rpc.flashbots.net',
 		builder: 'https://rpc.builder0x69.io',
 		publicNode: 'https://ethereum.publicnode.com',
 		blastapi: 'https://eth-mainnet.public.blastapi.io'
