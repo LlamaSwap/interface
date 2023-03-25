@@ -28,11 +28,15 @@ function createProvider(name: string, defaultRpc: string, chainId: number, rando
 
 export const rpcUrls = {
 	1: {
-		default: 'https://rpc.ankr.com/eth',
+		default: 'https://eth.llamarpc.com',
+		ankr: 'https://rpc.ankr.com/eth',
 		pokt: 'https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79',
 		cloudflare: 'https://cloudflare-eth.com',
 		linkpool: 'https://main-light.eth.linkpool.io',
-		mycryptoapi: 'https://api.mycryptoapi.com/eth'
+		flashbots: 'https://rpc.flashbots.net',
+		builder: 'https://rpc.builder0x69.io',
+		publicNode: 'https://ethereum.publicnode.com',
+		blastapi: 'https://eth-mainnet.public.blastapi.io'
 	},
 	56: {
 		default: 'https://bsc-dataseed.binance.org',
@@ -44,7 +48,9 @@ export const rpcUrls = {
 	137: {
 		default: 'https://polygon-rpc.com',
 		llama: 'https://polygon.llamarpc.com',
-		maticvigil: 'https://rpc-mainnet.maticvigil.com'
+		maticvigil: 'https://rpc-mainnet.maticvigil.com',
+		quicknode: 'https://rpc-mainnet.matic.quiknode.pro',
+		ankr: 'https://rpc.ankr.com/polygon'
 	},
 	128: {
 		default: 'https://http-mainnet.hecochain.com'
@@ -52,7 +58,9 @@ export const rpcUrls = {
 	250: {
 		default: 'https://rpc.ankr.com/fantom',
 		ftmtools: 'https://rpc.ftm.tools',
-		fantomnetwork: 'https://rpcapi.fantom.network'
+		fantomnetwork: 'https://rpcapi.fantom.network',
+		omniatech: 'https://endpoints.omniatech.io/v1/fantom/mainnet/public',
+		fantomnetwork2: 'https://rpc2.fantom.network'
 	},
 	30: {
 		default: 'https://public-node.rsk.co'
@@ -66,7 +74,9 @@ export const rpcUrls = {
 	},
 	43114: {
 		default: 'https://api.avax.network/ext/bc/C/rpc',
-		ankr: 'https://rpc.ankr.com/avalanche'
+		ankr: 'https://rpc.ankr.com/avalanche',
+		blockpi: 'https://avalanche.blockpi.network/v1/rpc/public',
+		blastapi: 'https://ava-mainnet.public.blastapi.io/ext/bc/C/rpc'
 	},
 	888: {
 		default: 'https://gwan-ssl.wandevs.org:56891'
@@ -74,7 +84,8 @@ export const rpcUrls = {
 	1666600000: {
 		default: 'https://harmony-0-rpc.gateway.pokt.network',
 		harmony: 'https://api.harmony.one',
-		hmny: 'https://api.s0.t.hmny.io'
+		hmny: 'https://api.s0.t.hmny.io',
+		chainstacklabs: 'https://harmony-mainnet.chainstacklabs.com'
 	},
 	108: {
 		default: 'https://mainnet-rpc.thundercore.com'
@@ -83,11 +94,16 @@ export const rpcUrls = {
 		default: 'https://exchainrpc.okex.org'
 	},
 	10: {
-		default: 'https://opt-mainnet.g.alchemy.com/v2/CMDWPZtTF2IsTOH0TE-8WNm8CTjPWz1H'
+		default: 'https://opt-mainnet.g.alchemy.com/v2/CMDWPZtTF2IsTOH0TE-8WNm8CTjPWz1H',
+		blockpi: 'https://optimism.blockpi.network/v1/rpc/public',
+		omniatech: 'https://endpoints.omniatech.io/v1/op/mainnet/public',
+		optimism: 'https://mainnet.optimism.io'
 	},
 	42161: {
 		default: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
-		second: 'https://1rpc.io/arb'
+		onerpc: 'https://1rpc.io/arb',
+		omniatech: 'https://endpoints.omniatech.io/v1/arbitrum/one/public',
+		arb: 'https://arb1.arbitrum.io/rpc'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
@@ -220,7 +236,8 @@ export const rpcUrls = {
 	},
 	7700: {
 		default: 'https://canto.slingshot.finance',
-		neobase: 'https://canto.neobase.one'
+		neobase: 'https://canto.neobase.one',
+		plexnode: 'https://mainnode.plexnode.org:8545'
 	}
 };
 
