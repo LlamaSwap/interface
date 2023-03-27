@@ -4,6 +4,7 @@ import { multiCall } from '@defillama/sdk/build/abi';
 import { ethers } from 'ethers';
 import { nativeTokens } from '~/components/Aggregator/nativeTokens';
 import { chainIdToName, dexToolsChainMap, geckoChainsMap } from '~/components/Aggregator/constants';
+import { ownTokenList } from '~/constants/tokenlist';
 import { protoclIconUrl } from '~/utils';
 
 const tokensToRemove = {
