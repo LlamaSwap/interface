@@ -3,7 +3,7 @@ export interface IToken {
 	label: string;
 	value: string;
 	logoURI: string;
-	logoURI2: string;
+	logoURI2?: string | null;
 	symbol: string;
 	decimals: number;
 	name: string;
