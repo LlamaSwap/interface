@@ -112,7 +112,8 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			...(data || {}),
 			label: data?.symbol,
 			value: address,
-			chainId: selectedChain?.id
+			chainId: selectedChain?.id,
+			logoURI: `https://icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`
 		});
 
 		queryClient.invalidateQueries({ queryKey: ['savedTokens', selectedChain?.id] });
@@ -131,7 +132,10 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			borderBottom="1px solid #373944"
 			key={address}
 		>
-			<QuestionIcon height="20px" width="20px" />
+			<IconImage
+				src={`https://icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`}
+				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+			/>
 
 			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
 				{isLoading
