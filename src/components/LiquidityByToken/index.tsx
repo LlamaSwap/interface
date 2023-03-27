@@ -153,7 +153,8 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 					<Flex alignItems="center" flexWrap="nowrap" justifyContent="center" gap={1}>
 						<Flex as="span" alignItems="center" gap="2px" flexWrap="nowrap">
 							<img
-								src={fromToken.logoURI}
+								src={fromToken.logoURI2}
+								onError={(e) => (e.currentTarget.src = fromToken.logoURI || '/placeholder.png')}
 								alt=""
 								style={{ width: '20px', height: '20px', objectFit: 'cover', display: ' flex', borderRadius: '100%' }}
 							/>
@@ -164,7 +165,8 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 						<ArrowRight width={16} height={16} display="block" />
 						<Flex as="span" alignItems="center" gap="2px" flexWrap="nowrap">
 							<img
-								src={toToken.logoURI}
+								src={toToken.logoURI2}
+								onError={(e) => (e.currentTarget.src = fromToken.logoURI || '/placeholder.png')}
 								alt=""
 								style={{ width: '20px', height: '20px', objectFit: 'cover', display: ' flex', borderRadius: '100%' }}
 							/>

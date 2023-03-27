@@ -22,10 +22,7 @@ const Row = ({ chain, token, onClick }) => {
 			data-defaultcursor={token.isGeckoToken ? true : false}
 			onClick={() => !token.isGeckoToken && onClick(token)}
 		>
-			<IconImage
-				src={token.logoURI || '/placeholder.png'}
-				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
-			/>
+			<IconImage src={token.logoURI2} onError={(e) => (e.currentTarget.src = token.logoURI || '/placeholder.png')} />
 
 			<Text display="flex" flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
 				<Text
@@ -292,10 +289,10 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 				p="12px"
 				onClick={() => onOpen()}
 			>
-				{token && token.logoURI && (
+				{token && (
 					<IconImage
-						src={token?.logoURI ?? '/placeholder.png'}
-						onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+						src={token.logoURI2}
+						onError={(e) => (e.currentTarget.src = token.logoURI || '/placeholder.png')}
 					/>
 				)}
 

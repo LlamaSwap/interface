@@ -1040,7 +1040,7 @@ export function AggregatorContainer() {
 									p="12px"
 								>
 									<IconImage
-										src={finalSelectedFromToken.logoURI}
+										src={finalSelectedFromToken.logoURI2}
 										onError={(e) => (e.currentTarget.src = '/placeholder.png')}
 									/>
 
@@ -1111,7 +1111,7 @@ export function AggregatorContainer() {
 									p="12px"
 								>
 									<IconImage
-										src={finalSelectedToToken.logoURI}
+										src={finalSelectedToToken.logoURI2}
 										onError={(e) => (e.currentTarget.src = '/placeholder.png')}
 									/>
 

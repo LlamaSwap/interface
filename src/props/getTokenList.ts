@@ -132,9 +132,9 @@ export async function getTokenList() {
 
 	// fetch name, symbol, decimals fo coingecko tokens
 	const geckoTokensList = await Promise.allSettled(
-		Object.entries(geckoListByChain)
-			.filter(([chain]) => chain !== '43114')
-			.map(([chain, tokens]: [string, Set<string>]) => getTokensData([chain, Array.from(tokens || new Set())]))
+		Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
+			getTokensData([chain, Array.from(tokens || new Set())])
+		)
 	);
 
 	const formatAndSortTokens = (tokens, chain) => {
@@ -154,6 +154,7 @@ export async function getTokenList() {
 					value: t.address,
 					geckoId,
 					logoURI: t.logoURI || logos[geckoId] || null,
+					logoURI2: `https://icons.llamao.fi/icons/tokens/${t.chainId}/${t.address}?h=20&w=20`,
 					volume24h
 				};
 			})
