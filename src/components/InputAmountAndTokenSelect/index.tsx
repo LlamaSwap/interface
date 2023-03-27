@@ -1,6 +1,7 @@
 import { Flex, Input, Text, Button, Box } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
 import type { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import type { IToken } from '~/types';
 import { formattedNum } from '~/utils';
 import { formatAmount } from '~/utils/formatAmount';
@@ -19,7 +20,9 @@ export function InputAmountAndTokenSelect({
 	onMaxClick,
 	tokenPrice,
 	priceImpact,
-	placeholder
+	placeholder,
+	customSelect,
+	disabled = false
 }: {
 	amount: string | number;
 	setAmount: Dispatch<SetStateAction<[string | number, string | number]>>;
@@ -39,6 +42,8 @@ export function InputAmountAndTokenSelect({
 	tokenPrice?: number;
 	priceImpact?: number;
 	placeholder?: string | number;
+	customSelect?: React.ReactElement;
+	disabled?: boolean;
 }) {
 	const amountUsd =
 		amount && tokenPrice && !Number.isNaN(Number(formatAmount(amount))) && !Number.isNaN(Number(tokenPrice))
@@ -63,6 +68,7 @@ export function InputAmountAndTokenSelect({
 			<Flex flexDir={{ base: 'column-reverse', md: 'row' }} gap={{ base: '12px', md: '8px' }}>
 				<Box pos="relative">
 					<Input
+						disabled={disabled}
 						type="text"
 						value={amount}
 						focusBorderColor="transparent"
@@ -89,7 +95,11 @@ export function InputAmountAndTokenSelect({
 					/>
 				</Box>
 
-				<TokenSelect tokens={tokens} token={token} onClick={onSelectTokenChange} selectedChain={selectedChain} />
+				{customSelect ? (
+					customSelect
+				) : (
+					<TokenSelect tokens={tokens} token={token} onClick={onSelectTokenChange} selectedChain={selectedChain} />
+				)}
 			</Flex>
 
 			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem">

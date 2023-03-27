@@ -1,5 +1,6 @@
 import { Chain, chain } from 'wagmi';
 import { chainIconUrl } from '~/utils/index';
+import { rpcUrls as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
 
 const okx = {
 	id: 66,
@@ -440,7 +441,7 @@ const canto = {
 const arbirum = {
 	...chain.arbitrum,
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/arbitrum'
+		default: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88'
 	},
 	iconUrl: chainIconUrl('arbitrum')
 };
@@ -488,4 +489,4 @@ export const allChains: Array<IChain> = [
 	moonbeam,
 	fuse,
 	canto
-];
+].map((chain) => ({ ...chain, rpcUrls: { ...chain.rpcUrls, ...(rpcsUrlsMap[chain.id] || {}) } }));

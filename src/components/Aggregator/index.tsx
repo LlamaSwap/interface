@@ -619,7 +619,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const hasPriceImapct =
 		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
-	const hasMaxPriceImpact = selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 10;
+	const hasMaxPriceImpact = selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 30;
 
 	const insufficientBalance =
 		balance.isSuccess &&
@@ -1097,8 +1097,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 														if (
 															balance.data &&
-															!Number.isNaN(Number(balance.data.formatted)) &&
-															+selectedRoute?.amountIn > +balance.data.formatted
+															!Number.isNaN(Number(balance.data.value)) &&
+															+selectedRoute?.fromAmount > +balance?.data?.value?.toString()
 														)
 															return;
 

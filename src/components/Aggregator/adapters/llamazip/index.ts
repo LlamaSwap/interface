@@ -9,7 +9,7 @@ export const token = 'none';
 
 export const chainToId = {
 	optimism: '0x6f9d14Cf4A06Dd9C70766Bd161cf8d4387683E1b',
-	arbitrum: '0x5279EBC4e5BA9eA09F19ADE49F2Bc98339aeA4d7'
+	arbitrum: '0x973bf562407766e77f885c1cd1a8060e5303C745'
 };
 
 // https://docs.uniswap.org/contracts/v3/reference/deployments
@@ -46,21 +46,33 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const token0isTokenIn = BigNumber.from(tokenFrom).lt(tokenTo);
 
-	const pair = pairs[chain as keyof typeof pairs].find(
+	const possiblePairs = pairs[chain as keyof typeof pairs].filter(
 		({ name }) => name === normalizeTokens(tokenFrom, tokenTo).join('-')
 	);
 
-	if (pair === undefined) {
+	if (possiblePairs.length === 0) {
 		return {};
 	}
 
-	const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
-		tokenFrom,
-		tokenTo,
-		pair.fee,
-		amount,
-		0
-	);
+	const quotedAmountOuts = (
+		await Promise.all(
+			possiblePairs.map(async (pair) => {
+				try {
+					return {
+						output: await quoterContract.callStatic.quoteExactInputSingle(tokenFrom, tokenTo, pair.fee, amount, 0),
+						pair
+					};
+				} catch (e) {
+					if (pair.mayFail === true) return null;
+					throw e;
+				}
+			})
+		)
+	).filter((t) => t !== null);
+
+	const bestPair = quotedAmountOuts.sort((a, b) => (b.output.gt(a.output) ? 1 : -1))[0];
+	const pair = bestPair.pair;
+	const quotedAmountOut = bestPair.output;
 
 	const inputIsETH = from === ethers.constants.AddressZero;
 	const calldata = encode(pair.pairId, token0isTokenIn, quotedAmountOut, extra.slippage, inputIsETH, false, amount);

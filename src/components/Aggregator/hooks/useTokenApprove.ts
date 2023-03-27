@@ -132,9 +132,9 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 
 	if (!address || !allowance) return { isApproved: false };
 
-	if (allowance.toString() === ethers.constants.MaxUint256.toString()) return { isApproved: true };
+	if (allowance.toString() === ethers.constants.MaxUint256.toString()) return { isApproved: true, allowance };
 
-	if (normalizedAmount && allowance.gte(BigNumber.from(normalizedAmount))) return { isApproved: true };
+	if (normalizedAmount && allowance.gte(BigNumber.from(normalizedAmount))) return { isApproved: true, allowance };
 
 	return {
 		isApproved: false,

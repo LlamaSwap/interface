@@ -12,6 +12,7 @@ interface IGetListRoutesProps {
 	amount?: string;
 	extra?: any;
 	disabledAdapters?: Array<string>;
+	customRefetchInterval?: number;
 }
 
 export interface IRoute {
@@ -119,7 +120,15 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 	}
 }
 
-export function useGetRoutes({ chain, from, to, amount, extra = {}, disabledAdapters = [] }: IGetListRoutesProps) {
+export function useGetRoutes({
+	chain,
+	from,
+	to,
+	amount,
+	extra = {},
+	disabledAdapters = [],
+	customRefetchInterval
+}: IGetListRoutesProps) {
 	const res = useQueries({
 		queries: adapters
 			.filter((adap) => adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name))
@@ -127,7 +136,7 @@ export function useGetRoutes({ chain, from, to, amount, extra = {}, disabledAdap
 				return {
 					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: REFETCH_INTERVAL,
+					refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
 					refetchOnWindowFocus: false,
 					refetchIntervalInBackground: false
 				};
