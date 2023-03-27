@@ -94,7 +94,7 @@ export const rpcUrls = {
 		default: 'https://exchainrpc.okex.org'
 	},
 	10: {
-		default: 'https://opt-mainnet.g.alchemy.com/v2/CMDWPZtTF2IsTOH0TE-8WNm8CTjPWz1H',
+		default: 'https://optimism-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 		blockpi: 'https://optimism.blockpi.network/v1/rpc/public',
 		omniatech: 'https://endpoints.omniatech.io/v1/op/mainnet/public',
 		optimism: 'https://mainnet.optimism.io'
