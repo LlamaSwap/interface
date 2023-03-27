@@ -4,6 +4,7 @@ import { multiCall } from '@defillama/sdk/build/abi';
 import { ethers } from 'ethers';
 import { nativeTokens } from '~/components/Aggregator/nativeTokens';
 import { chainIdToName, dexToolsChainMap, geckoChainsMap } from '~/components/Aggregator/constants';
+import { ownTokenList } from '~/constants/tokenlist';
 import { protoclIconUrl } from '~/utils';
 
 const tokensToRemove = {
@@ -74,7 +75,7 @@ export async function getTokenList() {
 		.flat();
 
 	const tokensByChain = mapValues(
-		groupBy([...nativeTokens, ...sushiList.tokens, ...oneInchList, ...ownList], 'chainId'),
+		groupBy([...nativeTokens, ...ownTokenList, ...sushiList.tokens, ...oneInchList, ...ownList], 'chainId'),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
