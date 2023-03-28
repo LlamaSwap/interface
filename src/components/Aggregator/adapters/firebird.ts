@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
-import { defillamaReferrerAddress } from '../constants';
+import { chainsMap, defillamaReferrerAddress } from '../constants';
 import { ExtraData } from '../types';
 import { providers } from '../rpcs';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
@@ -14,7 +14,8 @@ export const chainToId = {
 	arbitrum: 42161,
 	avax: 43114,
 	fantom: 250,
-	cronos: 25
+	cronos: 25,
+	canto: chainsMap.canto
 };
 
 const approvalAddresses = {
@@ -25,7 +26,8 @@ const approvalAddresses = {
 	arbitrum: '0x0c6134Abc08A1EafC3E2Dc9A5AD023Bb08Da86C3',
 	avax: '0xe0C38b2a8D09aAD53f1C67734B9A95E43d5981c0',
 	fantom: '0xe0C38b2a8D09aAD53f1C67734B9A95E43d5981c0',
-	cronos: '0x4A5a7331dA84d3834C030a9b8d4f3d687A3b788b'
+	cronos: '0x4A5a7331dA84d3834C030a9b8d4f3d687A3b788b',
+	canto: '0x984742Be1901fcbed70d7B5847bee5BE006d91C8'
 };
 
 export const name = 'Firebird';
@@ -46,14 +48,14 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const isFromNative = from === ethers.constants.AddressZero;
 	const tokenFrom = isFromNative ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const receiver = extra.userAddress || ethers.constants.AddressZero;
+	const receiver = extra.userAddress || defillamaReferrerAddress;
 
 	// amount should include decimals
 	const result = await fetch(
 		`${routerAPI}/quote?chainId=${
 			chainToId[chain]
 		}&from=${tokenFrom}&to=${tokenTo}&amount=${amount}&receiver=${receiver}&slippage=${
-			+extra.slippage / 100 || 0.005
+			+extra.slippage / 100
 		}&source=defillama&ref=${defillamaReferrerAddress}`,
 		{ headers }
 	).then((r) => r.json());
@@ -107,3 +109,6 @@ export async function swap({ signer, rawQuote, chain }) {
 }
 
 export const getTxData = ({ rawQuote }) => rawQuote?.tx?.data;
+
+
+export const getTx = ({ rawQuote }) => ({ ...rawQuote?.tx, to: rawQuote?.tx?.router });

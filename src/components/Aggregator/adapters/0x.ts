@@ -16,6 +16,7 @@ export const chainToId = {
 
 export const name = 'Matcha/0x';
 export const token = 'ZRX';
+export const isOutputAvailable = true;
 
 export function approvalAddress() {
 	// https://docs.0x.org/0x-api-swap/guides/swap-tokens-with-0x-api
@@ -29,18 +30,29 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const amountParam =
+		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
+
 	const data = await fetch(
 		`${
 			chainToId[chain]
-		}swap/v1/quote?buyToken=${tokenTo}&sellToken=${tokenFrom}&sellAmount=${amount}&slippagePercentage=${
-			extra.slippage / 100 || 1
-		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false`
+		}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
+			extra.slippage / 100
+		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
+			extra.userAddress
+		}&skipValidation=true`,
+		{
+			headers: {
+				'0x-api-key': process.env.OX_API_KEY
+			}
+		}
 	).then((r) => r.json());
 
 	const gas = chain === 'optimism' ? BigNumber(3.5).times(data.gas).toFixed(0, 1) : data.gas;
 
 	return {
 		amountReturned: data?.buyAmount || 0,
+		amountIn: data?.sellAmount || 0,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.to,
 		rawQuote: { ...data, gasLimit: gas },

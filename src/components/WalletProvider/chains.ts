@@ -1,5 +1,6 @@
 import { Chain, chain } from 'wagmi';
 import { chainIconUrl } from '~/utils/index';
+import { rpcsMap as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
 
 const okx = {
 	id: 66,
@@ -417,10 +418,30 @@ const polygon = {
 	testnet: false
 };
 
+const canto = {
+	id: 7700,
+	name: 'Canto',
+	network: 'Canto',
+	iconUrl: chainIconUrl('canto'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Canto',
+		symbol: 'CANTO'
+	},
+	rpcUrls: {
+		default: 'https://canto.neobase.one'
+	},
+	blockExplorers: {
+		default: { name: 'CantoScan', url: 'https://evm.explorer.canto.io' }
+	},
+	testnet: false
+};
+
 const arbirum = {
 	...chain.arbitrum,
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/arbitrum'
+		default: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88'
 	},
 	iconUrl: chainIconUrl('arbitrum')
 };
@@ -434,7 +455,7 @@ const ethereum = {
 const optimism = {
 	...chain.optimism,
 	rpcUrls: {
-		default: 'https://optimism-mainnet.public.blastapi.io'
+		default: 'https://optimism.blockpi.network/v1/rpc/public'
 	},
 	iconUrl: chainIconUrl('optimism')
 };
@@ -466,5 +487,6 @@ export const allChains: Array<IChain> = [
 	arbirum,
 	ethereum,
 	moonbeam,
-	fuse
-];
+	fuse,
+	canto
+].map((chain) => ({ ...chain, rpcUrls: { ...chain.rpcUrls, ...(rpcsUrlsMap[chain.id] || {}) } }));
