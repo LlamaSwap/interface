@@ -40,7 +40,7 @@ import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
 import { normalizeTokens } from '~/utils';
 import RoutesPreview from './RoutesPreview';
-import { formatSuccessToast, formatErrorToast } from '~/utils/formatToast';
+import { formatSuccessToast } from '~/utils/formatSuccessToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -744,12 +744,32 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						toast(formatSuccessToast(variables));
 					} else {
 						isError = true;
-						toast(formatErrorToast({}, true));
+						toast({
+							title: 'Transaction Failed',
+							status: 'error',
+							duration: 10000,
+							isClosable: true,
+							position: 'top-right',
+							containerStyle: {
+								width: '100%',
+								maxWidth: '300px'
+							}
+						});
 					}
 				})
 				.catch(() => {
 					isError = true;
-					toast(formatErrorToast({}, true));
+					toast({
+						title: 'Transaction Failed',
+						status: 'error',
+						duration: 10000,
+						isClosable: true,
+						position: 'top-right',
+						containerStyle: {
+							width: '100%',
+							maxWidth: '300px'
+						}
+					});
 				})
 				?.finally(() => {
 					sendSwapEvent({
@@ -772,7 +792,18 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
-				toast(formatErrorToast(err, false));
+				toast({
+					title: 'Something went wrong.',
+					description: err.reason,
+					status: 'error',
+					duration: 10000,
+					isClosable: true,
+					position: 'top-right',
+					containerStyle: {
+						width: '100%',
+						maxWidth: '300px'
+					}
+				});
 
 				sendSwapEvent({
 					chain: selectedChain.value,
@@ -835,7 +866,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const phantomRugging = (window as any).phantom !== undefined;
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
-	const isUnknownPrice = !fromTokenPrice || !toTokenPrice;
 
 	return (
 		<Wrapper>
@@ -1052,12 +1082,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												</Flex>
 											)}
 
-											{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
-												<SwapConfirmation
-													isUnknownPrice={isUnknownPrice}
-													isMaxPriceImpact={hasMaxPriceImpact}
-													handleSwap={handleSwap}
-												/>
+											{hasPriceImapct && !isLoading && selectedRoute && isApproved ? (
+												<SwapConfirmation handleSwap={handleSwap} />
 											) : (
 												<Button
 													isLoading={swapMutation.isLoading || isApproveLoading}
@@ -1249,12 +1275,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 															</Flex>
 														)}
 
-														{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
-															<SwapConfirmation
-																isUnknownPrice={isUnknownPrice}
-																handleSwap={handleSwap}
-																isMaxPriceImpact={hasMaxPriceImpact}
-															/>
+														{hasPriceImapct && !isLoading && selectedRoute && isApproved ? (
+															<SwapConfirmation handleSwap={handleSwap} />
 														) : (
 															<Button
 																isLoading={swapMutation.isLoading || isApproveLoading}
