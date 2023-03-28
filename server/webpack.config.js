@@ -10,7 +10,7 @@ module.exports = {
 			{
 				test: /\.ts$/,
 				use: 'ts-loader',
-				include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, '../src')],
+				include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, '../src/components/Aggregator')],
 				exclude: /node_modules/
 			},
 			{
