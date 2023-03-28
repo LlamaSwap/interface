@@ -30,7 +30,7 @@ interface IPriceImpact {
 
 const NoPriceImpactAlert = ({ tokens }) => {
 	return (
-		<Alert status="warning" borderRadius="0.375rem" py="8px">
+		<Alert status="error" borderRadius="0.375rem" py="8px">
 			<AlertIcon />
 			{`Couldn't fetch price for ${tokens.join(
 				', '
