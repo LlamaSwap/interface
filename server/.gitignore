@@ -1,0 +1,6 @@
+node_modules
+.webpack
+.env
+.serverless
+imported-db
+docker

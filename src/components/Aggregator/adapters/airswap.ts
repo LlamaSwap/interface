@@ -64,7 +64,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 					.catch((e) => null)
 			)
 		)
-	).filter((r) => r !== null);
+	).filter((r) => r !== null) as any[];
 	const bestOffer = offers.reduce((min, offer) => offer.signerAmount > min.signerAmount);
 	return {
 		amountReturned: bestOffer.signerAmount,
