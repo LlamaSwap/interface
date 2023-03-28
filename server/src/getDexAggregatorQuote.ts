@@ -1,11 +1,9 @@
-const fetch = require('node-fetch');
-globalThis.fetch = fetch;
-import { allDexAggregators } from './dexAggregators/list';
+import { adapters } from './dexAggregators/list';
 
 const handler = async (event: AWSLambda.APIGatewayEvent): Promise<any> => {
 	const { protocol, chain, from, to, amount } = event.queryStringParameters!;
 	const body = JSON.parse(event.body!);
-	const agg = allDexAggregators.find((ag) => ag.name === protocol);
+	const agg = adapters.find((ag) => ag.name === protocol);
 	if (agg === undefined) {
 		return {
 			statusCode: 404,

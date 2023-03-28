@@ -33,7 +33,8 @@ import {
 	Image,
 	VStack
 } from '@chakra-ui/react';
-import { adaptersNames, inifiniteApprovalAllowed, swap } from './router';
+import { adaptersNames, swap } from './router';
+import { inifiniteApprovalAllowed } from './list';
 import { useTokenApprove } from './hooks';
 import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';

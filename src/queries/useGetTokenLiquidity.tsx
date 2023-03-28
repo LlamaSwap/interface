@@ -1,7 +1,7 @@
 import { useQueries, useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { initialLiquidity } from '~/components/Aggregator/constants';
-import { adapters } from '~/components/Aggregator/router';
+import { adapters } from '~/components/Aggregator/list';
 import type { IToken } from '~/types';
 import { getAdapterRoutes } from './useGetRoutes';
 import { getTopRoute } from '~/utils/getTopRoute';
@@ -41,7 +41,14 @@ async function getInitialLiquidityRoutes({
 			if (item.status === 'fulfilled') {
 				const [liquidity, routes] = item.value;
 
-				const topRoute = getTopRoute({ routes: routes.filter(r=>r.name!=="CowSwap"), gasPriceData, gasTokenPrice, fromToken, toToken, toTokenPrice });
+				const topRoute = getTopRoute({
+					routes: routes.filter((r) => r.name !== 'CowSwap'),
+					gasPriceData,
+					gasTokenPrice,
+					fromToken,
+					toToken,
+					toTokenPrice
+				});
 
 				topRoutes.push([Number(liquidity), topRoute]);
 			}
