@@ -22,8 +22,10 @@ const SwapConfiramtion = ({ handleSwap }) => {
 					<PopoverCloseButton />
 					<PopoverHeader>Swap Confirmation.</PopoverHeader>
 					<PopoverBody>
-						Price impact is too high.<br />
-						You'll likely lose money.<br />
+						Price impact is too high.
+						<br />
+						You'll likely lose money.
+						<br />
 						Are you sure you want to make this swap?
 						<Button colorScheme={'red'} onClick={handleSwap} mt={4}>
 							Swap with high slippage
