@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 
-const SwapConfiramtion = ({ handleSwap, isUnknownPrice, isMaxPriceImpact }) => {
+const SwapConfiramtion = ({ handleSwap, isUnknownPrice = false, isMaxPriceImpact = false }) => {
 	const requiredText = isMaxPriceImpact ? 'trade' : 'confirm';
 	const [value, setValue] = useState('');
 	const isSwapDisabled = value !== requiredText;
