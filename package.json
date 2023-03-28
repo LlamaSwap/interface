@@ -11,7 +11,8 @@
 		"format": "prettier --write .",
 		"build": "next build && ./post-build.sh",
 		"start": "next start",
-		"lint": "next lint"
+		"lint": "next lint",
+		"test": "jest --"
 	},
 	"dependencies": {
 		"@chakra-ui/icons": "^2.0.12",
@@ -28,6 +29,7 @@
 		"echarts": "^5.4.1",
 		"ethers": "^5.7.1",
 		"framer-motion": "^6",
+		"jest": "^29.5.0",
 		"lodash": "^4.17.21",
 		"next": "12.3.1",
 		"react": "^18.2.0",
