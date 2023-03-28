@@ -5,14 +5,15 @@ import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import styled from 'styled-components';
 import { allChains } from './chains';
+import { rpcsKeys } from '../Aggregator/rpcs';
 
 const { provider, chains } = configureChains(
 	[...allChains],
-	[
+	rpcsKeys.map((key) =>
 		jsonRpcProvider({
-			rpc: (chain) => ({ http: chain.rpcUrls.default })
+			rpc: (chain) => ({ http: chain.rpcUrls[key] || '' })
 		})
-	]
+	)
 );
 
 const Provider = styled.div`
