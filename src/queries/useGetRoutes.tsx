@@ -1,5 +1,6 @@
-import { useQueries, UseQueryOptions } from '@tanstack/react-query';
-import { first, omit } from 'lodash';
+import { useQueries, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
+import { partial, first, omit } from 'lodash';
+
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
 import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/router';
@@ -10,6 +11,8 @@ interface IGetListRoutesProps {
 	to?: string;
 	amount?: string;
 	extra?: any;
+	disabledAdapters?: Array<string>;
+	customRefetchInterval?: number;
 }
 
 export interface IRoute {
@@ -31,6 +34,7 @@ export interface IRoute {
 		to: string;
 		data: string;
 	};
+	isOutputAvailable: boolean;
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
@@ -40,7 +44,7 @@ interface IGetAdapterRouteProps extends IGetListRoutesProps {
 export const REFETCH_INTERVAL = 25_000;
 
 export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
-	if (!chain || !from || !to || !amount || amount === '0') {
+	if (!chain || !from || !to || (!amount && !extra.amountOut) || (amount === '0' && extra.amountOut === '0')) {
 		return {
 			price: null,
 			name: adapter.name,
@@ -48,19 +52,39 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			fromAmount: amount,
 			txData: '',
 			l1Gas: 0,
-			tx: {}
+			tx: {},
+			isOutputAvailable: false
 		};
 	}
 
 	try {
+		const isOutputDefined = extra.amountOut && extra.amountOut !== '0';
 		let price;
-		if (extra.isPrivacyEnabled || adaptersWithApiKeys[adapter.name]) {
-			price = await redirectQuoteReq(adapter.name, chain, from, to, amount, extra);
+		let amountIn = amount;
+
+		const quouteFunc =
+			extra.isPrivacyEnabled || adaptersWithApiKeys[adapter.name]
+				? partial(redirectQuoteReq, adapter.name)
+				: adapter.getQuote;
+		if (adapter.isOutputAvailable) {
+			price = await quouteFunc(chain, from, to, amount, extra);
+			amountIn = price.amountIn;
+		} else if (isOutputDefined && !adapter.isOutputAvailable) {
+			return {
+				price: null,
+				name: adapter.name,
+				airdrop: !adapter.token,
+				fromAmount: amount,
+				txData: '',
+				l1Gas: 0,
+				tx: {},
+				isOutputAvailable: false
+			};
 		} else {
-			price = await adapter.getQuote(chain, from, to, amount, {
-				...extra
-			});
+			price = await quouteFunc(chain, from, to, amount, extra);
 		}
+
+		if (!amountIn) throw Error('amountIn is not defined');
 
 		const txData = adapter?.getTxData?.(price) ?? '';
 		let l1Gas: number | 'Unknown' = 0;
@@ -76,7 +100,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			tx: adapter?.getTx?.(price),
 			name: adapter.name,
 			airdrop: !adapter.token,
-			fromAmount: amount
+			fromAmount: amountIn,
+			isOutputAvailable: adapter.isOutputAvailable
 		};
 
 		return res;
@@ -89,30 +114,43 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			airdrop: !adapter.token,
 			fromAmount: amount,
 			txData: '',
-			tx: {}
+			tx: {},
+			isOutputAvailable: false
 		};
 	}
 }
 
-export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRoutesProps) {
+export function useGetRoutes({
+	chain,
+	from,
+	to,
+	amount,
+	extra = {},
+	disabledAdapters = [],
+	customRefetchInterval
+}: IGetListRoutesProps) {
 	const res = useQueries({
 		queries: adapters
-			.filter((adap) => adap.chainToId[chain] !== undefined)
+			.filter((adap) => adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name))
 			.map<UseQueryOptions<IRoute>>((adapter) => {
 				return {
 					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: REFETCH_INTERVAL,
+					refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
 					refetchOnWindowFocus: false,
 					refetchIntervalInBackground: false
 				};
 			})
 	});
-	const data = res.filter((r) => r.status === 'success') ?? [];
+	const data = res?.filter((r) => r.status === 'success') ?? [];
 	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
+	const loadingRoutes =
+		res
+			?.map((r, i) => [adapters[i].name, r])
+			?.filter((r: [string, UseQueryResult<IRoute>]) => r[1].status === 'loading') ?? [];
 
 	return {
-		isLoaded: res.filter((r) => r.status === 'loading').length === 0,
+		isLoaded: loadingRoutes.length === 0,
 		isLoading: data.length >= 1 ? false : true,
 		data: resData?.map((r) => r.data) ?? [],
 		refetch: () => res?.forEach((r) => r.refetch()),
@@ -122,6 +160,7 @@ export function useGetRoutes({ chain, from, to, amount, extra = {} }: IGetListRo
 					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
 					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)
 					.map((d) => d.dataUpdatedAt)
-			) || null
+			) || null,
+		loadingRoutes
 	};
 }

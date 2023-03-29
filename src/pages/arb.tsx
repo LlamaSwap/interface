@@ -1,17 +1,13 @@
 import * as React from 'react';
-import { AggregatorContainer } from '~/components/Aggregator';
+import { AggregatorContainer } from '~/components/Aggregator/Arb';
 import ConnectButton from '~/components/Aggregator/ConnectButton';
 import Layout from '~/layout';
-import { getSandwichList } from '~/props/getSandwichList';
-import { getTokenList } from '~/props/getTokenList';
 
 export async function getStaticProps() {
-	const tokenList = await getTokenList();
-	const sandwichList = await getSandwichList();
 	return {
 		props: {
-			tokenList,
-			sandwichList
+			tokenList: {},
+			sandwichList: []
 		}
 	};
 }

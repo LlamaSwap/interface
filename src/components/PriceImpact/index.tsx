@@ -14,7 +14,7 @@ import BigNumber from 'bignumber.js';
 import { useState } from 'react';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from '../Aggregator/constants';
 
-const PRICE_IMPACT_SMOL_WARNING_THRESHOLD = 3;
+const PRICE_IMPACT_SMOL_WARNING_THRESHOLD = 1;
 
 interface IPriceImpact {
 	isLoading: boolean;
@@ -28,11 +28,13 @@ interface IPriceImpact {
 	slippage?: string;
 }
 
-const NoPriceImpactAlert = ({ name: string }) => {
+const NoPriceImpactAlert = ({ tokens }) => {
 	return (
-		<Alert status="warning" borderRadius="0.375rem" py="8px">
+		<Alert status="error" borderRadius="0.375rem" py="8px">
 			<AlertIcon />
-			{`Couldn't fetch price for ${string}, we aren't able to check price impact so please exercise caution`}
+			{`Couldn't fetch price for ${tokens.join(
+				', '
+			)}, we aren't able to check price impact so please exercise caution. Please be very careful when checking the swap cause you could lose money`}
 		</Alert>
 	);
 };
@@ -53,13 +55,12 @@ export function PriceImpact({
 		return null;
 	}
 
-	if (!fromTokenPrice || Number.isNaN(Number(fromTokenPrice))) {
-		return <NoPriceImpactAlert name={fromToken.symbol} />;
-	}
+	const tokensWithoutPrice = [
+		!fromTokenPrice || Number.isNaN(Number(fromTokenPrice)) ? fromToken.symbol : null,
+		!toTokenPrice || Number.isNaN(Number(toTokenPrice)) ? toToken.symbol : null
+	].filter(Boolean);
 
-	if (!toTokenPrice || Number.isNaN(Number(toTokenPrice))) {
-		return <NoPriceImpactAlert name={toToken.symbol} />;
-	}
+	if (tokensWithoutPrice.length > 0) return <NoPriceImpactAlert tokens={tokensWithoutPrice} />;
 
 	if (!amount || Number.isNaN(Number(amount)) || !amountReturnedInSelectedRoute) {
 		return null;
@@ -122,8 +123,10 @@ export function PriceImpact({
 							color={
 								isPriceImpactNotKnown
 									? 'red.500'
-									: selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD
+									: selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD
 									? 'orange.500'
+									: selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD
+									? 'yellow.500'
 									: 'white'
 							}
 						>
@@ -159,6 +162,12 @@ export function PriceImpact({
 				<Alert status="warning" borderRadius="0.375rem" py="8px">
 					<AlertIcon />
 					High price impact! More than {selectedRoutesPriceImpact.toFixed(2)}% drop.
+				</Alert>
+			) : null}
+			{!isLoading && toTokenPrice && Number(totalAmountReceived) * toTokenPrice > 100e3 ? (
+				<Alert status="warning" borderRadius="0.375rem" py="8px">
+					<AlertIcon />
+					Your size is size. Please be mindful of slippage
 				</Alert>
 			) : null}
 		</>

@@ -23,38 +23,53 @@ function convertChain(chain: string) {
 	return chain;
 }
 
+const fetchTimeout = (url, ms, options = {}) => {
+	const controller = new AbortController();
+	const promise = fetch(url, { signal: controller.signal, ...options });
+	const timeout = setTimeout(() => controller.abort(), ms);
+	return promise.finally(() => clearTimeout(timeout));
+};
+
 async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceProps) {
 	let gasTokenPrice, fromTokenPrice, toTokenPrice;
 
 	try {
 		const cgPrices = await Promise.allSettled([
-			fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${chainGasToken[rawChain]}&vs_currencies=usd
-	`).then((res) => res.json()),
-			fetch(`https://api.coingecko.com/api/v3/simple/token_price/${llamaToGeckoChainsMap[rawChain]}?contract_addresses=${fromToken}%2C${toToken}&vs_currencies=usd
-	`).then((res) => res.json())
+			fetchTimeout(
+				`https://api.coingecko.com/api/v3/simple/price?ids=${chainGasToken[rawChain]}&vs_currencies=usd`,
+				600
+			).then((res) => res.json()),
+			fetchTimeout(
+				`https://api.coingecko.com/api/v3/simple/token_price/${llamaToGeckoChainsMap[rawChain]}?contract_addresses=${fromToken}%2C${toToken}&vs_currencies=usd`,
+				600
+			).then((res) => res.json())
 		]);
 
 		if (cgPrices[0].status === 'fulfilled') {
-			gasTokenPrice = cgPrices[0].value[chainGasToken[rawChain]]?.['usd'];
+			gasTokenPrice = cgPrices[0].value?.[chainGasToken[rawChain]]?.['usd'];
+
+			fromTokenPrice = fromToken === ZERO_ADDRESS ? gasTokenPrice : undefined;
+			toTokenPrice = toToken === ZERO_ADDRESS ? gasTokenPrice : undefined;
 		}
 
 		if (cgPrices[1].status === 'fulfilled') {
-			fromTokenPrice = cgPrices[1].value[fromToken]?.['usd'];
-			toTokenPrice = cgPrices[1].value[toToken]?.['usd'];
+			fromTokenPrice = fromTokenPrice || cgPrices[1].value[fromToken]?.['usd'];
+			toTokenPrice = toTokenPrice || cgPrices[1].value[toToken]?.['usd'];
 		}
 
 		let llamaApi = [];
+		const llamaChain = convertChain(rawChain);
 
 		if (!gasTokenPrice) {
-			llamaApi.push(`${rawChain}:${ZERO_ADDRESS}`);
+			llamaApi.push(`${llamaChain}:${ZERO_ADDRESS}`);
 		}
 
 		if (!fromTokenPrice) {
-			llamaApi.push(`${rawChain}:${fromToken}`);
+			llamaApi.push(`${llamaChain}:${fromToken}`);
 		}
 
 		if (!toTokenPrice) {
-			llamaApi.push(`${rawChain}:${toToken}`);
+			llamaApi.push(`${llamaChain}:${toToken}`);
 		}
 
 		if (llamaApi.length > 0) {
@@ -62,9 +77,9 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 				r.json()
 			);
 
-			gasTokenPrice = gasTokenPrice || coins[`${rawChain}:${ZERO_ADDRESS}`]?.price;
-			fromTokenPrice = fromTokenPrice || coins[`${rawChain}:${fromToken}`]?.price;
-			toTokenPrice = toTokenPrice || coins[`${rawChain}:${toToken}`]?.price;
+			gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
+			fromTokenPrice = fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price;
+			toTokenPrice = toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price;
 		}
 
 		return {

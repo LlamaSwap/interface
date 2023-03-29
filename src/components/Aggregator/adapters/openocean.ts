@@ -14,7 +14,6 @@ export const chainToId = {
 	fantom: 250,
 	aurora: 1313161554,
 	heco: 128,
-	harmony: 1666600000,
 	boba: 288,
 	okexchain: 66,
 	cronos: 25,
@@ -41,7 +40,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		`https://ethapi.openocean.finance/v2/${
 			chainToId[chain]
 		}/swap?inTokenAddress=${from}&outTokenAddress=${to}&amount=${amount}&gasPrice=${
-			gasPrice.fast?.maxPriorityFeePerGas ?? gasPrice.fast
+			gasPrice.fast?.maxFeePerGas ?? gasPrice.fast
 		}&slippage=${+slippage * 100}&account=${
 			userAddress || ethers.constants.AddressZero
 		}&referrer=0x5521c3dfd563d48ca64e132324024470f3498526`
