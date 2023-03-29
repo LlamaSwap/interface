@@ -47,7 +47,7 @@ const SwapConfiramtion = ({ handleSwap, isUnknownPrice = false, isMaxPriceImpact
 								onChange={(e) => setValue(e.target.value)}
 								value={value}
 							></Input>
-							<Button colorScheme={'red'} onClick={handleSwap} mt={4} isDisabled={isSwapDisabled}>
+							<Button colorScheme={'red'} onClick={() => handleSwap()} mt={4} isDisabled={isSwapDisabled}>
 								Swap with high slippage
 							</Button>
 						</PopoverBody>

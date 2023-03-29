@@ -97,7 +97,7 @@ const generateVersionDomainsSeparator = (name, tokenAddress, chainId = 1) => {
 		);
 
 		res[hash] = {
-			name: 'kek',
+			name,
 			chainId,
 			verifyingContract: tokenAddress,
 			version: v

@@ -423,7 +423,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		}
 	};
 
-	const { data: routes = [], isLoading, isLoaded, refetch, lastFetched } = useGetRoutes(quoteParams);
+	const { data: routes = [], isLoading, isLoaded, refetch, lastFetched, loadingRoutes } = useGetRoutes(quoteParams);
 
 	const secondsToRefresh = useCountdown(lastFetched + REFETCH_INTERVAL);
 
@@ -1063,7 +1063,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												<SwapConfirmation
 													isUnknownPrice={isUnknownPrice}
 													isMaxPriceImpact={hasMaxPriceImpact}
-													handleSwap={handleSwap}
+													handleSwap={isPermitAvailable ? swapWithPermit : handleSwap}
 												/>
 											) : (
 												<Button
@@ -1272,7 +1272,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
 															<SwapConfirmation
 																isUnknownPrice={isUnknownPrice}
-																handleSwap={handleSwap}
+																handleSwap={isPermitAvailable ? swapWithPermit : handleSwap}
 																isMaxPriceImpact={hasMaxPriceImpact}
 															/>
 														) : (
