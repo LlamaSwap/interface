@@ -14,7 +14,6 @@ const oldErc = [
 
 const chainsWithDefaltGasLimit = {
 	fantom: true,
-	optimism: true,
 	arbitrum: true
 };
 

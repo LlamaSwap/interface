@@ -83,7 +83,11 @@ export const rpcUrls = {
 		default: 'https://exchainrpc.okex.org'
 	},
 	10: {
-		default: 'https://opt-mainnet.g.alchemy.com/v2/CMDWPZtTF2IsTOH0TE-8WNm8CTjPWz1H'
+		default: 'https://1rpc.io/op',
+		mainnet: 'https://mainnet.optimism.io',
+		blockpi: 'https://optimism.blockpi.network/v1/rpc/public',
+		omniatech: 'https://endpoints.omniatech.io/v1/op/mainnet/public',
+		alchemy: 'https://opt-mainnet.g.alchemy.com/v2/demo'
 	},
 	42161: {
 		default: 'https://arb1.arbitrum.io/rpc'
@@ -219,7 +223,7 @@ export const rpcUrls = {
 	},
 	7700: {
 		default: 'https://canto.slingshot.finance',
-		neobase: 'https://canto.neobase.one',
+		neobase: 'https://canto.neobase.one'
 	}
 };
 
