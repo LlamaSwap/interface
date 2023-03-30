@@ -100,7 +100,6 @@ export const rpcUrls = {
 		mainnet: 'https://mainnet.optimism.io',
 		blockpi: 'https://optimism.blockpi.network/v1/rpc/public',
 		omniatech: 'https://endpoints.omniatech.io/v1/op/mainnet/public',
-		alchemy: 'https://opt-mainnet.g.alchemy.com/v2/demo'
 	},
 	42161: {
 		default: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
