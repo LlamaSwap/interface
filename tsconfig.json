@@ -23,6 +23,6 @@
 		"allowSyntheticDefaultImports": true,
 		"noFallthroughCasesInSwitch": true
 	},
-	"exclude": ["node_modules", "cypress"],
+	"exclude": ["node_modules", "cypress", "server"],
 	"include": ["**/*.js", "**/*.ts", "**/*.tsx"]
 }

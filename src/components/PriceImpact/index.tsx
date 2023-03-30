@@ -14,7 +14,7 @@ import BigNumber from 'bignumber.js';
 import { useState } from 'react';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from '../Aggregator/constants';
 
-const PRICE_IMPACT_SMOL_WARNING_THRESHOLD = 3;
+const PRICE_IMPACT_SMOL_WARNING_THRESHOLD = 1;
 
 interface IPriceImpact {
 	isLoading: boolean;
@@ -30,7 +30,7 @@ interface IPriceImpact {
 
 const NoPriceImpactAlert = ({ tokens }) => {
 	return (
-		<Alert status="warning" borderRadius="0.375rem" py="8px">
+		<Alert status="error" borderRadius="0.375rem" py="8px">
 			<AlertIcon />
 			{`Couldn't fetch price for ${tokens.join(
 				', '
@@ -123,8 +123,10 @@ export function PriceImpact({
 							color={
 								isPriceImpactNotKnown
 									? 'red.500'
-									: selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD
+									: selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD
 									? 'orange.500'
+									: selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD
+									? 'yellow.500'
 									: 'white'
 							}
 						>

@@ -5,8 +5,9 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
+	staticPageGenerationTimeout: 1000,
 	images: {
-		domains: ['icons.llama.fi', 'assets.coingecko.com']
+		domains: ['icons.llama.fi', 'assets.coingecko.com', 'icons.llamao.fi']
 	},
 	compiler: {
 		styledComponents: true
