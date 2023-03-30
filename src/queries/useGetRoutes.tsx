@@ -3,7 +3,7 @@ import { partial, first, omit } from 'lodash';
 
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
-import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/router';
+import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/list';
 
 interface IGetListRoutesProps {
 	chain: string;
