@@ -5,7 +5,7 @@ import { adapters } from './list';
 
 export const adaptersNames = adapters.map(({ name }) => name);
 
-const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
+export const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
 
 export function getAllChains() {
 	const chains = new Set<string>();

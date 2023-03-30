@@ -1,8 +1,9 @@
-import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ethers } from 'ethers';
 import { getAdapterRoutes } from '~/queries/useGetRoutes';
 import { chainsMap } from '../../constants';
-import { adaptersMap, adaptersWithPermit } from '../../router';
+import { adaptersWithPermit } from '../../list';
+import { adaptersMap } from '../../router';
 import { usePermitsBlackList } from '../usePermitsBlackList';
 import { ABI } from './abi';
 import {
