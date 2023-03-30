@@ -142,3 +142,5 @@ export const WETH = {
 export const PRICE_IMPACT_MEDIUM_THRESHOLD = 5;
 export const PRICE_IMPACT_HIGH_THRESHOLD = 10;
 export const PRICE_IMPACT_WARNING_THRESHOLD = 3;
+
+export const LLAMA_SERVER_URL = 'https://api.llama.fi';

@@ -78,7 +78,9 @@ export async function swap({
 		});
 		return res;
 	} catch (e) {
-		if (onError) onError();
+		if (onError && (e.code !== 'ACTION_REJECTED' || e.code.toString() === '-32603')) {
+			onError();
+		}
 		throw e;
 	}
 }

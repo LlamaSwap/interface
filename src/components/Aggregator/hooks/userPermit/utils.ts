@@ -124,9 +124,9 @@ export const generateDomains = (name, tokenAddress, chainId = 1) => {
 	return { ...withVersion, ...withoutVersion };
 };
 
-export const generateCallParams = (typeHash, user, spender, deadline, amount = '0') => {
+export const generateCallParams = (typeHash, user, spender, deadline, amount = '0', nonce) => {
 	if (typeHash === EIP2612_PERMIT_NO_NONCE) return [user, spender, amount, deadline];
-	if (typeHash === DAI_LIKE_PERMIT) return [user, spender, deadline];
+	if (typeHash === DAI_LIKE_PERMIT) return [user, spender, nonce, deadline, true];
 
 	return [user, spender, amount, deadline];
 };
