@@ -7,19 +7,29 @@ import {
 	PopoverCloseButton,
 	PopoverContent,
 	PopoverHeader,
-	PopoverTrigger
+	PopoverTrigger,
+	useDisclosure
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 
 const SwapConfiramtion = ({ handleSwap, isUnknownPrice = false, isMaxPriceImpact = false }) => {
+	const { isOpen, onToggle, onClose } = useDisclosure();
 	const requiredText = isMaxPriceImpact ? 'trade' : 'confirm';
 	const [value, setValue] = useState('');
 	const isSwapDisabled = value !== requiredText;
+
+	const onPopoverClose = () => {
+		setValue('');
+		onClose();
+	};
+
 	return (
 		<>
-			<Popover>
+			<Popover returnFocusOnClose={false} isOpen={isOpen} onClose={onPopoverClose} placement="top">
 				<PopoverTrigger>
-					<Button colorScheme={'red'}>Swap</Button>
+					<Button colorScheme="red" onClick={() => onToggle()}>
+						Swap
+					</Button>
 				</PopoverTrigger>
 				<PopoverContent>
 					<PopoverArrow />
