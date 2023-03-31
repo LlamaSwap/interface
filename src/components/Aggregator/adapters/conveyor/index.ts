@@ -48,7 +48,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	}).then((r) => r.json());
 
-	let gas = !isZero(data.gas_estimate) ? data.gas_estimate : 0; //The api returns a 1.25% margin on the gas estimate from the provider
+	let gas = calculateGasMargin(BigNumber.from(data.gas_estimate)).toString(); //The api returns a 1.25% margin on the gas estimate from the provider
 	
 	return {
 		amountReturned: data.amount_out,
@@ -57,14 +57,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		tokenApprovalAddress: conveyorSwapAggregatorAddress[chainId],
 		rawQuote: {
 			...data,
-			gasLimit: BigNumber.from(gas).toString(),
+			gasLimit: gas,
 			tx: {data: data?.tx_calldata, ...(isNativeToken(from) ? {value: amount} :{}) }
 		}
 	};
 }
 
-function isZero(value: string): boolean {
-	return BigNumber.from(value).isZero();
+//Adds a 1.25% buffer onto the estimated gas
+function calculateGasMargin(gasEstimate: BigNumber): BigNumber {
+	return gasEstimate.mul(BigNumber.from(125)).div(BigNumber.from(100));
 }
 
 function isNativeToken(token: string): boolean {
@@ -80,6 +81,5 @@ export async function swap({ signer, rawQuote, chain }) {
 }
 
 export const getTxData = ({ rawQuote }) => rawQuote?.tx?.data;
-
 
 export const getTx = ({ rawQuote }) => rawQuote.tx;
