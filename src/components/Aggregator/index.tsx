@@ -833,7 +833,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					: finalSelectedToToken?.address
 			).join('')
 		];
-	const phantomRugging = (window as any).phantom !== undefined;
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
 	const isUnknownPrice = !fromTokenPrice || !toTokenPrice;
@@ -861,13 +860,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					discord server
 				</a>
 			</Text>
-
-			{phantomRugging ? (
-				<Text fontSize="1rem" fontWeight="500">
-					If you can't connect metamask it's because you have phantom installed which causes compatibility issues.
-					Disable it to connect metamask.
-				</Text>
-			) : null}
 
 			<BodyWrapper>
 				<Body showRoutes={finalSelectedFromToken && finalSelectedToToken ? true : false}>
@@ -988,11 +980,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							<Alert status="warning" borderRadius="0.375rem" py="8px">
 								<AlertIcon />
 								CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
-							</Alert>
-							<Alert status="warning" borderRadius="0.375rem" py="8px">
-								<AlertIcon />
-								CowSwap is currently quoting prices incorrectly, you can still use it with slippage {'>'}=2% but be
-								aware that you likely won't get the rates shown
+								{finalSelectedFromToken.value === ethers.constants.AddressZero ? (
+									<>
+										<br /> For ETH orders, if it doesn't get executed the ETH will be returned to your wallet in 30
+										minutes.
+									</>
+								) : null}
 							</Alert>
 						</>
 					) : null}
