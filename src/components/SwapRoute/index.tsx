@@ -1,12 +1,10 @@
 import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
-import { Flex, Text } from '@chakra-ui/react';
-import { AlertCircle, Gift, Unlock } from 'react-feather';
+import { Flex, Skeleton, Text } from '@chakra-ui/react';
+import { AlertCircle, Gift, Unlock, ZapOff } from 'react-feather';
 import { GasIcon } from '../Icons';
 import { formattedNum } from '~/utils';
-import { WarningIcon } from '@chakra-ui/icons';
-import BigNumber from 'bignumber.js';
 
 interface IToken {
 	address: string;
@@ -21,6 +19,7 @@ interface IPrice {
 	tokenApprovalAddress: string;
 	logo: string;
 	rawQuote?: {};
+	isMEVSafe?: boolean;
 }
 
 interface IRoute {
@@ -41,8 +40,9 @@ interface IRoute {
 	txData: string;
 	netOut: number;
 	isFetchingGasPrice: boolean;
-	isOutputAvailable: boolean;
 	amountOut: string;
+	toTokenPrice: number;
+	amountIn: string;
 }
 
 const Route = ({
@@ -59,8 +59,9 @@ const Route = ({
 	lossPercent,
 	netOut,
 	isFetchingGasPrice,
-	isOutputAvailable,
-	amountOut
+	amountOut,
+	toTokenPrice,
+	amountIn
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
@@ -69,17 +70,13 @@ const Route = ({
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
 	const afterFees =
-		netOut && Number.isFinite(Number(netOut)) ? `$${formattedNum(netOut.toFixed(1), false, true)}` : null;
+		toTokenPrice && Number.isFinite(Number(toTokenPrice)) && netOut && Number.isFinite(Number(netOut))
+			? `$${formattedNum(netOut.toFixed(1), false, true)}`
+			: null;
 	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
 	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
 
-	const isSimulatedOutput = !isOutputAvailable && amountOut !== '0';
-
-	const inputAmount =
-		isOutputAvailable && amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0'
-			? Number(new BigNumber(amountFrom).div(10 ** fromToken.decimals).toFixed(4))
-			: null;
-
+	const inputAmount = amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0' ? amountIn : null;
 	return (
 		<RouteWrapper
 			onClick={setRoute}
@@ -105,13 +102,6 @@ const Route = ({
 						<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
 							{toToken?.symbol}{' '}
 						</Text>
-						{isSimulatedOutput ? (
-							<Tooltip
-								content={`The value of this route is estimated because ${name} doesn't support setting amount received.`}
-							>
-								<WarningIcon mb={'4px'} ml={'4px'} color="orange.300" />
-							</Tooltip>
-						) : null}
 					</Flex>
 				)}
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
@@ -136,14 +126,14 @@ const Route = ({
 					</Flex>
 				) : (
 					<Flex className="mobile-column" as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
-						<span>{`≈ ${afterFees} `}</span>
+						{afterFees ? <span>{`≈ ${afterFees} `}</span> : null}
 						{isGasNotKnown && !isFetchingGasPrice ? (
 							<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
 								<AlertCircle size="14" /> unknown gas fees
 							</Flex>
-						) : (
+						) : afterFees ? (
 							<span>after fees</span>
-						)}
+						) : null}
 					</Flex>
 				)}
 
@@ -178,6 +168,11 @@ const Route = ({
 								' '
 							)}
 							{name}
+							{price.isMEVSafe === true ? (
+								<Tooltip content="This aggregator protects from MEV.">
+									<ZapOff size={14} color="#059669" />
+								</Tooltip>
+							) : null}
 						</Text>
 					</Text>
 				</Text>
@@ -186,7 +181,23 @@ const Route = ({
 	);
 };
 
-const RouteWrapper = styled.div<{ selected: boolean; best: boolean }>`
+export const LoadingRoute = ({ name }: { name: string }) => {
+	return (
+		<RouteWrapper>
+			<RouteRow>
+				<Skeleton height="28.5px" w="full" colorScheme="dark" />
+			</RouteRow>
+
+			<RouteRow>
+				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
+					{name}
+				</Text>
+			</RouteRow>
+		</RouteWrapper>
+	);
+};
+
+const RouteWrapper = styled.div<{ selected?: boolean; best?: boolean }>`
 	display: grid;
 	grid-row-gap: 4px;
 	margin-top: 16px;

@@ -25,22 +25,23 @@ import {
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
-import SwapRoute from '~/components/SwapRoute';
-import { getAllChains, inifiniteApprovalAllowed, swap } from './router';
+import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
+import { adaptersNames, getAllChains, swap } from './router';
+import { inifiniteApprovalAllowed } from './list';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
 import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
-import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
+import { PRICE_IMPACT_WARNING_THRESHOLD, WETH } from './constants';
 import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
-import { median } from '~/utils';
+import { normalizeTokens } from '~/utils';
 import RoutesPreview from './RoutesPreview';
-import { formatSuccessToast } from '~/utils/formatSuccessToast';
+import { formatSuccessToast, formatErrorToast } from '~/utils/formatToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -54,7 +55,9 @@ import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
 import { useCountdown } from '~/hooks/useCountdown';
-import { RepeatIcon } from '@chakra-ui/icons';
+import { Sandwich } from './Sandwich';
+import { RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
+import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 
 /*
@@ -266,7 +269,7 @@ const ConnectButtonWrapper = styled.div`
 
 const chains = getAllChains();
 
-export function AggregatorContainer({ tokenlist }) {
+export function AggregatorContainer({ tokenList, sandwichList }) {
 	// wallet stuff
 	const { data: signer } = useSigner();
 	const { address, isConnected } = useAccount();
@@ -282,6 +285,9 @@ export function AggregatorContainer({ tokenlist }) {
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
 
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
+	const [lastOutputValue, setLastOutputValue] = useState(null);
+	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
+	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -297,9 +303,10 @@ export function AggregatorContainer({ tokenlist }) {
 	const router = useRouter();
 	const { fromTokenAddress, toTokenAddress } = useQueryParams();
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useSelectedChainAndTokens({
-		tokens: tokenlist
+		tokens: tokenList
 	});
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
+	const isOutputTrade = amountOut && amountOut !== '';
 
 	// data of selected token not in chain's tokenlist
 	const { data: fromToken2 } = useToken({
@@ -329,8 +336,8 @@ export function AggregatorContainer({ tokenlist }) {
 						address: fromToken2.address,
 						value: fromToken2.address,
 						decimals: fromToken2.decimals,
-						logoURI: '',
-						chainId: selectedChain.id ?? 1,
+						logoURI: `https://icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${fromToken2.address}?h=20&w=20`,
+						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
 				: selectedFromToken;
@@ -344,8 +351,8 @@ export function AggregatorContainer({ tokenlist }) {
 						address: toToken2.address,
 						value: toToken2.address,
 						decimals: toToken2.decimals,
-						logoURI: '',
-						chainId: selectedChain.id ?? 1,
+						logoURI: `https://icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${toToken2.address}?h=20&w=20`,
+						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
 				: selectedToToken;
@@ -405,12 +412,14 @@ export function AggregatorContainer({ tokenlist }) {
 		isLoading,
 		isLoaded,
 		refetch,
-		lastFetched
+		lastFetched,
+		loadingRoutes
 	} = useGetRoutes({
 		chain: selectedChain?.value,
 		from: finalSelectedFromToken?.value,
 		to: finalSelectedToToken?.value,
 		amount: amountWithDecimals,
+		disabledAdapters,
 		extra: {
 			gasPriceData,
 			userAddress: address || ethers.constants.AddressZero,
@@ -459,10 +468,12 @@ export function AggregatorContainer({ tokenlist }) {
 		gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
 
 		const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
-		const amountIn = +route.fromAmount / 10 ** +finalSelectedFromToken?.decimals;
+		const amountIn = (+route.fromAmount / 10 ** +finalSelectedFromToken?.decimals).toFixed(
+			finalSelectedFromToken?.decimals
+		);
 
 		const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
-		const amountInUsd = fromTokenPrice ? (amountIn * fromTokenPrice).toFixed(2) : null;
+		const amountInUsd = fromTokenPrice ? (+amountIn * fromTokenPrice).toFixed(6) : null;
 
 		const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
 
@@ -478,10 +489,14 @@ export function AggregatorContainer({ tokenlist }) {
 			amountInUsd
 		};
 	};
-	let normalizedRoutes = [...(routes || [])]
-		?.map(fillRoute)
-		.filter(({ fromAmount, amount: toAmount, isFailed }) =>
-			amountOutWithDecimals === '0' ? Number(toAmount) && amountWithDecimals === fromAmount : true && isFailed !== true
+
+	const allRoutes = [...(routes || [])]?.map(fillRoute);
+	const failedRoutes = allRoutes.filter((r) => r.isFailed === true);
+	let normalizedRoutes = allRoutes
+		.filter(
+			({ fromAmount, amount: toAmount, isFailed }) =>
+				(amountOutWithDecimals === '0' ? Number(toAmount) && amountWithDecimals === fromAmount : true) &&
+				isFailed !== true
 		)
 		.sort((a, b) => {
 			if (a.gasUsd === 'Unknown') {
@@ -489,14 +504,14 @@ export function AggregatorContainer({ tokenlist }) {
 			} else if (b.gasUsd === 'Unknown') {
 				return -1;
 			}
-			return b.netOut - a.netOut;
-		})
-		.sort((a, b) => {
-			if (a.isOutputAvailable && debouncedAmountOut) {
-				return -1;
-			} else {
-				return 1;
-			}
+			return isOutputTrade
+				? typeof a.amountInUsd === 'number' &&
+				  typeof a.gasUsd === 'number' &&
+				  typeof b.amountInUsd === 'number' &&
+				  typeof b.gasUsd === 'number'
+					? a.amountInUsd + a.gasUsd - (b.amountInUsd + b.gasUsd)
+					: Number(a.amountIn) - Number(b.amountIn)
+				: b.netOut - a.netOut;
 		})
 		.map((route, i, arr) => ({ ...route, lossPercent: route.netOut / arr[0].netOut }));
 
@@ -504,9 +519,15 @@ export function AggregatorContainer({ tokenlist }) {
 		aggregator && normalizedRoutes && normalizedRoutes.length > 0
 			? normalizedRoutes.findIndex((r) => r.name === aggregator)
 			: -1;
+
 	// store selected aggregators route
 	const selectedRoute =
 		selecteRouteIndex >= 0 ? { ...normalizedRoutes[selecteRouteIndex], index: selecteRouteIndex } : null;
+
+	const diffBetweenSelectedRouteAndTopRoute =
+		selectedRoute && normalizedRoutes
+			? Number((100 - (selectedRoute.amount / normalizedRoutes[0].amount) * 100).toFixed(2))
+			: 0;
 
 	// functions to handle change in swap input fields
 	const onMaxClick = () => {
@@ -568,6 +589,22 @@ export function AggregatorContainer({ tokenlist }) {
 		}
 	}, [router?.query, savedTokens]);
 
+	useEffect(() => {
+		if (selectedRoute) {
+			if (
+				lastOutputValue !== null &&
+				aggregator === lastOutputValue.aggregator &&
+				selectedRoute.amount / lastOutputValue.amount <= 0.94 // >=6% drop
+			) {
+				setAggregator(null);
+			}
+			setLastOutputValue({
+				aggregator,
+				amount: selectedRoute.amount
+			});
+		}
+	}, [selectedRoute?.amount, aggregator]);
+
 	const priceImpactRoute = selectedRoute ? fillRoute(selectedRoute) : null;
 
 	const selectedRoutesPriceImpact =
@@ -583,6 +620,7 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const hasPriceImapct =
 		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
+	const hasMaxPriceImpact = selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 30;
 
 	const insufficientBalance =
 		balance.isSuccess &&
@@ -605,7 +643,7 @@ export function AggregatorContainer({ tokenlist }) {
 	const amountToApprove =
 		amountOut && amountOut !== ''
 			? BigNumber(selectedRoute?.fromAmount)
-					.times(100 + Number(slippage))
+					.times(100 + Number(slippage) * 2)
 					.div(100)
 					.toFixed(0)
 			: selectedRoute?.fromAmount;
@@ -636,6 +674,7 @@ export function AggregatorContainer({ tokenlist }) {
 			from: string;
 			to: string;
 			amount: string | number;
+			amountIn: string;
 			adapter: string;
 			signer: ethers.Signer;
 			slippage: string;
@@ -673,8 +712,8 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(debouncedAmount),
-						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
+						amount: String(variables.amountIn),
+						amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 						errorData: {},
 						slippage,
 						routePlace: String(variables?.index),
@@ -706,32 +745,12 @@ export function AggregatorContainer({ tokenlist }) {
 						toast(formatSuccessToast(variables));
 					} else {
 						isError = true;
-						toast({
-							title: 'Transaction Failed',
-							status: 'error',
-							duration: 10000,
-							isClosable: true,
-							position: 'top-right',
-							containerStyle: {
-								width: '100%',
-								maxWidth: '300px'
-							}
-						});
+						toast(formatErrorToast({}, true));
 					}
 				})
 				.catch(() => {
 					isError = true;
-					toast({
-						title: 'Transaction Failed',
-						status: 'error',
-						duration: 10000,
-						isClosable: true,
-						position: 'top-right',
-						containerStyle: {
-							width: '100%',
-							maxWidth: '300px'
-						}
-					});
+					toast(formatErrorToast({}, true));
 				})
 				?.finally(() => {
 					sendSwapEvent({
@@ -743,8 +762,8 @@ export function AggregatorContainer({ tokenlist }) {
 						isError,
 						quote: variables.rawQuote,
 						txUrl,
-						amount: String(debouncedAmount),
-						amountUsd: +fromTokenPrice * +debouncedAmount || 0,
+						amount: String(variables.amountIn),
+						amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 						errorData: {},
 						slippage,
 						routePlace: String(variables?.index),
@@ -754,18 +773,7 @@ export function AggregatorContainer({ tokenlist }) {
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
-				toast({
-					title: 'Something went wrong.',
-					description: err.reason,
-					status: 'error',
-					duration: 10000,
-					isClosable: true,
-					position: 'top-right',
-					containerStyle: {
-						width: '100%',
-						maxWidth: '300px'
-					}
-				});
+				toast(formatErrorToast(err, false));
 
 				sendSwapEvent({
 					chain: selectedChain.value,
@@ -776,8 +784,8 @@ export function AggregatorContainer({ tokenlist }) {
 					isError: true,
 					quote: variables.rawQuote,
 					txUrl: '',
-					amount: String(debouncedAmount),
-					amountUsd: +fromTokenPrice * +debouncedAmount || 0,
+					amount: String(variables.amountIn),
+					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 					errorData: err,
 					slippage,
 					routePlace: String(variables?.index),
@@ -789,6 +797,14 @@ export function AggregatorContainer({ tokenlist }) {
 
 	const handleSwap = () => {
 		if (selectedRoute && selectedRoute.price && !slippageIsWong) {
+			if (hasMaxPriceImpact) {
+				toast({
+					title: 'Price impact is too high!',
+					description: 'Swap is blocked, please try another route.',
+					status: 'error'
+				});
+				return;
+			}
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -800,14 +816,38 @@ export function AggregatorContainer({ tokenlist }) {
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
 				index: selectedRoute.index,
 				route: selectedRoute,
-				amount: selectedRoute.amount
+				amount: selectedRoute.amount,
+				amountIn: selectedRoute.amountIn
 			});
 		}
 	};
 
+	const pairSandwichData =
+		sandwichList?.[selectedChain?.value]?.[
+			normalizeTokens(
+				finalSelectedFromToken?.address === ethers.constants.AddressZero
+					? WETH[selectedChain?.value]
+					: finalSelectedFromToken?.address,
+				finalSelectedToToken?.address === ethers.constants.AddressZero
+					? WETH[selectedChain?.value]
+					: finalSelectedToToken?.address
+			).join('')
+		];
+
+	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
+	const isUnknownPrice = !fromTokenPrice || !toTokenPrice;
+
 	return (
 		<Wrapper>
 			<Heading>Meta-Aggregator</Heading>
+			{isSettingsModalOpen ? (
+				<Settings
+					adapters={adaptersNames}
+					disabledAdapters={disabledAdapters}
+					setDisabledAdapters={setDisabledAdapters}
+					onClose={() => setSettingsModalOpen(false)}
+				/>
+			) : null}
 
 			<Text fontSize="1rem" fontWeight="500">
 				This product is still in beta. If you run into any issue please let us know in our{' '}
@@ -840,6 +880,7 @@ export function AggregatorContainer({ tokenlist }) {
 										/>
 									</FormControl>
 								</Tooltip>
+								<SettingsIcon onClick={() => setSettingsModalOpen((open) => !open)} ml={4} mt={1} cursor="pointer" />
 							</Flex>
 						</FormHeader>
 
@@ -866,7 +907,7 @@ export function AggregatorContainer({ tokenlist }) {
 								router.push(
 									{
 										pathname: router.pathname,
-										query: { ...router.query, to: finalSelectedFromToken.address, from: finalSelectedToToken.address }
+										query: { ...router.query, to: finalSelectedFromToken?.address, from: finalSelectedToToken?.address }
 									},
 									undefined,
 									{ shallow: true }
@@ -939,17 +980,23 @@ export function AggregatorContainer({ tokenlist }) {
 							<Alert status="warning" borderRadius="0.375rem" py="8px">
 								<AlertIcon />
 								CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
+								{finalSelectedFromToken.value === ethers.constants.AddressZero ? (
+									<>
+										<br /> For ETH orders, if it doesn't get executed the ETH will be returned to your wallet in 30
+										minutes.
+									</>
+								) : null}
 							</Alert>
 						</>
 					) : null}
+					<Sandwich sandiwichData={pairSandwichData} />
 
-					{!selectedRoute?.isOutputAvailable && debouncedAmountOut !== '' && selectedRoute?.amount ? (
+					{diffBetweenSelectedRouteAndTopRoute > 5 && (
 						<Alert status="warning" borderRadius="0.375rem" py="8px">
 							<AlertIcon />
-							The output amount of this route is defferent from your input because {selectedRoute?.name} doesn't support
-							setting amount received.
+							{`There is ${diffBetweenSelectedRouteAndTopRoute}% difference between selected route and top route.`}
 						</Alert>
-					) : null}
+					)}
 
 					<SwapWrapper>
 						{!isConnected ? (
@@ -963,6 +1010,10 @@ export function AggregatorContainer({ tokenlist }) {
 						) : insufficientBalance ? (
 							<Button colorScheme={'messenger'} disabled>
 								Insufficient Balance
+							</Button>
+						) : hasMaxPriceImpact ? (
+							<Button colorScheme={'messenger'} disabled>
+								Price impact is too large
 							</Button>
 						) : (
 							<>
@@ -995,8 +1046,12 @@ export function AggregatorContainer({ tokenlist }) {
 												</Flex>
 											)}
 
-											{hasPriceImapct && !isLoading && selectedRoute && isApproved ? (
-												<SwapConfirmation handleSwap={handleSwap} />
+											{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
+												<SwapConfirmation
+													isUnknownPrice={isUnknownPrice}
+													isMaxPriceImpact={hasMaxPriceImpact}
+													handleSwap={handleSwap}
+												/>
 											) : (
 												<Button
 													isLoading={swapMutation.isLoading || isApproveLoading}
@@ -1010,8 +1065,8 @@ export function AggregatorContainer({ tokenlist }) {
 
 														if (
 															balance.data &&
-															!Number.isNaN(Number(balance.data.formatted)) &&
-															+selectedRoute?.amountIn > +balance.data.formatted
+															!Number.isNaN(Number(balance.data.value)) &&
+															+selectedRoute?.fromAmount > +balance?.data?.value?.toString()
 														)
 															return;
 
@@ -1025,7 +1080,8 @@ export function AggregatorContainer({ tokenlist }) {
 														!(finalSelectedFromToken && finalSelectedToToken) ||
 														insufficientBalance ||
 														!selectedRoute ||
-														slippageIsWong
+														slippageIsWong ||
+														!isAmountSynced
 													}
 												>
 													{!selectedRoute
@@ -1094,15 +1150,28 @@ export function AggregatorContainer({ tokenlist }) {
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
 					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
-						{normalizedRoutes?.length ? 'Best route is selected based on net output after gas fees' : null}
+						{normalizedRoutes?.length ? `Best route is selected based on net output after gas fees.` : null}
 					</span>
 
-					{isLoading && (debouncedAmount || debouncedAmountOut) && finalSelectedFromToken && finalSelectedToToken ? (
+					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
+						{failedRoutes.length > 0
+							? `Routes for aggregators ${failedRoutes
+									.map((r) => r.name)
+									.join(', ')} have been hidden since they could not be executed`
+							: null}
+					</span>
+
+					{isLoading &&
+					(debouncedAmount || debouncedAmountOut) &&
+					finalSelectedFromToken &&
+					finalSelectedToToken &&
+					!(disabledAdapters.length === adaptersNames.length) ? (
 						<Loader />
 					) : (!debouncedAmount && !debouncedAmountOut) ||
 					  !finalSelectedFromToken ||
 					  !finalSelectedToToken ||
-					  !router.isReady ? (
+					  !router.isReady ||
+					  disabledAdapters.length === adaptersNames.length ? (
 						<RoutesPreview />
 					) : null}
 
@@ -1127,8 +1196,10 @@ export function AggregatorContainer({ tokenlist }) {
 								fromToken={finalSelectedFromToken}
 								selectedChain={selectedChain.label}
 								gasTokenPrice={gasTokenPrice}
+								toTokenPrice={toTokenPrice}
 								isFetchingGasPrice={fetchingTokenPrices}
 								amountOut={amountOutWithDecimals}
+								amountIn={r?.amountIn}
 							/>
 
 							{aggregator === r.name && (
@@ -1172,8 +1243,12 @@ export function AggregatorContainer({ tokenlist }) {
 															</Flex>
 														)}
 
-														{hasPriceImapct && !isLoading && selectedRoute && isApproved ? (
-															<SwapConfirmation handleSwap={handleSwap} />
+														{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
+															<SwapConfirmation
+																isUnknownPrice={isUnknownPrice}
+																handleSwap={handleSwap}
+																isMaxPriceImpact={hasMaxPriceImpact}
+															/>
 														) : (
 															<Button
 																isLoading={swapMutation.isLoading || isApproveLoading}
@@ -1197,7 +1272,8 @@ export function AggregatorContainer({ tokenlist }) {
 																	isApproveLoading ||
 																	isApproveResetLoading ||
 																	!selectedRoute ||
-																	slippageIsWong
+																	slippageIsWong ||
+																	!isAmountSynced
 																}
 															>
 																{!selectedRoute
@@ -1239,6 +1315,24 @@ export function AggregatorContainer({ tokenlist }) {
 							)}
 						</Fragment>
 					))}
+
+					{normalizedRoutes.length > 0
+						? loadingRoutes.map((r) => (
+								<Fragment
+									key={
+										'fetching quote' +
+										selectedChain?.label +
+										finalSelectedFromToken?.label +
+										finalSelectedToToken?.label +
+										amountWithDecimals +
+										gasPriceData?.formatted?.gasPrice +
+										r[0]
+									}
+								>
+									<LoadingRoute name={r[0] as string} />
+								</Fragment>
+						  ))
+						: null}
 				</Routes>
 			</BodyWrapper>
 

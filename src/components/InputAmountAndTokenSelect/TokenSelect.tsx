@@ -22,10 +22,7 @@ const Row = ({ chain, token, onClick }) => {
 			data-defaultcursor={token.isGeckoToken ? true : false}
 			onClick={() => !token.isGeckoToken && onClick(token)}
 		>
-			<IconImage
-				src={token.logoURI || '/placeholder.png'}
-				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
-			/>
+			<IconImage src={token.logoURI} onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')} />
 
 			<Text display="flex" flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
 				<Text
@@ -115,7 +112,8 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			...(data || {}),
 			label: data?.symbol,
 			value: address,
-			chainId: selectedChain?.id
+			chainId: selectedChain?.id,
+			logoURI: `https://icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`
 		});
 
 		queryClient.invalidateQueries({ queryKey: ['savedTokens', selectedChain?.id] });
@@ -134,7 +132,10 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			borderBottom="1px solid #373944"
 			key={address}
 		>
-			<QuestionIcon height="20px" width="20px" />
+			<IconImage
+				src={`https://icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`}
+				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+			/>
 
 			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
 				{isLoading
@@ -292,10 +293,10 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 				p="12px"
 				onClick={() => onOpen()}
 			>
-				{token && token.logoURI && (
+				{token && (
 					<IconImage
-						src={token?.logoURI ?? '/placeholder.png'}
-						onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+						src={token.logoURI}
+						onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
 					/>
 				)}
 

@@ -6,14 +6,18 @@ import { erc20ABI } from 'wagmi';
 import { IRoute } from '~/queries/useGetRoutes';
 
 const traceRpcs = {
+	// https://docs.blastapi.io/blast-documentation/trace-api
 	ethereum: 'https://eth-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 	bsc: 'https://bsc-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 	gnosis: 'https://gnosis-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
+	moonbeam: 'https://moonbeam.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
+	moonriver: 'https://moonriver.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
+	//palm: 'https://palm-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88', // we don't support it
 	polygon: 'https://polygon.llamarpc.com'
 };
 
 export const estimateGas = async ({ route, token, userAddress, chain, balance }) => {
-	if (balance < +route.fromAmount) return null;
+	if (!Number.isFinite(balance) || balance < +route.fromAmount) return null;
 
 	try {
 		const provider = new ethers.providers.JsonRpcProvider(traceRpcs[chain]);
@@ -83,7 +87,7 @@ export const useEstimateGas = ({
 				return {
 					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance],
 					queryFn: () => estimateGas({ route, token, userAddress, chain, balance }),
-					enabled: traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) // TODO: figure out why it doesn't work
+					enabled: traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) && !!userAddress // TODO: figure out why it doesn't work
 				};
 			})
 	});

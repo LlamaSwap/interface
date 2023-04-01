@@ -7,11 +7,13 @@ import { ABI } from './abi';
 
 export const chainToId = {
 	ethereum: 1
-	// bsc: 56,
-	// polygon: 137,
-	// arbitrum: 42161,
-	// avax: 43114,
-	// optimism: 10
+	/*
+	bsc: 56,
+	polygon: 137,
+	arbitrum: 42161,
+	avax: 43114,
+	optimism: 10
+	*/
 };
 
 export const name = 'Hashflow';
@@ -72,6 +74,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let estimatedGas = gas;
 	if (chain === 'arbitrum') estimatedGas = await applyArbitrumFees(router.address, txData.data, gas);
 
+	const timeTillExpiry = Date.now() / 1000 - data.quoteData.quoteExpiry;
+	if (timeTillExpiry < 40) {
+		throw new Error('Expiry is too close');
+	}
+
 	return {
 		amountReturned: data?.quoteData?.quoteTokenAmount || 0,
 		amountIn: data?.quoteData?.baseTokenAmount || 0,
@@ -82,7 +89,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			...data,
 			gasLimit: estimatedGas,
 			tx: { ...txData, ...(from === ethers.constants.AddressZero ? { value: data.quoteData.baseTokenAmount } : {}) }
-		}
+		},
+		isMEVSafe: true
 	};
 }
 

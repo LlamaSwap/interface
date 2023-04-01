@@ -1,4 +1,5 @@
 export const defillamaReferrerAddress = '0x08a3c2A819E3de7ACa384c798269B3Ce1CD0e437';
+export const altReferralAddress = '0xa43C3EDe995AA058B68B882c6aF16863F18c5330';
 
 export const chainsMap = {
 	ethereum: 1,
@@ -24,7 +25,7 @@ export const chainsMap = {
 	okexchain: 66,
 	fuse: 122,
 	moonbeam: 1284,
-	canto: 7700,
+	canto: 7700
 } as const;
 
 export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chainsMap]> = {
@@ -51,7 +52,7 @@ export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chains
 	'okex-chain': 66,
 	fuse: 122,
 	moonbeam: 1284,
-	canto: 7700,
+	canto: 7700
 };
 
 export const chainGasToken: Record<keyof typeof chainsMap, string> = {
@@ -78,7 +79,7 @@ export const chainGasToken: Record<keyof typeof chainsMap, string> = {
 	okexchain: 'oec-token',
 	fuse: 'fuse-network-token',
 	moonbeam: 'moonbeam',
-	canto: 'canto',
+	canto: 'canto'
 };
 
 export const llamaToGeckoChainsMap = Object.fromEntries(
@@ -118,7 +119,7 @@ export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], 
 	1284: 'moonbeam',
 	199: 'bittorrent',
 	8217: 'klay',
-	7700: 'canto',
+	7700: 'canto'
 };
 
 export const chainIdToName = (chainId) => {
@@ -136,6 +137,9 @@ export const nativeAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'.toLowe
 
 export const initialLiquidity = [500, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000, 500_000_000];
 
-export const PRICE_IMPACT_WARNING_THRESHOLD = 7;
+export const WETH = {
+	ethereum: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'.toLowerCase()
+};
 export const PRICE_IMPACT_MEDIUM_THRESHOLD = 5;
 export const PRICE_IMPACT_HIGH_THRESHOLD = 10;
+export const PRICE_IMPACT_WARNING_THRESHOLD = 3;

@@ -2,16 +2,17 @@ import * as React from 'react';
 import { useRouter } from 'next/router';
 import { Flex, FormControl, FormLabel, Heading, IconButton } from '@chakra-ui/react';
 import Layout from '~/layout';
-import { getTokenList } from '~/components/Aggregator/getTokenList';
 import { chainsMap } from '~/components/Aggregator/constants';
 import ReactSelect from '~/components/MultiSelect';
 import { getAllChains } from '~/components/Aggregator/router';
 import { LiquidityByToken } from '~/components/LiquidityByToken';
 import type { IToken } from '~/types';
 import { ArrowRight } from 'react-feather';
+import { getTokenList } from '~/props/getTokenList';
 
 export async function getStaticProps() {
-	return getTokenList();
+	const tokenlist = await getTokenList();
+	return { props: { tokenlist } };
 }
 
 const chains = getAllChains();
