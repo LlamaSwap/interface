@@ -163,6 +163,15 @@ export const ABI = {
 			type: 'function'
 		},
 		{
+			constant: true,
+			inputs: [{ internalType: 'address', name: '', type: 'address' }],
+			name: '_nonces',
+			outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+			payable: false,
+			stateMutability: 'view',
+			type: 'function'
+		},
+		{
 			constant: false,
 			inputs: [
 				{ internalType: 'address', name: 'holder', type: 'address' },
@@ -623,6 +632,13 @@ export const ABI = {
 		{
 			inputs: [{ internalType: 'address', name: 'owner', type: 'address' }],
 			name: 'nonces',
+			outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+			stateMutability: 'view',
+			type: 'function'
+		},
+		{
+			inputs: [{ internalType: 'address', name: 'owner', type: 'address' }],
+			name: '_nonces',
 			outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
 			stateMutability: 'view',
 			type: 'function'

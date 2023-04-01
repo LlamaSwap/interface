@@ -33,12 +33,17 @@ export async function getPermitSignature(
 		let nonce = null;
 		try {
 			nonce = await tokenContract.nonces(address);
-		} catch (e) {}
+		} catch (e) {
+			try {
+				nonce = await tokenContract._nonces(address);
+			} catch (ee) {}
+		}
 
 		const types = PERMIT_TYPES[typeHash] || PERMIT_TYPES[EIP2612_PERMIT];
 		const deadline = (Date.now() / 1000).toFixed(0) + 120;
 
 		const message = createTypedData(typeHash, address, spender, amount, nonce, deadline);
+
 		const sig = await signer._signTypedData(domain, types, message);
 		const { r, s, v } = { r: sig.slice(0, 66), s: '0x' + sig.slice(66, 130), v: parseInt(sig.slice(130, 132), 16) };
 
@@ -51,6 +56,7 @@ export async function getPermitSignature(
 		return permitData;
 	} catch (e) {
 		await onError();
+
 		return;
 	}
 }
@@ -79,6 +85,7 @@ const permitSwap = async ({
 	const quote = await getAdapterRoutes({ adapter: adaptersMap[aggregator], ...quoteParams });
 
 	const tx = await swap(quote.price.rawQuote, onError);
+
 	return tx;
 };
 
@@ -112,7 +119,7 @@ const checkPermitAndGetDomain = async (token, signer, chainId, aggregator, isBla
 export const usePermit = ({ signer, token, chain, spender, amount, quoteParams, aggregator, swap }) => {
 	const { isBlackListed, addToBlackList } = usePermitsBlackList({ address: token, chain });
 
-	const { data } = useQuery(['checkPermit', token, chain, aggregator, isBlackListed], () =>
+	const { data } = useQuery(['checkPermit', token, chain, aggregator, isBlackListed, amount], () =>
 		checkPermitAndGetDomain(token, signer, chainsMap[chain], aggregator, isBlackListed)
 	);
 
