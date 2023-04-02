@@ -66,6 +66,11 @@ const RouteWrapper = styled.div`
 const Body = styled.div`
 	height: 580px;
 	overflow: auto;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+	-ms-overflow-style: none;
+	scrollbar-width: none;
 `;
 
 const NoHistory = () => {
