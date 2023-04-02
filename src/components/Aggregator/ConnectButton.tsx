@@ -11,10 +11,10 @@ const Wrapper = styled.div`
 	gap: 8px;
 `;
 
-const Connect = ({ tokenList }) => {
+const Connect = ({ tokenList = null }) => {
 	return (
 		<Wrapper>
-			<ConnectButton chainStatus={'none'} />
+			{tokenList ? <ConnectButton chainStatus={'none'} /> : null}
 			<HistoryModal tokenList={tokenList} />
 		</Wrapper>
 	);
