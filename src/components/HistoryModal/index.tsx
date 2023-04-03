@@ -14,7 +14,7 @@ import {
 	VStack
 } from '@chakra-ui/react';
 import styled from 'styled-components';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { useSwapsHistory } from '~/queries/useSwapsHistory';
 import Loader from '../Aggregator/Loader';
 
@@ -83,10 +83,13 @@ const NoHistory = () => {
 	);
 };
 
-function HistoryModal({ tokenList }) {
-	const { chain } = useNetwork();
+function HistoryModal({ tokensUrlMap, tokensSymbolsMap }) {
 	const user = useAccount();
-	const { data: history, isLoading } = useSwapsHistory({ chain: chain?.id, userId: user?.address, tokenList });
+	const { data: history, isLoading } = useSwapsHistory({
+		userId: user?.address,
+		tokensUrlMap,
+		tokensSymbolsMap
+	});
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	return (
 		<>

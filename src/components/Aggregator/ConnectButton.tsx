@@ -11,11 +11,11 @@ const Wrapper = styled.div`
 	gap: 8px;
 `;
 
-const Connect = ({ tokenList = null }) => {
+const Connect = ({ tokenList = null, tokensUrlMap, tokensSymbolsMap }) => {
 	return (
 		<Wrapper>
-			{tokenList ? <ConnectButton chainStatus={'none'} /> : null}
-			<HistoryModal tokenList={tokenList} />
+			<ConnectButton chainStatus={'none'} />
+			{tokenList ? <HistoryModal tokensUrlMap={tokensUrlMap} tokensSymbolsMap={tokensSymbolsMap} /> : null}
 		</Wrapper>
 	);
 };
