@@ -11,7 +11,7 @@ const Wrapper = styled.div`
 	gap: 8px;
 `;
 
-const Connect = ({ tokenList = null, tokensUrlMap, tokensSymbolsMap }) => {
+const Connect = ({ tokenList = null, tokensUrlMap = {}, tokensSymbolsMap = {} }) => {
 	return (
 		<Wrapper>
 			<ConnectButton chainStatus={'none'} />
