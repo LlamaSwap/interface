@@ -6,10 +6,13 @@ const mapTokensByKey = (tokens, key: Array<string>) => {
 			return [
 				chain,
 				Object.fromEntries(
-					tokens.map((token) => {
-						const value = key.map((k) => token[k]).filter(Boolean)[0];
-						return [token.address.toLowerCase(), value];
-					})
+					tokens
+						.map((token) => {
+							const value = key.map((k) => token[k]).filter(Boolean)[0];
+
+							return value ? [token.address.toLowerCase(), value] : null;
+						})
+						.filter(Boolean)
 				)
 			];
 		})
