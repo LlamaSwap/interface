@@ -45,5 +45,5 @@ export function useQueryParams() {
 		}
 	}, [chainOnURL, chainOnWallet, isConnected, router]);
 
-	return { chainName, fromTokenAddress, toTokenAddress };
+	return { chainName, fromTokenAddress, toTokenAddress, chainOnURL };
 }

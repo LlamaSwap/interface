@@ -41,13 +41,14 @@ const getSwapsHistory = async ({ userId, chain: chainId, tokensUrlMap, tokensSym
 };
 
 export function useSwapsHistory({ userId, tokensUrlMap, tokensSymbolsMap }) {
-	const { chainName } = useQueryParams();
+	const { chainName, chainOnURL } = useQueryParams();
 	const chain = chainsMap[chainName];
 	return useQuery(
 		['getSwapsHistory', userId, chain],
 		() => getSwapsHistory({ userId, chain, tokensUrlMap, tokensSymbolsMap }),
 		{
-			enabled: !!userId && !!chain
+			enabled: !!userId && !!chain && !!chainOnURL,
+			refetchOnWindowFocus: false
 		}
 	);
 }
