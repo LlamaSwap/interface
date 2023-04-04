@@ -40,15 +40,15 @@ const getSwapsHistory = async ({ userId, chain: chainId, tokensUrlMap, tokensSym
 	}));
 };
 
-export function useSwapsHistory({ userId, tokensUrlMap, tokensSymbolsMap }) {
-	const { chainName, chainOnURL } = useQueryParams();
+export function useSwapsHistory({ userId, tokensUrlMap, tokensSymbolsMap, isOpen }) {
+	const { chainName } = useQueryParams();
 	const chain = chainsMap[chainName];
 	return useQuery(
 		['getSwapsHistory', userId, chain],
 		() => getSwapsHistory({ userId, chain, tokensUrlMap, tokensSymbolsMap }),
 		{
-			enabled: !!userId && !!chain && !!chainOnURL,
-			refetchOnWindowFocus: false
+			enabled: !!userId && !!chain && isOpen,
+			staleTime: 25_000
 		}
 	);
 }

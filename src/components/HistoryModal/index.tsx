@@ -85,12 +85,14 @@ const NoHistory = () => {
 
 function HistoryModal({ tokensUrlMap, tokensSymbolsMap }) {
 	const user = useAccount();
+	const { isOpen, onOpen, onClose } = useDisclosure();
+
 	const { data: history, isLoading } = useSwapsHistory({
 		userId: user?.address,
 		tokensUrlMap,
-		tokensSymbolsMap
+		tokensSymbolsMap,
+		isOpen
 	});
-	const { isOpen, onOpen, onClose } = useDisclosure();
 	return (
 		<>
 			<Button onClick={onOpen} borderRadius="12px" height="36px" mt="2px" colorScheme={'twitter'}>
