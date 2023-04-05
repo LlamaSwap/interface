@@ -11,14 +11,14 @@ import * as paraswap from './adapters/paraswap';
 
 // import * as unidex from "./adapters/unidex" - disabled, their api is broken
 // import * as airswap from './adapters/airswap' cors
-// import * as odos from './adapters/odos';
+import * as odos from './adapters/odos';
 import * as yieldyak from './adapters/yieldyak';
 import * as llamazip from './adapters/llamazip';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, hashflow, llamazip, kyberswap];
+export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, hashflow, llamazip, kyberswap, odos];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name];
+export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name, odos.name];
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
