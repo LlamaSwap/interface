@@ -51,8 +51,12 @@ export const simulateTx = async ({ route, token, userAddress, chain, balance, to
 			const balanceOfTx = isToNative
 				? { ...(await nativeBalanceContract.populateTransaction.balanceOf(userAddress)) }
 				: { ...(await toTokenContract.populateTransaction.balanceOf(userAddress)) };
+
+			const resetApproveTx = isNative
+				? null
+				: await tokenContract.populateTransaction.approve(route.price.tokenApprovalAddress, ethers.constants.HashZero);
 			const callParams = [
-				[balanceOfTx, approveTx, tx, balanceOfTx].filter(Boolean).map((txData, i) => [
+				[resetApproveTx, balanceOfTx, approveTx, tx, balanceOfTx].filter(Boolean).map((txData, i) => [
 					{
 						from: userAddress,
 						to: txData.to,
@@ -65,7 +69,7 @@ export const simulateTx = async ({ route, token, userAddress, chain, balance, to
 			];
 			const res = await provider.send('trace_callMany', callParams);
 			const swapTx = res[res.length - 2];
-			const prevBalance = res[0];
+			const prevBalance = res[isNative ? 0 : 1];
 			const afterBalance = res[res.length - 1];
 			const outputAmount = BigNumber(afterBalance.output).minus(prevBalance.output);
 
