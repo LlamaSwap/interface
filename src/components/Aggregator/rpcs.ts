@@ -97,7 +97,7 @@ export const rpcUrls = {
 	10: {
 		default: 'https://optimism-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 		onerpc: 'https://1rpc.io/op',
-		mainnet: 'https://optimism.sakurarpc.io',
+		mainnet: 'https://mainnet.optimism.io',
 		blockpi: 'https://optimism.blockpi.network/v1/rpc/public',
 		omniatech: 'https://endpoints.omniatech.io/v1/op/mainnet/public',
 	},
