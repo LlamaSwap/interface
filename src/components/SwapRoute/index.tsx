@@ -65,7 +65,7 @@ const Route = ({
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
-	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap')) return null;
+	if (!price.amountReturned || (Number(gasUsd) === 0 && (name !== 'CowSwap' && name !== 'UniDex'))) return null;
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
@@ -145,7 +145,7 @@ const Route = ({
 
 				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
 					<Text display="flex" className="mobile-column mobile-flexend" alignItems="center" gap="4px" color="gray.400">
-						{name === 'CowSwap' ? (
+						{name === 'CowSwap' || name === 'UniDex' ? (
 							<Tooltip content="Gas is taken from output amount">
 								<Text as="span" display="flex" alignItems="center" gap="4px" color="gray.400" fontWeight={500}>
 									{isGasNotKnown ? null : <GasIcon />}

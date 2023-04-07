@@ -103,7 +103,7 @@ export async function testAdapters(addTest: (test: any) => void) {
 														...extra
 													});
 												}
-												if (Number(price.estimatedGas) < 1000 && adapter.name !== 'CowSwap') {
+												if (Number(price.estimatedGas) < 1000 && (adapter.name === 'CowSwap' || adapter.name === 'UniDex')) {
 													addTest({ ...testParams, price, success: 'gas' });
 												}
 												return { price, adapter: adapter.name, testParams };
@@ -120,7 +120,7 @@ export async function testAdapters(addTest: (test: any) => void) {
 								const mid = Math.round(prices.length / 2);
 								const median = Number(sorted[mid].price[property]);
 								prices.forEach((p) => {
-									if (property === 'estimatedGas' && p.adapter === 'CowSwap') return;
+									if (property === 'estimatedGas' && (p.adapter === 'CowSwap' || p.adapter === 'UniDex')) return;
 									const value = Number(p.price[property]);
 									if (value < 0.8 * median) {
 										addTest({

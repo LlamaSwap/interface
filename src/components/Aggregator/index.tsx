@@ -481,7 +481,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			...route,
 			isFailed: gasData?.[route.name]?.isFailed || false,
 			route,
-			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
+			gasUsd: gasUsd === 0 && (route.name !== 'CowSwap' && route.name !== 'UniDex') ? 'Unknown' : gasUsd,
 			amountUsd,
 			amount,
 			netOut,
@@ -988,7 +988,26 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								) : null}
 							</Alert>
 						</>
-					) : null}
+					) : aggregator === 'UniDex' ? (
+						<>
+							{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 1 ? (
+								<Alert status="warning" borderRadius="0.375rem" py="8px">
+									<AlertIcon />
+									Swaps from {finalSelectedFromToken.symbol} on UniDex need to have slippage higher than 1%.
+								</Alert>
+							) : null}
+							<Alert status="warning" borderRadius="0.375rem" py="8px">
+								<AlertIcon />
+								UniDex orders are fill-or-kill, so they may not execute if price moves quickly against you.
+								{finalSelectedFromToken.value === ethers.constants.AddressZero ? (
+									<>
+										<br /> For native orders, if it doesn't get executed the native token will be returned to your wallet in ~10
+										minutes.
+									</>
+								) : null}
+							</Alert>
+						</>
+					  ) : null}
 					<Sandwich sandiwichData={pairSandwichData} />
 
 					{diffBetweenSelectedRouteAndTopRoute > 5 && (

@@ -419,7 +419,7 @@ export function AggregatorContainer() {
 			...route,
 			isFailed: gasData?.[route.name]?.isFailed || false,
 			route,
-			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
+			gasUsd: gasUsd === 0 && (route.name !== 'CowSwap' && route.name !== 'UniDex') ? 'Unknown' : gasUsd,
 			amountUsd,
 			amount,
 			netOut,
