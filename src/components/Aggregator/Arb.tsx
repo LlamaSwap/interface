@@ -33,7 +33,8 @@ import {
 	Image,
 	VStack
 } from '@chakra-ui/react';
-import { adaptersNames, inifiniteApprovalAllowed, swap } from './router';
+import { adaptersNames, swap } from './router';
+import { inifiniteApprovalAllowed } from './list';
 import { useTokenApprove } from './hooks';
 import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
@@ -42,7 +43,7 @@ import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
-import { formatSuccessToast } from '~/utils/formatSuccessToast';
+import { formatSuccessToast } from '~/utils/formatToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';

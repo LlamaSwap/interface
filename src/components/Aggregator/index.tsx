@@ -26,7 +26,8 @@ import {
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
-import { adaptersNames, getAllChains, inifiniteApprovalAllowed, swap } from './router';
+import { adaptersNames, getAllChains, swap } from './router';
+import { inifiniteApprovalAllowed } from './list';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
 import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
@@ -40,7 +41,7 @@ import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
 import { normalizeTokens } from '~/utils';
 import RoutesPreview from './RoutesPreview';
-import { formatSuccessToast } from '~/utils/formatSuccessToast';
+import { formatSuccessToast, formatErrorToast } from '~/utils/formatToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -335,8 +336,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						address: fromToken2.address,
 						value: fromToken2.address,
 						decimals: fromToken2.decimals,
-						logoURI: '',
-						chainId: selectedChain.id ?? 1,
+						logoURI: `https://icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${fromToken2.address}?h=20&w=20`,
+						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
 				: selectedFromToken;
@@ -350,8 +351,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						address: toToken2.address,
 						value: toToken2.address,
 						decimals: toToken2.decimals,
-						logoURI: '',
-						chainId: selectedChain.id ?? 1,
+						logoURI: `https://icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${toToken2.address}?h=20&w=20`,
+						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
 				: selectedToToken;
@@ -744,32 +745,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						toast(formatSuccessToast(variables));
 					} else {
 						isError = true;
-						toast({
-							title: 'Transaction Failed',
-							status: 'error',
-							duration: 10000,
-							isClosable: true,
-							position: 'top-right',
-							containerStyle: {
-								width: '100%',
-								maxWidth: '300px'
-							}
-						});
+						toast(formatErrorToast({}, true));
 					}
 				})
 				.catch(() => {
 					isError = true;
-					toast({
-						title: 'Transaction Failed',
-						status: 'error',
-						duration: 10000,
-						isClosable: true,
-						position: 'top-right',
-						containerStyle: {
-							width: '100%',
-							maxWidth: '300px'
-						}
-					});
+					toast(formatErrorToast({}, true));
 				})
 				?.finally(() => {
 					sendSwapEvent({
@@ -792,18 +773,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
-				toast({
-					title: 'Something went wrong.',
-					description: err.reason,
-					status: 'error',
-					duration: 10000,
-					isClosable: true,
-					position: 'top-right',
-					containerStyle: {
-						width: '100%',
-						maxWidth: '300px'
-					}
-				});
+				toast(formatErrorToast(err, false));
 
 				sendSwapEvent({
 					chain: selectedChain.value,
@@ -863,9 +833,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					: finalSelectedToToken?.address
 			).join('')
 		];
-	const phantomRugging = (window as any).phantom !== undefined;
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
+	const isUnknownPrice = !fromTokenPrice || !toTokenPrice;
 
 	return (
 		<Wrapper>
@@ -890,13 +860,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					discord server
 				</a>
 			</Text>
-
-			{phantomRugging ? (
-				<Text fontSize="1rem" fontWeight="500">
-					If you can't connect metamask it's because you have phantom installed which causes compatibility issues.
-					Disable it to connect metamask.
-				</Text>
-			) : null}
 
 			<BodyWrapper>
 				<Body showRoutes={finalSelectedFromToken && finalSelectedToToken ? true : false}>
@@ -1017,11 +980,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							<Alert status="warning" borderRadius="0.375rem" py="8px">
 								<AlertIcon />
 								CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
-							</Alert>
-							<Alert status="warning" borderRadius="0.375rem" py="8px">
-								<AlertIcon />
-								CowSwap is currently quoting prices incorrectly, you can still use it with slippage {'>'}=2% but be
-								aware that you likely won't get the rates shown
+								{finalSelectedFromToken.value === ethers.constants.AddressZero ? (
+									<>
+										<br /> For ETH orders, if it doesn't get executed the ETH will be returned to your wallet in 30
+										minutes.
+									</>
+								) : null}
 							</Alert>
 						</>
 					) : null}
@@ -1082,8 +1046,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												</Flex>
 											)}
 
-											{hasPriceImapct && !isLoading && selectedRoute && isApproved ? (
-												<SwapConfirmation handleSwap={handleSwap} />
+											{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
+												<SwapConfirmation
+													isUnknownPrice={isUnknownPrice}
+													isMaxPriceImpact={hasMaxPriceImpact}
+													handleSwap={handleSwap}
+												/>
 											) : (
 												<Button
 													isLoading={swapMutation.isLoading || isApproveLoading}
@@ -1275,8 +1243,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 															</Flex>
 														)}
 
-														{hasPriceImapct && !isLoading && selectedRoute && isApproved ? (
-															<SwapConfirmation handleSwap={handleSwap} />
+														{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
+															<SwapConfirmation
+																isUnknownPrice={isUnknownPrice}
+																handleSwap={handleSwap}
+																isMaxPriceImpact={hasMaxPriceImpact}
+															/>
 														) : (
 															<Button
 																isLoading={swapMutation.isLoading || isApproveLoading}

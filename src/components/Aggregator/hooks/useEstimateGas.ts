@@ -34,8 +34,11 @@ export const estimateGas = async ({ route, token, userAddress, chain, balance })
 						)),
 						from: userAddress
 				  };
+			const resetApproveTx = isNative
+				? null
+				: await tokenContract.populateTransaction.approve(route.price.tokenApprovalAddress, ethers.constants.HashZero);
 			const callParams = [
-				[approveTx, tx].filter(Boolean).map((txData) => [
+				[resetApproveTx, approveTx, tx].filter(Boolean).map((txData) => [
 					{
 						from: userAddress,
 						to: txData.to,

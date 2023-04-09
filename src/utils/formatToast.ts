@@ -31,3 +31,32 @@ export const formatSuccessToast = (variables) => {
 		}
 	} as const;
 };
+
+const SLIPPAGE_ERRORS = [
+	'<minTotalAmountOut',
+	'ERR_LIMIT_OUT',
+	'Return amount is not enough',
+	'Received amount of tokens are less then expected'
+];
+
+export const formatErrorToast = (error, isFailed = false) => {
+	const isSlippage = SLIPPAGE_ERRORS.some((text) => error?.reason?.includes(text));
+	let errorMsg = 'Someting went wrong';
+
+	if (isFailed) errorMsg = 'Transaction Failed';
+	else if (isSlippage) errorMsg = 'Slippage is too low, try again with higher slppage';
+	else if (error?.reason) errorMsg = error.reason;
+
+	return {
+		title: 'Transaction Failed',
+		description: errorMsg,
+		status: 'error',
+		duration: 10000,
+		isClosable: true,
+		position: 'top-right',
+		containerStyle: {
+			width: '100%',
+			maxWidth: '300px'
+		}
+	} as const;
+};

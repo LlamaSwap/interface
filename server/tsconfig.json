@@ -1,0 +1,27 @@
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "target": "es2019",
+    "skipLibCheck": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noEmit": false,
+    "jsx": "preserve",
+    "allowJs": true,
+    "noImplicitThis": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "lib": ["ES2019", "DOM"]
+  },
+  "include": ["src"],
+  "exclude": ["src/setupTestEnv.js"]
+}
