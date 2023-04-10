@@ -20,6 +20,8 @@ jobs:
       - name: Setup Node.js v${{ matrix.node-version }}
         uses: actions/setup-node@v3
 
+      - uses: c-hive/gha-yarn-cache@v2
+
       - name: Install deps
         run: yarn
 
