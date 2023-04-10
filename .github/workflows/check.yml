@@ -19,9 +19,10 @@ jobs:
 
       - name: Setup Node.js v${{ matrix.node-version }}
         uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: yarn
+        node-version: ${{ matrix.node-version }}
+
+      - name: Install deps
+        run: yarn
 
       - name: Lint Project
         run: yarn lint
