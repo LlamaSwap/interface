@@ -43,7 +43,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		fetch(`https://api.1inch.io/v4.0/${chainToId[chain]}/approve/spender`).then((r) => r.json()),
 		extra.userAddress !== ethers.constants.AddressZero
 			? fetch(
-					`https://api.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${extra.userAddress}&slippage=${extra.slippage}&referrerAddress=${altReferralAddress}&disableEstimate=true`
+					`https://api.1inch.io/v4.0/${
+						chainToId[chain]
+					}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${
+						extra.userAddress
+					}&slippage=${extra.slippage}&referrerAddress=${altReferralAddress}&disableEstimate=true&permit=${
+						extra.permit || ''
+					}`
 			  ).then((r) => r.json())
 			: null
 	]);

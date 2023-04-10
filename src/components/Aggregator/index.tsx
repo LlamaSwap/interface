@@ -27,7 +27,7 @@ import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
 import { adaptersNames, getAllChains, swap } from './router';
-import { inifiniteApprovalAllowed } from './list';
+import { adaptersWithPermit, inifiniteApprovalAllowed } from './list';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
 import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
@@ -55,6 +55,7 @@ import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
 import { useCountdown } from '~/hooks/useCountdown';
+import { usePermit } from './hooks/userPermit';
 import { Sandwich } from './Sandwich';
 import { RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
@@ -399,22 +400,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
 		);
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
-
 	const { fromTokensList, toTokensList } = useMemo(() => {
 		return {
 			fromTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
 			toTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)
 		};
 	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
-
-	const {
-		data: routes = [],
-		isLoading,
-		isLoaded,
-		refetch,
-		lastFetched,
-		loadingRoutes
-	} = useGetRoutes({
+	const quoteParams = {
 		chain: selectedChain?.value,
 		from: finalSelectedFromToken?.value,
 		to: finalSelectedToToken?.value,
@@ -430,7 +422,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			isPrivacyEnabled,
 			amountOut: amountOutWithDecimals
 		}
-	});
+	};
+
+	const { data: routes = [], isLoading, isLoaded, refetch, lastFetched, loadingRoutes } = useGetRoutes(quoteParams);
 
 	const secondsToRefresh = useCountdown(lastFetched + REFETCH_INTERVAL);
 
@@ -682,6 +676,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			tokens: { toToken: IToken; fromToken: IToken };
 			index: number;
 			route: any;
+			onError?: () => void | null;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -795,7 +790,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		}
 	});
 
-	const handleSwap = () => {
+	const handleSwap = (rawQuote = null, onError = null) => {
 		if (selectedRoute && selectedRoute.price && !slippageIsWong) {
 			if (hasMaxPriceImpact) {
 				toast({
@@ -812,15 +807,28 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				signer,
 				slippage,
 				adapter: selectedRoute.name,
-				rawQuote: selectedRoute.price.rawQuote,
+				rawQuote: rawQuote || selectedRoute.price.rawQuote,
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
 				index: selectedRoute.index,
 				route: selectedRoute,
+				onError,
 				amount: selectedRoute.amount,
 				amountIn: selectedRoute.amountIn
 			});
 		}
 	};
+
+	const { swapWithPermit, isPermitAvailable } = usePermit({
+		signer,
+		token: finalSelectedFromToken?.address,
+		spender: selectedRoute?.price?.tokenApprovalAddress,
+		chain: selectedChain.value,
+		amount: amountWithDecimals,
+		quoteParams,
+		aggregator: selectedRoute?.name,
+		swap: handleSwap,
+		toast
+	});
 
 	const pairSandwichData =
 		sandwichList?.[selectedChain?.value]?.[
@@ -1050,7 +1058,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												<SwapConfirmation
 													isUnknownPrice={isUnknownPrice}
 													isMaxPriceImpact={hasMaxPriceImpact}
-													handleSwap={handleSwap}
+													handleSwap={isPermitAvailable ? swapWithPermit : handleSwap}
 												/>
 											) : (
 												<Button
@@ -1058,6 +1066,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
 													colorScheme={'messenger'}
 													onClick={() => {
+														if (isPermitAvailable) {
+															swapWithPermit();
+															return;
+														}
+
 														//scroll Routes into view
 														!selectedRoute && routesRef.current.scrollIntoView({ behavior: 'smooth' });
 
@@ -1086,34 +1099,37 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												>
 													{!selectedRoute
 														? 'Select Aggregator'
-														: isApproved
-														? `Swap via ${selectedRoute.name}`
+														: isApproved || isPermitAvailable
+														? `Swap via ${selectedRoute.name} ${isPermitAvailable ? 'with permit' : ''}`
 														: slippageIsWong
 														? 'Set Slippage'
 														: 'Approve'}
 												</Button>
 											)}
 
-											{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
-												<Button
-													colorScheme={'messenger'}
-													loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
-													isLoading={isApproveInfiniteLoading}
-													onClick={() => {
-														if (approveInfinite) approveInfinite();
-													}}
-													disabled={
-														isUSDTNotApprovedOnEthereum ||
-														swapMutation.isLoading ||
-														isApproveLoading ||
-														isApproveResetLoading ||
-														isApproveInfiniteLoading ||
-														!selectedRoute
-													}
-												>
-													{'Approve Infinite'}
-												</Button>
-											)}
+											{!isApproved &&
+												selectedRoute &&
+												inifiniteApprovalAllowed.includes(selectedRoute.name) &&
+												!isPermitAvailable && (
+													<Button
+														colorScheme={'messenger'}
+														loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+														isLoading={isApproveInfiniteLoading}
+														onClick={() => {
+															if (approveInfinite) approveInfinite();
+														}}
+														disabled={
+															isUSDTNotApprovedOnEthereum ||
+															swapMutation.isLoading ||
+															isApproveLoading ||
+															isApproveResetLoading ||
+															isApproveInfiniteLoading ||
+															!selectedRoute
+														}
+													>
+														{'Approve Infinite'}
+													</Button>
+												)}
 										</>
 									</>
 								)}
@@ -1198,6 +1214,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								gasTokenPrice={gasTokenPrice}
 								toTokenPrice={toTokenPrice}
 								isFetchingGasPrice={fetchingTokenPrices}
+								isPermitAvailable={adaptersWithPermit[r.name] && isPermitAvailable}
 								amountOut={amountOutWithDecimals}
 								amountIn={r?.amountIn}
 							/>
@@ -1211,6 +1228,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 									) : !isValidSelectedChain ? (
 										<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
 											Switch Network
+										</Button>
+									) : insufficientBalance ? (
+										<Button colorScheme={'messenger'} disabled>
+											Insufficient Balance
 										</Button>
 									) : (
 										<>
@@ -1246,7 +1267,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
 															<SwapConfirmation
 																isUnknownPrice={isUnknownPrice}
-																handleSwap={handleSwap}
+																handleSwap={isPermitAvailable ? swapWithPermit : handleSwap}
 																isMaxPriceImpact={hasMaxPriceImpact}
 															/>
 														) : (
@@ -1255,6 +1276,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
 																colorScheme={'messenger'}
 																onClick={() => {
+																	if (isPermitAvailable) {
+																		swapWithPermit();
+																		return;
+																	}
 																	if (approve) approve();
 
 																	if (
@@ -1278,34 +1303,37 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 															>
 																{!selectedRoute
 																	? 'Select Aggregator'
-																	: isApproved
-																	? `Swap via ${selectedRoute?.name}`
+																	: isApproved || isPermitAvailable
+																	? `Swap via ${selectedRoute.name} ${isPermitAvailable ? 'with permit' : ''}`
 																	: slippageIsWong
 																	? 'Set Slippage'
 																	: 'Approve'}
 															</Button>
 														)}
 
-														{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
-															<Button
-																colorScheme={'messenger'}
-																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
-																isLoading={isApproveInfiniteLoading}
-																onClick={() => {
-																	if (approveInfinite) approveInfinite();
-																}}
-																disabled={
-																	isUSDTNotApprovedOnEthereum ||
-																	swapMutation.isLoading ||
-																	isApproveLoading ||
-																	isApproveResetLoading ||
-																	isApproveInfiniteLoading ||
-																	!selectedRoute
-																}
-															>
-																{'Approve Infinite'}
-															</Button>
-														)}
+														{!isApproved &&
+															selectedRoute &&
+															inifiniteApprovalAllowed.includes(selectedRoute.name) &&
+															!isPermitAvailable && (
+																<Button
+																	colorScheme={'messenger'}
+																	loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+																	isLoading={isApproveInfiniteLoading}
+																	onClick={() => {
+																		if (approveInfinite) approveInfinite();
+																	}}
+																	disabled={
+																		isUSDTNotApprovedOnEthereum ||
+																		swapMutation.isLoading ||
+																		isApproveLoading ||
+																		isApproveResetLoading ||
+																		isApproveInfiniteLoading ||
+																		!selectedRoute
+																	}
+																>
+																	{'Approve Infinite'}
+																</Button>
+															)}
 													</>
 												</>
 											)}

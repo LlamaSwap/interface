@@ -40,6 +40,7 @@ interface IRoute {
 	txData: string;
 	netOut: number;
 	isFetchingGasPrice: boolean;
+	isPermitAvailable: boolean;
 	amountOut: string;
 	toTokenPrice: number;
 	amountIn: string;
@@ -59,6 +60,7 @@ const Route = ({
 	lossPercent,
 	netOut,
 	isFetchingGasPrice,
+	isPermitAvailable,
 	amountOut,
 	toTokenPrice,
 	amountIn
@@ -160,7 +162,7 @@ const Route = ({
 						)}
 						<Text display="flex" gap="3px">
 							via
-							{isApproved ? (
+							{isApproved || isPermitAvailable ? (
 								<Tooltip content="Token is approved for this aggregator.">
 									<Unlock size={14} color="#059669" />
 								</Tooltip>

@@ -20,6 +20,11 @@ export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, f
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, kyberswap.name, paraswap.name];
 
+export const adaptersWithPermit = {
+	[paraswap.name]: true,
+	[inch.name]: true
+};
+
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
 	[hashflow.name]: true
