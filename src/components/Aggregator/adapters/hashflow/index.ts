@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { Contract, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { providers } from '../../rpcs';
 import { applyArbitrumFees } from '../../utils/arbitrumFees';
 import { sendTx } from '../../utils/sendTx';
@@ -52,7 +52,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	}).then((r) => r.json());
 	const gas = chain === 'optimism' ? BigNumber(3.5).times(data.gasEstimate).toFixed(0, 1) : data.gasEstimate;
 
-	const router = new Contract(routerAddress[chainToId[chain]], ABI, providers[chain]);
+	const router = new ethers.Contract(routerAddress[chainToId[chain]], ABI, providers[chain]);
 
 	// https://docs.hashflow.com/hashflow/taker/getting-started#5.-execute-quote-on-chain
 	const txData = await router.populateTransaction.tradeSingleHop([
