@@ -32,8 +32,8 @@ global.fetch = jest.fn(() =>
 describe('ParaSwap Test', () => {
 	test('returns a quote with correct properties', async () => {
 		const chain = 'ethereum';
-		const from = '0xTokenFromAddress'; // Replace with a valid token address
-		const to = '0xTokenToAddress'; // Replace with another valid token address
+		const from = '0xTokenFromAddress';
+		const to = '0xTokenToAddress';
 		const amount = (1e18).toFixed();
 		const extraData = {
 			fromToken,
@@ -52,7 +52,7 @@ describe('ParaSwap Test', () => {
 	test('returns a quote for swapping native token to a token', async () => {
 		const chain = 'ethereum';
 		const from = ethers.constants.AddressZero;
-		const to = '0xTokenToAddress'; // Replace with a valid token address
+		const to = '0xTokenToAddress';
 		const amount = (1e18).toFixed();
 		const extraData = {
 			fromToken: { decimals: 18 },
