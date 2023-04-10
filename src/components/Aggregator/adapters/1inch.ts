@@ -3,7 +3,7 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
-import { defillamaReferrerAddress } from '../constants';
+import { altReferralAddress } from '../constants';
 import { sendTx } from '../utils/sendTx';
 
 export const chainToId = {
@@ -47,7 +47,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 						chainToId[chain]
 					}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${
 						extra.userAddress
-					}&slippage=${extra.slippage}&referrerAddress=${defillamaReferrerAddress}&disableEstimate=true&permit=${
+					}&slippage=${extra.slippage}&referrerAddress=${altReferralAddress}&disableEstimate=trueermit=${
 						extra.permit || ''
 					}`
 			  ).then((r) => r.json())
@@ -58,7 +58,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	let gas = estimatedGas;
 
-	if (chain === 'optimism') gas = BigNumber(3.5).times(estimatedGas).toFixed(0, 1);
 	if (chain === 'arbitrum')
 		gas = swapData === null ? null : await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas);
 
@@ -66,18 +65,22 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: swapData?.toTokenAmount ?? data.toTokenAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress,
-		rawQuote: swapData === null ? null : { ...swapData, tx: { ...swapData.tx, gasLimit: gas } },
+		rawQuote: swapData === null ? null : { ...swapData, tx: swapData.tx },
 		logo: 'https://icons.llamao.fi/icons/protocols/1inch-network?w=48&q=75'
 	};
 }
 
 export async function swap({ signer, rawQuote, chain }) {
-	const tx = await sendTx(signer, chain, {
+	const txObject = {
 		from: rawQuote.tx.from,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
-		value: rawQuote.tx.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit })
+		value: rawQuote.tx.value
+	};
+	const gasPrediction = await signer.estimateGas(txObject);
+	const tx = await sendTx(signer, chain, {
+		...txObject,
+		gasLimit: gasPrediction.mul(12).div(10).add(86000) // Increase gas +20% + 2 erc20 txs
 	});
 	return tx;
 }
