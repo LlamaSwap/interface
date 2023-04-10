@@ -18,7 +18,7 @@ import * as llamazip from './adapters/llamazip';
 
 export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, hashflow, llamazip, kyberswap, odos];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name, odos.name];
+export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name];
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
