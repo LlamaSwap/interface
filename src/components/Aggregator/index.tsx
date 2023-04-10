@@ -826,7 +826,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		amount: amountWithDecimals,
 		quoteParams,
 		aggregator: selectedRoute?.name,
-		swap: handleSwap
+		swap: handleSwap,
+		toast
 	});
 
 	const pairSandwichData =

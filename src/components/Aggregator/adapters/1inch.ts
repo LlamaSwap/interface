@@ -47,7 +47,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 						chainToId[chain]
 					}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${
 						extra.userAddress
-					}&slippage=${extra.slippage}&referrerAddress=${altReferralAddress}&disableEstimate=trueermit=${
+					}&slippage=${extra.slippage}&referrerAddress=${altReferralAddress}&disableEstimate=true&permit=${
 						extra.permit || ''
 					}`
 			  ).then((r) => r.json())

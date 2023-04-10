@@ -10,6 +10,7 @@ import {
 	createTypedData,
 	DAI_LIKE_PERMIT,
 	EIP2612_PERMIT,
+	EIP2612_PERMIT_NO_NONCE,
 	generateCallParams,
 	generateDomains,
 	PERMIT_TYPES
@@ -26,8 +27,13 @@ export async function getPermitSignature(
 	onError: () => void
 ) {
 	try {
-		const isDaiLike = typeHash === DAI_LIKE_PERMIT;
-		const abi = isDaiLike ? ABI.DAI_LIKE : ABI.EIP2612;
+		const abi =
+			typeHash === DAI_LIKE_PERMIT
+				? ABI.DAI_LIKE
+				: typeHash === EIP2612_PERMIT_NO_NONCE
+				? ABI.EIP2612_NO_NONCE
+				: ABI.EIP_2612;
+		console.log(typeHash === DAI_LIKE_PERMIT, typeHash === EIP2612_PERMIT_NO_NONCE);
 		const tokenContract = new ethers.Contract(token, abi, signer);
 
 		let nonce = null;
@@ -55,8 +61,6 @@ export async function getPermitSignature(
 
 		return permitData;
 	} catch (e) {
-		await onError();
-
 		return;
 	}
 }
@@ -71,9 +75,22 @@ const permitSwap = async ({
 	quoteParams,
 	aggregator,
 	swap,
-	blacklist
+	blacklist,
+	toast
 }) => {
 	const onError = () => {
+		toast({
+			title: 'Permit Failed',
+			description: 'Permit failed, use approval instead',
+			status: 'error',
+			duration: 10000,
+			isClosable: true,
+			position: 'top-right',
+			containerStyle: {
+				width: '100%',
+				maxWidth: '300px'
+			}
+		});
 		// blacklist exotic permits
 		const [isBlackListed, addToBlackList] = blacklist;
 		if (!isBlackListed) addToBlackList();
@@ -82,11 +99,12 @@ const permitSwap = async ({
 	const sig = await getPermitSignature(signer._address, signer, spender, token, amount, typeHash, domain, onError);
 
 	quoteParams.extra.permit = sig;
-	const quote = await getAdapterRoutes({ adapter: adaptersMap[aggregator], ...quoteParams });
+	if (sig) {
+		const quote = await getAdapterRoutes({ adapter: adaptersMap[aggregator], ...quoteParams });
 
-	const tx = await swap(quote.price.rawQuote, onError);
-
-	return tx;
+		const tx = await swap(quote.price.rawQuote, onError);
+		return tx;
+	} else onError();
 };
 
 const checkPermitAndGetDomain = async (token, signer, chainId, aggregator, isBlacklisted) => {
@@ -116,7 +134,7 @@ const checkPermitAndGetDomain = async (token, signer, chainId, aggregator, isBla
 	return { domain: currentDomain, isAvailable: true, typeHash: typeHash.value };
 };
 
-export const usePermit = ({ signer, token, chain, spender, amount, quoteParams, aggregator, swap }) => {
+export const usePermit = ({ signer, token, chain, spender, amount, quoteParams, aggregator, swap, toast }) => {
 	const { isBlackListed, addToBlackList } = usePermitsBlackList({ address: token, chain });
 
 	const { data } = useQuery(['checkPermit', token, chain, aggregator, isBlackListed, amount], () =>
@@ -135,7 +153,8 @@ export const usePermit = ({ signer, token, chain, spender, amount, quoteParams, 
 				quoteParams,
 				aggregator,
 				swap,
-				blacklist: [isBlackListed, addToBlackList]
+				blacklist: [isBlackListed, addToBlackList],
+				toast
 			})
 	});
 
