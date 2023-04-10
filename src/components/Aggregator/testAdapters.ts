@@ -1,9 +1,10 @@
 import { chainsMap } from './constants';
-import { adapters, getAllChains } from './router';
+import { getAllChains } from './router';
 import { BigNumber, ethers } from 'ethers';
 import { redirectQuoteReq } from './adapters/utils';
 import { nativeTokens } from './nativeTokens';
 import { getTokenList } from '~/props/getTokenList';
+import { adapters } from './list';
 
 /*
 Test matrix
