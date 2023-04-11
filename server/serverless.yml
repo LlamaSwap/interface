@@ -79,7 +79,7 @@ functions:
       EIGEN_API_KEY: ${env:EIGEN_API_KEY}
       HASHFLOW_API_KEY: ${env:HASHFLOW_API_KEY}
       OX_API_KEY: ${env:OX_API_KEY}
-  dexAggregatorQuotes:
+  dexAggregators:
     handler: src/getDexAggregators.default
     timeout: 30
     memorySize: 128
