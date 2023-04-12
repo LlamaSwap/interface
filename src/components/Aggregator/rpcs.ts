@@ -71,7 +71,6 @@ export const rpcUrls = {
 	},
 	100: {
 		default: 'https://rpc.ankr.com/gnosis',
-		blockscout: 'https://xdai-archive.blockscout.com'
 	},
 	43114: {
 		default: 'https://api.avax.network/ext/bc/C/rpc',
