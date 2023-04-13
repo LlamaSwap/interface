@@ -7,6 +7,7 @@ const nextConfig = {
 	reactStrictMode: true,
 	staticPageGenerationTimeout: 1000,
 	images: {
+		unoptimized: true, // for cloudflare pages
 		domains: ['icons.llama.fi', 'assets.coingecko.com', 'icons.llamao.fi']
 	},
 	compiler: {
