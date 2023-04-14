@@ -60,7 +60,6 @@ export const rpcUrls = {
 		default: 'https://rpc.ankr.com/fantom',
 		ftmtools: 'https://rpc.ftm.tools',
 		fantomnetwork: 'https://rpcapi.fantom.network',
-		omniatech: 'https://endpoints.omniatech.io/v1/fantom/mainnet/public',
 		fantomnetwork2: 'https://rpc2.fantom.network'
 	},
 	30: {
@@ -97,12 +96,10 @@ export const rpcUrls = {
 		default: 'https://optimism-mainnet.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 		onerpc: 'https://1rpc.io/op',
 		blockpi: 'https://optimism.blockpi.network/v1/rpc/public',
-		omniatech: 'https://endpoints.omniatech.io/v1/op/mainnet/public',
 	},
 	42161: {
 		default: 'https://arbitrum-one.blastapi.io/cfee5a54-245d-411b-ba94-da15d5437e88',
 		onerpc: 'https://1rpc.io/arb',
-		omniatech: 'https://endpoints.omniatech.io/v1/arbitrum/one/public',
 		arb: 'https://arb1.arbitrum.io/rpc'
 	},
 	321: {
