@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure, Input } from '@chakra-ui/react';
-import { QuestionIcon, WarningTwoIcon } from '@chakra-ui/icons';
+import { WarningTwoIcon } from '@chakra-ui/icons';
 import { Header, IconImage, PairRow } from '../Aggregator/Search';
 import { useToken } from 'wagmi';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';

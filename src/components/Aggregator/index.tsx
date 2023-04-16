@@ -43,7 +43,7 @@ import { normalizeTokens } from '~/utils';
 import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast, formatErrorToast } from '~/utils/formatToast';
 import { useDebounce } from '~/hooks/useDebounce';
-import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
+import { fetchSavedTokens, useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
@@ -376,15 +376,18 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	// selected from token's balances
 	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain.id });
 	const { data: tokenBalances } = useTokenBalances(address);
+
 	const { data: gasPriceData } = useFeeData({
 		chainId: selectedChain?.id,
 		enabled: selectedChain ? true : false
 	});
 
-	const tokensInChain = useMemo(() => {
-		return (
+	const { fromTokensList, toTokensList } = useMemo(() => {
+		const savedTokensList = fetchSavedTokens(selectedChain?.id);
+
+		const tokensInChain =
 			chainTokenList
-				?.concat(savedTokens)
+				?.concat(savedTokensList)
 				.map((token) => {
 					const tokenBalance = tokenBalances?.[selectedChain?.id]?.find(
 						(t) => t.address.toLowerCase() === token?.address?.toLowerCase()
@@ -396,16 +399,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						balanceUSD: tokenBalance?.balanceUSD ?? 0
 					};
 				})
-				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
-		);
-	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
+				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? [];
 
-	const { fromTokensList, toTokensList } = useMemo(() => {
 		return {
 			fromTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
 			toTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)
 		};
-	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
+	}, [finalSelectedFromToken, finalSelectedToToken, chainTokenList, selectedChain?.id, tokenBalances]);
 
 	const {
 		data: routes = [],
