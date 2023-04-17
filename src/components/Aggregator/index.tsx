@@ -635,7 +635,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
-			wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
+			balance?.refetch() ||
+				wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
 		}
 	};
 
