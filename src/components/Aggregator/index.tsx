@@ -1207,7 +1207,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						position={'absolute'}
 						mb="4px"
 						onClick={() => setUiState(STATES.INPUT)}
-						display={{ base: 'flex', sm: 'flex' }}
+						display={['flex', 'flex', 'none', 'none']}
 						cursor="pointer"
 					/>
 					{normalizedRoutes?.length ? (
