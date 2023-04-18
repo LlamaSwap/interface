@@ -2,13 +2,13 @@ import { WarningTwoIcon } from '@chakra-ui/icons';
 import {
 	Accordion,
 	AccordionButton,
-	AccordionIcon,
 	AccordionItem,
 	AccordionPanel,
 	Alert,
 	AlertIcon,
 	Box,
-	Text
+	Text,
+	useBreakpoint
 } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
 import { useState } from 'react';
@@ -26,6 +26,7 @@ interface IPriceImpact {
 	selectedRoutesPriceImpact?: number;
 	amountReturnedInSelectedRoute?: string;
 	slippage?: string;
+	isPriceImpactNotKnown?: boolean;
 }
 
 const NoPriceImpactAlert = ({ tokens }) => {
@@ -34,7 +35,10 @@ const NoPriceImpactAlert = ({ tokens }) => {
 			<AlertIcon />
 			{`Couldn't fetch price for ${tokens.join(
 				', '
-			)}, we aren't able to check price impact so please exercise caution. Please be very careful when checking the swap cause you could lose money`}
+			)}, we aren't able to check price impact so please exercise caution. `}
+			<Text display={['none', 'none', 'contents', 'contents']}>
+				Please be very careful when checking the swap cause you could lose money
+			</Text>
 		</Alert>
 	);
 };
@@ -48,8 +52,10 @@ export function PriceImpact({
 	amount,
 	amountReturnedInSelectedRoute,
 	selectedRoutesPriceImpact,
-	slippage
+	slippage,
+	isPriceImpactNotKnown = false
 }: IPriceImpact) {
+	const breakpoint = useBreakpoint();
 	const [priceOrder, setPriceOrder] = useState(1);
 	if (isLoading || !fromToken || !toToken) {
 		return null;
@@ -77,12 +83,11 @@ export function PriceImpact({
 			? BigNumber(totalAmountReceived).minus(BigNumber(totalAmountReceived).div(100).multipliedBy(slippage))
 			: null;
 
-	const isPriceImpactNotKnown = !selectedRoutesPriceImpact && selectedRoutesPriceImpact !== 0;
 	const shouldRevertPriceOrder = fromToken && toTokenPrice && fromTokenPrice / toTokenPrice < 0.0001 ? 1 : 0;
 
 	return (
 		<>
-			<Accordion allowToggle style={{ margin: '0 4px' }} index={[0]}>
+			<Accordion allowToggle style={{ margin: '0 4px' }} index={['lg', 'md'].includes(breakpoint) ? [0] : undefined}>
 				<AccordionItem borderColor="#373944" minH="2.5rem">
 					<AccordionButton onClick={() => setPriceOrder((prev) => prev * -1)}>
 						{priceOrder + shouldRevertPriceOrder === 1 ? (
@@ -102,11 +107,11 @@ export function PriceImpact({
 
 					<AccordionPanel
 						px={4}
-						py={2}
+						py={[1, 1, 2, 2]}
 						mb={2}
-						display="flex"
+						display={['none', 'none', 'flex', 'flex']}
 						flexDir="column"
-						gap={2}
+						gap={[0, 0, 2, 2]}
 						border="1px solid #373944"
 						borderRadius="0.375rem"
 						fontSize="0.875rem"
@@ -157,19 +162,6 @@ export function PriceImpact({
 					</AccordionPanel>
 				</AccordionItem>
 			</Accordion>
-
-			{!isLoading && !isPriceImpactNotKnown && selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD ? (
-				<Alert status="warning" borderRadius="0.375rem" py="8px">
-					<AlertIcon />
-					High price impact! More than {selectedRoutesPriceImpact.toFixed(2)}% drop.
-				</Alert>
-			) : null}
-			{!isLoading && toTokenPrice && Number(totalAmountReceived) * toTokenPrice > 100e3 ? (
-				<Alert status="warning" borderRadius="0.375rem" py="8px">
-					<AlertIcon />
-					Your size is size. Please be mindful of slippage
-				</Alert>
-			) : null}
 		</>
 	);
 }

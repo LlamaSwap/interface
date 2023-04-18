@@ -6,7 +6,7 @@ export const Sandwich = ({ sandiwichData }) => {
 	const sandwichPercent = Number((sandiwichData?.sandwiched / sandiwichData?.trades) * 100).toFixed(2);
 
 	return (
-		<Alert status="warning" borderRadius="0.375rem" py="8px">
+		<Alert status="warning" borderRadius="0.375rem" py="8px" key="sandwichdata">
 			<AlertIcon />
 			<div>
 				{`${sandwichPercent}% of the swaps of this pair were affected by a sandwich attack. We suggest you to reduce the slippage.`}
