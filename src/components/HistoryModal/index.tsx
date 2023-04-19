@@ -22,7 +22,7 @@ const RouteWrapper = styled.div`
 	display: grid;
 	grid-row-gap: 4px;
 	margin-top: 16px;
-	height: 64px;
+	height: fit-content;
 	&.is-selected {
 		border-color: rgb(31 114 229);
 		background-color: rgb(3 11 23);
