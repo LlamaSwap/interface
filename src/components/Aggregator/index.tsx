@@ -43,12 +43,12 @@ import { normalizeTokens } from '~/utils';
 import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast, formatErrorToast } from '~/utils/formatToast';
 import { useDebounce } from '~/hooks/useDebounce';
-import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
+import { fetchSavedTokens, useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { useBalance } from '~/queries/useBalance';
-import { useEstimateGas } from './hooks/useEstimateGas';
+import { useSimulateTx } from './hooks/useSimulateTx';
 import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
@@ -376,15 +376,18 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	// selected from token's balances
 	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain.id });
 	const { data: tokenBalances } = useTokenBalances(address);
+
 	const { data: gasPriceData } = useFeeData({
 		chainId: selectedChain?.id,
 		enabled: selectedChain ? true : false
 	});
 
-	const tokensInChain = useMemo(() => {
-		return (
+	const { fromTokensList, toTokensList } = useMemo(() => {
+		const savedTokensList = fetchSavedTokens(selectedChain?.id);
+
+		const tokensInChain =
 			chainTokenList
-				?.concat(savedTokens)
+				?.concat(savedTokensList)
 				.map((token) => {
 					const tokenBalance = tokenBalances?.[selectedChain?.id]?.find(
 						(t) => t.address.toLowerCase() === token?.address?.toLowerCase()
@@ -396,16 +399,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						balanceUSD: tokenBalance?.balanceUSD ?? 0
 					};
 				})
-				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
-		);
-	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
+				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? [];
 
-	const { fromTokensList, toTokensList } = useMemo(() => {
 		return {
 			fromTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
 			toTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)
 		};
-	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
+	}, [finalSelectedFromToken, finalSelectedToToken, chainTokenList, selectedChain?.id, tokenBalances]);
 
 	const {
 		data: routes = [],
@@ -434,13 +434,15 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const secondsToRefresh = useCountdown(lastFetched + REFETCH_INTERVAL);
 
-	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
+	const { data: simulationData, isLoading: isSimulationLoading } = useSimulateTx({
 		routes,
 		token: finalSelectedFromToken?.address,
 		userAddress: address,
 		chain: selectedChain.value,
 		balance: +balance?.data?.value,
-		isOutput: amountOut && amountOut !== ''
+		isOutput: amountOut && amountOut !== '',
+		toToken: finalSelectedToToken?.address,
+		isRouteLoaded: isLoaded
 	});
 	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
@@ -452,8 +454,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	// format routes
 	const fillRoute = (route: typeof routes[0]) => {
 		if (!route?.price) return null;
-		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
-			? gasData?.[route.name]?.gas
+		const routeSimulationData = isSimulationLoading
+			? ({} as typeof simulationData[string])
+			: simulationData?.[route.name];
+		const gasEstimation = +(!isSimulationLoading && isLoaded && routeSimulationData?.gas
+			? routeSimulationData?.gas
 			: route.price.estimatedGas);
 		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
 
@@ -467,7 +472,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 		gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
 
-		const amount = +route.price.amountReturned / 10 ** +finalSelectedToToken?.decimals;
+		const amount =
+			+(routeSimulationData?.estimatedOutput || route.price.amountReturned) / 10 ** +finalSelectedToToken?.decimals;
 		const amountIn = (+route.fromAmount / 10 ** +finalSelectedFromToken?.decimals).toFixed(
 			finalSelectedFromToken?.decimals
 		);
@@ -479,7 +485,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 		return {
 			...route,
-			isFailed: gasData?.[route.name]?.isFailed || false,
+			isFailed: routeSimulationData?.isFailed || false,
 			route,
 			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' ? 'Unknown' : gasUsd,
 			amountUsd,

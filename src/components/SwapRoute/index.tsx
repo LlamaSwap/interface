@@ -43,6 +43,7 @@ interface IRoute {
 	amountOut: string;
 	toTokenPrice: number;
 	amountIn: string;
+	amount: number;
 }
 
 const Route = ({
@@ -61,13 +62,12 @@ const Route = ({
 	isFetchingGasPrice,
 	amountOut,
 	toTokenPrice,
-	amountIn
+	amountIn,
+	amount
 }: IRoute) => {
 	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
 
 	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap')) return null;
-
-	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
 	const afterFees =
 		toTokenPrice && Number.isFinite(Number(toTokenPrice)) && netOut && Number.isFinite(Number(netOut))
