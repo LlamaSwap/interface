@@ -47,7 +47,7 @@ import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
-import { useBalance } from '~/queries/useBalance';
+import { getBalance, useBalance } from '~/queries/useBalance';
 import { useEstimateGas } from './hooks/useEstimateGas';
 import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
@@ -732,6 +732,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			});
 
 			let isError = false;
+			const balanceBefore = toTokenBalance?.data?.formatted;
 
 			data
 				.wait?.()
@@ -754,22 +755,26 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					toast(formatErrorToast({}, true));
 				})
 				?.finally(() => {
-					sendSwapEvent({
-						chain: selectedChain.value,
-						user: address,
-						from: variables.from,
-						to: variables.to,
-						aggregator: variables.adapter,
-						isError,
-						quote: variables.rawQuote,
-						txUrl,
-						amount: String(variables.amountIn),
-						amountUsd: +fromTokenPrice * +variables.amountIn || 0,
-						errorData: {},
-						slippage,
-						routePlace: String(variables?.index),
-						route: variables.route
-					});
+					getBalance({ address, chainId: selectedChain.id, token: finalSelectedToToken.address }).then((balanceAfter) =>
+						sendSwapEvent({
+							chain: selectedChain.value,
+							user: address,
+							from: variables.from,
+							to: variables.to,
+							aggregator: variables.adapter,
+							isError,
+							quote: variables.rawQuote,
+							txUrl,
+							amount: String(variables.amountIn),
+							amountUsd: +fromTokenPrice * +variables.amountIn || 0,
+							errorData: {},
+							slippage,
+							routePlace: String(variables?.index),
+							route: variables.route,
+							reportedOutput: Number(variables.amount) || 0,
+							realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
+						})
+					);
 				});
 		},
 		onError: (err: { reason: string; code: string }, variables) => {

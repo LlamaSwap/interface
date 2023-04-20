@@ -31,7 +31,7 @@ const createProviderAndGetBalance = async ({ rpcUrl, address, token }) => {
 	}
 };
 
-const getBalance = async ({ address, chainId, token }: IGetBalance) => {
+export const getBalance = async ({ address, chainId, token }: IGetBalance) => {
 	try {
 		if (!address || !chainId) {
 			return null;
