@@ -16,7 +16,7 @@ const SwapConfiramtion = ({ handleSwap, isUnknownPrice = false, isMaxPriceImpact
 	const { isOpen, onToggle, onClose } = useDisclosure();
 	const requiredText = isMaxPriceImpact ? 'trade' : 'confirm';
 	const [value, setValue] = useState('');
-	const isSwapDisabled = value !== requiredText;
+	const isSwapDisabled = value?.toLowerCase() !== requiredText;
 
 	const onPopoverClose = () => {
 		setValue('');
