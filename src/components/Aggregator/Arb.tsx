@@ -168,8 +168,8 @@ const Gib = () => {
 };
 
 const icons = {
-	weth: 'https://icons.llamao.fi/icons/chains/rsz_ethereum?w=24&h=24',
-	arb: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum?w=24&h=24'
+	weth: 'https://icons.llamao.fi/icons/chains/rsz_ethereum?w=48&h=48',
+	arb: 'https://icons.llamao.fi/icons/chains/rsz_arbitrum?w=48&h=48'
 };
 
 const ARBITRUM = {

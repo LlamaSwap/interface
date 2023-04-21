@@ -3,11 +3,11 @@ export const capitalizeFirstLetter = (word) => word.charAt(0).toUpperCase() + wo
 const ICONS_CDN = 'https://icons.llamao.fi/icons';
 
 export function chainIconUrl(chain) {
-	return `${ICONS_CDN}/agg_icons/${chain.toLowerCase()}?w=24&h=24`;
+	return `${ICONS_CDN}/agg_icons/${chain.toLowerCase()}?w=48&h=48`;
 }
 
 export function protoclIconUrl(protocol) {
-	return `${ICONS_CDN}/protocols/${protocol}?w=24&h=24`;
+	return `${ICONS_CDN}/protocols/${protocol}?w=48&h=48`;
 }
 
 export function getSavedTokens() {
