@@ -73,7 +73,7 @@ export const useTokenApprove = (token: string, spender: `0x${string}`, amount: s
 	});
 
 	const customGasLimit =
-		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaltGasLimit[network.chain.network]
+		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaltGasLimit[network?.chain?.network]
 			? null
 			: { gasLimit: data?.request?.gasLimit.mul(140).div(100) };
 

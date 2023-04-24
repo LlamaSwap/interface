@@ -1,8 +1,11 @@
 import { multiCall } from '@defillama/sdk/build/abi';
 import { useQuery } from '@tanstack/react-query';
 import { uniq } from 'lodash';
+import { useSigner } from 'wagmi';
+import { cancelSwap } from '~/components/Aggregator/adapters/cowswap';
 import { chainIdToName, chainsMap } from '~/components/Aggregator/constants';
 import { useQueryParams } from '~/hooks/useQueryParams';
+import { useCowOrders } from './useCowOrder';
 
 const getSwapsHistory = async ({ userId, chain: chainId, tokensUrlMap, tokensSymbolsMap }) => {
 	if (!chainId) return [];
@@ -42,13 +45,45 @@ const getSwapsHistory = async ({ userId, chain: chainId, tokensUrlMap, tokensSym
 
 export function useSwapsHistory({ userId, tokensUrlMap, tokensSymbolsMap, isOpen }) {
 	const { chainName } = useQueryParams();
+
 	const chain = chainsMap[chainName];
-	return useQuery(
-		['getSwapsHistory', userId, chain],
+	const { data: signer } = useSigner();
+	const cowData = useCowOrders({ userAddress: userId, onlyNative: true, isOpen });
+	const history = useQuery(
+		['getSwapsHistory', userId, chain, cowData?.data],
 		() => getSwapsHistory({ userId, chain, tokensUrlMap, tokensSymbolsMap }),
 		{
-			enabled: !!userId && !!chain && isOpen,
+			enabled: !!userId && !!chain,
 			staleTime: 25_000
 		}
 	);
+
+	const historyData = history?.data
+		?.map((swap) => {
+			const rawQuote = swap?.route?.price?.rawQuote;
+			if (swap.aggregator === 'CowSwap') {
+				const cowOrder = cowData?.data?.find((order) => order?.ethflowData?.userValidTo === rawQuote?.quote?.validTo);
+
+				if (cowOrder && cowOrder.status === 'open') {
+					return {
+						...swap,
+						cancelSwap: () => {
+							try {
+								cancelSwap({ rawQuote, chain: chainName, to: swap.to, signer }).then(() => {
+									cowData?.refetch();
+									history?.refetch();
+								});
+							} catch (e) {
+								console.log(e);
+							}
+						}
+					};
+				}
+				if (cowOrder?.status === 'cancelled') return null;
+			}
+			return swap;
+		})
+		.filter(Boolean);
+
+	return { ...history, data: historyData };
 }

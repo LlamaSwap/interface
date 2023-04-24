@@ -1,7 +1,7 @@
 // Source: https://docs.cow.fi/off-chain-services/api
 
 import { ExtraData } from '../../types';
-import { domain, SigningScheme, signOrder, OrderKind } from '@gnosis.pm/gp-v2-contracts';
+import { domain, SigningScheme, signOrder } from '@gnosis.pm/gp-v2-contracts';
 import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainnet/GPv2Settlement.json';
 
 import { ethers } from 'ethers';
@@ -55,13 +55,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const tokenFrom = isEthflowOrder ? wrappedTokens[chain] : from;
 	const isBuyOrder = extra.amountOut && extra.amountOut !== '0';
-	
+
 	// Ethflow orders are always sell orders.
 	// Source: https://github.com/cowprotocol/ethflowcontract/blob/v1.0.0/src/libraries/EthFlowOrder.sol#L93-L95
 	if (isEthflowOrder && isBuyOrder) {
 		throw new Error('buy orders from Ether are not allowed');
 	}
-	
+
 	// amount should include decimals
 	const data = await fetch(`${chainToId[chain]}/api/v1/quote`, {
 		method: 'POST',
@@ -179,6 +179,25 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 
 		return { id: data, waitForOrder: waitForOrder(data, signer.provider, fromAddress) };
 	}
+}
+
+export async function cancelSwap({ chain, signer, rawQuote, to }) {
+	const fromAddress = await signer.getAddress();
+	const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer);
+
+	const tx = await nativeSwap.invalidateOrder([
+		to,
+		fromAddress,
+		rawQuote.quote.sellAmount,
+		rawQuote.quote.buyAmount,
+		rawQuote.quote.appData,
+		rawQuote.quote.feeAmount,
+		rawQuote.quote.validTo,
+		rawQuote.quote.partiallyFillable,
+		rawQuote.id
+	]);
+
+	return tx;
 }
 
 export const getTxData = () => '';
