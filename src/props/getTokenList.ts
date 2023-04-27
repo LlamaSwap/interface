@@ -1,9 +1,11 @@
 import { groupBy, mapValues, uniqBy } from 'lodash';
 import { IToken } from '~/types';
-import { chainIdToName, dexToolsChainMap, geckoChainsMap } from './constants';
-import { nativeTokens } from './nativeTokens';
 import { multiCall } from '@defillama/sdk/build/abi';
 import { ethers } from 'ethers';
+import { nativeTokens } from '~/components/Aggregator/nativeTokens';
+import { chainIdToName, dexToolsChainMap, geckoChainsMap } from '~/components/Aggregator/constants';
+import { ownTokenList } from '~/constants/tokenlist';
+import { protoclIconUrl } from '~/utils';
 
 const tokensToRemove = {
 	1: {
@@ -37,6 +39,10 @@ const fixTotkens = (tokenlist) => {
 	tokenlist[1].find(({ address }) => address.toLowerCase() === '0x6b175474e89094c44da98b954eedeac495271d0f').symbol =
 		'DAI';
 
+	tokenlist[1].find(
+		({ address }) => address.toLowerCase() === '0x249cA82617eC3DfB2589c4c17ab7EC9765350a18'.toLowerCase()
+	).logoURI = protoclIconUrl('verse');
+
 	return tokenlist;
 };
 
@@ -52,12 +58,11 @@ export async function getTokenList() {
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
-	const [uniList, sushiList, geckoList, logos, ownList] = await Promise.all([
-		fetch('https://tokens.uniswap.org/').then((r) => r.json()),
+	const [sushiList, geckoList, logos, ownList] = await Promise.all([
 		fetch('https://token-list.sushi.com/').then((r) => r.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
-		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json').then((res) => res.json()),
+		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json').then((res) => res.json())
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -70,7 +75,7 @@ export async function getTokenList() {
 		.flat();
 
 	const tokensByChain = mapValues(
-		groupBy([...nativeTokens, ...uniList.tokens, ...sushiList.tokens, ...oneInchList, ...ownList], 'chainId'),
+		groupBy([...nativeTokens, ...ownTokenList, ...sushiList.tokens, ...oneInchList, ...ownList], 'chainId'),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
@@ -148,7 +153,8 @@ export async function getTokenList() {
 					label: t.symbol,
 					value: t.address,
 					geckoId,
-					logoURI: t.logoURI || logos[geckoId] || null,
+					logoURI: t.ownLogoURI || `https://icons.llamao.fi/icons/tokens/${t.chainId}/${t.address}?h=20&w=20`,
+					logoURI2: t.logoURI || logos[geckoId] || null,
 					volume24h
 				};
 			})
@@ -175,12 +181,7 @@ export async function getTokenList() {
 		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])];
 	}
 
-	return {
-		props: {
-			tokenlist
-		}
-		//revalidate: 5 * 60 // 5 minutes
-	};
+	return tokenlist;
 }
 
 // use multicall to fetch tokens name, symbol and decimals

@@ -27,6 +27,7 @@ const nativeSwapAddress = {
 export const name = 'CowSwap';
 export const token = 'COW';
 export const referral = true;
+export const isOutputAvailable = true;
 
 export function approvalAddress() {
 	return '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
@@ -53,6 +54,14 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const isEthflowOrder = from === ethers.constants.AddressZero;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const tokenFrom = isEthflowOrder ? wrappedTokens[chain] : from;
+	const isBuyOrder = extra.amountOut && extra.amountOut !== '0';
+	
+	// Ethflow orders are always sell orders.
+	// Source: https://github.com/cowprotocol/ethflowcontract/blob/v1.0.0/src/libraries/EthFlowOrder.sol#L93-L95
+	if (isEthflowOrder && isBuyOrder) {
+		throw new Error('buy orders from Ether are not allowed');
+	}
+	
 	// amount should include decimals
 	const data = await fetch(`${chainToId[chain]}/api/v1/quote`, {
 		method: 'POST',
@@ -68,8 +77,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			//"priceQuality": "fast",
 			signingScheme: isEthflowOrder ? 'eip1271' : 'eip712', // for selling directly ether, another signature type is required
 			onchainOrder: isEthflowOrder ? true : false, // for selling directly ether, we have to quote for onchain orders
-			kind: 'sell',
-			sellAmountBeforeFee: amount
+			kind: isBuyOrder ? 'buy' : 'sell',
+			...(isBuyOrder ? { buyAmountAfterFee: extra.amountOut } : { sellAmountBeforeFee: amount })
 		}),
 		headers: {
 			'Content-Type': 'application/json'
@@ -82,17 +91,26 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	}
 
 	const expectedBuyAmount = data.quote.buyAmount;
-	data.quote.buyAmount = BigNumber(expectedBuyAmount)
-		.times(1 - Number(extra.slippage) / 100)
-		.toFixed(0);
+	const expectedSellAmount = BigNumber(data?.quote.sellAmount).plus(data.quote.feeAmount).toFixed(0);
+	if (isBuyOrder) {
+		data.quote.sellAmount = BigNumber(data.quote.sellAmount)
+			.times(1 + Number(extra.slippage) / 100)
+			.toFixed(0);
+	} else {
+		data.quote.buyAmount = BigNumber(expectedBuyAmount)
+			.times(1 - Number(extra.slippage) / 100)
+			.toFixed(0);
+	}
 
 	return {
 		amountReturned: expectedBuyAmount,
+		amountIn: expectedSellAmount || '0',
 		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
 		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
-		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589'
+		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589',
+		isMEVSafe: true
 	};
 }
 
@@ -132,7 +150,7 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 			appData: rawQuote.quote.appData,
 			receiver: fromAddress,
 			feeAmount: rawQuote.quote.feeAmount,
-			kind: OrderKind.SELL,
+			kind: rawQuote.quote.kind,
 			partiallyFillable: rawQuote.quote.partiallyFillable
 		};
 

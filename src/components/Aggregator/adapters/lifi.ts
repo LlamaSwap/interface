@@ -39,7 +39,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			extra.userAddress === '0x0000000000000000000000000000000000000000'
 				? '0x1000000000000000000000000000000000000001'
 				: extra.userAddress
-		}&slippage=${+extra.slippage / 100 || '0.05'}`
+		}&slippage=${+extra.slippage / 100}`
 	).then((r) => r.json());
 
 	const gas = data.estimate.gasCosts.reduce((acc, val) => acc + Number(val.estimate), 0);

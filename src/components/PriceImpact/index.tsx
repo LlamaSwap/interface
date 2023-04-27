@@ -14,6 +14,8 @@ import BigNumber from 'bignumber.js';
 import { useState } from 'react';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from '../Aggregator/constants';
 
+const PRICE_IMPACT_SMOL_WARNING_THRESHOLD = 1;
+
 interface IPriceImpact {
 	isLoading: boolean;
 	fromToken?: { symbol: string; decimals: number; name: string } | null;
@@ -26,11 +28,13 @@ interface IPriceImpact {
 	slippage?: string;
 }
 
-const NoPriceImpactAlert = ({ name: string }) => {
+const NoPriceImpactAlert = ({ tokens }) => {
 	return (
-		<Alert status="warning" borderRadius="0.375rem" py="8px">
+		<Alert status="error" borderRadius="0.375rem" py="8px">
 			<AlertIcon />
-			{`Couldn't fetch price for ${string}, we aren't able to check price impact so please exercise caution`}
+			{`Couldn't fetch price for ${tokens.join(
+				', '
+			)}, we aren't able to check price impact so please exercise caution. Please be very careful when checking the swap cause you could lose money`}
 		</Alert>
 	);
 };
@@ -51,13 +55,12 @@ export function PriceImpact({
 		return null;
 	}
 
-	if (!fromTokenPrice || Number.isNaN(Number(fromTokenPrice))) {
-		return <NoPriceImpactAlert name={fromToken.symbol} />;
-	}
+	const tokensWithoutPrice = [
+		!fromTokenPrice || Number.isNaN(Number(fromTokenPrice)) ? fromToken.symbol : null,
+		!toTokenPrice || Number.isNaN(Number(toTokenPrice)) ? toToken.symbol : null
+	].filter(Boolean);
 
-	if (!toTokenPrice || Number.isNaN(Number(toTokenPrice))) {
-		return <NoPriceImpactAlert name={toToken.symbol} />;
-	}
+	if (tokensWithoutPrice.length > 0) return <NoPriceImpactAlert tokens={tokensWithoutPrice} />;
 
 	if (!amount || Number.isNaN(Number(amount)) || !amountReturnedInSelectedRoute) {
 		return null;
@@ -75,13 +78,14 @@ export function PriceImpact({
 			: null;
 
 	const isPriceImpactNotKnown = !selectedRoutesPriceImpact && selectedRoutesPriceImpact !== 0;
+	const shouldRevertPriceOrder = fromToken && toTokenPrice && fromTokenPrice / toTokenPrice < 0.0001 ? 1 : 0;
 
 	return (
 		<>
-			<Accordion allowToggle style={{ margin: '0 4px' }}>
+			<Accordion allowToggle style={{ margin: '0 4px' }} index={[0]}>
 				<AccordionItem borderColor="#373944" minH="2.5rem">
 					<AccordionButton onClick={() => setPriceOrder((prev) => prev * -1)}>
-						{priceOrder === 1 ? (
+						{priceOrder + shouldRevertPriceOrder === 1 ? (
 							<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${
 								fromToken.symbol
 							} = ${amountReceived.toFixed(4)} ${toToken.symbol} ($${(
@@ -94,7 +98,6 @@ export function PriceImpact({
 								Number(toTokenValue) * Number(fromTokenPrice)
 							).toFixed(2)})`}</Box>
 						)}
-						<AccordionIcon />
 					</AccordionButton>
 
 					<AccordionPanel
@@ -122,12 +125,14 @@ export function PriceImpact({
 									? 'red.500'
 									: selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD
 									? 'orange.500'
+									: selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD
+									? 'yellow.500'
 									: 'white'
 							}
 						>
 							<span>Price impact according to CoinGecko</span>
 
-							{isPriceImpactNotKnown || selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD ? (
+							{isPriceImpactNotKnown || selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD ? (
 								<WarningTwoIcon style={{ marginLeft: 'auto' }} />
 							) : null}
 
@@ -157,6 +162,12 @@ export function PriceImpact({
 				<Alert status="warning" borderRadius="0.375rem" py="8px">
 					<AlertIcon />
 					High price impact! More than {selectedRoutesPriceImpact.toFixed(2)}% drop.
+				</Alert>
+			) : null}
+			{!isLoading && toTokenPrice && Number(totalAmountReceived) * toTokenPrice > 100e3 ? (
+				<Alert status="warning" borderRadius="0.375rem" py="8px">
+					<AlertIcon />
+					Your size is size. Please be mindful of slippage
 				</Alert>
 			) : null}
 		</>

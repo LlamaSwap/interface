@@ -38,7 +38,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			chainToId[chain]
 		}/route/encode?tokenIn=${tokenFrom}&tokenOut=${tokenTo}&amountIn=${amount}&to=${
 			extra.userAddress
-		}&saveGas=0&gasInclude=1&slippageTolerance=${+extra.slippage * 100 || 50}&clientData={"source":"DefiLlama"}`,
+		}&saveGas=0&gasInclude=1&slippageTolerance=${+extra.slippage * 100}&clientData={"source":"DefiLlama"}`,
 		{
 			headers: {
 				'Accept-Version': 'Latest'
