@@ -11,6 +11,7 @@ export const chainToId = {
 	polygon: 137,
 	arbitrum: 42161,
 	avax: 43114,
+	fantom: 250,
 };
 
 const approvalAddresses = {
@@ -20,6 +21,7 @@ const approvalAddresses = {
 	polygon: '0xa32EE1C40594249eb3183c10792BcF573D4Da47C',
 	arbitrum: '0xdd94018F54e565dbfc939F7C44a16e163FaAb331',
 	avax: '0xfE7Ce93ac0F78826CD81D506B07Fe9f459c00214',
+	fantom: '0x061dc8e41C05207BedD6242eA4b342ef294BE359',
 };
 
 export const name = 'Odos';
