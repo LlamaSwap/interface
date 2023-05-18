@@ -55,12 +55,16 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: data.outputAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.routerAddress,
-		rawQuote: { ...data, gasLimit: gas },
+		rawQuote: { ...data, gasLimit: gas, slippage: extra.slippage },
 		logo: 'https://assets.coingecko.com/coins/images/14899/small/RwdVsGcw_400x400.jpg?1618923851'
 	};
 }
 
 export async function swap({ signer, from, rawQuote, chain }) {
+	if (rawQuote.slippage < 0.01) {
+		throw { reason: "Kyberswap doesn't support slippage below 0.01%" };
+	}
+
 	const fromAddress = await signer.getAddress();
 
 	const transactionOption: Record<string, string> = {
