@@ -336,7 +336,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						address: fromToken2.address,
 						value: fromToken2.address,
 						decimals: fromToken2.decimals,
-						logoURI: `https://icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${fromToken2.address}?h=20&w=20`,
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${fromToken2.address}?h=20&w=20`,
 						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
@@ -351,7 +351,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						address: toToken2.address,
 						value: toToken2.address,
 						decimals: toToken2.decimals,
-						logoURI: `https://icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${toToken2.address}?h=20&w=20`,
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${toToken2.address}?h=20&w=20`,
 						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
