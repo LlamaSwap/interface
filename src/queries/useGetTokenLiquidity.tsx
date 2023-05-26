@@ -42,7 +42,7 @@ async function getInitialLiquidityRoutes({
 				const [liquidity, routes] = item.value;
 
 				const topRoute = getTopRoute({
-					routes: routes.filter((r) => r.name !== 'CowSwap'),
+					routes: routes.filter((r) => r.name !== 'CowSwap' && r.name !== 'UniDex'),
 					gasPriceData,
 					gasTokenPrice,
 					fromToken,
