@@ -62,7 +62,9 @@ export async function getTokenList() {
 		fetch('https://token-list.sushi.com/').then((r) => r.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
-		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json').then((res) => res.json())
+		fetch('https://raw.githubusercontent.com/Canto-Network/list/main/lists/token-lists/mainnet/tokens.json').then((res) => res.json()).then(json => {
+			return json.filter((token: { symbol: string }) => token.symbol !== 'CANTO')
+		})
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
