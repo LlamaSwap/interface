@@ -289,7 +289,7 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 				borderRadius="8px"
 				bg="#222429"
 				_hover={{ bg: '#2d3037' }}
-				maxW={{ base: '100%', md: '9rem' }}
+				maxW={{ base: '128px', md: '9rem' }}
 				p="12px"
 				onClick={() => onOpen()}
 			>

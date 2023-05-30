@@ -7,7 +7,6 @@ import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
 import styled from 'styled-components';
 import {
-	Heading,
 	useToast,
 	Button,
 	FormControl,
@@ -21,7 +20,11 @@ import {
 	ToastId,
 	Alert,
 	AlertIcon,
-	CircularProgress
+	CircularProgress,
+	useBreakpoint,
+	Popover,
+	PopoverTrigger,
+	PopoverContent
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
@@ -56,7 +59,7 @@ import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
 import { useCountdown } from '~/hooks/useCountdown';
 import { Sandwich } from './Sandwich';
-import { RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 
@@ -110,7 +113,12 @@ cant integrate:
 - https://twitter.com/DexibleApp - not an aggregator, only supports exotic orders like TWAP, segmented order, stop loss...
 */
 
-const Body = styled.div<{ showRoutes: boolean }>`
+enum STATES {
+	INPUT,
+	ROUTES
+}
+
+const Body = styled.div`
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
@@ -119,7 +127,6 @@ const Body = styled.div<{ showRoutes: boolean }>`
 	max-width: 30rem;
 	border: 1px solid #2f333c;
 	align-self: flex-start;
-
 	z-index: 1;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
@@ -134,6 +141,10 @@ const Body = styled.div<{ showRoutes: boolean }>`
 
 	border-radius: 16px;
 	text-align: left;
+
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		box-shadow: none;
+	}
 `;
 
 const Wrapper = styled.div`
@@ -162,7 +173,7 @@ const Wrapper = styled.div`
 	}
 `;
 
-const Routes = styled.div`
+const Routes = styled.div<{ visible: boolean }>`
 	display: flex;
 	flex-direction: column;
 	padding: 16px;
@@ -191,16 +202,32 @@ const Routes = styled.div`
 
 	-ms-overflow-style: none; /* IE and Edge */
 	scrollbar-width: none; /* Firefox */
+
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		z-index: 10;
+		background-color: #22242a;
+		position: absolute;
+		box-shadow: none;
+		clip-path: ${({ visible }) => (visible ? 'inset(0 0 0 0);' : 'inset(0 0 0 100%);')};
+
+		transition: all 0.4s;
+		overflow: scroll;
+		max-height: 100%;
+	}
 `;
 
 const BodyWrapper = styled.div`
 	display: flex;
-	flex-direction: column;
-	align-items: center;
+	justify-content: center;
 	gap: 16px;
 	width: 100%;
 	z-index: 1;
 	position: relative;
+
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		margin-top: 8px;
+		height: fi;
+	}
 
 	& > * {
 		margin: 0 auto;
@@ -228,6 +255,11 @@ const FormHeader = styled.div`
 	.chakra-switch__track,
 	.chakra-switch__thumb {
 		height: 10px;
+	}
+
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		margin: 0 auto;
+		margin-bottom: 6px;
 	}
 `;
 
@@ -288,6 +320,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [lastOutputValue, setLastOutputValue] = useState(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
+
+	// mobile states
+	const [uiState, setUiState] = useState(STATES.INPUT);
+	const breakpoint = useBreakpoint();
+	const isSmallScreen = breakpoint === 'sm' || breakpoint === 'base';
+	const toggleUi = () => setUiState((state) => (state === STATES.INPUT ? STATES.ROUTES : STATES.INPUT));
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -842,10 +880,51 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
 	const isUnknownPrice = !fromTokenPrice || !toTokenPrice;
+	const isPriceImpactNotKnown = !selectedRoutesPriceImpact && selectedRoutesPriceImpact !== 0;
+
+	const warnings = [
+		aggregator === 'CowSwap' ? (
+			<>
+				{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 2 ? (
+					<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow1">
+						<AlertIcon />
+						Swaps from {finalSelectedFromToken.symbol} on CowSwap need to have slippage higher than 2%.
+					</Alert>
+				) : null}
+				<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow2">
+					<AlertIcon />
+					CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
+					{finalSelectedFromToken.value === ethers.constants.AddressZero ? (
+						<>
+							<br /> For ETH orders, if it doesn't get executed the ETH will be returned to your wallet in 30 minutes.
+						</>
+					) : null}
+				</Alert>
+			</>
+		) : null,
+		diffBetweenSelectedRouteAndTopRoute > 5 && (
+			<Alert status="warning" borderRadius="0.375rem" py="8px" key="diff">
+				<AlertIcon />
+				{`There is ${diffBetweenSelectedRouteAndTopRoute}% difference between selected route and top route.`}
+			</Alert>
+		),
+		!isLoading && !isPriceImpactNotKnown && selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD ? (
+			<Alert status="warning" borderRadius="0.375rem" py="8px" key="impact">
+				<AlertIcon />
+				High price impact! More than {selectedRoutesPriceImpact.toFixed(2)}% drop.
+			</Alert>
+		) : null,
+		!isLoading && toTokenPrice && Number(selectedRoute?.amount) * toTokenPrice > 100e3 ? (
+			<Alert status="warning" borderRadius="0.375rem" py="8px" key="size">
+				<AlertIcon />
+				Your size is size. Please be mindful of slippage
+			</Alert>
+		) : null,
+		pairSandwichData ? <Sandwich sandiwichData={pairSandwichData} key="sandwich" /> : null
+	].filter(Boolean);
 
 	return (
 		<Wrapper>
-			<Heading>Meta-Aggregator</Heading>
 			{isSettingsModalOpen ? (
 				<Settings
 					adapters={adaptersNames}
@@ -855,7 +934,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				/>
 			) : null}
 
-			<Text fontSize="1rem" fontWeight="500">
+			<Text fontSize="1rem" fontWeight="500" display={{ base: 'none', md: 'block', lg: 'block' }}>
 				This product is still in beta. If you run into any issue please let us know in our{' '}
 				<a
 					style={{ textDecoration: 'underline' }}
@@ -868,7 +947,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			</Text>
 
 			<BodyWrapper>
-				<Body showRoutes={finalSelectedFromToken && finalSelectedToToken ? true : false}>
+				<Body>
 					<div>
 						<FormHeader>
 							<Flex>
@@ -887,6 +966,15 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 									</FormControl>
 								</Tooltip>
 								<SettingsIcon onClick={() => setSettingsModalOpen((open) => !open)} ml={4} mt={1} cursor="pointer" />
+								{isSmallScreen && finalSelectedFromToken && finalSelectedToToken ? (
+									<ArrowForwardIcon
+										width={'24px'}
+										height={'24px'}
+										ml="16px"
+										cursor={'pointer'}
+										onClick={() => setUiState(STATES.ROUTES)}
+									/>
+								) : null}
 							</Flex>
 						</FormHeader>
 
@@ -973,36 +1061,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						selectedRoutesPriceImpact={selectedRoutesPriceImpact}
 						amount={selectedRoute?.amountIn}
 						slippage={slippage}
+						isPriceImpactNotKnown={isPriceImpactNotKnown}
 					/>
-
-					{aggregator === 'CowSwap' ? (
-						<>
-							{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 2 ? (
-								<Alert status="warning" borderRadius="0.375rem" py="8px">
-									<AlertIcon />
-									Swaps from {finalSelectedFromToken.symbol} on CowSwap need to have slippage higher than 2%.
-								</Alert>
-							) : null}
-							<Alert status="warning" borderRadius="0.375rem" py="8px">
-								<AlertIcon />
-								CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
-								{finalSelectedFromToken.value === ethers.constants.AddressZero ? (
-									<>
-										<br /> For ETH orders, if it doesn't get executed the ETH will be returned to your wallet in 30
-										minutes.
-									</>
-								) : null}
-							</Alert>
-						</>
-					) : null}
-					<Sandwich sandiwichData={pairSandwichData} />
-
-					{diffBetweenSelectedRouteAndTopRoute > 5 && (
-						<Alert status="warning" borderRadius="0.375rem" py="8px">
-							<AlertIcon />
-							{`There is ${diffBetweenSelectedRouteAndTopRoute}% difference between selected route and top route.`}
-						</Alert>
-					)}
+					<Box display={['none', 'none', 'flex', 'flex']} flexDirection="column" gap="4px">
+						{warnings}
+					</Box>
 
 					<SwapWrapper>
 						{!isConnected ? (
@@ -1016,6 +1079,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						) : insufficientBalance ? (
 							<Button colorScheme={'messenger'} disabled>
 								Insufficient Balance
+							</Button>
+						) : !selectedRoute && isSmallScreen && finalSelectedFromToken && finalSelectedToToken ? (
+							<Button colorScheme={'messenger'} onClick={() => setUiState(STATES.ROUTES)}>
+								Select Aggregator
 							</Button>
 						) : hasMaxPriceImpact ? (
 							<Button colorScheme={'messenger'} disabled>
@@ -1120,6 +1187,17 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													{'Approve Infinite'}
 												</Button>
 											)}
+
+											{isSmallScreen && warnings?.length ? (
+												<Popover>
+													<PopoverTrigger>
+														<Button backgroundColor={'rgb(224, 148, 17)'} maxWidth="100px">
+															{warnings.length} Warning{warnings.length === 1 ? '' : 's'}
+														</Button>
+													</PopoverTrigger>
+													<PopoverContent mr="8">{warnings}</PopoverContent>
+												</Popover>
+											) : null}
 										</>
 									</>
 								)}
@@ -1128,14 +1206,23 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					</SwapWrapper>
 				</Body>
 
-				<Routes ref={routesRef}>
+				<Routes ref={routesRef} visible={uiState === STATES.ROUTES}>
+					<ArrowBackIcon
+						width={'24px'}
+						height="24px"
+						position={'absolute'}
+						mb="4px"
+						onClick={() => setUiState(STATES.INPUT)}
+						display={['flex', 'flex', 'none', 'none']}
+						cursor="pointer"
+					/>
 					{normalizedRoutes?.length ? (
 						<Flex alignItems="center" justifyContent="space-between">
-							<FormHeader>Select a route to perform a swap </FormHeader>
+							<FormHeader> Select a route to perform a swap </FormHeader>
 							<Tooltip2
 								content={`Displayed data will auto-refresh after ${secondsToRefresh} seconds. Click here to update manually`}
 							>
-								<RepeatIcon pos="absolute" w="16px" h="16px" mt="4px" ml="4px" />
+								<RepeatIcon pos="absolute" w="16px	" h="16px" mt="4px" ml="4px" />
 								<CircularProgress
 									value={100 - (secondsToRefresh / (REFETCH_INTERVAL / 1000)) * 100}
 									color="blue.400"
@@ -1155,17 +1242,19 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					  routes.length ? (
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
-					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
-						{normalizedRoutes?.length ? `Best route is selected based on net output after gas fees.` : null}
-					</span>
+					<Box display={{ base: 'none', md: 'block', lg: 'block' }}>
+						<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
+							{normalizedRoutes?.length ? `Best route is selected based on net output after gas fees.` : null}
+						</span>
 
-					<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
-						{failedRoutes.length > 0
-							? `Routes for aggregators ${failedRoutes
-									.map((r) => r.name)
-									.join(', ')} have been hidden since they could not be executed`
-							: null}
-					</span>
+						<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
+							{failedRoutes.length > 0
+								? `Routes for aggregators ${failedRoutes
+										.map((r) => r.name)
+										.join(', ')} have been hidden since they could not be executed`
+								: null}
+						</span>
+					</Box>
 
 					{isLoading &&
 					(debouncedAmount || debouncedAmountOut) &&
@@ -1196,7 +1285,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								{...r}
 								index={i}
 								selected={aggregator === r.name}
-								setRoute={() => setAggregator(r.name)}
+								setRoute={() => {
+									if (isSmallScreen) toggleUi();
+									setAggregator(r.name);
+								}}
 								toToken={finalSelectedToToken}
 								amountFrom={r?.fromAmount}
 								fromToken={finalSelectedFromToken}
@@ -1342,7 +1434,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				</Routes>
 			</BodyWrapper>
 
-			<FAQs />
+			{window === parent ? <FAQs /> : null}
 
 			<TransactionModal open={txModalOpen} setOpen={setTxModalOpen} link={txUrl} />
 		</Wrapper>

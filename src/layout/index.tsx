@@ -22,7 +22,6 @@ const Center = styled.main`
 	flex-direction: column;
 	gap: 28px;
 	width: 100%;
-	max-width: 86rem;
 	min-height: 100%;
 	margin: 0 auto;
 	color: ${({ theme }) => theme.text1};

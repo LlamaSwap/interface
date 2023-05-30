@@ -126,13 +126,13 @@ const Route = ({
 					</Flex>
 				) : (
 					<Flex className="mobile-column" as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
-						{afterFees ? <span>{`≈ ${afterFees} `}</span> : null}
+						{afterFees ? <span>{`≈ ${afterFees} after fees`}</span> : null}
 						{isGasNotKnown && !isFetchingGasPrice ? (
 							<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
 								<AlertCircle size="14" /> unknown gas fees
 							</Flex>
 						) : afterFees ? (
-							<span>after fees</span>
+							<span></span>
 						) : null}
 					</Flex>
 				)}
@@ -144,7 +144,7 @@ const Route = ({
 				) : null}
 
 				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
-					<Text display="flex" className="mobile-column mobile-flexend" alignItems="center" gap="4px" color="gray.400">
+					<Text display="flex" alignItems="center" gap="4px" color="gray.400">
 						{name === 'CowSwap' ? (
 							<Tooltip content="Gas is taken from output amount">
 								<Text as="span" display="flex" alignItems="center" gap="4px" color="gray.400" fontWeight={500}>
