@@ -99,7 +99,14 @@ function HistoryModal({ tokensUrlMap, tokensSymbolsMap }) {
 
 	return (
 		<>
-			<Button onClick={onOpen} borderRadius="12px" height="36px" mt="2px" colorScheme={'twitter'}>
+			<Button
+				onClick={onOpen}
+				borderRadius="12px"
+				height="36px"
+				mt="2px"
+				colorScheme={'twitter'}
+				display={{ base: 'none', sm: 'none', lg: 'block', md: 'block' }}
+			>
 				History {hasActiveCowSwaps ? <CircularProgress isIndeterminate color="blue.300" w="20px" ml="2" /> : null}
 			</Button>
 
