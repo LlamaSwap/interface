@@ -22,7 +22,6 @@ export const TransactionModal = ({ open, setOpen, link }) => {
 			<ModalOverlay />
 			<ModalContent>
 				<ModalCloseButton color="white" />
-
 				<ModalBody display="flex" gap="8px" flexDir="column" alignItems="center" marginY="4rem" color="white">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -42,8 +41,13 @@ export const TransactionModal = ({ open, setOpen, link }) => {
 					<Text as="h1" fontSize="xl" fontWeight="600">
 						Transaction Submitted
 					</Text>
+					{link?.includes('cow.fi') ? (
+						<Text color={'orange.200'} fontWeight="light" padding=" 0px 10px" textAlign={'center'}>
+							ETH orders may take 30 minutes to process. Your ETH is safe in a contract during this time. Cancel the
+							order for immediate ETH retrieval. Cancellation is available in the 'History' tab for all orders.
+						</Text>
+					) : null}
 				</ModalBody>
-
 				<ChakraLink
 					href={link}
 					isExternal
