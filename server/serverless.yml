@@ -67,6 +67,26 @@ functions:
       EIGEN_API_KEY: ${env:EIGEN_API_KEY}
       HASHFLOW_API_KEY: ${env:HASHFLOW_API_KEY}
       OX_API_KEY: ${env:OX_API_KEY}
+  dexAggregatorQuotes:
+    handler: src/getDexAggregatorQuotes.default
+    timeout: 30
+    memorySize: 512
+    events:
+      - http:
+          path: dexAggregatorQuotes
+          method: post
+    environment:
+      EIGEN_API_KEY: ${env:EIGEN_API_KEY}
+      HASHFLOW_API_KEY: ${env:HASHFLOW_API_KEY}
+      OX_API_KEY: ${env:OX_API_KEY}
+  dexAggregators:
+    handler: src/getDexAggregators.default
+    timeout: 30
+    memorySize: 128
+    events:
+      - http:
+          path: dexAggregators
+          method: get
 
 resources:
   # CORS for api gateway errors
