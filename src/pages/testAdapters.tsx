@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { testAdapters } from "~/components/Aggregator/testAdapters.test";
+import { testAdapters } from "~/components/Aggregator/testAdapters";
 import styled from 'styled-components';
 
 const Table = styled.table`

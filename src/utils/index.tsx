@@ -36,21 +36,6 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	let num = parseFloat(number);
 	const isNegative = num < 0;
 
-	// const currencyMark = isNegative ? `${currencySymbol}-` : currencySymbol
-	// const normalMark = isNegative ? '-' : ''
-
-	// if (num > 10000000) {
-	// 	return (symbol ? currencyMark : normalMark) + toK(num.toFixed(0), true)
-	// }
-
-	// if (num === 0) {
-	// 	return symbol ? `${currencySymbol}0` : 0
-	// }
-
-	// if (num < 0.0001 && num > 0) {
-	// 	return symbol ? `< ${currencySymbol}0.0001` : '< 0.0001'
-	// }
-
 	let maximumFractionDigits = num < 1 ? 8 : 4;
 	maximumFractionDigits = num > 100000 ? 2 : maximumFractionDigits;
 	formattedNum = num.toLocaleString('en-US', { maximumFractionDigits });

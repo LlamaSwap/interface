@@ -1,6 +1,6 @@
 import { BigNumber } from 'ethers';
 
-function countBits(num:BigNumber) {
+export function countBits(num:BigNumber) {
   let bitlength = 0;
   let inputNum = BigNumber.from(num)
   while (!inputNum.isZero()) {
@@ -10,7 +10,7 @@ function countBits(num:BigNumber) {
   return bitlength
 }
 
-function removeFirstBit(word:BigNumber){
+export function removeFirstBit(word:BigNumber){
   // To work this requires that word has a number of bits that is multiple of 8 + the starting bit
   return word.toHexString().replace("0x01", "0x") // toHexString() normalizes to byte length, so we need to remove 2 nibbles
 }
