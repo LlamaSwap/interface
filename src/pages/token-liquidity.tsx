@@ -1,14 +1,14 @@
-import * as React from 'react';
-import { useRouter } from 'next/router';
 import { Flex, FormControl, FormLabel, Heading, IconButton } from '@chakra-ui/react';
-import Layout from '~/layout';
+import { useRouter } from 'next/router';
+import * as React from 'react';
+import { ArrowRight } from 'react-feather';
 import { chainsMap } from '~/components/Aggregator/constants';
-import ReactSelect from '~/components/MultiSelect';
 import { getAllChains } from '~/components/Aggregator/router';
 import { LiquidityByToken } from '~/components/LiquidityByToken';
-import type { IToken } from '~/types';
-import { ArrowRight } from 'react-feather';
+import ReactSelect from '~/components/MultiSelect';
+import Layout from '~/layout';
 import { getTokenList } from '~/props/getTokenList';
+import type { IToken } from '~/types';
 
 export async function getStaticProps() {
 	const tokenlist = await getTokenList();
@@ -70,7 +70,7 @@ export default function TokenLiquidity({ tokenlist }) {
 	};
 
 	return (
-		<Layout title={`Token Liquidity - LlamaSwap`} defaultSEO>
+		<Layout title={`Token Liquidity - SpaceSwap`} defaultSEO>
 			<Heading alignSelf="center">Token Liquidity</Heading>
 
 			<Flex flexDir="column" gap="20px" marginTop="40px" maxW="48rem" w="100%" marginX="auto">

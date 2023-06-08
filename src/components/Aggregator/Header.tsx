@@ -30,7 +30,7 @@ const Header = ({ children }) => {
 				fontSize={['26px', '26px', '32px', '32px']}
 				display="flex"
 				alignItems="center"
-				onClick={() => window.open('https://swap.defillama.com/')}
+				onClick={() => window.open('https://swap.openspace.gg/')}
 				cursor="pointer"
 			>
 				<Image
@@ -40,7 +40,7 @@ const Header = ({ children }) => {
 					mr="8px"
 					alt="logo"
 				/>
-				LlamaSwap
+				SpaceSwap
 			</Name>
 			{children}
 		</Wrapper>

@@ -1,7 +1,26 @@
-import { useRef, useState, useEffect } from 'react';
-import gib from '~/public/gib.png';
-import gibr from '~/public/gibr.png';
+import { ChevronRightIcon } from '@chakra-ui/icons';
+import {
+	Alert,
+	AlertIcon,
+	Box,
+	Button,
+	Flex,
+	Heading,
+	IconButton,
+	Image,
+	Text,
+	ToastId,
+	useToast,
+	VStack
+} from '@chakra-ui/react';
+import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import { useMutation } from '@tanstack/react-query';
+import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
+import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowDown } from 'react-feather';
+import styled from 'styled-components';
 import {
 	useAccount,
 	useBlockNumber,
@@ -14,48 +33,29 @@ import {
 	useSigner,
 	useSwitchNetwork
 } from 'wagmi';
-import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
-import { ethers } from 'ethers';
-import BigNumber from 'bignumber.js';
-import { ArrowDown } from 'react-feather';
-import styled from 'styled-components';
-import {
-	Heading,
-	useToast,
-	Button,
-	Flex,
-	Box,
-	IconButton,
-	Text,
-	ToastId,
-	Alert,
-	AlertIcon,
-	Image,
-	VStack
-} from '@chakra-ui/react';
-import { adaptersNames, swap } from './router';
-import { inifiniteApprovalAllowed } from './list';
-import { useTokenApprove } from './hooks';
-import { useGetRoutes } from '~/queries/useGetRoutes';
-import { useGetPrice } from '~/queries/useGetPrice';
-import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
-import type { IToken } from '~/types';
-import { sendSwapEvent } from './adapters/utils';
-import { useRouter } from 'next/router';
-import { TransactionModal } from '../TransactionModal';
-import { formatSuccessToast } from '~/utils/formatToast';
+import { allChains } from '~/components/WalletProvider/chains';
+import { useCountdownFull } from '~/hooks/useCountdown';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
-import SwapConfirmation from './SwapConfirmation';
+import gib from '~/public/gib.png';
+import gibr from '~/public/gibr.png';
 import { useBalance } from '~/queries/useBalance';
-import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
-import { useCountdownFull } from '~/hooks/useCountdown';
-import { ChevronRightIcon } from '@chakra-ui/icons';
+import { useGetPrice } from '~/queries/useGetPrice';
+import { useGetRoutes } from '~/queries/useGetRoutes';
+import type { IToken } from '~/types';
 import { formatAmount } from '~/utils/formatAmount';
-import { allChains } from '~/components/WalletProvider/chains';
-import { IconImage } from './Search';
-import { CLAIM_ABI } from './claimAbi';
+import { formatSuccessToast } from '~/utils/formatToast';
+import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
+import { TransactionModal } from '../TransactionModal';
 import { chainToId } from './adapters/llamazip';
+import { sendSwapEvent } from './adapters/utils';
+import { CLAIM_ABI } from './claimAbi';
+import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
+import { useTokenApprove } from './hooks';
+import { inifiniteApprovalAllowed } from './list';
+import { adaptersNames, swap } from './router';
+import { IconImage } from './Search';
+import SwapConfirmation from './SwapConfirmation';
 
 const Body = styled.div<{ showRoutes: boolean }>`
 	display: flex;
@@ -727,7 +727,7 @@ export function AggregatorContainer() {
 		if (normalizedRoutes.length && normalizedRoutes[0]?.name === 'LlamaZip') {
 			if (+normalizedRoutes[0].fromAmount > 11_000 * 10 ** 18) {
 				toast({
-					title: 'Your size is size. Please use swap.defillama.com',
+					title: 'Your size is size. Please use swap.openspace.gg',
 					status: 'warning',
 					duration: 10000,
 					isClosable: true,
@@ -763,7 +763,7 @@ export function AggregatorContainer() {
 		if (isValidDegenSwap) {
 			if (+degenRoutes[0].fromAmount > 11_000 * 10 ** 18) {
 				toast({
-					title: 'Your size is size. Please use swap.defillama.com',
+					title: 'Your size is size. Please use swap.openspace.gg',
 					status: 'warning',
 					duration: 10000,
 					isClosable: true,
@@ -1007,7 +1007,7 @@ export function AggregatorContainer() {
 					{degenSizeIsSize ? (
 						<Alert status="warning" borderRadius="0.375rem" py="8px" fontSize={'16px'}>
 							<AlertIcon />
-							Your size is size. Please use swap.defillama.com
+							Your size is size. Please use swap.openspace.gg
 						</Alert>
 					) : null}
 
@@ -1145,7 +1145,7 @@ export function AggregatorContainer() {
 					{sizeIsSize ? (
 						<Alert status="warning" borderRadius="0.375rem" py="8px" fontSize={'16px'}>
 							<AlertIcon />
-							Your size is size. Please use swap.defillama.com
+							Your size is size. Please use swap.openspace.gg
 						</Alert>
 					) : null}
 

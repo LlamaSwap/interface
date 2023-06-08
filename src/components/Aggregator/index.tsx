@@ -1,67 +1,66 @@
-import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useAccount, useFeeData, useNetwork, useQueryClient, useSigner, useSwitchNetwork, useToken } from 'wagmi';
-import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
-import { ethers } from 'ethers';
-import BigNumber from 'bignumber.js';
-import { ArrowDown } from 'react-feather';
-import styled from 'styled-components';
+import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import {
-	useToast,
-	Button,
-	FormControl,
-	FormLabel,
-	Switch,
-	Flex,
-	Box,
-	Spacer,
-	IconButton,
-	Text,
-	ToastId,
 	Alert,
 	AlertIcon,
+	Box,
+	Button,
 	CircularProgress,
-	useBreakpoint,
+	Flex,
+	FormControl,
+	FormLabel,
+	IconButton,
 	Popover,
+	PopoverContent,
 	PopoverTrigger,
-	PopoverContent
+	Spacer,
+	Switch,
+	Text,
+	ToastId,
+	useBreakpoint,
+	useToast
 } from '@chakra-ui/react';
-import ReactSelect from '~/components/MultiSelect';
-import FAQs from '~/components/FAQs';
-import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
-import { adaptersNames, getAllChains, swap } from './router';
-import { inifiniteApprovalAllowed } from './list';
-import Loader from './Loader';
-import { useTokenApprove } from './hooks';
-import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
-import { useGetPrice } from '~/queries/useGetPrice';
-import { useTokenBalances } from '~/queries/useTokenBalances';
-import { PRICE_IMPACT_WARNING_THRESHOLD, WETH } from './constants';
-import Tooltip, { Tooltip2 } from '../Tooltip';
-import type { IToken } from '~/types';
-import { sendSwapEvent } from './adapters/utils';
+import { ConnectButton, useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
+import { useMutation } from '@tanstack/react-query';
+import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
 import { useRouter } from 'next/router';
-import { TransactionModal } from '../TransactionModal';
-import { normalizeTokens } from '~/utils';
-import RoutesPreview from './RoutesPreview';
-import { formatSuccessToast, formatErrorToast } from '~/utils/formatToast';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowDown } from 'react-feather';
+import styled from 'styled-components';
+import { useAccount, useFeeData, useNetwork, useQueryClient, useSigner, useSwitchNetwork, useToken } from 'wagmi';
+import FAQs from '~/components/FAQs';
+import ReactSelect from '~/components/MultiSelect';
+import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
+import { useCountdown } from '~/hooks/useCountdown';
 import { useDebounce } from '~/hooks/useDebounce';
-import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
-import SwapConfirmation from './SwapConfirmation';
-import { getBalance, useBalance } from '~/queries/useBalance';
-import { useEstimateGas } from './hooks/useEstimateGas';
-import { Slippage } from '../Slippage';
-import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
-import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
-import { useCountdown } from '~/hooks/useCountdown';
-import { Sandwich } from './Sandwich';
-import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
-import { Settings } from './Settings';
+import { getBalance, useBalance } from '~/queries/useBalance';
+import { useGetPrice } from '~/queries/useGetPrice';
+import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
+import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
+import { useTokenBalances } from '~/queries/useTokenBalances';
+import type { IToken } from '~/types';
+import { normalizeTokens } from '~/utils';
 import { formatAmount } from '~/utils/formatAmount';
+import { formatErrorToast, formatSuccessToast } from '~/utils/formatToast';
+import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
+import { PriceImpact } from '../PriceImpact';
+import { Slippage } from '../Slippage';
+import Tooltip, { Tooltip2 } from '../Tooltip';
+import { TransactionModal } from '../TransactionModal';
+import { sendSwapEvent } from './adapters/utils';
+import { PRICE_IMPACT_WARNING_THRESHOLD, WETH } from './constants';
+import { useTokenApprove } from './hooks';
+import { useEstimateGas } from './hooks/useEstimateGas';
+import { inifiniteApprovalAllowed } from './list';
+import Loader from './Loader';
+import { adaptersNames, getAllChains, swap } from './router';
+import RoutesPreview from './RoutesPreview';
+import { Sandwich } from './Sandwich';
+import { Settings } from './Settings';
+import SwapConfirmation from './SwapConfirmation';
 
 /*
 Integrated:
@@ -374,7 +373,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						address: fromToken2.address,
 						value: fromToken2.address,
 						decimals: fromToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${fromToken2.address}?h=20&w=20`,
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${
+							fromToken2.address
+						}?h=20&w=20`,
 						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
@@ -389,7 +390,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						address: toToken2.address,
 						value: toToken2.address,
 						decimals: toToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${toToken2.address}?h=20&w=20`,
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${
+							toToken2.address
+						}?h=20&w=20`,
 						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
@@ -935,14 +938,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			) : null}
 
 			<Text fontSize="1rem" fontWeight="500" display={{ base: 'none', md: 'block', lg: 'block' }}>
-				This product is still in beta. If you run into any issue please let us know in our{' '}
+				This product is still in beta. If you run into any issue please let us know via{' '}
 				<a
 					style={{ textDecoration: 'underline' }}
 					target={'_blank'}
 					rel="noreferrer noopener"
-					href="https://discord.swap.defillama.com/"
+					href="https://twitter.com/openspace_gg"
 				>
-					discord server
+					twitter dm
 				</a>
 			</Text>
 
