@@ -17,9 +17,8 @@ export default function FaqWrapper() {
 						</AccordionButton>
 					</h2>
 					<AccordionPanel pb={4}>
-						It's a fork of Defillama's popular aggregator, llamaswap. Most of the changes are currently cosmetic, and
-						the Hide IP function still routes through defillama servers. It's an aggregator of DEX aggregators, we query
-						the price in 1inch, cowswap, matcha... and then offer you the best price among all of them.
+						It's an aggregator of DEX aggregators, we query the price in 1inch, cowswap, matcha... and then offer you
+						the best price among all of them
 					</AccordionPanel>
 				</AccordionItem>
 
@@ -27,21 +26,21 @@ export default function FaqWrapper() {
 					<h2>
 						<AccordionButton>
 							<Box flex="1" textAlign="left">
-								Does SpaceSwap take any fees?
+								Does DefiLlama take any fees?
 							</Box>
 							<AccordionIcon />
 						</AccordionButton>
 					</h2>
 					<AccordionPanel pb={4}>
-						SpaceSwap takes 0 fee on swaps.
+						DefiLlama takes 0 fee on swaps.
 						<br />
-						<br /> You'll get the exact same price swapping through SpaceSwap as what you'd get swapping through the
+						<br /> You'll get the exact same price swapping through DefiLlama as what you'd get swapping through the
 						chosen aggregator directly.
 						<br />
 						<br />
 						We do add our referral code to swaps tho, so, for aggregators with revenue sharing, they will send us part
 						of the fee they earn. This is not an extra fee, you'd be charged the same fee anyway, but now a small part
-						of it is shared with SpaceSwap. We also integrate aggregators with no fee sharing the best price, and in
+						of it is shared with DefiLlama. We also integrate aggregators with no fee sharing the best price, and in
 						those cases we don't make any money.
 					</AccordionPanel>
 				</AccordionItem>
@@ -69,7 +68,7 @@ export default function FaqWrapper() {
 						</AccordionButton>
 					</h2>
 					<AccordionPanel pb={4}>
-						We inflate gas limit of txs on MetaMask by +40% to ensure that there's nothing unexpected that could trigger
+						We inflate gas limit of txs on MetaMask by +40% to ensure that there's nothig unexpected that could trigger
 						out-of-gas reverts. This stacks on top of any increase your RPC might apply on gas estimations, along with
 						possible different gas prices between your metamask and our estimation.
 						<br />
@@ -83,14 +82,14 @@ export default function FaqWrapper() {
 					<h2>
 						<AccordionButton>
 							<Box flex="1" textAlign="left">
-								Will I be eligible for aggregator airdrops if I swap through SpaceSwap?
+								Will I be eligible for aggregator airdrops if I swap through DefiLlama?
 							</Box>
 							<AccordionIcon />
 						</AccordionButton>
 					</h2>
 					<AccordionPanel pb={4}>
 						We execute swaps directly against the router of each aggregator, so there's no difference between a swap
-						executed directly from their UI and a swap executed from SpaceSwap.
+						executed directly from their UI and a swap executed from DefiLlama.
 						<br />
 						<br />
 						Thus, if any of the aggregators we integrate does an airdrop in the future, all swaps made through them

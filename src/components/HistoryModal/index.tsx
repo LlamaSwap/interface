@@ -17,7 +17,6 @@ import styled from 'styled-components';
 import { useAccount } from 'wagmi';
 import { useSwapsHistory } from '~/queries/useSwapsHistory';
 import Loader from '../Aggregator/Loader';
-
 const RouteWrapper = styled.div`
 	display: grid;
 	grid-row-gap: 4px;

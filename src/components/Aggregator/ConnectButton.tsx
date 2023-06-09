@@ -1,7 +1,7 @@
+import { Points } from '@openspace-protocol/sdk';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import styled from 'styled-components';
 import { HistoryModal } from '../HistoryModal';
-
 const Wrapper = styled.div`
 	position: absolute;
 	right: 0px;
@@ -13,8 +13,9 @@ const Wrapper = styled.div`
 const Connect = ({ tokenList = null, tokensUrlMap = {}, tokensSymbolsMap = {} }) => {
 	return (
 		<Wrapper>
-			<ConnectButton chainStatus={'none'} />
+			<Points color="secondary" />
 			{tokenList ? <HistoryModal tokensUrlMap={tokensUrlMap} tokensSymbolsMap={tokensSymbolsMap} /> : null}
+			<ConnectButton chainStatus={'none'} />
 		</Wrapper>
 	);
 };
