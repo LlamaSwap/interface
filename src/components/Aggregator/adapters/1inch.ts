@@ -35,15 +35,20 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const authHeader = { 'auth-key': process.env.INCH_API_KEY };
 
 	const [data, { address: tokenApprovalAddress }, swapData] = await Promise.all([
 		fetch(
-			`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/quote?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&slippage=${extra.slippage}`
+			`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/quote?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&slippage=${extra.slippage}`,
+			{ headers: authHeader }
 		).then((r) => r.json()),
-		fetch(`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/approve/spender`).then((r) => r.json()),
+		fetch(`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/approve/spender`, {
+			headers: authHeader
+		}).then((r) => r.json()),
 		extra.userAddress !== ethers.constants.AddressZero
 			? fetch(
-					`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${extra.userAddress}&slippage=${extra.slippage}&referrerAddress=${altReferralAddress}&disableEstimate=true`
+					`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${extra.userAddress}&slippage=${extra.slippage}&referrerAddress=${altReferralAddress}&disableEstimate=true`,
+					{ headers: authHeader }
 			  ).then((r) => r.json())
 			: null
 	]);
