@@ -67,6 +67,7 @@ functions:
       EIGEN_API_KEY: ${env:EIGEN_API_KEY}
       HASHFLOW_API_KEY: ${env:HASHFLOW_API_KEY}
       OX_API_KEY: ${env:OX_API_KEY}
+      INCH_API_KEY: ${env:INCH_API_KEY}
 
 resources:
   # CORS for api gateway errors
