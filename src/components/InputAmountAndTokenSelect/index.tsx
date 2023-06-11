@@ -1,6 +1,6 @@
 import { Flex, Input, Text, Button, Box } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
 import React from 'react';
 import type { IToken } from '~/types';
 import { formattedNum } from '~/utils';
@@ -50,6 +50,19 @@ export function InputAmountAndTokenSelect({
 			? BigNumber(formatAmount(amount)).times(tokenPrice).toFixed(2)
 			: null;
 
+	function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
+		const value = formatNumber(e.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
+		if (value.split('.').length - 1 > 1) {
+			return;
+		}
+
+		if (type === 'amountOut') {
+			setAmount(['', value]);
+		} else {
+			setAmount([value, '']);
+		}
+	}
+
 	return (
 		<Flex
 			flexDir="column"
@@ -80,15 +93,7 @@ export function InputAmountAndTokenSelect({
 						p="0"
 						placeholder={(placeholder && String(placeholder)) || '0'}
 						_placeholder={{ color: '#5c5c5c' }}
-						onChange={(e) => {
-							const value = formatNumber(e.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
-
-							if (type === 'amountOut') {
-								setAmount(['', value]);
-							} else {
-								setAmount([value, '']);
-							}
-						}}
+						onChange={handleInputChange}
 						overflow="hidden"
 						whiteSpace="nowrap"
 						textOverflow="ellipsis"
@@ -120,8 +125,8 @@ export function InputAmountAndTokenSelect({
 									priceImpact >= PRICE_IMPACT_HIGH_THRESHOLD
 										? 'red.500'
 										: priceImpact >= PRICE_IMPACT_MEDIUM_THRESHOLD
-										? 'yellow.500'
-										: '#a2a2a2'
+											? 'yellow.500'
+											: '#a2a2a2'
 								}
 							>
 								{priceImpact && !Number.isNaN(priceImpact) ? ` (-${priceImpact.toFixed(2)}%)` : ''}
