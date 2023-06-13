@@ -4,9 +4,9 @@ import { rpcsMap as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
 
 const okx = {
 	id: 66,
-	name: 'OKX',
+	name: 'OKTChain',
 	network: 'okx',
-	iconUrl: chainIconUrl('okexchain'),
+	iconUrl: chainIconUrl('oktchain'),
 	iconBackground: '#000',
 	nativeCurrency: {
 		decimals: 18,
@@ -321,7 +321,7 @@ const avax = {
 	id: 43114,
 	name: 'AVAX',
 	network: 'avax',
-	iconUrl: chainIconUrl('avax'),
+	iconUrl: chainIconUrl('avalanche'),
 	iconBackground: '#000',
 	nativeCurrency: {
 		decimals: 18,
@@ -460,6 +460,126 @@ const optimism = {
 	iconUrl: chainIconUrl('optimism')
 };
 
+const zksync = {
+	id: 324,
+	name: 'zkSync Era',
+	network: 'zksync',
+	iconUrl: chainIconUrl('zksync era'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ehtereum',
+		symbol: 'ETH'
+	},
+	rpcUrls: {
+		default: 'https://mainnet.era.zksync.io'
+	},
+	blockExplorers: {
+		default: { name: 'zkScan', url: 'https://zkscan.io/' }
+	},
+	testnet: false
+};
+
+const ontology = {
+	id: 58,
+	name: 'OntologyEVM',
+	network: 'ontology',
+	iconUrl: chainIconUrl('OntologyEVM'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ontology',
+		symbol: 'ONT'
+	},
+	rpcUrls: {
+		default: 'http://dappnode4.ont.io:20339'
+	},
+	blockExplorers: {
+		default: { name: 'Ontology Explorer', url: 'https://explorer.ont.io/' }
+	},
+	testnet: false
+};
+
+const polygonZKEvm = {
+	id: 1101,
+	name: 'Polygon zkEVM',
+	network: 'polygonzkevm',
+	iconUrl: chainIconUrl('Polygon zkEVM'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Polygon',
+		symbol: 'MATIC'
+	},
+	rpcUrls: {
+		default: 'https://zkevm-rpc.com'
+	},
+	blockExplorers: {
+		default: { name: 'Polygon zkEVM Scan', url: 'https://zkevm.polygonscan.com/' }
+	},
+	testnet: false
+};
+
+const kava = {
+	id: 2222,
+	name: 'Kava',
+	network: 'kava',
+	iconUrl: chainIconUrl('Kava'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Kava',
+		symbol: 'KAVA'
+	},
+	rpcUrls: {
+		default: 'https://evm2.kava.io'
+	},
+	blockExplorers: {
+		default: { name: 'Kava Explorer', url: 'https://explorer.kava.io/' }
+	},
+	testnet: false
+};
+
+const metis = {
+	id: 1088,
+	name: 'Metis',
+	network: 'metis',
+	iconUrl: chainIconUrl('metis'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Metis',
+		symbol: 'METIS'
+	},
+	rpcUrls: {
+		default: 'https://andromeda.metis.io/?owner=1088'
+	},
+	blockExplorers: {
+		default: { name: 'Metis Explorer', url: 'https://andromeda-explorer.metis.io/' }
+	},
+	testnet: false
+};
+
+const pulse = {
+	id: 369,
+	name: 'PulseChain',
+	network: 'pulse',
+	iconUrl: chainIconUrl('Pulse'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Pulse',
+		symbol: 'PLS'
+	},
+	rpcUrls: {
+		default: 'https://rpc.pulsechain.com'
+	},
+	blockExplorers: {
+		default: { name: 'PulseChain Explorer', url: 'https://scan.pulsechain.com/' }
+	},
+	testnet: false
+};
+
 interface IChain extends Chain {
 	iconUrl: string;
 }
@@ -488,5 +608,11 @@ export const allChains: Array<IChain> = [
 	ethereum,
 	moonbeam,
 	fuse,
-	canto
+	canto,
+	zksync,
+	ontology,
+	polygonZKEvm,
+	kava,
+	metis,
+	pulse
 ].map((chain) => ({ ...chain, rpcUrls: { ...chain.rpcUrls, ...(rpcsUrlsMap[chain.id] || {}) } }));

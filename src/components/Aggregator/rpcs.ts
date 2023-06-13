@@ -235,6 +235,22 @@ export const rpcUrls = {
 		default: 'https://canto.slingshot.finance',
 		neobase: 'https://canto.neobase.one',
 		plexnode: 'https://mainnode.plexnode.org:8545'
+	},
+	324: {
+		default: 'https://mainnet.era.zksync.io'
+	},
+	58: {
+		default: 'http://dappnode4.ont.io:20339',
+		third: 'http://dappnode3.ont.io:20339'
+	},
+	1101: {
+		default: 'https://zkevm-rpc.com'
+	},
+	2222: {
+		default: 'https://evm2.kava.io'
+	},
+	369: {
+		default: 'https://rpc.pulsechain.com'
 	}
 };
 
@@ -311,5 +327,10 @@ export const providers = {
 	moonbeam: createProvider('moonbeam', getUrls(1284), 1284),
 	curio: createProvider('curio', getUrls(836542336838601), 836542336838601),
 	astar: createProvider('astar', getUrls(592), 592),
-	canto: createProvider('canto', getUrls(7700), 7700)
+	canto: createProvider('canto', getUrls(7700), 7700),
+	zksync: createProvider('zksync', getUrls(324), 324),
+	ontology: createProvider('ontology', getUrls(58), 58),
+	polygonzkevm: createProvider('polygonzkevm', getUrls(1101), 1101),
+	kava: createProvider('kava', getUrls(2222), 2222),
+	pulse: createProvider('pulse', getUrls(369), 369)
 };
