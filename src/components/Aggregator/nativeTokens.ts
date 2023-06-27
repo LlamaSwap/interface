@@ -248,16 +248,16 @@ const polygonzkevm = {
 	mcap: Number.MAX_SAFE_INTEGER,
 	address: ethers.constants.AddressZero,
 	chainId: 1101,
-	name: 'Polygon',
-	symbol: 'MATIC',
-	logoURI: chainIconUrl('polygon'),
+	name: 'Polygon zkEVM',
+	symbol: 'ETH',
+	logoURI: chainIconUrl('polygon zkevm'),
 	decimals: 18
 };
 
 const kava = {
 	mcap: Number.MAX_SAFE_INTEGER,
 	address: ethers.constants.AddressZero,
-	chainId: 1101,
+	chainId: 2222,
 	name: 'Kava',
 	symbol: 'KAVA',
 	logoURI: chainIconUrl('kava'),
@@ -267,10 +267,10 @@ const kava = {
 const zksync = {
 	mcap: Number.MAX_SAFE_INTEGER,
 	address: ethers.constants.AddressZero,
-	chainId: 1101,
-	name: 'Ethereum',
+	chainId: 324,
+	name: 'zkSync Era',
 	symbol: 'ETH',
-	logoURI: chainIconUrl('ethereum'),
+	logoURI: chainIconUrl('zksync era'),
 	decimals: 18
 };
 
