@@ -142,7 +142,7 @@ export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], 
 	369: 'pulse',
 	1101: 'polygonzkevm',
 	324: 'zksync',
-	58: '',
+	58: 'ontology',
 	1088: 'metis'
 };
 

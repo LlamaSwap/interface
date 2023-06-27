@@ -11,19 +11,20 @@ export const getSandwichList = async () => {
 			`https://public.api.eigenphi.io/?path=/ethereum/30d/sandwiched_pool&apikey=${process.env.EIGEN_API_KEY}`
 		).then((res) => res.json());
 
-		const { data: top100Pairs } = await fetch(
+		const { data: top100Pairs = [] } = await fetch(
 			`https://www.dextools.io/shared/analytics/pairs?limit=100&interval=24h&chain=${dexToolsChainMap[1]}`
 		).then((res) => res.json());
 
-		const topPairs = top100Pairs
-			.filter((pair) => pair.pair.metrics.liquidity > LIQUDITY_THRESHOLD_USD)
-			.reduce(
-				(acc, pair) => ({
-					...acc,
-					[normalizeTokens(pair._id.token, pair._id.tokenRef).join('')]: true
-				}),
-				{}
-			);
+		const topPairs =
+			top100Pairs
+				?.filter((pair) => pair.pair.metrics.liquidity > LIQUDITY_THRESHOLD_USD)
+				.reduce(
+					(acc, pair) => ({
+						...acc,
+						[normalizeTokens(pair._id.token, pair._id.tokenRef).join('')]: true
+					}),
+					{}
+				) ?? {};
 
 		const poolAddresses = chunk(
 			sandwichData?.map(({ address }) => address),
