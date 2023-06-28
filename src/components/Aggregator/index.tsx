@@ -374,7 +374,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						address: fromToken2.address,
 						value: fromToken2.address,
 						decimals: fromToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${fromToken2.address}?h=20&w=20`,
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${
+							fromToken2.address
+						}?h=20&w=20`,
 						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
@@ -389,7 +391,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						address: toToken2.address,
 						value: toToken2.address,
 						decimals: toToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${toToken2.address}?h=20&w=20`,
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${
+							toToken2.address
+						}?h=20&w=20`,
 						chainId: selectedChain.id || 1,
 						geckoId: null
 				  }
@@ -669,7 +673,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			? +selectedRoute?.fromAmount > +balance.data.value
 			: false;
 
-	const slippageIsWong = Number.isNaN(Number(slippage)) || slippage === '';
+	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '' || Number(slippage) === 0;
 
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
@@ -840,7 +844,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	});
 
 	const handleSwap = () => {
-		if (selectedRoute && selectedRoute.price && !slippageIsWong) {
+		if (selectedRoute && selectedRoute.price && !slippageIsWorng) {
 			if (hasMaxPriceImpact) {
 				toast({
 					title: 'Price impact is too high!',
@@ -918,6 +922,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			<Alert status="warning" borderRadius="0.375rem" py="8px" key="size">
 				<AlertIcon />
 				Your size is size. Please be mindful of slippage
+			</Alert>
+		) : null,
+		!isLoading && Number(slippage) === 0 ? (
+			<Alert status="error" borderRadius="0.375rem" py="8px" key="size">
+				<AlertIcon />
+				Slippage cannot be zero, please increase it
 			</Alert>
 		) : null,
 		pairSandwichData ? <Sandwich sandiwichData={pairSandwichData} key="sandwich" /> : null
@@ -1153,7 +1163,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														!(finalSelectedFromToken && finalSelectedToToken) ||
 														insufficientBalance ||
 														!selectedRoute ||
-														slippageIsWong ||
+														slippageIsWorng ||
 														!isAmountSynced
 													}
 												>
@@ -1161,7 +1171,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														? 'Select Aggregator'
 														: isApproved
 														? `Swap via ${selectedRoute.name}`
-														: slippageIsWong
+														: slippageIsWorng
 														? 'Set Slippage'
 														: 'Approve'}
 												</Button>
@@ -1370,7 +1380,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	isApproveLoading ||
 																	isApproveResetLoading ||
 																	!selectedRoute ||
-																	slippageIsWong ||
+																	slippageIsWorng ||
 																	!isAmountSynced
 																}
 															>
@@ -1378,7 +1388,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	? 'Select Aggregator'
 																	: isApproved
 																	? `Swap via ${selectedRoute?.name}`
-																	: slippageIsWong
+																	: slippageIsWorng
 																	? 'Set Slippage'
 																	: 'Approve'}
 															</Button>
