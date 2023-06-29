@@ -18,7 +18,7 @@ export const chainToId = {
 	okexchain: 66,
 	cronos: 25,
 	moonriver: 1285,
-	ontology: 58,
+	//ontology: 58,
 	polygonzkevm: 1101,
 	kava: 2222,
 	metis: 1088
