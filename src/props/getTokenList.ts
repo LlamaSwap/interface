@@ -87,10 +87,10 @@ export async function getTokenList() {
 			[
 				...nativeTokens,
 				...ownTokenList,
+				...oneInchList,
 				...sushiList.tokens,
 				...zksyncList,
 				...quickSwapList,
-				...oneInchList,
 				...ownList
 			],
 			'chainId'
