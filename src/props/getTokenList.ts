@@ -58,11 +58,19 @@ export async function getTokenList() {
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
-	const [sushiList, geckoList, logos, ownList] = await Promise.all([
+	const [sushiList, geckoList, logos, ownList, zksyncList, quickSwapList] = await Promise.all([
 		fetch('https://token-list.sushi.com/').then((r) => r.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
-		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json').then((res) => res.json())
+		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json')
+			.then((res) => res.json())
+			.then((r) => r.filter((t) => t.chainId === 7700)),
+		fetch('https://raw.githubusercontent.com/muteio/token-directory/main/zksync.json')
+			.then((res) => res.json())
+			.then((r) => r.filter((t) => t.chainId === 324)),
+		fetch('https://unpkg.com/quickswap-default-token-list@1.2.84/build/quickswap-default.tokenlist.json')
+			.then((res) => res.json())
+			.then((r) => r.tokens.filter((t) => t.chainId === 1101))
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -75,7 +83,18 @@ export async function getTokenList() {
 		.flat();
 
 	const tokensByChain = mapValues(
-		groupBy([...nativeTokens, ...ownTokenList, ...sushiList.tokens, ...oneInchList, ...ownList], 'chainId'),
+		groupBy(
+			[
+				...nativeTokens,
+				...ownTokenList,
+				...oneInchList,
+				...sushiList.tokens,
+				...zksyncList,
+				...quickSwapList,
+				...ownList
+			],
+			'chainId'
+		),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 

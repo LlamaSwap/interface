@@ -1,4 +1,3 @@
-import { capitalizeFirstLetter } from '~/utils';
 import { allChains } from '../WalletProvider/chains';
 import { chainNamesReplaced, chainsMap } from './constants';
 import { adapters } from './list';
@@ -14,12 +13,15 @@ export function getAllChains() {
 	}
 	const chainsArr = Array.from(chains);
 
-	const chainsOptions = chainsArr.map((c) => ({
-		value: c,
-		label: chainNamesReplaced[c] ?? capitalizeFirstLetter(c),
-		chainId: chainsMap[c],
-		logoURI: allChains.find(({ id }) => id === chainsMap[c])?.iconUrl
-	}));
+	const chainsOptions = chainsArr.map((c) => {
+		const chain = allChains.find(({ id }) => id === chainsMap[c]);
+		return {
+			value: c,
+			label: chainNamesReplaced[c] ?? chain.name,
+			chainId: chainsMap[c],
+			logoURI: chain?.iconUrl
+		};
+	});
 
 	return chainsOptions;
 }

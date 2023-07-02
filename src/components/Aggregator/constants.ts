@@ -25,7 +25,13 @@ export const chainsMap = {
 	okexchain: 66,
 	fuse: 122,
 	moonbeam: 1284,
-	canto: 7700
+	canto: 7700,
+	zksync: 324,
+	polygonzkevm: 1101,
+	ontology: 58,
+	kava: 2222,
+	pulse: 369,
+	metis: 1088
 } as const;
 
 export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chainsMap]> = {
@@ -52,7 +58,13 @@ export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chains
 	'okex-chain': 66,
 	fuse: 122,
 	moonbeam: 1284,
-	canto: 7700
+	canto: 7700,
+	'polygon-zkevm': 1101,
+	zksync: 324,
+	pulsechain: 369,
+	kava: 2222,
+	ontology: 58,
+	'metis-andromeda': 1088
 };
 
 export const chainGasToken: Record<keyof typeof chainsMap, string> = {
@@ -79,7 +91,13 @@ export const chainGasToken: Record<keyof typeof chainsMap, string> = {
 	okexchain: 'oec-token',
 	fuse: 'fuse-network-token',
 	moonbeam: 'moonbeam',
-	canto: 'canto'
+	canto: 'canto',
+	zksync: 'ethereum',
+	polygonzkevm: 'matic-network',
+	ontology: 'ontology',
+	kava: 'kava',
+	pulse: 'pulsechain',
+	metis: 'metis-token'
 };
 
 export const llamaToGeckoChainsMap = Object.fromEntries(
@@ -119,7 +137,13 @@ export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], 
 	1284: 'moonbeam',
 	199: 'bittorrent',
 	8217: 'klay',
-	7700: 'canto'
+	7700: 'canto',
+	2222: 'kava',
+	369: 'pulse',
+	1101: 'polygonzkevm',
+	324: 'zksync',
+	58: 'ontology',
+	1088: 'metis'
 };
 
 export const chainIdToName = (chainId) => {
@@ -129,7 +153,7 @@ export const chainIdToName = (chainId) => {
 export const chainNamesReplaced = {
 	bsc: 'BSC',
 	avax: 'Avalanche',
-	okexchain: 'OKX',
+	okexchain: 'OKTChain',
 	bttc: 'BitTorrent'
 };
 
