@@ -673,7 +673,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			? +selectedRoute?.fromAmount > +balance.data.value
 			: false;
 
-	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '' || Number(slippage) === 0;
+	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '';
 
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
@@ -922,12 +922,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			<Alert status="warning" borderRadius="0.375rem" py="8px" key="size">
 				<AlertIcon />
 				Your size is size. Please be mindful of slippage
-			</Alert>
-		) : null,
-		!isLoading && Number(slippage) === 0 ? (
-			<Alert status="error" borderRadius="0.375rem" py="8px" key="size">
-				<AlertIcon />
-				Slippage cannot be zero, please increase it
 			</Alert>
 		) : null,
 		pairSandwichData ? <Sandwich sandiwichData={pairSandwichData} key="sandwich" /> : null
