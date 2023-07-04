@@ -1,4 +1,4 @@
-import { Chain, chain } from 'wagmi';
+import { Chain } from 'wagmi';
 import { chainIconUrl } from '~/utils/index';
 import { rpcsMap as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
 
@@ -439,21 +439,57 @@ const canto = {
 };
 
 const arbirum = {
-	...chain.arbitrum,
+	id: 42161,
+	name: 'Arbitrum',
+	network: 'arbitrum',
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	blockExplorers: {
+		default: { name: 'arbiscan', url: 'https://arbiscan.io/' }
+	},
+	testnet: false,
 	rpcUrls: {
 		default: 'https://arbitrum-one.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec'
 	},
 	iconUrl: chainIconUrl('arbitrum')
 };
 const ethereum = {
-	...chain.mainnet,
+	id: 1,
+	name: 'Ethereum',
+	network: 'ethereum',
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	blockExplorers: {
+		default: { name: 'etherscan', url: 'https://etherscan.io/' }
+	},
+	testnet: false,
 	rpcUrls: {
 		default: 'https://rpc.ankr.com/eth'
 	},
 	iconUrl: chainIconUrl('ethereum')
 };
 const optimism = {
-	...chain.optimism,
+	id: 10,
+	name: 'Optimism',
+	network: 'optimism',
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	blockExplorers: {
+		default: { name: 'etherscan', url: 'https://optimistic.etherscan.io/' }
+	},
+	testnet: false,
 	rpcUrls: {
 		default: 'https://optimism.blockpi.network/v1/rpc/public'
 	},
