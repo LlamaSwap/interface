@@ -33,7 +33,7 @@ export const rpcUrls = {
 		ankr: 'https://rpc.ankr.com/eth',
 		pokt: 'https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79',
 		cloudflare: 'https://cloudflare-eth.com',
-		linkpool: 'https://main-light.eth.linkpool.io',
+		//linkpool: 'https://main-light.eth.linkpool.io',
 		flashbots: 'https://rpc.flashbots.net',
 		builder: 'https://rpc.builder0x69.io',
 		publicNode: 'https://ethereum.publicnode.com',

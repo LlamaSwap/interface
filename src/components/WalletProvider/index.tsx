@@ -11,7 +11,7 @@ const { provider, chains } = configureChains(
 	[...allChains],
 	rpcsKeys.map((key) =>
 		jsonRpcProvider({
-			rpc: (chain) => ({ http: chain.rpcUrls[key] || '' })
+			rpc: (chain) => ({ http: (chain.rpcUrls[key] as any) || '' })
 		})
 	)
 );
@@ -25,7 +25,8 @@ const Provider = styled.div`
 
 const { connectors } = getDefaultWallets({
 	appName: 'DefiLlama',
-	chains
+	chains,
+	projectId: 'b3d4ba9fb97949ab12267b470a6f31d2'
 });
 
 const wagmiClient = createClient({

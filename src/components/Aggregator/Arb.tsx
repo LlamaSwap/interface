@@ -543,10 +543,10 @@ export function AggregatorContainer() {
 		isConfirmingInfiniteApproval,
 		shouldRemoveApproval,
 		allowance
-	} = useTokenApprove(finalSelectedFromToken?.address, chainToId.arbitrum as any, amountToApprove);
+	} = useTokenApprove(finalSelectedFromToken?.address as `0x${string}`, chainToId.arbitrum as any, amountToApprove);
 
 	const { approve: approveNonInfinite, isLoading: isApproveNonInfiniteLoading } = useTokenApprove(
-		finalSelectedFromToken?.address,
+		finalSelectedFromToken?.address as `0x${string}`,
 		chainToId.arbitrum as any,
 		amountToInfiniteApprove
 	);
