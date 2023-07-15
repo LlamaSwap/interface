@@ -544,8 +544,8 @@ const polygonZKEvm = {
 	iconBackground: '#000',
 	nativeCurrency: {
 		decimals: 18,
-		name: 'Polygon',
-		symbol: 'MATIC'
+		name: 'Ethereum',
+		symbol: 'ETH'
 	},
 	rpcUrls: {
 		default: 'https://zkevm-rpc.com'

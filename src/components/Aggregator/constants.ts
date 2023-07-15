@@ -93,7 +93,7 @@ export const chainGasToken: Record<keyof typeof chainsMap, string> = {
 	moonbeam: 'moonbeam',
 	canto: 'canto',
 	zksync: 'ethereum',
-	polygonzkevm: 'matic-network',
+	polygonzkevm: 'ethereum',
 	ontology: 'ontology',
 	kava: 'kava',
 	pulse: 'pulsechain',
