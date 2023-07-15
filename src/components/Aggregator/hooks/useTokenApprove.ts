@@ -17,7 +17,7 @@ const chainsWithDefaltGasLimit = {
 	arbitrum: true
 };
 
-export const useGetAllowance = (token: string, spender: `0x${string}`, amount: string) => {
+export const useGetAllowance = (token: `0x${string}`, spender: `0x${string}`, amount: string) => {
 	const { address, isConnected } = useAccount();
 
 	const isOld = token ? oldErc.includes(token?.toLowerCase()) : false;
@@ -52,7 +52,7 @@ const setOverrides = (func, overrides) => {
 	return () => func({ recklesslySetUnpreparedOverrides: overrides });
 };
 
-export const useTokenApprove = (token: string, spender: `0x${string}`, amount: string) => {
+export const useTokenApprove = (token: `0x${string}`, spender: `0x${string}`, amount: string) => {
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
 	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
 	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);

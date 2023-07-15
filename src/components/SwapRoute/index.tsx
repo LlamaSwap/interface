@@ -63,7 +63,11 @@ const Route = ({
 	toTokenPrice,
 	amountIn
 }: IRoute) => {
-	const { isApproved } = useTokenApprove(fromToken?.address, price?.tokenApprovalAddress as `0x${string}`, amountFrom);
+	const { isApproved } = useTokenApprove(
+		fromToken?.address as `0x${string}`,
+		price?.tokenApprovalAddress as `0x${string}`,
+		amountFrom
+	);
 
 	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap')) return null;
 
