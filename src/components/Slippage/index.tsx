@@ -46,7 +46,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 		!!slippage && (!stablecoins.includes(fromToken) || !stablecoins.includes(toToken)) && slippage < 0.05 ? (
 			<Alert status="warning" borderRadius="0.375rem" py="8px" mt="2">
 				<AlertIcon />
-				Slippage is too low, please increase it or swap could be reeverted
+				Slippage is low, tx is likely to revert
 			</Alert>
 		) : null
 	].filter(Boolean);
