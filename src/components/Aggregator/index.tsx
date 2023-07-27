@@ -319,6 +319,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
 	const [lastOutputValue, setLastOutputValue] = useState(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
+	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 
 	// mobile states
@@ -660,9 +661,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			? 100 - (Number(priceImpactRoute.amountUsd) / Number(priceImpactRoute.amountInUsd)) * 100
 			: null;
 
-	const hasPriceImapct =
-		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
-	const hasMaxPriceImpact = selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 30;
+	const hasPriceImapct = isDegenModeEnabled
+		? false
+		: selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
+	const hasMaxPriceImpact = isDegenModeEnabled
+		? false
+		: selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 30;
 
 	const insufficientBalance =
 		balance.isSuccess &&

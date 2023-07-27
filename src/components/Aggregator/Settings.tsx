@@ -1,3 +1,4 @@
+import { InfoOutlineIcon } from '@chakra-ui/icons';
 import {
 	Button,
 	Checkbox,
@@ -12,11 +13,15 @@ import {
 	ModalFooter,
 	ModalHeader,
 	ModalOverlay,
+	Switch,
+	Tooltip,
 	useDisclosure
 } from '@chakra-ui/react';
 import { chunk } from 'lodash';
+import { useLocalStorage } from '~/hooks/useLocalStorage';
 
 export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onClose: onExternalClose }) => {
+	const [isDegenModeEnabled, setIsDegenModeEnabled] = useLocalStorage('llamaswap-degenmode', false);
 	const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 	const onCloseClick = () => {
 		onExternalClose();
@@ -38,6 +43,13 @@ export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onCl
 					<ModalHeader>Settings</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody>
+						<HStack mt={1} mb={4}>
+							<Heading size={'xs'}>Degen Mode</Heading>{' '}
+							<Tooltip label="Disable price impact warnings.">
+								<InfoOutlineIcon />
+							</Tooltip>
+							<Switch onChange={() => setIsDegenModeEnabled((mode) => !mode)} isChecked={isDegenModeEnabled} />
+						</HStack>
 						<Heading size={'xs'}>Enabled Aggregators</Heading>
 
 						<HStack mt={4}>
