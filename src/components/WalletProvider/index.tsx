@@ -6,6 +6,7 @@ import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import styled from 'styled-components';
 import { allChains } from './chains';
 import { rpcsKeys } from '../Aggregator/rpcs';
+import { rainbowWallet } from '@rainbow-me/rainbowkit/wallets';
 
 const { provider, chains } = configureChains(
 	[...allChains],
@@ -31,7 +32,7 @@ const { connectors } = getDefaultWallets({
 
 const wagmiClient = createClient({
 	autoConnect: true,
-	connectors,
+	connectors: [...connectors(), rainbowWallet({ chains, projectId: 'b3d4ba9fb97949ab12267b470a6f31d2' })],
 	provider
 });
 
