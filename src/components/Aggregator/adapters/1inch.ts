@@ -1,6 +1,5 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
-import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { altReferralAddress } from '../constants';
@@ -20,13 +19,27 @@ export const chainToId = {
 	//zksync: 324
 };
 
+const spenders = {
+	ethereum: '0x1111111254fb6c44bac0bed2854e76f90643097d',
+	bsc: '0x1111111254fb6c44bac0bed2854e76f90643097d',
+	polygon: '0x1111111254fb6c44bac0bed2854e76f90643097d',
+	optimism: '0x1111111254760f7ab3f16433eea9304126dcd199',
+	arbitrum: '0x1111111254fb6c44bac0bed2854e76f90643097d',
+	gnosis: '0x1111111254fb6c44bac0bed2854e76f90643097d',
+	avax: '0x1111111254fb6c44bac0bed2854e76f90643097d',
+	fantom: '0x1111111254fb6c44bac0bed2854e76f90643097d',
+	klaytn: '0x1111111254fb6c44bac0bed2854e76f90643097d',
+	aurora: '0x1111111254fb6c44bac0bed2854e76f90643097d'
+	//zksync
+};
+
 export const name = '1inch';
 export const token = '1INCH';
 export const referral = true;
 
-export function approvalAddress() {
+export function approvalAddress(chain: string) {
 	// https://api.1inch.io/v4.0/1/approve/spender
-	return '0x1111111254fb6c44bac0bed2854e76f90643097d';
+	return spenders[chain];
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
@@ -37,15 +50,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const authHeader = { 'auth-key': process.env.INCH_API_KEY };
+	const tokenApprovalAddress = spenders[chain];
 
-	const [data, { address: tokenApprovalAddress }, swapData] = await Promise.all([
+	const [data, swapData] = await Promise.all([
 		fetch(
 			`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/quote?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&slippage=${extra.slippage}`,
 			{ headers: authHeader }
 		).then((r) => r.json()),
-		fetch(`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/approve/spender`, {
-			headers: authHeader
-		}).then((r) => r.json()),
 		extra.userAddress !== ethers.constants.AddressZero
 			? fetch(
 					`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${extra.userAddress}&slippage=${extra.slippage}&referrerAddress=${altReferralAddress}&disableEstimate=true`,
