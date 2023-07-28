@@ -68,7 +68,7 @@ export async function getTokenList() {
 		fetch('https://raw.githubusercontent.com/muteio/token-directory/main/zksync.json')
 			.then((res) => res.json())
 			.then((r) => r.filter((t) => t.chainId === 324)),
-		fetch('https://unpkg.com/quickswap-default-token-list@1.2.84/build/quickswap-default.tokenlist.json')
+		fetch('https://unpkg.com/quickswap-default-token-list@latest/build/quickswap-default.tokenlist.json')
 			.then((res) => res.json())
 			.then((r) => r.tokens.filter((t) => t.chainId === 1101))
 	]);
@@ -92,7 +92,7 @@ export async function getTokenList() {
 				...zksyncList,
 				...quickSwapList,
 				...ownList
-			],
+			].filter((t) => t.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
 			'chainId'
 		),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
