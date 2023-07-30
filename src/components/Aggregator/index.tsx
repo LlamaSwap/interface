@@ -661,12 +661,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			? 100 - (Number(priceImpactRoute.amountUsd) / Number(priceImpactRoute.amountInUsd)) * 100
 			: null;
 
-	const hasPriceImapct = isDegenModeEnabled
-		? false
-		: selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
-	const hasMaxPriceImpact = isDegenModeEnabled
-		? false
-		: selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 30;
+	const hasPriceImapct =
+		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
+	const hasMaxPriceImpact = selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 30;
 
 	const insufficientBalance =
 		balance.isSuccess &&
@@ -849,7 +846,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const handleSwap = () => {
 		if (selectedRoute && selectedRoute.price && !slippageIsWorng) {
-			if (hasMaxPriceImpact) {
+			if (hasMaxPriceImpact && !isDegenModeEnabled) {
 				toast({
 					title: 'Price impact is too high!',
 					description: 'Swap is blocked, please try another route.',
@@ -1092,7 +1089,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							<Button colorScheme={'messenger'} onClick={() => setUiState(STATES.ROUTES)}>
 								Select Aggregator
 							</Button>
-						) : hasMaxPriceImpact ? (
+						) : hasMaxPriceImpact && !isDegenModeEnabled ? (
 							<Button colorScheme={'messenger'} disabled>
 								Price impact is too large
 							</Button>
@@ -1132,6 +1129,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													isUnknownPrice={isUnknownPrice}
 													isMaxPriceImpact={hasMaxPriceImpact}
 													handleSwap={handleSwap}
+													isDegenModeEnabled={isDegenModeEnabled}
 												/>
 											) : (
 												<Button
