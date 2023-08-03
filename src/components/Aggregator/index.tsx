@@ -62,6 +62,7 @@ import { Sandwich } from './Sandwich';
 import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
+import useSlippage from './hooks/useSlippage';
 
 /*
 Integrated:
@@ -476,6 +477,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	});
 
 	const secondsToRefresh = useCountdown(lastFetched + REFETCH_INTERVAL);
+
+	const smartSlippage = useSlippage(fromTokenAddress, toTokenAddress);
 
 	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
 		routes,
