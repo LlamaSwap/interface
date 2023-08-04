@@ -4,8 +4,8 @@ export const formatSuccessToast = (variables) => {
 	const fromToken = variables.tokens.fromToken;
 	const toToken = variables.tokens.toToken;
 
-	const inAmount = variables.rawQuote?.inAmount ?? variables.rawQuote?.inputAmount;
-	const outAmount = variables.rawQuote?.outAmount ?? variables.rawQuote?.outputAmount;
+	const inAmount = variables.rawQuote?.inAmount ?? variables.rawQuote?.inputAmount ?? variables.rawQuote?.sellAmount;
+	const outAmount = variables.rawQuote?.outAmount ?? variables.rawQuote?.outputAmount ?? variables.rawQuote?.buyAmount;
 	return {
 		title: 'Transaction Success',
 		description: `Swapped ${
