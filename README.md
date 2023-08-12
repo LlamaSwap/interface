@@ -6,13 +6,13 @@ If you want to learn about LlamaSwap, read the [Twitter Thread](https://twitter.
 
 ### Integration
 
-The best way to integrate it is by just iframing our page, like this:
+The best way to integrate is through an iframe of our page, like this:
 
 ```html
 <iframe
 	title="LlamaSwap Widget"
 	name="LlamaSwap Widget"
-	src="https://swap.defillama.com"
+	src="https://swap.defillama.com?chain=ethereum"
 	width="450px"
 	height="565px"
 	allow="fullscreen"
@@ -24,9 +24,9 @@ The best way to integrate it is by just iframing our page, like this:
 ></iframe>
 ```
 
-The widget is resposive, so you can change the width and height in any way you want and the widget will adjust to fit the space. On top of that, you can customize the widget by adding the following params to the query url:
+The widget is responsive, so you can change the width and height in any way you want and the widget will adjust to fit the space. On top of that, you can customize the widget by adding the following params to the query url:
 
-- chain: default chain (eg `chain=ethereum`)
+- chain: default chain (eg `chain=ethereum`). This parameter is required
 - from: token to sell, to use the gas token for the chain use 0x0000000000000000000000000000000000000000 (eg `from=0x0000000000000000000000000000000000000000`)
 - to: token to buy, to use the gas token for the chain use 0x0000000000000000000000000000000000000000 (eg `to=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48`)
 - background: color of the background (eg `background=rgb(10,20,30)`)
