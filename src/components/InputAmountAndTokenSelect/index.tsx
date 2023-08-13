@@ -8,6 +8,8 @@ import { formatAmount } from '~/utils/formatAmount';
 import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../Aggregator/constants';
 import { TokenSelect } from './TokenSelect';
 
+const amountValidationRegex = /^[0-9]*\.?[0-9]*$/;
+
 export function InputAmountAndTokenSelect({
 	amount,
 	setAmount,
@@ -50,6 +52,13 @@ export function InputAmountAndTokenSelect({
 			? BigNumber(formatAmount(amount)).times(tokenPrice).toFixed(2)
 			: null;
 
+	const onValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+		const newValue = event.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.');
+		if (newValue !== '' && !amountValidationRegex.test(newValue)) return;
+
+		setAmount(type === 'amountOut' ? ['', newValue] : [newValue, '']);
+	};
+
 	return (
 		<Flex
 			flexDir="column"
@@ -70,7 +79,9 @@ export function InputAmountAndTokenSelect({
 					<Input
 						disabled={disabled}
 						type="text"
+						inputMode="decimal"
 						value={amount}
+						onChange={onValueChange}
 						focusBorderColor="transparent"
 						border="none"
 						bg="#141619"
@@ -80,15 +91,6 @@ export function InputAmountAndTokenSelect({
 						p="0"
 						placeholder={(placeholder && String(placeholder)) || '0'}
 						_placeholder={{ color: '#5c5c5c' }}
-						onChange={(e) => {
-							const value = formatNumber(e.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
-
-							if (type === 'amountOut') {
-								setAmount(['', value]);
-							} else {
-								setAmount([value, '']);
-							}
-						}}
 						overflow="hidden"
 						whiteSpace="nowrap"
 						textOverflow="ellipsis"
@@ -159,12 +161,4 @@ export function InputAmountAndTokenSelect({
 			</Flex>
 		</Flex>
 	);
-}
-
-function formatNumber(string) {
-	let pattern = /(?=(?!^)\d{3}(?:\b|(?:\d{3})+)\b)/g;
-	if (string.includes('.')) {
-		pattern = /(?=(?!^)\d{3}(?:\b|(?:\d{3})+)\b\.)/g;
-	}
-	return string.replace(pattern, ' ');
 }
