@@ -53,7 +53,7 @@ export function InputAmountAndTokenSelect({
 			: null;
 
 	const onValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-		const newValue = formatNumber(event.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
+		const newValue = event.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.');
 		if (newValue !== '' && !amountValidationRegex.test(newValue)) return;
 
 		setAmount(type === 'amountOut' ? ['', newValue] : [newValue, '']);
@@ -161,12 +161,4 @@ export function InputAmountAndTokenSelect({
 			</Flex>
 		</Flex>
 	);
-}
-
-function formatNumber(string: string) {
-	let pattern = /(?=(?!^)\d{3}(?:\b|(?:\d{3})+)\b)/g;
-	if (string.includes('.')) {
-		pattern = /(?=(?!^)\d{3}(?:\b|(?:\d{3})+)\b\.)/g;
-	}
-	return string.replace(pattern, ' ');
 }
