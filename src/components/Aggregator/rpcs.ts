@@ -251,6 +251,11 @@ export const rpcUrls = {
 	},
 	369: {
 		default: 'https://rpc.pulsechain.com'
+	},
+	8453: {
+		default: 'https://mainnet.base.org',
+		second: 'https://1rpc.io/base',
+		third: 'https://base-mainnet.public.blastapi.io'
 	}
 };
 
@@ -332,5 +337,6 @@ export const providers = {
 	ontology: createProvider('ontology', getUrls(58), 58),
 	polygonzkevm: createProvider('polygonzkevm', getUrls(1101), 1101),
 	kava: createProvider('kava', getUrls(2222), 2222),
-	pulse: createProvider('pulse', getUrls(369), 369)
+	pulse: createProvider('pulse', getUrls(369), 369),
+	base: createProvider('pulse', getUrls(8453), 8453)
 };

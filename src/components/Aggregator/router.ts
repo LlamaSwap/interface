@@ -1,5 +1,5 @@
 import { allChains } from '../WalletProvider/chains';
-import { chainNamesReplaced, chainsMap } from './constants';
+import { chainNamesReplaced } from './constants';
 import { adapters } from './list';
 
 export const adaptersNames = adapters.map(({ name }) => name);
@@ -11,18 +11,19 @@ export function getAllChains() {
 	for (const adapter of adapters) {
 		Object.keys(adapter.chainToId).forEach((chain) => chains.add(chain));
 	}
-	const chainsArr = Array.from(chains);
 
-	const chainsOptions = chainsArr.map((c) => {
-		const chain = allChains.find(({ id }) => id === chainsMap[c]);
-		return {
-			value: c,
-			label: chainNamesReplaced[c] ?? chain.name,
-			chainId: chainsMap[c],
-			logoURI: chain?.iconUrl
-		};
-	});
-
+	const chainsOptions = allChains
+		.map((c) => {
+			const isVisible = chains.has(c.network);
+			if (!isVisible) return null;
+			return {
+				value: c.network,
+				label: chainNamesReplaced[c.network] ?? c.name,
+				chainId: c.id,
+				logoURI: c?.iconUrl
+			};
+		})
+		.filter(Boolean);
 	return chainsOptions;
 }
 

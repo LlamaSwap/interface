@@ -31,7 +31,8 @@ export const chainsMap = {
 	ontology: 58,
 	kava: 2222,
 	pulse: 369,
-	metis: 1088
+	metis: 1088,
+	base: 8453
 } as const;
 
 export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chainsMap]> = {
@@ -97,7 +98,8 @@ export const chainGasToken: Record<keyof typeof chainsMap, string> = {
 	ontology: 'ontology',
 	kava: 'kava',
 	pulse: 'pulsechain',
-	metis: 'metis-token'
+	metis: 'metis-token',
+	base: 'ethereum'
 };
 
 export const llamaToGeckoChainsMap = Object.fromEntries(
@@ -143,7 +145,8 @@ export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], 
 	1101: 'polygonzkevm',
 	324: 'zksync',
 	58: 'ontology',
-	1088: 'metis'
+	1088: 'metis',
+	8453: 'base'
 };
 
 export const chainIdToName = (chainId) => {
