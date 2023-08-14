@@ -9,29 +9,36 @@ export const chainToId = {
 	optimism: 10,
 	bsc: 56,
 	polygon: 137,
+	fantom: 250,
+	// zksync: 324,
+	// base: 8453,
 	arbitrum: 42161,
 	avax: 43114,
-	fantom: 250,
 };
 
 const approvalAddresses = {
-	ethereum: '0x76f4eeD9fE41262669D0250b2A97db79712aD855',
-	optimism: '0x69Dd38645f7457be13571a847FfD905f9acbaF6d',
-	bsc: '0x9f138be5aA5cC442Ea7cC7D18cD9E30593ED90b9',
-	polygon: '0xa32EE1C40594249eb3183c10792BcF573D4Da47C',
-	arbitrum: '0xdd94018F54e565dbfc939F7C44a16e163FaAb331',
-	avax: '0xfE7Ce93ac0F78826CD81D506B07Fe9f459c00214',
-	fantom: '0x061dc8e41C05207BedD6242eA4b342ef294BE359',
+	ethereum: '0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559',
+	optimism: '0xCa423977156BB05b13A2BA3b76Bc5419E2fE9680',
+	bsc: '0x89b8AA89FDd0507a99d334CBe3C808fAFC7d850E',
+	polygon: '0x4E3288c9ca110bCC82bf38F09A7b425c095d92Bf',
+	fantom: '0xD0c22A5435F4E8E5770C1fAFb5374015FC12F7cD',
+	// zksync: '0x4bBa932E9792A2b917D47830C93a9BC79320E4f7',
+	// base: '0x19cEeAd7105607Cd444F5ad10dd51356436095a1',
+	arbitrum: '0xa669e7A0d4b3e4Fa48af2dE86BD4CD7126Be4e13',
+	avax: '0x88de50B233052e4Fb783d4F6db78Cc34fEa3e9FC',
 };
 
 export const name = 'Odos';
 export const token = null;
+
+const referralCode = 2101375859;
 
 export function approvalAddress(chain) {
 	return approvalAddresses[chain]
 }
 
 const nativeToken = '0x0000000000000000000000000000000000000000';
+
 export async function getQuote(
 	chain: string,
 	from: string,
@@ -45,7 +52,7 @@ export async function getQuote(
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 
-	const quoteData = await fetch(`https://api.odos.xyz/sor/quote`, {
+	const quoteData = await fetch(`https://api.odos.xyz/sor/quote/v2`, {
 			method: 'POST',
 			body: JSON.stringify({
 				chainId: chainToId[chain],
@@ -64,6 +71,8 @@ export async function getQuote(
 				userAddr: userAddress !== ethers.constants.AddressZero ? userAddress : null,
 				slippageLimitPercent: slippage,
 				disableRFQs: true,
+				referralCode: referralCode,
+				compact: true,
 			}),
 			headers: {
 				'Content-Type': 'application/json'
