@@ -2,7 +2,6 @@
 
 :root {
 	--font-inter: 'Inter var', sans-serif;
-	--transparent: rgba(0, 0, 0, 0);
 }
 
 @supports (font-variation-settings: normal) {
@@ -88,33 +87,4 @@ h4,
 h5,
 h6 {
 	overflow-wrap: break-word;
-}
-
-/* Hide scrollbar in all browsers */
-
-* {
-	scrollbar-width: none;
-	scrollbar-color: var(--transparent) var(--transparent);
-}
-
-::-webkit-scrollbar {
-	width: 0px;
-	height: 0px;
-}
-
-::-webkit-scrollbar-thumb {
-	background-color: var(--transparent);
-	border: 0px solid var(--transparent);
-}
-
-::-webkit-scrollbar-track {
-	background: transparent;
-	width: 0px;
-	height: 0px;
-}
-
-@-moz-document url-prefix() {
-	* {
-		scrollbar-width: none;
-	}
 }
