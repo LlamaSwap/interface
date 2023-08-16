@@ -68,7 +68,7 @@ export default function FaqWrapper() {
 						</AccordionButton>
 					</h2>
 					<AccordionPanel pb={4}>
-						We inflate gas limit of txs on MetaMask by +40% to ensure that there's nothig unexpected that could trigger out-of-gas reverts. This stacks
+						We inflate gas limit of txs on MetaMask by +40% to ensure that there's nothing unexpected that could trigger out-of-gas reverts. This stacks
 						on top of any increase your RPC might apply on gas estimations, along with possible different gas prices between your metamask and our estimation.
 						<br />
 						<br />
