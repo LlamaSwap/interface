@@ -13,6 +13,8 @@ const tokensToRemove = {
 	}
 };
 
+const FANTOM_ID = 250;
+
 const oneInchChains = {
 	ethereum: 1,
 	bsc: 56,
@@ -46,6 +48,25 @@ const fixTotkens = (tokenlist) => {
 	return tokenlist;
 };
 
+const markMultichain = async (tokens) => {
+	const multichainList = await fetch(`https://bridgeapi.multichain.org/v4/tokenlistv4/${FANTOM_ID}`)
+		.then((r) => r.json())
+		.then((r) => Object.values(r));
+
+	tokens[FANTOM_ID] = tokens[FANTOM_ID].map((token) => {
+		const isMultichain = !!multichainList.find(
+			(multitoken: IToken) => multitoken.address?.toLowerCase() === token.address.toLowerCase()
+		);
+
+		return {
+			...token,
+			isMultichain
+		};
+	});
+
+	return tokens;
+};
+
 export async function getTokenList() {
 	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
 	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
@@ -55,6 +76,7 @@ export async function getTokenList() {
 			fetch(`https://tokens.1inch.io/v1.1/${chainId}`).then((r) => r.json())
 		)
 	);
+
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
@@ -105,6 +127,8 @@ export async function getTokenList() {
 	});
 
 	tokensFiltered = fixTotkens(tokensFiltered);
+
+	tokensFiltered = await markMultichain(tokensFiltered);
 
 	// get top tokens on each chain
 	const topTokensByChain = await Promise.allSettled(

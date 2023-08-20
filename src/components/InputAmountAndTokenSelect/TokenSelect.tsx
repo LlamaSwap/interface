@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure, Input } from '@chakra-ui/react';
-import { QuestionIcon, WarningTwoIcon } from '@chakra-ui/icons';
+import { WarningTwoIcon } from '@chakra-ui/icons';
 import { Header, IconImage, PairRow } from '../Aggregator/Search';
 import { useToken } from 'wagmi';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
@@ -15,7 +15,7 @@ import { ChevronDown } from 'react-feather';
 
 const Row = ({ chain, token, onClick }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
-
+	const isMultichain = token.isMultichain;
 	return (
 		<PairRow
 			key={token.value}
@@ -25,12 +25,23 @@ const Row = ({ chain, token, onClick }) => {
 			<IconImage src={token.logoURI} onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')} />
 
 			<Text display="flex" flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
-				<Text
-					as="span"
-					whiteSpace="nowrap"
-					textOverflow="ellipsis"
-					overflow="hidden"
-				>{`${token.name} (${token.symbol})`}</Text>
+				<Tooltip
+					label="This token could have been affected by the multichain hack."
+					bg="black"
+					color="white"
+					isDisabled={!isMultichain}
+				>
+					<Text
+						as="span"
+						whiteSpace="nowrap"
+						textOverflow="ellipsis"
+						overflow="hidden"
+						color={isMultichain ? 'orange.200' : 'white'}
+					>
+						{`${token.name} (${token.symbol})`}
+						{token.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : null}
+					</Text>
+				</Tooltip>
 
 				{token.isGeckoToken && (
 					<>
