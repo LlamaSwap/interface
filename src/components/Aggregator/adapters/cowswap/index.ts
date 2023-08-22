@@ -55,13 +55,14 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const tokenFrom = isEthflowOrder ? wrappedTokens[chain] : from;
 	const isBuyOrder = extra.amountOut && extra.amountOut !== '0';
-	
+	const validTo = Math.floor(Date.now() / 1e3) + (extra.deadline ?? 30) * 60;
+
 	// Ethflow orders are always sell orders.
 	// Source: https://github.com/cowprotocol/ethflowcontract/blob/v1.0.0/src/libraries/EthFlowOrder.sol#L93-L95
 	if (isEthflowOrder && isBuyOrder) {
 		throw new Error('buy orders from Ether are not allowed');
 	}
-	
+
 	// amount should include decimals
 	const data = await fetch(`${chainToId[chain]}/api/v1/quote`, {
 		method: 'POST',
@@ -74,6 +75,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			sellTokenBalance: 'erc20',
 			buyTokenBalance: 'erc20',
 			from: extra.userAddress,
+			validTo,
 			//"priceQuality": "fast",
 			signingScheme: isEthflowOrder ? 'eip1271' : 'eip712', // for selling directly ether, another signature type is required
 			onchainOrder: isEthflowOrder ? true : false, // for selling directly ether, we have to quote for onchain orders

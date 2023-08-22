@@ -319,7 +319,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
 	const [lastOutputValue, setLastOutputValue] = useState(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
+	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
+	const [cowswapDeadline, _] = useLocalStorage('llamaswap-cowswapDeadline', 30);
 
 	// mobile states
 	const [uiState, setUiState] = useState(STATES.INPUT);
@@ -470,7 +472,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			toToken: finalSelectedToToken,
 			slippage,
 			isPrivacyEnabled,
-			amountOut: amountOutWithDecimals
+			amountOut: amountOutWithDecimals,
+			deadline: cowswapDeadline
 		}
 	});
 
@@ -845,7 +848,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const handleSwap = () => {
 		if (selectedRoute && selectedRoute.price && !slippageIsWorng) {
-			if (hasMaxPriceImpact) {
+			if (hasMaxPriceImpact && !isDegenModeEnabled) {
 				toast({
 					title: 'Price impact is too high!',
 					description: 'Swap is blocked, please try another route.',
@@ -1088,7 +1091,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							<Button colorScheme={'messenger'} onClick={() => setUiState(STATES.ROUTES)}>
 								Select Aggregator
 							</Button>
-						) : hasMaxPriceImpact ? (
+						) : hasMaxPriceImpact && !isDegenModeEnabled ? (
 							<Button colorScheme={'messenger'} disabled>
 								Price impact is too large
 							</Button>
@@ -1128,6 +1131,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													isUnknownPrice={isUnknownPrice}
 													isMaxPriceImpact={hasMaxPriceImpact}
 													handleSwap={handleSwap}
+													isDegenModeEnabled={isDegenModeEnabled}
 												/>
 											) : (
 												<Button
