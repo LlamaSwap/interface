@@ -321,6 +321,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
+	const [cowswapDeadline, _] = useLocalStorage('llamaswap-cowswapDeadline', 30);
 
 	// mobile states
 	const [uiState, setUiState] = useState(STATES.INPUT);
@@ -471,7 +472,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			toToken: finalSelectedToToken,
 			slippage,
 			isPrivacyEnabled,
-			amountOut: amountOutWithDecimals
+			amountOut: amountOutWithDecimals,
+			deadline: cowswapDeadline
 		}
 	});
 

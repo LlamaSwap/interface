@@ -22,6 +22,7 @@ import { useLocalStorage } from '~/hooks/useLocalStorage';
 
 export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onClose: onExternalClose }) => {
 	const [isDegenModeEnabled, setIsDegenModeEnabled] = useLocalStorage('llamaswap-degenmode', false);
+	const [cowswapDeadline, setCowswapDeadline] = useLocalStorage('llamaswap-cowswapDeadline', 30);
 	const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 	const onCloseClick = () => {
 		onExternalClose();
@@ -49,6 +50,33 @@ export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onCl
 								<InfoOutlineIcon />
 							</Tooltip>
 							<Switch onChange={() => setIsDegenModeEnabled((mode) => !mode)} isChecked={isDegenModeEnabled} />
+						</HStack>
+						<HStack mt={1} mb={4}>
+							<Heading size={'xs'}>CowSwap Deadline</Heading>{' '}
+							<Tooltip label="Your swap will expire if not executed for longer than the duration set here">
+								<InfoOutlineIcon />
+							</Tooltip>
+							<input
+								onChange={(d) => {
+									const num = Number(d.target.value);
+									if (num <= 180 && num >= 2 && Number.isInteger(num)) {
+										setCowswapDeadline(num);
+									} else {
+										setCowswapDeadline(30);
+									}
+								}}
+								min={2}
+								step={1}
+								type="number"
+								max="180"
+								value={cowswapDeadline}
+								style={{
+									width: '3em',
+									borderRadius: '0.4em',
+									textAlign: 'end'
+								}}
+							/>{' '}
+							<span>minutes</span>
 						</HStack>
 						<Heading size={'xs'}>Enabled Aggregators</Heading>
 
