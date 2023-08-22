@@ -39,7 +39,7 @@ const Row = ({ chain, token, onClick }) => {
 						color={isMultichain ? 'orange.200' : 'white'}
 					>
 						{`${token.name} (${token.symbol})`}
-						{token.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : null}
+						{token.isMultichain ? <WarningTwoIcon color={'orange.200'} style={{ marginLeft: '0.4em' }} /> : null}
 					</Text>
 				</Tooltip>
 
@@ -310,6 +310,15 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 						onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
 					/>
 				)}
+
+				<Tooltip
+					label="This token could have been affected by the multichain hack."
+					bg="black"
+					color="white"
+					isDisabled={!token?.isMultichain}
+				>
+					{token?.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : <></>}
+				</Tooltip>
 
 				<Text as="span" color="white" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis" fontWeight={400}>
 					{token ? token.symbol : 'Select Token'}
