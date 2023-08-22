@@ -616,20 +616,44 @@ const pulse = {
 	testnet: false
 };
 
+const base = {
+	id: 8453,
+	name: 'Base',
+	network: 'base',
+	iconUrl: chainIconUrl('Base'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	rpcUrls: {
+		default: 'https://mainnet.base.org'
+	},
+	blockExplorers: {
+		default: { name: 'BaseScan', url: 'https://basescan.org/' }
+	},
+	testnet: false
+};
+
 interface IChain extends Chain {
 	iconUrl: string;
 }
 
 export const allChains: Array<IChain> = [
+	ethereum,
+	arbirum,
 	polygon,
 	binance,
-	oasis,
+	optimism,
+	base,
+	avax,
 	fantom,
-	velas,
-	harmony,
+	zksync,
+	polygonZKEvm,
+	canto,
 	gnosis,
 	klaytn,
-	avax,
 	aurora,
 	cronos,
 	celo,
@@ -639,16 +663,13 @@ export const allChains: Array<IChain> = [
 	okx,
 	bttc,
 	dogechain,
-	optimism,
-	arbirum,
-	ethereum,
 	moonbeam,
 	fuse,
-	canto,
-	zksync,
+	oasis,
 	ontology,
-	polygonZKEvm,
 	kava,
 	metis,
-	pulse
+	pulse,
+	velas,
+	harmony
 ].map((chain) => ({ ...chain, rpcUrls: { ...chain.rpcUrls, ...(rpcsUrlsMap[chain.id] || {}) } }));

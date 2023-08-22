@@ -7,15 +7,16 @@ import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 
 export const chainToId = {
-	ethereum: 1,
-	bsc: 56,
-	polygon: 137,
-	optimism: 10,
-	arbitrum: 42161,
-	avax: 43114,
-	fantom: 250,
-	cronos: 25,
-	canto: chainsMap.canto
+	ethereum: chainsMap.ethereum,
+	bsc: chainsMap.bsc,
+	polygon: chainsMap.polygon,
+	optimism: chainsMap.optimism,
+	arbitrum: chainsMap.arbitrum,
+	avax: chainsMap.avax,
+	fantom: chainsMap.fantom,
+	cronos: chainsMap.cronos,
+	canto: chainsMap.canto,
+	base: chainsMap.base
 };
 
 const approvalAddresses = {
@@ -27,7 +28,8 @@ const approvalAddresses = {
 	avax: '0xe0C38b2a8D09aAD53f1C67734B9A95E43d5981c0',
 	fantom: '0xe0C38b2a8D09aAD53f1C67734B9A95E43d5981c0',
 	cronos: '0x4A5a7331dA84d3834C030a9b8d4f3d687A3b788b',
-	canto: '0x984742Be1901fcbed70d7B5847bee5BE006d91C8'
+	canto: '0x984742Be1901fcbed70d7B5847bee5BE006d91C8',
+	base: '0x20f0b18BDDe8e3dd0e42C173062eBdd05C421151'
 };
 
 export const name = 'Firebird';
@@ -109,6 +111,5 @@ export async function swap({ signer, rawQuote, chain }) {
 }
 
 export const getTxData = ({ rawQuote }) => rawQuote?.tx?.data;
-
 
 export const getTx = ({ rawQuote }) => ({ ...rawQuote?.tx, to: rawQuote?.tx?.router });

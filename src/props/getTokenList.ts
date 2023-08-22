@@ -81,7 +81,14 @@ export async function getTokenList() {
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
 	const [sushiList, geckoList, logos, ownList, zksyncList, quickSwapList] = await Promise.all([
-		fetch('https://token-list.sushi.com/').then((r) => r.json()),
+		fetch('https://tokens.sushi.com/v0')
+			.then((r) => r.json())
+			.then((r) =>
+				r.map((token) => ({
+					...token,
+					logoURI: `https://cdn.sushi.com/image/upload/f_auto,c_limit,w_40,q_auto/tokens/${token.chainId}/${token.address}.jpg`
+				}))
+			),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
 		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json')
@@ -110,7 +117,7 @@ export async function getTokenList() {
 				...nativeTokens,
 				...ownTokenList,
 				...oneInchList,
-				...sushiList.tokens,
+				...sushiList,
 				...zksyncList,
 				...quickSwapList,
 				...ownList

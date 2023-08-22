@@ -11,7 +11,8 @@ export const chainToId = {
 	arbitrum: 'https://arbitrum.api.0x.org/',
 	avax: 'https://avalanche.api.0x.org/',
 	fantom: 'https://fantom.api.0x.org/',
-	celo: 'https://celo.api.0x.org/'
+	celo: 'https://celo.api.0x.org/',
+	base: 'http://base.api.0x.org '
 };
 
 export const name = 'Matcha/0x';
@@ -34,9 +35,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
 
 	const data = await fetch(
-		`${
-			chainToId[chain]
-		}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
+		`${chainToId[chain]}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
 			extra.slippage / 100
 		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
 			extra.userAddress
