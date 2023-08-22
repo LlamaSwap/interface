@@ -12,7 +12,12 @@ import {
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 
-const SwapConfiramtion = ({ handleSwap, isUnknownPrice = false, isMaxPriceImpact = false }) => {
+const SwapConfiramtion = ({
+	handleSwap,
+	isUnknownPrice = false,
+	isMaxPriceImpact = false,
+	isDegenModeEnabled = false
+}) => {
 	const { isOpen, onToggle, onClose } = useDisclosure();
 	const requiredText = isMaxPriceImpact ? 'trade' : 'confirm';
 	const [value, setValue] = useState('');
@@ -50,14 +55,23 @@ const SwapConfiramtion = ({ handleSwap, isUnknownPrice = false, isMaxPriceImpact
 							<br />
 							You'll likely lose money.
 							<br />
-							Type "{requiredText}" to make a swap.
-							<Input
-								placeholder="Type here..."
-								mt={'4px'}
-								onChange={(e) => setValue(e.target.value)}
-								value={value}
-							></Input>
-							<Button colorScheme={'red'} onClick={handleSwap} mt={4} isDisabled={isSwapDisabled}>
+							{!isDegenModeEnabled ? (
+								<>
+									Type "{requiredText}" to make a swap.
+									<Input
+										placeholder="Type here..."
+										mt={'4px'}
+										onChange={(e) => setValue(e.target.value)}
+										value={value}
+									></Input>
+								</>
+							) : null}
+							<Button
+								colorScheme={'red'}
+								onClick={handleSwap}
+								mt={4}
+								isDisabled={isSwapDisabled && !isDegenModeEnabled}
+							>
 								Swap with high slippage
 							</Button>
 						</PopoverBody>
