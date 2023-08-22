@@ -13,7 +13,7 @@ export const chainToId = {
 	optimism: chainsMap.optimism,
 	arbitrum: chainsMap.arbitrum,
 	avax: chainsMap.avax,
-	fantom: chainsMap.avax,
+	fantom: chainsMap.fantom,
 	cronos: chainsMap.cronos,
 	canto: chainsMap.canto,
 	base: chainsMap.base
