@@ -5,14 +5,13 @@ import { adapters } from './list';
 export const adaptersNames = adapters.map(({ name }) => name);
 
 const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
-const delistedChains = ['fantom'];
 
 export function getAllChains() {
 	const chains = new Set<string>();
 	for (const adapter of adapters) {
 		Object.keys(adapter.chainToId).forEach((chain) => chains.add(chain));
 	}
-	const chainsArr = Array.from(chains).filter((c) => !delistedChains.includes(c));
+	const chainsArr = Array.from(chains);
 
 	const chainsOptions = chainsArr.map((c) => {
 		const chain = allChains.find(({ id }) => id === chainsMap[c]);
