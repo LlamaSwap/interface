@@ -25,7 +25,7 @@ const okx = {
 const binance = {
 	id: 56,
 	name: 'Binance SmartChain',
-	network: 'binance',
+	network: 'bsc',
 	iconUrl: chainIconUrl('binance'),
 	iconBackground: '#000',
 	nativeCurrency: {
