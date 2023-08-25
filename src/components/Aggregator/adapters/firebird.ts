@@ -16,7 +16,8 @@ export const chainToId = {
 	fantom: chainsMap.fantom,
 	cronos: chainsMap.cronos,
 	canto: chainsMap.canto,
-	base: chainsMap.base
+	base: chainsMap.base,
+	zksync: chainsMap.zksync
 };
 
 const approvalAddresses = {
@@ -29,7 +30,8 @@ const approvalAddresses = {
 	fantom: '0xe0C38b2a8D09aAD53f1C67734B9A95E43d5981c0',
 	cronos: '0x4A5a7331dA84d3834C030a9b8d4f3d687A3b788b',
 	canto: '0x984742Be1901fcbed70d7B5847bee5BE006d91C8',
-	base: '0x20f0b18BDDe8e3dd0e42C173062eBdd05C421151'
+	base: '0x20f0b18BDDe8e3dd0e42C173062eBdd05C421151',
+	zksync: '0xc593dcfD1E4605a6Cd466f5C6807D444414dBc97'
 };
 
 export const name = 'Firebird';
