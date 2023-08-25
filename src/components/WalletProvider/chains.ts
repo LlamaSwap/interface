@@ -636,6 +636,26 @@ const base = {
 	testnet: false
 };
 
+const linea = {
+	id: 59144,
+	name: 'Linea',
+	network: 'linea',
+	iconUrl: chainIconUrl('Linea'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	rpcUrls: {
+		default: 'https://rpc.linea.build'
+	},
+	blockExplorers: {
+		default: { name: 'LineaScan', url: 'https://lineascan.build/' }
+	},
+	testnet: false
+};
+
 interface IChain extends Chain {
 	iconUrl: string;
 }
@@ -651,6 +671,7 @@ export const allChains: Array<IChain> = [
 	fantom,
 	zksync,
 	polygonZKEvm,
+	linea,
 	canto,
 	gnosis,
 	klaytn,
