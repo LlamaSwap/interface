@@ -5,7 +5,7 @@ import { rpcsMap as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
 const okx = {
 	id: 66,
 	name: 'OKTChain',
-	network: 'okx',
+	network: 'okexchain',
 	iconUrl: chainIconUrl('oktchain'),
 	iconBackground: '#000',
 	nativeCurrency: {
