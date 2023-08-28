@@ -36,6 +36,7 @@ export const chainsMap = {
 	linea: 59144
 } as const;
 
+// https://api.coingecko.com/api/v3/asset_platforms
 export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chainsMap]> = {
 	ethereum: 1,
 	'binance-smart-chain': 56,
@@ -67,7 +68,8 @@ export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chains
 	kava: 2222,
 	ontology: 58,
 	'metis-andromeda': 1088,
-	linea: 59144
+	linea: 59144,
+	base: 8453
 };
 
 export const chainGasToken: Record<keyof typeof chainsMap, string> = {
