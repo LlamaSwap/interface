@@ -102,7 +102,7 @@ export async function getTokenList() {
 			.then((r) => r.tokens.filter((t) => t.chainId === 1101)),
 		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=59144')
 			.then((r) => r.json())
-			.then((r) => r?.data?.tokens)
+			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 59144))
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
