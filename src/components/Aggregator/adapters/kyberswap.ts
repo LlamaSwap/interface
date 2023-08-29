@@ -18,7 +18,8 @@ export const chainToId = {
 	cronos: 'cronos',
 	zksync: 'zksync',
 	polygonzkevm: 'polygon-zkevm',
-	linea: 'linea'
+	linea: 'linea',
+	base: 'base'
 };
 
 export const name = 'KyberSwap';
