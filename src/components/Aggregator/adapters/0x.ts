@@ -12,7 +12,7 @@ export const chainToId = {
 	avax: 'https://avalanche.api.0x.org/',
 	fantom: 'https://fantom.api.0x.org/',
 	celo: 'https://celo.api.0x.org/',
-	base: 'http://base.api.0x.org '
+	base: 'http://base.api.0x.org/'
 };
 
 export const name = 'Matcha/0x';
