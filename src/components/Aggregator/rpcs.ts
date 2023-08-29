@@ -256,6 +256,10 @@ export const rpcUrls = {
 		default: 'https://mainnet.base.org',
 		second: 'https://1rpc.io/base',
 		third: 'https://base-mainnet.public.blastapi.io'
+	},
+	59144: {
+		default: 'https://rpc.linea.build',
+		second: 'https://linea.blockpi.network/v1/rpc/public'
 	}
 };
 
@@ -338,5 +342,6 @@ export const providers = {
 	polygonzkevm: createProvider('polygonzkevm', getUrls(1101), 1101),
 	kava: createProvider('kava', getUrls(2222), 2222),
 	pulse: createProvider('pulse', getUrls(369), 369),
-	base: createProvider('pulse', getUrls(8453), 8453)
+	base: createProvider('pulse', getUrls(8453), 8453),
+	linea: createProvider('linea', getUrls(59144), 59144)
 };

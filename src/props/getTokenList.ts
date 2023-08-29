@@ -80,7 +80,7 @@ export async function getTokenList() {
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
-	const [sushiList, geckoList, logos, ownList, zksyncList, quickSwapList] = await Promise.all([
+	const [sushiList, geckoList, logos, ownList, zksyncList, quickSwapList, lineaList] = await Promise.all([
 		fetch('https://tokens.sushi.com/v0')
 			.then((r) => r.json())
 			.then((r) =>
@@ -99,7 +99,10 @@ export async function getTokenList() {
 			.then((r) => r.filter((t) => t.chainId === 324)),
 		fetch('https://unpkg.com/quickswap-default-token-list@latest/build/quickswap-default.tokenlist.json')
 			.then((res) => res.json())
-			.then((r) => r.tokens.filter((t) => t.chainId === 1101))
+			.then((r) => r.tokens.filter((t) => t.chainId === 1101)),
+		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=59144')
+			.then((r) => r.json())
+			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 59144))
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -120,7 +123,8 @@ export async function getTokenList() {
 				...sushiList,
 				...zksyncList,
 				...quickSwapList,
-				...ownList
+				...ownList,
+				...lineaList
 			].filter((t) => t.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
 			'chainId'
 		),

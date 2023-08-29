@@ -16,8 +16,10 @@ export const chainToId = {
 	aurora: 'aurora',
 	bttc: 'bttc',
 	cronos: 'cronos',
-	oasis: 'oasis',
-	velas: 'velas'
+	zksync: 'zksync',
+	polygonzkevm: 'polygon-zkevm',
+	linea: 'linea',
+	base: 'base'
 };
 
 export const name = 'KyberSwap';

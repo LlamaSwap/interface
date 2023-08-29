@@ -21,7 +21,9 @@ export const chainToId = {
 	//ontology: 58,
 	polygonzkevm: 1101,
 	kava: 2222,
-	metis: 1088
+	metis: 1088,
+	zksync: 324,
+	linea: 59144
 };
 
 export const name = 'OpenOcean';
