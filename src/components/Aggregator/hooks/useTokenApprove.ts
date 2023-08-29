@@ -56,7 +56,7 @@ export const useTokenApprove = (
 	token: `0x${string}`,
 	spender: `0x${string}`,
 	amount: string,
-	onSuccess: () => void
+	onSuccess: () => void = () => {}
 ) => {
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
 	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
