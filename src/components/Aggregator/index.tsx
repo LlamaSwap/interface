@@ -62,6 +62,7 @@ import { Sandwich } from './Sandwich';
 import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
+import { SwapModal } from '../SwapModal';
 
 /*
 Integrated:
@@ -327,6 +328,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const breakpoint = useBreakpoint();
 	const isSmallScreen = breakpoint === 'sm' || breakpoint === 'base';
 	const toggleUi = () => setUiState((state) => (state === STATES.INPUT ? STATES.ROUTES : STATES.INPUT));
+
+	// post approval
+	const [approvalModalOpen, setApprovalModelOpen] = useState(false);
 
 	// post swap states
 	const [txModalOpen, setTxModalOpen] = useState(false);
@@ -620,6 +624,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		});
 	};
 
+	const onApprove = () => {
+		setApprovalModelOpen(true);
+	};
+
 	useEffect(() => {
 		const isUnknown =
 			selectedToToken === null &&
@@ -707,7 +715,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	} = useTokenApprove(
 		finalSelectedFromToken?.address as `0x${string}`,
 		selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
-		amountToApprove
+		amountToApprove,
+		onApprove
 	);
 
 	const isUSDTNotApprovedOnEthereum =
@@ -1443,6 +1452,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			{window === parent ? <FAQs /> : null}
 
 			<TransactionModal open={txModalOpen} setOpen={setTxModalOpen} link={txUrl} />
+			<SwapModal
+				open={approvalModalOpen}
+				setOpen={setApprovalModelOpen}
+				isLoading={isConfirmingApproval || isConfirmingInfiniteApproval}
+				swap={handleSwap}
+				fromToken={finalSelectedFromToken}
+			/>
 		</Wrapper>
 	);
 }
