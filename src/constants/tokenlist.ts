@@ -34,5 +34,13 @@ export const ownTokenList = [
 		decimals: 6,
 		address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
 		logoURI: 'https://tokens.1inch.io/0xaf88d065e77c8cc2239327c5edb3a432268e5831.png'
+	},
+	{
+		symbol: 'WWETH',
+		chainId: 137,
+		name: 'Wormhole WETH',
+		decimals: 18,
+		address: '0x11cd37bb86f65419713f30673a480ea33c826872',
+		logoURI: 'https://token-icons.llamao.fi/icons/tokens/137/0x11cd37bb86f65419713f30673a480ea33c826872?h=20&w=20'
 	}
 ];
