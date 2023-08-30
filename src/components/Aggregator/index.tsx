@@ -673,7 +673,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const hasLinearPriceImpact =
 		selectedRoute && (halfAmountRoutes || []).length
 			? BigNumber(selectedRoute?.price?.amountReturned)
-					.div(BigNumber((halfAmountRoutes || [])[0]?.price?.amountReturned || selectedRoute?.price?.amountReturned))
+					.div(BigNumber((halfAmountRoutes || [])[0]?.price?.amountReturned))
 					.lt(1.5)
 			: false;
 
