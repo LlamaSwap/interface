@@ -511,7 +511,7 @@ const zksync = {
 		default: 'https://mainnet.era.zksync.io'
 	},
 	blockExplorers: {
-		default: { name: 'zkScan', url: 'https://zkscan.io' }
+		default: { name: 'zkScan', url: 'https://explorer.zksync.io' }
 	},
 	testnet: false
 };
