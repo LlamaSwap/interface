@@ -449,7 +449,7 @@ const arbirum = {
 		symbol: 'ETH'
 	},
 	blockExplorers: {
-		default: { name: 'arbiscan', url: 'https://arbiscan.io/' }
+		default: { name: 'arbiscan', url: 'https://arbiscan.io' }
 	},
 	testnet: false,
 	rpcUrls: {
@@ -468,7 +468,7 @@ const ethereum = {
 		symbol: 'ETH'
 	},
 	blockExplorers: {
-		default: { name: 'etherscan', url: 'https://etherscan.io/' }
+		default: { name: 'etherscan', url: 'https://etherscan.io' }
 	},
 	testnet: false,
 	rpcUrls: {
@@ -487,7 +487,7 @@ const optimism = {
 		symbol: 'ETH'
 	},
 	blockExplorers: {
-		default: { name: 'etherscan', url: 'https://optimistic.etherscan.io/' }
+		default: { name: 'etherscan', url: 'https://optimistic.etherscan.io' }
 	},
 	testnet: false,
 	rpcUrls: {
@@ -511,7 +511,7 @@ const zksync = {
 		default: 'https://mainnet.era.zksync.io'
 	},
 	blockExplorers: {
-		default: { name: 'zkScan', url: 'https://zkscan.io/' }
+		default: { name: 'zkScan', url: 'https://zkscan.io' }
 	},
 	testnet: false
 };
@@ -531,7 +531,7 @@ const ontology = {
 		default: 'http://dappnode4.ont.io:20339'
 	},
 	blockExplorers: {
-		default: { name: 'Ontology Explorer', url: 'https://explorer.ont.io/' }
+		default: { name: 'Ontology Explorer', url: 'https://explorer.ont.io' }
 	},
 	testnet: false
 };
@@ -551,7 +551,7 @@ const polygonZKEvm = {
 		default: 'https://zkevm-rpc.com'
 	},
 	blockExplorers: {
-		default: { name: 'Polygon zkEVM Scan', url: 'https://zkevm.polygonscan.com/' }
+		default: { name: 'Polygon zkEVM Scan', url: 'https://zkevm.polygonscan.com' }
 	},
 	testnet: false
 };
@@ -571,7 +571,7 @@ const kava = {
 		default: 'https://evm2.kava.io'
 	},
 	blockExplorers: {
-		default: { name: 'Kava Explorer', url: 'https://explorer.kava.io/' }
+		default: { name: 'Kava Explorer', url: 'https://explorer.kava.io' }
 	},
 	testnet: false
 };
@@ -591,7 +591,7 @@ const metis = {
 		default: 'https://andromeda.metis.io/?owner=1088'
 	},
 	blockExplorers: {
-		default: { name: 'Metis Explorer', url: 'https://andromeda-explorer.metis.io/' }
+		default: { name: 'Metis Explorer', url: 'https://andromeda-explorer.metis.io' }
 	},
 	testnet: false
 };
@@ -611,7 +611,7 @@ const pulse = {
 		default: 'https://rpc.pulsechain.com'
 	},
 	blockExplorers: {
-		default: { name: 'PulseChain Explorer', url: 'https://scan.pulsechain.com/' }
+		default: { name: 'PulseChain Explorer', url: 'https://scan.pulsechain.com' }
 	},
 	testnet: false
 };
@@ -631,7 +631,7 @@ const base = {
 		default: 'https://mainnet.base.org'
 	},
 	blockExplorers: {
-		default: { name: 'BaseScan', url: 'https://basescan.org/' }
+		default: { name: 'BaseScan', url: 'https://basescan.org' }
 	},
 	testnet: false
 };
@@ -651,7 +651,7 @@ const linea = {
 		default: 'https://rpc.linea.build'
 	},
 	blockExplorers: {
-		default: { name: 'LineaScan', url: 'https://lineascan.build/' }
+		default: { name: 'LineaScan', url: 'https://lineascan.build' }
 	},
 	testnet: false
 };
