@@ -13,6 +13,7 @@ interface IGetListRoutesProps {
 	extra?: any;
 	disabledAdapters?: Array<string>;
 	customRefetchInterval?: number;
+	enabled?: boolean;
 }
 
 export interface IRoute {
@@ -127,7 +128,8 @@ export function useGetRoutes({
 	amount,
 	extra = {},
 	disabledAdapters = [],
-	customRefetchInterval
+	customRefetchInterval,
+	enabled = true
 }: IGetListRoutesProps) {
 	const res = useQueries({
 		queries: adapters
@@ -138,7 +140,8 @@ export function useGetRoutes({
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
 					refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
 					refetchOnWindowFocus: false,
-					refetchIntervalInBackground: false
+					refetchIntervalInBackground: false,
+					enabled
 				};
 			})
 	});
