@@ -14,9 +14,9 @@ export const chainToId = {
 	fantom: 250,
 	aurora: 1313161554,
 	heco: 128,
-	boba: 288,
+	//boba: 288,
 	okexchain: 66,
-	cronos: 25,
+	//cronos: 25,
 	moonriver: 1285
 	//ontology: 58,
 	//polygonzkevm: 1101,
