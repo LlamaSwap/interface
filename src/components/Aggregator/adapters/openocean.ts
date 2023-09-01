@@ -19,7 +19,7 @@ export const chainToId = {
 	cronos: 25,
 	moonriver: 1285,
 	//ontology: 58,
-	polygonzkevm: 1101,
+	//polygonzkevm: 1101,
 	kava: 2222,
 	metis: 1088,
 	zksync: 324,
