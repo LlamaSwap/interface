@@ -17,13 +17,13 @@ export const chainToId = {
 	boba: 288,
 	okexchain: 66,
 	cronos: 25,
-	moonriver: 1285,
+	moonriver: 1285
 	//ontology: 58,
 	//polygonzkevm: 1101,
-	kava: 2222,
-	metis: 1088,
-	zksync: 324,
-	linea: 59144
+	//kava: 2222,
+	//metis: 1088,
+	//zksync: 324,
+	//linea: 59144
 };
 
 export const name = 'OpenOcean';
