@@ -46,17 +46,22 @@ export const useGetAllowance = (token: `0x${string}`, spender: `0x${string}`, am
 	return { allowance, shouldRemoveApproval, refetch, isRefetching };
 };
 
-const setOverrides = (func, overrides) => {
+const setOverrides = (func, overrides, onApprove = () => {}) => {
 	if (!overrides) return func;
 
-	return () => func({ recklesslySetUnpreparedOverrides: overrides });
+	return () => {
+		onApprove();
+		return func({ recklesslySetUnpreparedOverrides: overrides });
+	};
 };
 
 export const useTokenApprove = (
 	token: `0x${string}`,
 	spender: `0x${string}`,
 	amount: string,
-	onSuccess: () => void = () => {}
+	onApprove: () => void = () => {},
+	onSuccess: () => void = () => {},
+	afterApprove: () => void = () => {}
 ) => {
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
 	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
@@ -103,10 +108,12 @@ export const useTokenApprove = (
 		onSuccess: (data) => {
 			setIsConfirmingApproval(true);
 			onSuccess();
+			refetch();
 
 			data
 				.wait()
 				.then(() => {
+					afterApprove();
 					refetch();
 				})
 				.catch((err) => console.log(err))
@@ -121,9 +128,12 @@ export const useTokenApprove = (
 		onSuccess: (data) => {
 			setIsConfirmingInfiniteApproval(true);
 			onSuccess();
+			refetch();
+
 			data
 				.wait()
 				.then(() => {
+					afterApprove();
 					refetch();
 				})
 				.catch((err) => console.log(err))
@@ -138,9 +148,11 @@ export const useTokenApprove = (
 		onSuccess: (data) => {
 			setIsConfirmingResetApproval(true);
 			onSuccess();
+			refetch();
 			data
 				.wait()
 				.then(() => {
+					afterApprove();
 					refetch();
 				})
 				.catch((err) => console.log(err))
@@ -161,9 +173,9 @@ export const useTokenApprove = (
 
 	return {
 		isApproved: false,
-		approve: setOverrides(approve, customGasLimit),
-		approveInfinite: setOverrides(approveInfinite, customGasLimit),
-		approveReset: setOverrides(approveReset, customGasLimit),
+		approve: setOverrides(approve, customGasLimit, onApprove),
+		approveInfinite: setOverrides(approveInfinite, customGasLimit, onApprove),
+		approveReset: setOverrides(approveReset, customGasLimit, onApprove),
 		isLoading: isLoading || isConfirmingApproval,
 		isConfirmingApproval,
 		isInfiniteLoading: isInfiniteLoading || isConfirmingInfiniteApproval,
