@@ -25,6 +25,7 @@ export function approvalAddress() {
 }
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+const feeCollectorAddress = '0x9Ab6164976514F1178E2BB4219DA8700c9D96E9A';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// amount should include decimals
@@ -39,7 +40,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			extra.slippage / 100
 		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
 			extra.userAddress
-		}&skipValidation=true`,
+		}&skipValidation=true&feeRecipientTradeSurplus=${feeCollectorAddress}`,
 		{
 			headers: {
 				'0x-api-key': process.env.OX_API_KEY
