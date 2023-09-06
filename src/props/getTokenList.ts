@@ -312,7 +312,7 @@ const getTopTokensByChain = async (chainId) => {
 		}
 
 		const res = await fetch(
-			`https://www.dextools.io/shared/analytics/pairs?limit=200&interval=24h&chain=${dexToolsChainMap[chainId]}`
+			`https://www.dextools.io/shared/analytics/pairs?limit=60&interval=24h&chain=${dexToolsChainMap[chainId]}`
 		).then((res) => res.json());
 
 		return [chainId, res.data || []];
