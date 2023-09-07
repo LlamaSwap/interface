@@ -3,7 +3,12 @@ import { IToken } from '~/types';
 import { multiCall } from '@defillama/sdk/build/abi';
 import { ethers } from 'ethers';
 import { nativeTokens } from '~/components/Aggregator/nativeTokens';
-import { chainIdToName, dexToolsChainMap, geckoChainsMap } from '~/components/Aggregator/constants';
+import {
+	chainIdToName,
+	dexToolsChainMap,
+	geckoChainsMap,
+	geckoTerminalChainMap
+} from '~/components/Aggregator/constants';
 import { ownTokenList } from '~/constants/tokenlist';
 import { protoclIconUrl } from '~/utils';
 
@@ -149,7 +154,7 @@ export async function getTokenList() {
 	const topTokensByVolume = Object.fromEntries(
 		topTokensByChain
 			.map((chain) => (chain.status === 'fulfilled' ? chain.value : null))
-			.filter((chain) => chain !== null && chain[1].length > 0 && tokensFiltered[chain[0]])
+			.filter((chain) => chain !== null && tokensFiltered[chain[0]])
 	);
 
 	// store unique tokens by chain
@@ -199,8 +204,14 @@ export async function getTokenList() {
 						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 						: null;
 
-				const volume24h =
-					topTokensByVolume[chain]?.find((item) => item['_id']?.token === t.address)?.['volume24h'] ?? 0;
+				const geckoTokenId = topTokensByVolume[chain]?.included?.find(
+					(item) => item.attributes?.address === t.address
+				)?.id;
+
+				const volume24h = Number(
+					topTokensByVolume[chain]?.data?.find((item) => item.attributes.token_value_data[geckoTokenId])?.attributes
+						.to_volume_in_usd ?? 0
+				);
 
 				return {
 					...t,
@@ -307,16 +318,16 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 
 const getTopTokensByChain = async (chainId) => {
 	try {
-		if (!dexToolsChainMap[chainId]) {
+		if (!geckoTerminalChainMap[chainId]) {
 			throw new Error(`${chainId} not supported by dex tools.`);
 		}
 
 		const res = await fetch(
-			`https://www.dextools.io/shared/analytics/pairs?limit=200&interval=24h&chain=${dexToolsChainMap[chainId]}`
+			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
 		).then((res) => res.json());
 
-		return [chainId, res.data || []];
+		return [chainId, res || {}];
 	} catch (error) {
-		return [chainId, []];
+		return [chainId, {}];
 	}
 };

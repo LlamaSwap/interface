@@ -18,6 +18,8 @@ export const chainToId = {
 	canto: chainsMap.canto,
 	base: chainsMap.base,
 	zksync: chainsMap.zksync
+	//opBNB
+	//pulse
 };
 
 const approvalAddresses = {

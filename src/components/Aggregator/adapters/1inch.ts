@@ -15,22 +15,24 @@ export const chainToId = {
 	avax: 43114,
 	fantom: 250,
 	klaytn: 8217,
-	aurora: 1313161554
-	//zksync: 324
+	aurora: 1313161554,
+	zksync: 324,
+	base: 8453
 };
 
 const spenders = {
-	ethereum: '0x1111111254fb6c44bac0bed2854e76f90643097d',
-	bsc: '0x1111111254fb6c44bac0bed2854e76f90643097d',
-	polygon: '0x1111111254fb6c44bac0bed2854e76f90643097d',
-	optimism: '0x1111111254760f7ab3f16433eea9304126dcd199',
-	arbitrum: '0x1111111254fb6c44bac0bed2854e76f90643097d',
-	gnosis: '0x1111111254fb6c44bac0bed2854e76f90643097d',
-	avax: '0x1111111254fb6c44bac0bed2854e76f90643097d',
-	fantom: '0x1111111254fb6c44bac0bed2854e76f90643097d',
-	klaytn: '0x1111111254fb6c44bac0bed2854e76f90643097d',
-	aurora: '0x1111111254fb6c44bac0bed2854e76f90643097d'
-	//zksync
+	ethereum: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	bsc: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	polygon: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	optimism: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	arbitrum: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	gnosis: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	avax: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	fantom: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	klaytn: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	aurora: '0x1111111254eeb25477b68fb85ed929f73a960582',
+	zksync: '0x6e2b76966cbd9cf4cc2fa0d76d24d5241e0abc2f',
+	base: '0x1111111254eeb25477b68fb85ed929f73a960582'
 };
 
 export const name = '1inch';
@@ -49,23 +51,23 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const authHeader = { 'auth-key': process.env.INCH_API_KEY };
+	const authHeader = process.env.INCH_API_KEY ? { 'auth-key': process.env.INCH_API_KEY } : {};
 	const tokenApprovalAddress = spenders[chain];
 
 	const [data, swapData] = await Promise.all([
 		fetch(
-			`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/quote?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&slippage=${extra.slippage}`,
+			`https://api-defillama.1inch.io/v5.2/${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
 			{ headers: authHeader }
 		).then((r) => r.json()),
 		extra.userAddress !== ethers.constants.AddressZero
 			? fetch(
-					`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/swap?fromTokenAddress=${tokenFrom}&toTokenAddress=${tokenTo}&amount=${amount}&fromAddress=${extra.userAddress}&slippage=${extra.slippage}&referrerAddress=${altReferralAddress}&disableEstimate=true`,
+					`https://api-defillama.1inch.io/v5.2/${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
 					{ headers: authHeader }
 			  ).then((r) => r.json())
 			: null
 	]);
 
-	const estimatedGas = data.estimatedGas || 0;
+	const estimatedGas = data.gas || 0;
 
 	let gas = estimatedGas;
 
@@ -73,7 +75,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		gas = swapData === null ? null : await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas);
 
 	return {
-		amountReturned: swapData?.toTokenAmount ?? data.toTokenAmount,
+		amountReturned: swapData?.toAmount ?? data.toAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress,
 		rawQuote: swapData === null ? null : { ...swapData, tx: swapData.tx },
