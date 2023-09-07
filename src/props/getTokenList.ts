@@ -104,6 +104,7 @@ export async function getTokenList() {
 		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=59144')
 			.then((r) => r.json())
 			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 59144))
+			.catch((e) => [])
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -201,11 +202,8 @@ export async function getTokenList() {
 						: null;
 
 				const volume24h =
-					topTokensByVolume[chain]?.find(
-						(item) =>
-							item?.token0?.address?.toLowerCase() === t.address?.toLowerCase() ||
-							item?.token1?.address?.toLowerCase() === t.address?.toLowerCase()
-					)?.attributes?.aggregated_network_metrics?.total_swap_volume_usd_24h ?? 0;
+					topTokensByVolume[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
+						?.attributes?.aggregated_network_metrics?.total_swap_volume_usd_24h ?? 0;
 
 				return {
 					...t,
@@ -316,16 +314,27 @@ export const getTopTokensByChain = async (chainId) => {
 			throw new Error(`${chainId} not supported by dex tools.`);
 		}
 
-		const res = await fetch(
+		const resData = [];
+		const resIncluded = [];
+
+		let prevRes = await fetch(
 			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
 		).then((res) => res.json());
 
-		const result = res?.data.map((pool) => {
+		for (let i = 0; i < 5; i++) {
+			if (prevRes?.links?.next) {
+				prevRes = await fetch(prevRes?.links?.next).then((r) => r.json());
+				resData.push(...prevRes?.data);
+				resIncluded.push(...prevRes?.included);
+			}
+		}
+
+		const result = resData.map((pool) => {
 			const token0Id = pool?.relationships?.tokens?.data[0]?.id;
 			const token1Id = pool?.relationships?.tokens?.data[1]?.id;
 
-			const token0 = res?.included?.find((item) => item?.id === token0Id)?.attributes || {};
-			const token1 = res?.included?.find((item) => item?.id === token1Id)?.attributes || {};
+			const token0 = resIncluded?.find((item) => item?.id === token0Id)?.attributes || {};
+			const token1 = resIncluded?.find((item) => item?.id === token1Id)?.attributes || {};
 
 			return { ...pool, token0, token1 };
 		});
