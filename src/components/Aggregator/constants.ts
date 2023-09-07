@@ -155,6 +155,41 @@ export const dexToolsChainMap: Record<typeof chainsMap[keyof typeof chainsMap], 
 	59144: 'linea'
 };
 
+export const geckoTerminalChainMap: Record<typeof chainsMap[keyof typeof chainsMap], string> = {
+	1: 'eth',
+	56: 'bsc',
+	137: 'polygon_pos',
+	10: 'optimism',
+	42161: 'arbitrum',
+	43114: 'avax',
+	100: 'xdai',
+	250: 'ftm',
+	1313161554: 'aurora',
+	42220: 'celo',
+	25: 'cro',
+	2000: 'dogechain',
+	1285: 'movr',
+	42262: 'oasis',
+	106: 'velas',
+	128: 'heco',
+	1666600000: 'one',
+	288: 'boba',
+	66: 'okc',
+	122: 'fuse',
+	1284: 'moonbeam',
+	199: 'bittorrent',
+	8217: 'klay',
+	7700: 'canto',
+	2222: 'kava',
+	369: 'pulse',
+	1101: 'polygon-zkevm',
+	324: 'zksync',
+	58: 'ontology',
+	1088: 'metis',
+	8453: 'base',
+	59144: 'linea'
+};
+
 export const chainIdToName = (chainId) => {
 	return Object.entries(chainsMap).find(([, id]) => String(id) === String(chainId))?.[0];
 };

@@ -12,7 +12,7 @@ export const getSandwichList = async () => {
 		).then((res) => res.json());
 
 		const { data: top100Pairs = [] } = await fetch(
-			`https://www.dextools.io/shared/analytics/pairs?limit=100&interval=24h&chain=${dexToolsChainMap[1]}`
+			`https://www.dextools.io/shared/analytics/pairs?limit=60&interval=24h&chain=${dexToolsChainMap[1]}`
 		).then((res) => res.json());
 
 		const topPairs =
