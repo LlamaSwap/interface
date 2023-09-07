@@ -201,9 +201,10 @@ export async function getTokenList() {
 						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 						: null;
 
-				const volume24h =
-					topTokensByVolume?.[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
-						?.attributes?.aggregated_network_metrics?.total_swap_volume_usd_24h ?? 0;
+				const volume24h = Array.isArray(topTokensByVolume?.[chain])
+					? topTokensByVolume[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
+							?.attributes?.aggregated_network_metrics?.total_swap_volume_usd_24h ?? 0
+					: 0;
 
 				return {
 					...t,
@@ -341,6 +342,6 @@ export const getTopTokensByChain = async (chainId) => {
 
 		return [chainId, result || []];
 	} catch (error) {
-		return [chainId, {}];
+		return [chainId, []];
 	}
 };
