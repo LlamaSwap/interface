@@ -3,12 +3,8 @@ import { IToken } from '~/types';
 import { multiCall } from '@defillama/sdk/build/abi';
 import { ethers } from 'ethers';
 import { nativeTokens } from '~/components/Aggregator/nativeTokens';
-import {
-	chainIdToName,
-	dexToolsChainMap,
-	geckoChainsMap,
-	geckoTerminalChainMap
-} from '~/components/Aggregator/constants';
+
+import { chainIdToName, geckoChainsMap, geckoTerminalChainsMap } from '~/components/Aggregator/constants';
 import { ownTokenList } from '~/constants/tokenlist';
 import { protoclIconUrl } from '~/utils';
 
@@ -204,14 +200,12 @@ export async function getTokenList() {
 						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 						: null;
 
-				const geckoTokenId = topTokensByVolume[chain]?.included?.find(
-					(item) => item.attributes?.address === t.address
-				)?.id;
-
-				const volume24h = Number(
-					topTokensByVolume[chain]?.data?.find((item) => item.attributes.token_value_data[geckoTokenId])?.attributes
-						.to_volume_in_usd ?? 0
-				);
+				const volume24h =
+					topTokensByVolume[chain]?.find(
+						(item) =>
+							item?.token0?.address?.toLowerCase() === t.address?.toLowerCase() ||
+							item?.token1?.address?.toLowerCase() === t.address?.toLowerCase()
+					)?.attributes?.aggregated_network_metrics?.total_swap_volume_usd_24h ?? 0;
 
 				return {
 					...t,
@@ -316,17 +310,27 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 	return [chainId, data];
 };
 
-const getTopTokensByChain = async (chainId) => {
+export const getTopTokensByChain = async (chainId) => {
 	try {
-		if (!geckoTerminalChainMap[chainId]) {
+		if (!geckoTerminalChainsMap[chainId]) {
 			throw new Error(`${chainId} not supported by dex tools.`);
 		}
 
 		const res = await fetch(
-			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
+			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
 		).then((res) => res.json());
 
-		return [chainId, res || {}];
+		const result = res?.data.map((pool) => {
+			const token0Id = pool?.relationships?.tokens?.data[0]?.id;
+			const token1Id = pool?.relationships?.tokens?.data[1]?.id;
+
+			const token0 = res?.included?.find((item) => item?.id === token0Id)?.attributes || {};
+			const token1 = res?.included?.find((item) => item?.id === token1Id)?.attributes || {};
+
+			return { ...pool, token0, token1 };
+		});
+
+		return [chainId, result || []];
 	} catch (error) {
 		return [chainId, {}];
 	}
