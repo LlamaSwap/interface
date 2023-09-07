@@ -202,7 +202,7 @@ export async function getTokenList() {
 						: null;
 
 				const volume24h =
-					topTokensByVolume[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
+					topTokensByVolume?.[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
 						?.attributes?.aggregated_network_metrics?.total_swap_volume_usd_24h ?? 0;
 
 				return {
