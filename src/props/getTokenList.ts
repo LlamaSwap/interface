@@ -52,7 +52,8 @@ const fixTotkens = (tokenlist) => {
 const markMultichain = async (tokens) => {
 	const multichainList = await fetch(`https://bridgeapi.multichain.org/v4/tokenlistv4/${FANTOM_ID}`)
 		.then((r) => r.json())
-		.then((r) => Object.values(r));
+		.then((r) => Object.values(r))
+		.catch(() => []);
 
 	tokens[FANTOM_ID] = tokens[FANTOM_ID].map((token) => {
 		const isMultichain = !!multichainList.find(
@@ -201,9 +202,12 @@ export async function getTokenList() {
 						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 						: null;
 
-				const volume24h = Array.isArray(topTokensByVolume?.[chain])
+				const token = Array.isArray(topTokensByVolume?.[chain])
 					? topTokensByVolume[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
-							?.attributes?.aggregated_network_metrics?.total_swap_volume_usd_24h ?? 0
+					: null;
+
+				const volume24h = token
+					? Number(token?.attributes?.from_volume_in_usd) + Number(token?.attributes?.from_volume_in_usd) ?? 0
 					: 0;
 
 				return {
