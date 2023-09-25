@@ -52,8 +52,7 @@ const fixTotkens = (tokenlist) => {
 const markMultichain = async (tokens) => {
 	const multichainList = await fetch(`https://bridgeapi.multichain.org/v4/tokenlistv4/${FANTOM_ID}`)
 		.then((r) => r.json())
-		.then((r) => Object.values(r))
-		.catch(() => []);
+		.then((r) => Object.values(r));
 
 	tokens[FANTOM_ID] = tokens[FANTOM_ID].map((token) => {
 		const isMultichain = !!multichainList.find(
@@ -207,7 +206,7 @@ export async function getTokenList() {
 					: null;
 
 				const volume24h = token
-					? Number(token?.attributes?.from_volume_in_usd) + Number(token?.attributes?.from_volume_in_usd) ?? 0
+					? Number(token?.attributes?.from_volume_in_usd) + Number(token?.attributes?.to_volume_in_usd) ?? 0
 					: 0;
 
 				return {
