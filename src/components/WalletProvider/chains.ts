@@ -504,7 +504,7 @@ const zksync = {
 	iconBackground: '#000',
 	nativeCurrency: {
 		decimals: 18,
-		name: 'Ehtereum',
+		name: 'Ethereum',
 		symbol: 'ETH'
 	},
 	rpcUrls: {
