@@ -11,6 +11,7 @@ import {
 } from '~/components/Aggregator/constants';
 import { ownTokenList } from '~/constants/tokenlist';
 import { protoclIconUrl } from '~/utils';
+import multichainListRaw from '../data/multichain/250.json';
 
 const tokensToRemove = {
 	1: {
@@ -54,13 +55,11 @@ const fixTotkens = (tokenlist) => {
 };
 
 const markMultichain = async (tokens) => {
-	const multichainList = await fetch(`https://bridgeapi.multichain.org/v4/tokenlistv4/${FANTOM_ID}`)
-		.then((r) => r.json())
-		.then((r) => Object.values(r));
+	const multichainList = Object.values(multichainListRaw);
 
 	tokens[FANTOM_ID] = tokens[FANTOM_ID].map((token) => {
 		const isMultichain = !!multichainList.find(
-			(multitoken: IToken) => multitoken.address?.toLowerCase() === token.address.toLowerCase()
+			(multitoken: any) => multitoken.address?.toLowerCase() === token.address.toLowerCase()
 		);
 
 		return {
