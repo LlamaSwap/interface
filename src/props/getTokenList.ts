@@ -205,9 +205,8 @@ export async function getTokenList() {
 					? topTokensByVolume[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
 					: null;
 
-				const volume24h = token
-					? Number(token?.attributes?.from_volume_in_usd) + Number(token?.attributes?.to_volume_in_usd) ?? 0
-					: 0;
+				const volume24h =
+					Number(token?.attributes?.from_volume_in_usd ?? 0) + Number(token?.attributes?.to_volume_in_usd ?? 0);
 
 				return {
 					...t,
