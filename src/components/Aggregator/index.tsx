@@ -62,6 +62,7 @@ import { Sandwich } from './Sandwich';
 import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
+import { SwapModal } from '../SwapModal';
 
 /*
 Integrated:
@@ -116,6 +117,14 @@ cant integrate:
 enum STATES {
 	INPUT,
 	ROUTES
+}
+
+export enum SWAP_STATES {
+	SELECTING_ROUTES,
+	WAITING_FOR_APPROVAL,
+	CONFIRMING_APPROVAL,
+	WAITING_FOR_SWAP,
+	CONFIRMING_SWAP
 }
 
 const Body = styled.div`
@@ -328,8 +337,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const isSmallScreen = breakpoint === 'sm' || breakpoint === 'base';
 	const toggleUi = () => setUiState((state) => (state === STATES.INPUT ? STATES.ROUTES : STATES.INPUT));
 
+	// post approval
+	const [swapState, setSwapState] = useState(SWAP_STATES.SELECTING_ROUTES);
+
 	// post swap states
-	const [txModalOpen, setTxModalOpen] = useState(false);
 	const [txUrl, setTxUrl] = useState('');
 	const confirmingTxToastRef = useRef<ToastId>();
 	const toast = useToast();
@@ -707,7 +718,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	} = useTokenApprove(
 		finalSelectedFromToken?.address as `0x${string}`,
 		selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
-		amountToApprove
+		amountToApprove,
+		() => setSwapState(SWAP_STATES.WAITING_FOR_APPROVAL),
+		() => setSwapState(SWAP_STATES.CONFIRMING_APPROVAL),
+		() => setSwapState(SWAP_STATES.WAITING_FOR_SWAP)
 	);
 
 	const isUSDTNotApprovedOnEthereum =
@@ -735,11 +749,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					description: `Swap transaction using ${variables.adapter} is sent.`
 				});
 				const explorerUrl = chainOnWallet.blockExplorers.default.url;
-				setTxModalOpen(true);
+
 				txUrl = `${explorerUrl}/tx/${data.hash}`;
 				setTxUrl(txUrl);
 			} else {
-				setTxModalOpen(true);
 				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
 				setTxUrl(txUrl);
 				data.waitForOrder(() => {
@@ -765,6 +778,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					});
 				});
 			}
+
+			setSwapState(SWAP_STATES.CONFIRMING_SWAP);
 
 			confirmingTxToastRef.current = toast({
 				title: 'Confirming Transaction',
@@ -854,6 +869,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				});
 				return;
 			}
+
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -1442,7 +1458,18 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 			{window === parent ? <FAQs /> : null}
 
-			<TransactionModal open={txModalOpen} setOpen={setTxModalOpen} link={txUrl} />
+			<SwapModal
+				txUrl={txUrl}
+				isOpen={swapState !== SWAP_STATES.SELECTING_ROUTES}
+				close={() => {
+					setTxUrl('');
+					setSwapState(SWAP_STATES.SELECTING_ROUTES);
+				}}
+				state={swapState}
+				swap={handleSwap}
+				fromToken={finalSelectedFromToken}
+				toToken={finalSelectedToToken}
+			/>
 		</Wrapper>
 	);
 }
