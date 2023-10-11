@@ -72,9 +72,9 @@ export const useBalance = ({
 	const wagmiData = useWagmiBalance({
 		address: address,
 		token: tokenAddress,
-		watch: true,
 		chainId: chainId,
-		enabled: isEnabled
+		enabled: isEnabled,
+		cacheTime: 10_000
 	});
 
 	const queryData = useQuery(
