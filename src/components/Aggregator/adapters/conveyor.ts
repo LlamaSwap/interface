@@ -72,7 +72,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
                 data: resp.tx.data,
                 from: receiver,
                 value: resp.tx.value,
-                gasLimit: BigNumber(1.1).times(estimatedGas).toFixed(0, 1)
+                gasLimit: BigNumber(1.1).times(gas).toFixed(0, 1)
             }
         },
         logo: ''
