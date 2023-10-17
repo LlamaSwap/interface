@@ -3,7 +3,11 @@ export const capitalizeFirstLetter = (word) => word.charAt(0).toUpperCase() + wo
 const ICONS_CDN = 'https://icons.llamao.fi/icons';
 
 export function chainIconUrl(chain) {
-	return `${ICONS_CDN}/agg_icons/${chain.toLowerCase()}?w=24&h=24`;
+	return `${ICONS_CDN}/chains/rsz_${chain.toLowerCase()}?w=48&h=48`;
+}
+
+export function protoclIconUrl(protocol) {
+	return `${ICONS_CDN}/protocols/${protocol}?w=48&h=48`;
 }
 
 export function getSavedTokens() {
@@ -47,9 +51,15 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	// 	return symbol ? `< ${currencySymbol}0.0001` : '< 0.0001'
 	// }
 
-	let maximumFractionDigits = num < 1 ? 7 : 4;
+	let maximumFractionDigits = num < 1 ? 8 : 4;
 	maximumFractionDigits = num > 100000 ? 2 : maximumFractionDigits;
 	formattedNum = num.toLocaleString('en-US', { maximumFractionDigits });
 
 	return String(formattedNum);
+};
+
+export const normalizeTokens = (t0 = '0', t1 = '0') => {
+	if (!t0 || !t1) return null;
+
+	return Number(t0) < Number(t1) ? [t0.toLowerCase(), t1.toLowerCase()] : [t1.toLowerCase(), t0.toLowerCase()];
 };

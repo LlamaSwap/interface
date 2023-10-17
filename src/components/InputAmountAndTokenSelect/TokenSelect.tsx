@@ -1,11 +1,9 @@
 import { ethers } from 'ethers';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure } from '@chakra-ui/react';
-import { QuestionIcon, WarningTwoIcon } from '@chakra-ui/icons';
-import ReactSelect from '../MultiSelect';
-import { Header, IconImage, PairRow } from './Search';
-import { Input } from './TokenInput';
+import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure, Input } from '@chakra-ui/react';
+import { WarningTwoIcon } from '@chakra-ui/icons';
+import { Header, IconImage, PairRow } from '../Aggregator/Search';
 import { useToken } from 'wagmi';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -13,28 +11,37 @@ import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import coingecko from '~/public/coingecko.svg';
 import { allChains } from '../WalletProvider/chains';
+import { ChevronDown } from 'react-feather';
 
 const Row = ({ chain, token, onClick }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
-
+	const isMultichain = token.isMultichain;
 	return (
 		<PairRow
 			key={token.value}
 			data-defaultcursor={token.isGeckoToken ? true : false}
 			onClick={() => !token.isGeckoToken && onClick(token)}
 		>
-			<IconImage
-				src={token.logoURI || '/placeholder.png'}
-				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
-			/>
+			<IconImage src={token.logoURI} onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')} />
 
 			<Text display="flex" flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
-				<Text
-					as="span"
-					whiteSpace="nowrap"
-					textOverflow="ellipsis"
-					overflow="hidden"
-				>{`${token.name} (${token.symbol})`}</Text>
+				<Tooltip
+					label="This token could have been affected by the multichain hack."
+					bg="black"
+					color="white"
+					isDisabled={!isMultichain}
+				>
+					<Text
+						as="span"
+						whiteSpace="nowrap"
+						textOverflow="ellipsis"
+						overflow="hidden"
+						color={isMultichain ? 'orange.200' : 'white'}
+					>
+						{`${token.name} (${token.symbol})`}
+						{token.isMultichain ? <WarningTwoIcon color={'orange.200'} style={{ marginLeft: '0.4em' }} /> : null}
+					</Text>
+				</Tooltip>
 
 				{token.isGeckoToken && (
 					<>
@@ -116,7 +123,8 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			...(data || {}),
 			label: data?.symbol,
 			value: address,
-			chainId: selectedChain?.id
+			chainId: selectedChain?.id,
+			logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`
 		});
 
 		queryClient.invalidateQueries({ queryKey: ['savedTokens', selectedChain?.id] });
@@ -135,7 +143,10 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			borderBottom="1px solid #373944"
 			key={address}
 		>
-			<QuestionIcon height="20px" width="20px" />
+			<IconImage
+				src={`https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`}
+				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+			/>
 
 			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
 				{isLoading
@@ -217,10 +228,16 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 					<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
 						Select Token
 					</Text>
-					<ModalCloseButton bg="none" pos="absolute" top="-4px" right="-8px" onClick={close} />
+					<ModalCloseButton bg="none" pos="absolute" top="-4px" right="-8px" onClick={onClose} />
 				</Header>
 				<div>
-					<Input placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
+					<Input
+						bg="#141619"
+						placeholder="Search... (Symbol or Address)"
+						_focusVisible={{ outline: 'none' }}
+						onChange={onInputChange}
+						autoFocus
+					/>
 				</div>
 				{ethers.utils.isAddress(input) && filteredData.length === 0 ? (
 					<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
@@ -264,7 +281,7 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 	);
 };
 
-const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
+export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const onTokenClick = (token) => {
@@ -274,9 +291,41 @@ const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 
 	return (
 		<>
-			<span style={{ cursor: 'pointer' }} onClick={() => onOpen()}>
-				<ReactSelect openMenuOnClick={false} value={token} isDisabled />
-			</span>
+			<Button
+				display="flex"
+				gap="6px"
+				flexWrap="nowrap"
+				alignItems="center"
+				w="100%"
+				borderRadius="8px"
+				bg="#222429"
+				_hover={{ bg: '#2d3037' }}
+				maxW={{ base: '128px', md: '9rem' }}
+				p="12px"
+				onClick={() => onOpen()}
+			>
+				{token && (
+					<IconImage
+						src={token.logoURI}
+						onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
+					/>
+				)}
+
+				<Tooltip
+					label="This token could have been affected by the multichain hack."
+					bg="black"
+					color="white"
+					isDisabled={!token?.isMultichain}
+				>
+					{token?.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : <></>}
+				</Tooltip>
+
+				<Text as="span" color="white" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis" fontWeight={400}>
+					{token ? token.symbol : 'Select Token'}
+				</Text>
+
+				<ChevronDown size={16} style={{ marginLeft: 'auto' }} />
+			</Button>
 			{isOpen ? (
 				<SelectModal
 					isOpen={isOpen}
@@ -289,5 +338,3 @@ const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 		</>
 	);
 };
-
-export default TokenSelect;

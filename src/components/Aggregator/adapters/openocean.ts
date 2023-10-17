@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
+import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 
 export const chainToId = {
@@ -13,11 +14,30 @@ export const chainToId = {
 	fantom: 250,
 	aurora: 1313161554,
 	heco: 128,
-	harmony: 1666600000,
 	boba: 288,
 	okexchain: 66,
 	cronos: 25,
-	moonriver: 1285
+	moonriver: 1285,
+	//ontology: 58,
+	polygonzkevm: 1101,
+	kava: 2222,
+	metis: 1088,
+	zksync: 324,
+	linea: 59144,
+	base: 8453,
+	//starknet
+	//telos
+	celo: 42220
+	//harmony
+	//tron
+};
+
+// https://docs.openocean.finance/dev/contracts-of-chains#openoceans-current-contract-addresses
+const approvaAddressByChain = {
+	polygonzkevm: '0x6dd434082EAB5Cd134B33719ec1FF05fE985B97b',
+	zksync: '0x36A1aCbbCAfca2468b85011DDD16E7Cb4d673230',
+	linea: '0x6352a56caadC4F1E25CD6c75970Fa768A3304e64',
+	okexchain: '0xc0006Be82337585481044a7d11941c0828FFD2D4'
 };
 
 export const name = 'OpenOcean';
@@ -40,8 +60,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		`https://ethapi.openocean.finance/v2/${
 			chainToId[chain]
 		}/swap?inTokenAddress=${from}&outTokenAddress=${to}&amount=${amount}&gasPrice=${
-			gasPrice.fast?.maxPriorityFeePerGas ?? gasPrice.fast
-		}&slippage=${+slippage * 100 || 100}&account=${
+			gasPrice.fast?.maxFeePerGas ?? gasPrice.fast
+		}&slippage=${+slippage * 100}&account=${
 			userAddress || ethers.constants.AddressZero
 		}&referrer=0x5521c3dfd563d48ca64e132324024470f3498526`
 	).then((r) => r.json());
@@ -49,11 +69,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let gas = data.estimatedGas;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
+	if (chain === 'arbitrum') gas = await applyArbitrumFees(data.to, data.data, gas);
 
 	return {
 		amountReturned: data.outAmount,
 		estimatedGas: gas,
-		tokenApprovalAddress: '0x6352a56caadc4f1e25cd6c75970fa768a3304e64',
+		tokenApprovalAddress: approvaAddressByChain[chain] ?? '0x6352a56caadc4f1e25cd6c75970fa768a3304e64',
 		rawQuote: { ...data, gasLimit: gas },
 		logo: 'https://assets.coingecko.com/coins/images/17014/small/ooe_log.png?1626074195'
 	};

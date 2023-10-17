@@ -6,13 +6,19 @@ import { erc20ABI } from 'wagmi';
 import { IRoute } from '~/queries/useGetRoutes';
 
 const traceRpcs = {
-	ethereum: 'https://eth-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
-	bsc: 'https://bsc-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
-	gnosis: 'https://gnosis-mainnet.blastapi.io/d1a75bd1-573d-4116-9e38-dd6717802929',
+	// https://docs.blastapi.io/blast-documentation/trace-api
+	ethereum: 'https://eth-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	bsc: 'https://bsc-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	gnosis: 'https://gnosis-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	moonbeam: 'https://moonbeam.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	moonriver: 'https://moonriver.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
+	//palm: 'https://palm-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec', // we don't support it
 	polygon: 'https://polygon.llamarpc.com'
 };
 
-export const estimateGas = async ({ route, token, userAddress, chain, amount }) => {
+export const estimateGas = async ({ route, token, userAddress, chain, balance }) => {
+	if (!Number.isFinite(balance) || balance < +route.fromAmount) return null;
+
 	try {
 		const provider = new ethers.providers.JsonRpcProvider(traceRpcs[chain]);
 		const tokenContract = new ethers.Contract(token, erc20ABI, provider);
@@ -24,17 +30,20 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				: {
 						...(await tokenContract.populateTransaction.approve(
 							route.price.tokenApprovalAddress,
-							"0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+							'0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 						)),
 						from: userAddress
 				  };
+			const resetApproveTx = isNative
+				? null
+				: await tokenContract.populateTransaction.approve(route.price.tokenApprovalAddress, ethers.constants.HashZero);
 			const callParams = [
-				[approveTx, tx].filter(Boolean).map((txData) => [
+				[resetApproveTx, approveTx, tx].filter(Boolean).map((txData) => [
 					{
 						from: userAddress,
 						to: txData.to,
 						data: txData.data,
-						...(isNative ? { value: '0x' + BigNumber(amount).toString(16) } : {})
+						...(isNative ? { value: '0x' + BigNumber(route.fromAmount).toString(16) } : {})
 					},
 					['trace']
 				]),
@@ -46,7 +55,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, amount }) 
 				gas: (Number(swapTx.trace[0].result.gasUsed) + 21e3).toString(), // ignores calldata and accesslist costs
 				isFailed: swapTx.trace[0]?.error === 'Reverted',
 				aggGas: route.price?.estimatedGas,
-				name: route.name,
+				name: route.name
 			};
 		} catch (e) {
 			console.log(e);
@@ -64,24 +73,24 @@ export const useEstimateGas = ({
 	token,
 	userAddress,
 	chain,
-	amount,
-	hasEnoughBalance
+	balance,
+	isOutput
 }: {
 	routes: Array<IRoute>;
 	token: string;
 	userAddress: string;
 	chain: string;
-	amount: string;
-	hasEnoughBalance: boolean;
+	balance: number;
+	isOutput: boolean;
 }) => {
 	const res = useQueries({
 		queries: routes
 			.filter((route) => !!route?.tx?.to)
 			.map<UseQueryOptions<Awaited<ReturnType<typeof estimateGas>>>>((route) => {
 				return {
-					queryKey: ['estimateGas', route.name, chain, route?.tx?.data],
-					queryFn: () => estimateGas({ route, token, userAddress, chain, amount }),
-					enabled: traceRpcs[chain] !== undefined && hasEnoughBalance
+					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance],
+					queryFn: () => estimateGas({ route, token, userAddress, chain, balance }),
+					enabled: traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) && !!userAddress // TODO: figure out why it doesn't work
 				};
 			})
 	});

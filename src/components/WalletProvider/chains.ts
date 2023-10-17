@@ -1,11 +1,12 @@
-import { Chain, chain } from 'wagmi';
+import { Chain } from 'wagmi';
 import { chainIconUrl } from '~/utils/index';
+import { rpcsMap as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
 
 const okx = {
 	id: 66,
-	name: 'OKX',
-	network: 'okx',
-	iconUrl: chainIconUrl('okexchain'),
+	name: 'OKTChain',
+	network: 'okexchain',
+	iconUrl: chainIconUrl('oktchain'),
 	iconBackground: '#000',
 	nativeCurrency: {
 		decimals: 18,
@@ -24,7 +25,7 @@ const okx = {
 const binance = {
 	id: 56,
 	name: 'Binance SmartChain',
-	network: 'binance',
+	network: 'bsc',
 	iconUrl: chainIconUrl('binance'),
 	iconBackground: '#000',
 	nativeCurrency: {
@@ -320,7 +321,7 @@ const avax = {
 	id: 43114,
 	name: 'AVAX',
 	network: 'avax',
-	iconUrl: chainIconUrl('avax'),
+	iconUrl: chainIconUrl('avalanche'),
 	iconBackground: '#000',
 	nativeCurrency: {
 		decimals: 18,
@@ -438,25 +439,221 @@ const canto = {
 };
 
 const arbirum = {
-	...chain.arbitrum,
+	id: 42161,
+	name: 'Arbitrum',
+	network: 'arbitrum',
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	blockExplorers: {
+		default: { name: 'arbiscan', url: 'https://arbiscan.io' }
+	},
+	testnet: false,
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/arbitrum'
+		default: 'https://arbitrum-one.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec'
 	},
 	iconUrl: chainIconUrl('arbitrum')
 };
 const ethereum = {
-	...chain.mainnet,
+	id: 1,
+	name: 'Ethereum',
+	network: 'ethereum',
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	blockExplorers: {
+		default: { name: 'etherscan', url: 'https://etherscan.io' }
+	},
+	testnet: false,
 	rpcUrls: {
 		default: 'https://rpc.ankr.com/eth'
 	},
 	iconUrl: chainIconUrl('ethereum')
 };
 const optimism = {
-	...chain.optimism,
+	id: 10,
+	name: 'Optimism',
+	network: 'optimism',
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	blockExplorers: {
+		default: { name: 'etherscan', url: 'https://optimistic.etherscan.io' }
+	},
+	testnet: false,
 	rpcUrls: {
-		default: 'https://optimism-mainnet.public.blastapi.io'
+		default: 'https://optimism.blockpi.network/v1/rpc/public'
 	},
 	iconUrl: chainIconUrl('optimism')
+};
+
+const zksync = {
+	id: 324,
+	name: 'zkSync Era',
+	network: 'zksync',
+	iconUrl: chainIconUrl('zksync era'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	rpcUrls: {
+		default: 'https://mainnet.era.zksync.io'
+	},
+	blockExplorers: {
+		default: { name: 'zkScan', url: 'https://explorer.zksync.io' }
+	},
+	testnet: false
+};
+
+const ontology = {
+	id: 58,
+	name: 'OntologyEVM',
+	network: 'ontology',
+	iconUrl: chainIconUrl('OntologyEVM'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ontology',
+		symbol: 'ONT'
+	},
+	rpcUrls: {
+		default: 'http://dappnode4.ont.io:20339'
+	},
+	blockExplorers: {
+		default: { name: 'Ontology Explorer', url: 'https://explorer.ont.io' }
+	},
+	testnet: false
+};
+
+const polygonZKEvm = {
+	id: 1101,
+	name: 'Polygon zkEVM',
+	network: 'polygonzkevm',
+	iconUrl: chainIconUrl('Polygon zkEVM'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	rpcUrls: {
+		default: 'https://zkevm-rpc.com'
+	},
+	blockExplorers: {
+		default: { name: 'Polygon zkEVM Scan', url: 'https://zkevm.polygonscan.com' }
+	},
+	testnet: false
+};
+
+const kava = {
+	id: 2222,
+	name: 'Kava',
+	network: 'kava',
+	iconUrl: chainIconUrl('Kava'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Kava',
+		symbol: 'KAVA'
+	},
+	rpcUrls: {
+		default: 'https://evm2.kava.io'
+	},
+	blockExplorers: {
+		default: { name: 'Kava Explorer', url: 'https://explorer.kava.io' }
+	},
+	testnet: false
+};
+
+const metis = {
+	id: 1088,
+	name: 'Metis',
+	network: 'metis',
+	iconUrl: chainIconUrl('metis'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Metis',
+		symbol: 'METIS'
+	},
+	rpcUrls: {
+		default: 'https://andromeda.metis.io/?owner=1088'
+	},
+	blockExplorers: {
+		default: { name: 'Metis Explorer', url: 'https://andromeda-explorer.metis.io' }
+	},
+	testnet: false
+};
+
+const pulse = {
+	id: 369,
+	name: 'PulseChain',
+	network: 'pulse',
+	iconUrl: chainIconUrl('Pulse'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Pulse',
+		symbol: 'PLS'
+	},
+	rpcUrls: {
+		default: 'https://rpc.pulsechain.com'
+	},
+	blockExplorers: {
+		default: { name: 'PulseChain Explorer', url: 'https://scan.pulsechain.com' }
+	},
+	testnet: false
+};
+
+const base = {
+	id: 8453,
+	name: 'Base',
+	network: 'base',
+	iconUrl: chainIconUrl('Base'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	rpcUrls: {
+		default: 'https://mainnet.base.org'
+	},
+	blockExplorers: {
+		default: { name: 'BaseScan', url: 'https://basescan.org' }
+	},
+	testnet: false
+};
+
+const linea = {
+	id: 59144,
+	name: 'Linea',
+	network: 'linea',
+	iconUrl: chainIconUrl('Linea'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	rpcUrls: {
+		default: 'https://rpc.linea.build'
+	},
+	blockExplorers: {
+		default: { name: 'LineaScan', url: 'https://lineascan.build' }
+	},
+	testnet: false
 };
 
 interface IChain extends Chain {
@@ -464,15 +661,20 @@ interface IChain extends Chain {
 }
 
 export const allChains: Array<IChain> = [
+	ethereum,
+	arbirum,
 	polygon,
 	binance,
-	oasis,
+	optimism,
+	base,
+	avax,
 	fantom,
-	velas,
-	harmony,
+	zksync,
+	polygonZKEvm,
+	linea,
+	canto,
 	gnosis,
 	klaytn,
-	avax,
 	aurora,
 	cronos,
 	celo,
@@ -482,10 +684,13 @@ export const allChains: Array<IChain> = [
 	okx,
 	bttc,
 	dogechain,
-	optimism,
-	arbirum,
-	ethereum,
 	moonbeam,
 	fuse,
-	canto
-];
+	oasis,
+	ontology,
+	kava,
+	metis,
+	pulse,
+	velas,
+	harmony
+].map((chain) => ({ ...chain, rpcUrls: { ...chain.rpcUrls, ...(rpcsUrlsMap[chain.id] || {}) } }));

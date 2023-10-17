@@ -1,15 +1,25 @@
 import { groupBy, mapValues, uniqBy } from 'lodash';
 import { IToken } from '~/types';
-import { chainIdToName, dexToolsChainMap, geckoChainsMap } from './constants';
-import { nativeTokens } from './nativeTokens';
 import { multiCall } from '@defillama/sdk/build/abi';
 import { ethers } from 'ethers';
+import { nativeTokens } from '~/components/Aggregator/nativeTokens';
+import {
+	chainIdToName,
+	dexToolsChainMap,
+	geckoChainsMap,
+	geckoTerminalChainMap
+} from '~/components/Aggregator/constants';
+import { ownTokenList } from '~/constants/tokenlist';
+import { protoclIconUrl } from '~/utils';
+import multichainListRaw from '../data/multichain/250.json';
 
 const tokensToRemove = {
 	1: {
 		['0xB8c77482e45F1F44dE1745F52C74426C631bDD52'.toLowerCase()]: true
 	}
 };
+
+const FANTOM_ID = 250;
 
 const oneInchChains = {
 	ethereum: 1,
@@ -37,7 +47,28 @@ const fixTotkens = (tokenlist) => {
 	tokenlist[1].find(({ address }) => address.toLowerCase() === '0x6b175474e89094c44da98b954eedeac495271d0f').symbol =
 		'DAI';
 
+	tokenlist[1].find(
+		({ address }) => address.toLowerCase() === '0x249cA82617eC3DfB2589c4c17ab7EC9765350a18'.toLowerCase()
+	).logoURI = protoclIconUrl('verse');
+
 	return tokenlist;
+};
+
+const markMultichain = async (tokens) => {
+	const multichainList = Object.values(multichainListRaw);
+
+	tokens[FANTOM_ID] = tokens[FANTOM_ID].map((token) => {
+		const isMultichain = !!multichainList.find(
+			(multitoken: any) => multitoken.address?.toLowerCase() === token.address.toLowerCase()
+		);
+
+		return {
+			...token,
+			isMultichain
+		};
+	});
+
+	return tokens;
 };
 
 export async function getTokenList() {
@@ -49,15 +80,33 @@ export async function getTokenList() {
 			fetch(`https://tokens.1inch.io/v1.1/${chainId}`).then((r) => r.json())
 		)
 	);
+
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
 
-	const [uniList, sushiList, geckoList, logos, ownList] = await Promise.all([
-		fetch('https://tokens.uniswap.org/').then((r) => r.json()),
-		fetch('https://token-list.sushi.com/').then((r) => r.json()),
+	const [sushiList, geckoList, logos, ownList, zksyncList, quickSwapList, lineaList] = await Promise.all([
+		fetch('https://tokens.sushi.com/v0')
+			.then((r) => r.json())
+			.then((r) =>
+				r.map((token) => ({
+					...token,
+					logoURI: `https://cdn.sushi.com/image/upload/f_auto,c_limit,w_40,q_auto/tokens/${token.chainId}/${token.address}.jpg`
+				}))
+			),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
-		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json').then((res) => res.json()),
+		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json')
+			.then((res) => res.json())
+			.then((r) => r.filter((t) => t.chainId === 7700)),
+		fetch('https://raw.githubusercontent.com/muteio/token-directory/main/zksync.json')
+			.then((res) => res.json())
+			.then((r) => r.filter((t) => t.chainId === 324)),
+		fetch('https://unpkg.com/quickswap-default-token-list@latest/build/quickswap-default.tokenlist.json')
+			.then((res) => res.json())
+			.then((r) => r.tokens.filter((t) => t.chainId === 1101)),
+		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=59144')
+			.then((r) => r.json())
+			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 59144))
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -70,7 +119,19 @@ export async function getTokenList() {
 		.flat();
 
 	const tokensByChain = mapValues(
-		groupBy([...nativeTokens, ...uniList.tokens, ...sushiList.tokens, ...oneInchList, ...ownList], 'chainId'),
+		groupBy(
+			[
+				...nativeTokens,
+				...ownTokenList,
+				...oneInchList,
+				...sushiList,
+				...zksyncList,
+				...quickSwapList,
+				...ownList,
+				...lineaList
+			].filter((t) => t.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
+			'chainId'
+		),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
 	);
 
@@ -82,6 +143,8 @@ export async function getTokenList() {
 
 	tokensFiltered = fixTotkens(tokensFiltered);
 
+	tokensFiltered = await markMultichain(tokensFiltered);
+
 	// get top tokens on each chain
 	const topTokensByChain = await Promise.allSettled(
 		Object.keys(tokensFiltered).map((chain) => getTopTokensByChain(chain))
@@ -90,7 +153,7 @@ export async function getTokenList() {
 	const topTokensByVolume = Object.fromEntries(
 		topTokensByChain
 			.map((chain) => (chain.status === 'fulfilled' ? chain.value : null))
-			.filter((chain) => chain !== null && chain[1].length > 0 && tokensFiltered[chain[0]])
+			.filter((chain) => chain !== null && tokensFiltered[chain[0]])
 	);
 
 	// store unique tokens by chain
@@ -140,15 +203,22 @@ export async function getTokenList() {
 						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 						: null;
 
-				const volume24h =
-					topTokensByVolume[chain]?.find((item) => item['_id']?.token === t.address)?.['volume24h'] ?? 0;
+				const geckoTokenId = topTokensByVolume[chain]?.included?.find(
+					(item) => item.attributes?.address === t.address
+				)?.id;
+
+				const volume24h = Number(
+					topTokensByVolume[chain]?.data?.find((item) => item.attributes.token_value_data[geckoTokenId])?.attributes
+						.to_volume_in_usd ?? 0
+				);
 
 				return {
 					...t,
 					label: t.symbol,
 					value: t.address,
 					geckoId,
-					logoURI: t.logoURI || logos[geckoId] || null,
+					logoURI: t.ownLogoURI || `https://token-icons.llamao.fi/icons/tokens/${t.chainId}/${t.address}?h=20&w=20`,
+					logoURI2: t.logoURI || logos[geckoId] || null,
 					volume24h
 				};
 			})
@@ -175,12 +245,7 @@ export async function getTokenList() {
 		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])];
 	}
 
-	return {
-		props: {
-			tokenlist
-		}
-		//revalidate: 5 * 60 // 5 minutes
-	};
+	return tokenlist;
 }
 
 // use multicall to fetch tokens name, symbol and decimals
@@ -252,16 +317,16 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 
 const getTopTokensByChain = async (chainId) => {
 	try {
-		if (!dexToolsChainMap[chainId]) {
+		if (!geckoTerminalChainMap[chainId]) {
 			throw new Error(`${chainId} not supported by dex tools.`);
 		}
 
 		const res = await fetch(
-			`https://www.dextools.io/shared/analytics/pairs?limit=200&interval=24h&chain=${dexToolsChainMap[chainId]}`
+			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
 		).then((res) => res.json());
 
-		return [chainId, res.data || []];
+		return [chainId, res || {}];
 	} catch (error) {
-		return [chainId, []];
+		return [chainId, {}];
 	}
 };

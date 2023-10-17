@@ -16,8 +16,12 @@ export const chainToId = {
 	aurora: 'aurora',
 	bttc: 'bttc',
 	cronos: 'cronos',
-	oasis: 'oasis',
-	velas: 'velas'
+	zksync: 'zksync',
+	polygonzkevm: 'polygon-zkevm',
+	linea: 'linea',
+	base: 'base'
+	//velas
+	//oasis
 };
 
 export const name = 'KyberSwap';
@@ -38,7 +42,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			chainToId[chain]
 		}/route/encode?tokenIn=${tokenFrom}&tokenOut=${tokenTo}&amountIn=${amount}&to=${
 			extra.userAddress
-		}&saveGas=0&gasInclude=1&slippageTolerance=${+extra.slippage * 100 || 50}&clientData={"source":"DefiLlama"}`,
+		}&saveGas=0&gasInclude=1&slippageTolerance=${+extra.slippage * 100}&clientData={"source":"DefiLlama"}`,
 		{
 			headers: {
 				'Accept-Version': 'Latest'
@@ -55,12 +59,16 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: data.outputAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.routerAddress,
-		rawQuote: { ...data, gasLimit: gas },
+		rawQuote: { ...data, gasLimit: gas, slippage: extra.slippage },
 		logo: 'https://assets.coingecko.com/coins/images/14899/small/RwdVsGcw_400x400.jpg?1618923851'
 	};
 }
 
 export async function swap({ signer, from, rawQuote, chain }) {
+	if (rawQuote.slippage < 0.01) {
+		throw { reason: "Kyberswap doesn't support slippage below 0.01%" };
+	}
+
 	const fromAddress = await signer.getAddress();
 
 	const transactionOption: Record<string, string> = {

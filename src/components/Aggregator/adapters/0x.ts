@@ -11,11 +11,13 @@ export const chainToId = {
 	arbitrum: 'https://arbitrum.api.0x.org/',
 	avax: 'https://avalanche.api.0x.org/',
 	fantom: 'https://fantom.api.0x.org/',
-	celo: 'https://celo.api.0x.org/'
+	celo: 'https://celo.api.0x.org/',
+	base: 'http://base.api.0x.org/'
 };
 
 export const name = 'Matcha/0x';
 export const token = 'ZRX';
+export const isOutputAvailable = true;
 
 export function approvalAddress() {
 	// https://docs.0x.org/0x-api-swap/guides/swap-tokens-with-0x-api
@@ -23,20 +25,22 @@ export function approvalAddress() {
 }
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+const feeCollectorAddress = '0x9Ab6164976514F1178E2BB4219DA8700c9D96E9A';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// amount should include decimals
 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const amountParam =
+		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
+
 	const data = await fetch(
-		`${
-			chainToId[chain]
-		}swap/v1/quote?buyToken=${tokenTo}&sellToken=${tokenFrom}&sellAmount=${amount}&slippagePercentage=${
-			extra.slippage / 100 || 1
+		`${chainToId[chain]}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
+			extra.slippage / 100
 		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
 			extra.userAddress
-		}&skipValidation=true`,
+		}&skipValidation=true&feeRecipientTradeSurplus=${feeCollectorAddress}`,
 		{
 			headers: {
 				'0x-api-key': process.env.OX_API_KEY
@@ -48,6 +52,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	return {
 		amountReturned: data?.buyAmount || 0,
+		amountIn: data?.sellAmount || 0,
 		estimatedGas: gas,
 		tokenApprovalAddress: data.to,
 		rawQuote: { ...data, gasLimit: gas },

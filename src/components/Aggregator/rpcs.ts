@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
+import { mapKeys, mapValues, uniq } from 'lodash';
 
-function createProvider(name: string, defaultRpc: string, chainId: number) {
+function createProvider(name: string, defaultRpc: string, chainId: number, random = false) {
 	if (process.env.HISTORICAL) {
 		if (chainId === 1) {
 			console.log('RPC providers set to historical, only the first RPC provider will be used');
@@ -19,7 +20,7 @@ function createProvider(name: string, defaultRpc: string, chainId: number) {
 					name,
 					chainId
 				}),
-				priority: i
+				priority: random ? 0 : i
 			})),
 			1
 		);
@@ -28,11 +29,15 @@ function createProvider(name: string, defaultRpc: string, chainId: number) {
 
 export const rpcUrls = {
 	1: {
-		default: 'https://rpc.ankr.com/eth',
+		default: 'https://eth.llamarpc.com',
+		ankr: 'https://rpc.ankr.com/eth',
 		pokt: 'https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79',
 		cloudflare: 'https://cloudflare-eth.com',
-		linkpool: 'https://main-light.eth.linkpool.io',
-		mycryptoapi: 'https://api.mycryptoapi.com/eth'
+		//linkpool: 'https://main-light.eth.linkpool.io',
+		flashbots: 'https://rpc.flashbots.net',
+		builder: 'https://rpc.builder0x69.io',
+		publicNode: 'https://ethereum.publicnode.com',
+		blastapi: 'https://eth-mainnet.public.blastapi.io'
 	},
 	56: {
 		default: 'https://bsc-dataseed.binance.org',
@@ -44,7 +49,9 @@ export const rpcUrls = {
 	137: {
 		default: 'https://polygon-rpc.com',
 		llama: 'https://polygon.llamarpc.com',
-		maticvigil: 'https://rpc-mainnet.maticvigil.com'
+		maticvigil: 'https://rpc-mainnet.maticvigil.com',
+		quicknode: 'https://rpc-mainnet.matic.quiknode.pro',
+		ankr: 'https://rpc.ankr.com/polygon'
 	},
 	128: {
 		default: 'https://http-mainnet.hecochain.com'
@@ -52,7 +59,8 @@ export const rpcUrls = {
 	250: {
 		default: 'https://rpc.ankr.com/fantom',
 		ftmtools: 'https://rpc.ftm.tools',
-		fantomnetwork: 'https://rpcapi.fantom.network'
+		fantomnetwork: 'https://rpcapi.fantom.network',
+		fantomnetwork2: 'https://rpc2.fantom.network'
 	},
 	30: {
 		default: 'https://public-node.rsk.co'
@@ -61,12 +69,13 @@ export const rpcUrls = {
 		default: 'https://rpc.tomochain.com'
 	},
 	100: {
-		default: 'https://rpc.ankr.com/gnosis',
-		blockscout: 'https://xdai-archive.blockscout.com'
+		default: 'https://rpc.ankr.com/gnosis'
 	},
 	43114: {
 		default: 'https://api.avax.network/ext/bc/C/rpc',
-		ankr: 'https://rpc.ankr.com/avalanche'
+		ankr: 'https://rpc.ankr.com/avalanche',
+		blockpi: 'https://avalanche.blockpi.network/v1/rpc/public',
+		blastapi: 'https://ava-mainnet.public.blastapi.io/ext/bc/C/rpc'
 	},
 	888: {
 		default: 'https://gwan-ssl.wandevs.org:56891'
@@ -74,7 +83,8 @@ export const rpcUrls = {
 	1666600000: {
 		default: 'https://harmony-0-rpc.gateway.pokt.network',
 		harmony: 'https://api.harmony.one',
-		hmny: 'https://api.s0.t.hmny.io'
+		hmny: 'https://api.s0.t.hmny.io',
+		chainstacklabs: 'https://harmony-mainnet.chainstacklabs.com'
 	},
 	108: {
 		default: 'https://mainnet-rpc.thundercore.com'
@@ -83,10 +93,14 @@ export const rpcUrls = {
 		default: 'https://exchainrpc.okex.org'
 	},
 	10: {
-		default: 'https://opt-mainnet.g.alchemy.com/v2/CMDWPZtTF2IsTOH0TE-8WNm8CTjPWz1H'
+		default: 'https://rpc.ankr.com/optimism',
+		onerpc: 'https://1rpc.io/op',
+		blockpi: 'https://optimism.blockpi.network/v1/rpc/public'
 	},
 	42161: {
-		default: 'https://arb1.arbitrum.io/rpc'
+		default: 'https://rpc.ankr.com/arbitrum',
+		onerpc: 'https://1rpc.io/arb',
+		arb: 'https://arb1.arbitrum.io/rpc'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
@@ -218,10 +232,50 @@ export const rpcUrls = {
 		astar2: 'https://astar.api.onfinality.io/public'
 	},
 	7700: {
-		default: 'https://canto.neobase.one',
-		slingshot: 'https://canto.slingshot.finance',
+		default: 'https://canto.slingshot.finance',
+		neobase: 'https://canto.neobase.one',
+		plexnode: 'https://mainnode.plexnode.org:8545'
+	},
+	324: {
+		default: 'https://mainnet.era.zksync.io'
+	},
+	58: {
+		default: 'http://dappnode4.ont.io:20339',
+		third: 'http://dappnode3.ont.io:20339'
+	},
+	1101: {
+		default: 'https://zkevm-rpc.com'
+	},
+	2222: {
+		default: 'https://evm2.kava.io'
+	},
+	369: {
+		default: 'https://rpc.pulsechain.com'
+	},
+	8453: {
+		default: 'https://mainnet.base.org',
+		second: 'https://1rpc.io/base',
+		third: 'https://base-mainnet.public.blastapi.io'
+	},
+	59144: {
+		default: 'https://rpc.linea.build',
+		second: 'https://linea.blockpi.network/v1/rpc/public'
 	}
 };
+
+export const rpcsMap = Object.entries(rpcUrls).reduce((acc, [chainId, rpcs]) => {
+	const normalizedRpcs = Object.values(rpcs).reduce(
+		(innerAcc, rpc, i) => ({ ...innerAcc, [i === 0 ? 'default' : i]: rpc }),
+		{}
+	);
+	return { ...acc, [chainId]: normalizedRpcs };
+}, {});
+
+export const rpcsKeys = uniq(
+	Object.values(rpcsMap)
+		.map((obj) => Object.keys(obj))
+		.flat()
+);
 
 const getUrls = (chainId: keyof typeof rpcUrls) => Object.values(rpcUrls[chainId]).join(',');
 
@@ -240,7 +294,7 @@ export const providers = {
 	thundercore: createProvider('thundercore', getUrls(108), 108),
 	okexchain: createProvider('okexchain', getUrls(66), 66),
 	optimism: createProvider('optimism', getUrls(10), 10),
-	arbitrum: createProvider('arbitrum', getUrls(42161), 42161),
+	arbitrum: createProvider('arbitrum', getUrls(42161), 42161, true),
 	kcc: createProvider('kcc', getUrls(321), 321),
 	celo: createProvider('celo', getUrls(42220), 42220),
 	iotex: createProvider('iotex', getUrls(4689), 4689),
@@ -282,5 +336,12 @@ export const providers = {
 	moonbeam: createProvider('moonbeam', getUrls(1284), 1284),
 	curio: createProvider('curio', getUrls(836542336838601), 836542336838601),
 	astar: createProvider('astar', getUrls(592), 592),
-	canto: createProvider('canto', getUrls(7700), 7700)
+	canto: createProvider('canto', getUrls(7700), 7700),
+	zksync: createProvider('zksync', getUrls(324), 324),
+	ontology: createProvider('ontology', getUrls(58), 58),
+	polygonzkevm: createProvider('polygonzkevm', getUrls(1101), 1101),
+	kava: createProvider('kava', getUrls(2222), 2222),
+	pulse: createProvider('pulse', getUrls(369), 369),
+	base: createProvider('pulse', getUrls(8453), 8453),
+	linea: createProvider('linea', getUrls(59144), 59144)
 };

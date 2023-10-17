@@ -1,33 +1,20 @@
 import * as React from 'react';
-import { darkTheme, getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { connectorsForWallets, darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import { configureChains, createClient, WagmiConfig, chain } from 'wagmi';
+import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import styled from 'styled-components';
 import { allChains } from './chains';
+import { rpcsKeys } from '../Aggregator/rpcs';
+import { rabbyWallet, injectedWallet, walletConnectWallet, metaMaskWallet } from '@rainbow-me/rainbowkit/wallets';
 
 const { provider, chains } = configureChains(
-	[
-		chain.arbitrum,
-		{
-			...chain.mainnet,
-			rpcUrls: {
-				default: 'https://eth-mainnet.public.blastapi.io'
-			}
-		},
-		{
-			...chain.optimism,
-			rpcUrls: {
-				default: 'https://optimism-mainnet.public.blastapi.io'
-			}
-		},
-		...allChains
-	],
-	[
+	[...allChains],
+	rpcsKeys.map((key) =>
 		jsonRpcProvider({
-			rpc: (chain) => ({ http: chain.rpcUrls.default })
+			rpc: (chain) => ({ http: (chain.rpcUrls[key] as any) || '' })
 		})
-	]
+	)
 );
 
 const Provider = styled.div`
@@ -37,10 +24,18 @@ const Provider = styled.div`
 	}
 `;
 
-const { connectors } = getDefaultWallets({
-	appName: 'DefiLlama',
-	chains
-});
+const projectId = 'b3d4ba9fb97949ab12267b470a6f31d2';
+const connectors = connectorsForWallets([
+	{
+		groupName: 'Recommended',
+		wallets: [
+			injectedWallet({ chains }),
+			metaMaskWallet({ chains, projectId }),
+			walletConnectWallet({ projectId, chains }),
+			rabbyWallet({ chains })
+		]
+	}
+]);
 
 const wagmiClient = createClient({
 	autoConnect: true,

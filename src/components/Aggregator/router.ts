@@ -1,34 +1,8 @@
-import * as matcha from './adapters/0x';
-import * as inch from './adapters/1inch';
-import * as cowswap from './adapters/cowswap';
-import * as firebird from './adapters/firebird';
-import * as kyberswap from './adapters/kyberswap';
-import * as uniswap from './adapters/uniswap';
-
-import * as openocean from './adapters/openocean';
-import * as paraswap from './adapters/paraswap';
-// import * as lifi from './adapters/lifi';
-// import * as rango from './adapters/rango';
-
-// import * as unidex from "./adapters/unidex" - disabled, their api is broken
-// import * as airswap from './adapters/airswap' cors
-// import * as odos from './adapters/odos';
-import * as yieldyak from './adapters/yieldyak';
-import { capitalizeFirstLetter } from '~/utils';
 import { allChains } from '../WalletProvider/chains';
-import { chainNamesReplaced, chainsMap } from './constants';
-// import * as krystal from './adapters/krystal'
+import { chainNamesReplaced } from './constants';
+import { adapters } from './list';
 
-export const adapters = [matcha, inch, cowswap, kyberswap, openocean, yieldyak, paraswap, firebird, uniswap];
-
-export const inifiniteApprovalAllowed = [
-	matcha.name,
-	inch.name,
-	cowswap.name,
-	kyberswap.name,
-	paraswap.name,
-	uniswap.name
-];
+export const adaptersNames = adapters.map(({ name }) => name);
 
 const adaptersMap = adapters.reduce((acc, adapter) => ({ ...acc, [adapter.name]: adapter }), {});
 
@@ -37,15 +11,19 @@ export function getAllChains() {
 	for (const adapter of adapters) {
 		Object.keys(adapter.chainToId).forEach((chain) => chains.add(chain));
 	}
-	const chainsArr = Array.from(chains);
 
-	const chainsOptions = chainsArr.map((c) => ({
-		value: c,
-		label: chainNamesReplaced[c] ?? capitalizeFirstLetter(c),
-		chainId: chainsMap[c],
-		logoURI: allChains.find(({ id }) => id === chainsMap[c])?.iconUrl
-	}));
-
+	const chainsOptions = allChains
+		.map((c) => {
+			const isVisible = chains.has(c.network);
+			if (!isVisible) return null;
+			return {
+				value: c.network,
+				label: chainNamesReplaced[c.network] ?? c.name,
+				chainId: c.id,
+				logoURI: c?.iconUrl
+			};
+		})
+		.filter(Boolean);
 	return chainsOptions;
 }
 
