@@ -15,7 +15,7 @@ const Wrapper = styled.div`
 	}
 `;
 
-const Name = styled(Heading)`
+const Name = styled(Heading as any)`
 	font-size: 26px;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
