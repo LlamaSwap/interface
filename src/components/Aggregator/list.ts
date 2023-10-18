@@ -18,7 +18,19 @@ import * as uniswap from './adapters/uniswap';
 
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird, hashflow, llamazip, kyberswap];
+export const adapters = [
+	matcha,
+	inch,
+	cowswap,
+	openocean,
+	yieldyak,
+	paraswap,
+	firebird,
+	hashflow,
+	llamazip,
+	kyberswap,
+	uniswap
+];
 
 export const inifiniteApprovalAllowed = [
 	matcha.name,

@@ -3,16 +3,31 @@ import { AlphaRouter, SwapOptionsUniversalRouter, SwapType } from '@uniswap/smar
 import JSBI from 'jsbi';
 import { AllowanceData, AllowanceProvider, AllowanceTransfer, PERMIT2_ADDRESS } from '@uniswap/Permit2-sdk';
 import { ethers } from 'ethers';
-import { providers } from '../../rpcs';
 import { sendTx } from '../../utils/sendTx';
 import { applyArbitrumFees } from '../../utils/arbitrumFees';
 import BigNumber from 'bignumber.js';
 import { altReferralAddress } from '../../constants';
+import { rpcUrls } from '../../rpcs';
 
 export const chainToId = {
 	ethereum: ChainId.MAINNET,
 	arbitrum: ChainId.ARBITRUM_ONE,
 	optimism: ChainId.OPTIMISM
+};
+
+const providers = {
+	ethereum: new ethers.providers.JsonRpcProvider(rpcUrls[1].default, {
+		name: 'ethereum',
+		chainId: 1
+	}),
+	arbitrum: new ethers.providers.JsonRpcProvider(rpcUrls[42161].default, {
+		name: 'arbitrum',
+		chainId: 42161
+	}),
+	optimism: new ethers.providers.JsonRpcProvider(rpcUrls[10].default, {
+		name: 'optimism',
+		chainId: 10
+	})
 };
 
 export const name = 'Uniswap';
@@ -106,8 +121,10 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	if (chain === 'arbitrum')
 		gas = route === null ? null : await applyArbitrumFees(routerAddress, route.methodParameters.calldata, gas);
 	if (chain === 'optimism') gas = BigNumber(7).times(gas).toFixed(0, 1);
+
+	const output = +route.trade.outputAmount.toExact() * 10 ** extra.toToken.decimals;
 	return {
-		amountReturned: +route.trade.outputAmount.toExact() * 10 ** extra.toToken.decimals,
+		amountReturned: (output - (output / 1000) * 15).toFixed(0),
 		estimatedGas: gas,
 		signPermitAndSwap: from === ethers.constants.AddressZero ? null : signPermitAndSwap,
 		tokenApprovalAddress: PERMIT2_ADDRESS,
