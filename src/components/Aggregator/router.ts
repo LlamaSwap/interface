@@ -27,21 +27,23 @@ export function getAllChains() {
 	return chainsOptions;
 }
 
-export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
+export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens, route }) {
 	const aggregator = adaptersMap[adapter];
-
 	try {
-		const res = await aggregator.swap({
-			chain,
-			from,
-			to,
-			amount,
-			signer,
-			slippage,
-			rawQuote,
-			tokens
-		});
-		return res;
+		if (route?.price?.signPermitAndSwap) {
+			return await route?.price?.signPermitAndSwap(signer);
+		} else {
+			return await aggregator.swap({
+				chain,
+				from,
+				to,
+				amount,
+				signer,
+				slippage,
+				rawQuote,
+				tokens
+			});
+		}
 	} catch (e) {
 		throw e;
 	}
