@@ -1,7 +1,7 @@
 import { CurrencyAmount, Ether, Percent, Token, TradeType, ChainId } from '@uniswap/sdk-core';
 import { AlphaRouter, SwapOptionsUniversalRouter, SwapType } from '@uniswap/smart-order-router';
 import JSBI from 'jsbi';
-import { AllowanceData, AllowanceProvider, AllowanceTransfer, PERMIT2_ADDRESS } from '@uniswap/Permit2-sdk';
+import { AllowanceData, AllowanceProvider, AllowanceTransfer, PERMIT2_ADDRESS } from '@uniswap/permit2-sdk';
 import { ethers } from 'ethers';
 import { sendTx } from '../../utils/sendTx';
 import { applyArbitrumFees } from '../../utils/arbitrumFees';
