@@ -20,7 +20,6 @@ import {
 	ToastId,
 	Alert,
 	AlertIcon,
-	CircularProgress,
 	useBreakpoint,
 	Popover,
 	PopoverTrigger,
@@ -33,11 +32,11 @@ import { adaptersNames, getAllChains, swap } from './router';
 import { inifiniteApprovalAllowed } from './list';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
-import { REFETCH_INTERVAL, useGetRoutes } from '~/queries/useGetRoutes';
+import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD, WETH } from './constants';
-import Tooltip, { Tooltip2 } from '../Tooltip';
+import Tooltip from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
@@ -57,11 +56,11 @@ import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
-import { useCountdown } from '~/hooks/useCountdown';
 import { Sandwich } from './Sandwich';
-import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon, ArrowForwardIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
+import { RefreshIcon } from '../RefreshIcon';
 
 /*
 Integrated:
@@ -335,12 +334,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const toast = useToast();
 
 	// debounce input amount and limit no of queries made to aggregators api, to avoid CORS errors
-	const [debouncedAmount, debouncedAmountOut] = useDebounce([formatAmount(amount), formatAmount(amountOut)], 300);
+	const debouncedAmountInAndOut = useDebounce(`${formatAmount(amount)}&&${formatAmount(amountOut)}`, 300);
+	const [debouncedAmount, debouncedAmountOut] = debouncedAmountInAndOut.split('&&');
 
 	// get selected chain and tokens from URL query params
 	const routesRef = useRef(null);
 	const router = useRouter();
 	const { fromTokenAddress, toTokenAddress } = useQueryParams();
+
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useSelectedChainAndTokens({
 		tokens: tokenList
 	});
@@ -474,8 +475,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			amountOut: amountOutWithDecimals
 		}
 	});
-
-	const secondsToRefresh = useCountdown(lastFetched + REFETCH_INTERVAL);
 
 	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
 		routes,
@@ -1225,18 +1224,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					{normalizedRoutes?.length ? (
 						<Flex alignItems="center" justifyContent="space-between">
 							<FormHeader> Select a route to perform a swap </FormHeader>
-							<Tooltip2
-								content={`Displayed data will auto-refresh after ${secondsToRefresh} seconds. Click here to update manually`}
-							>
-								<RepeatIcon pos="absolute" w="16px	" h="16px" mt="4px" ml="4px" />
-								<CircularProgress
-									value={100 - (secondsToRefresh / (REFETCH_INTERVAL / 1000)) * 100}
-									color="blue.400"
-									onClick={refetch}
-									size="24px"
-									as="button"
-								/>
-							</Tooltip2>
+
+							<RefreshIcon refetch={refetch} lastFetched={lastFetched} />
 						</Flex>
 					) : !isLoading &&
 					  amount &&
