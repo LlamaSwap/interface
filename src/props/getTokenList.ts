@@ -143,14 +143,10 @@ export async function getTokenList() {
 	tokensFiltered = await markMultichain(tokensFiltered);
 
 	// get top tokens on each chain
-	const topTokensByChain = await Promise.allSettled(
-		Object.keys(tokensFiltered).map((chain) => getTopTokensByChain(chain))
-	);
+	const topTokensByChain = await Promise.all(Object.keys(tokensFiltered).map((chain) => getTopTokensByChain(chain)));
 
 	const topTokensByVolume = Object.fromEntries(
-		topTokensByChain
-			.map((chain) => (chain.status === 'fulfilled' ? chain.value : null))
-			.filter((chain) => chain !== null && tokensFiltered[chain[0]])
+		topTokensByChain.filter((chain) => chain !== null && tokensFiltered[chain[0]])
 	);
 
 	// store unique tokens by chain
@@ -310,10 +306,12 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 	return [chainId, data];
 };
 
+const notAllowedToFail = ['1', '56', '137', '10', '42161', '43114', '100'];
+
 export const getTopTokensByChain = async (chainId) => {
 	try {
 		if (!geckoTerminalChainsMap[chainId]) {
-			throw new Error(`${chainId} not supported by dex tools.`);
+			return [chainId, []];
 		}
 
 		const resData = [];
@@ -343,6 +341,9 @@ export const getTopTokensByChain = async (chainId) => {
 
 		return [chainId, result || []];
 	} catch (error) {
+		if (notAllowedToFail.includes(chainId)) {
+			throw error;
+		}
 		return [chainId, []];
 	}
 };
