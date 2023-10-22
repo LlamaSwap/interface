@@ -3,12 +3,8 @@ import { IToken } from '~/types';
 import { multiCall } from '@defillama/sdk/build/abi';
 import { ethers } from 'ethers';
 import { nativeTokens } from '~/components/Aggregator/nativeTokens';
-import {
-	chainIdToName,
-	dexToolsChainMap,
-	geckoChainsMap,
-	geckoTerminalChainMap
-} from '~/components/Aggregator/constants';
+
+import { chainIdToName, geckoChainsMap, geckoTerminalChainsMap } from '~/components/Aggregator/constants';
 import { ownTokenList } from '~/constants/tokenlist';
 import { protoclIconUrl } from '~/utils';
 import multichainListRaw from '../data/multichain/250.json';
@@ -107,6 +103,7 @@ export async function getTokenList() {
 		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=59144')
 			.then((r) => r.json())
 			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 59144))
+			.catch((e) => [])
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -146,14 +143,10 @@ export async function getTokenList() {
 	tokensFiltered = await markMultichain(tokensFiltered);
 
 	// get top tokens on each chain
-	const topTokensByChain = await Promise.allSettled(
-		Object.keys(tokensFiltered).map((chain) => getTopTokensByChain(chain))
-	);
+	const topTokensByChain = await Promise.all(Object.keys(tokensFiltered).map((chain) => getTopTokensByChain(chain)));
 
 	const topTokensByVolume = Object.fromEntries(
-		topTokensByChain
-			.map((chain) => (chain.status === 'fulfilled' ? chain.value : null))
-			.filter((chain) => chain !== null && tokensFiltered[chain[0]])
+		topTokensByChain.filter((chain) => chain !== null && tokensFiltered[chain[0]])
 	);
 
 	// store unique tokens by chain
@@ -203,14 +196,12 @@ export async function getTokenList() {
 						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 						: null;
 
-				const geckoTokenId = topTokensByVolume[chain]?.included?.find(
-					(item) => item.attributes?.address === t.address
-				)?.id;
+				const token = Array.isArray(topTokensByVolume?.[chain])
+					? topTokensByVolume[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
+					: null;
 
-				const volume24h = Number(
-					topTokensByVolume[chain]?.data?.find((item) => item.attributes.token_value_data[geckoTokenId])?.attributes
-						.to_volume_in_usd ?? 0
-				);
+				const volume24h =
+					Number(token?.attributes?.from_volume_in_usd ?? 0) + Number(token?.attributes?.to_volume_in_usd ?? 0);
 
 				return {
 					...t,
@@ -315,18 +306,44 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 	return [chainId, data];
 };
 
-const getTopTokensByChain = async (chainId) => {
+const notAllowedToFail = ['1', '56', '137', '10', '42161', '43114', '100'];
+
+export const getTopTokensByChain = async (chainId) => {
 	try {
-		if (!geckoTerminalChainMap[chainId]) {
-			throw new Error(`${chainId} not supported by dex tools.`);
+		if (!geckoTerminalChainsMap[chainId]) {
+			return [chainId, []];
 		}
 
-		const res = await fetch(
-			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
+		const resData = [];
+		const resIncluded = [];
+
+		let prevRes = await fetch(
+			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
 		).then((res) => res.json());
 
-		return [chainId, res || {}];
+		for (let i = 0; i < 5; i++) {
+			if (prevRes?.links?.next) {
+				prevRes = await fetch(prevRes?.links?.next).then((r) => r.json());
+				resData.push(...prevRes?.data);
+				resIncluded.push(...prevRes?.included);
+			}
+		}
+
+		const result = resData.map((pool) => {
+			const token0Id = pool?.relationships?.tokens?.data[0]?.id;
+			const token1Id = pool?.relationships?.tokens?.data[1]?.id;
+
+			const token0 = resIncluded?.find((item) => item?.id === token0Id)?.attributes || {};
+			const token1 = resIncluded?.find((item) => item?.id === token1Id)?.attributes || {};
+
+			return { ...pool, token0, token1 };
+		});
+
+		return [chainId, result || []];
 	} catch (error) {
-		return [chainId, {}];
+		if (notAllowedToFail.includes(chainId)) {
+			throw error;
+		}
+		return [chainId, []];
 	}
 };
