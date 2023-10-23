@@ -1,6 +1,6 @@
 import { chunk } from 'lodash';
-import { dexToolsChainMap } from '~/components/Aggregator/constants';
 import { normalizeTokens } from '~/utils';
+import { getTopTokensByChain } from './getTokenList';
 
 const LIQUDITY_THRESHOLD_USD = 1_500_000;
 const PERCENT_SANDWICHED_TRADES = 5;
@@ -11,17 +11,15 @@ export const getSandwichList = async () => {
 			`https://public.api.eigenphi.io/?path=/ethereum/30d/sandwiched_pool&apikey=${process.env.EIGEN_API_KEY}`
 		).then((res) => res.json());
 
-		const { data: top100Pairs = [] } = await fetch(
-			`https://www.dextools.io/shared/analytics/pairs?limit=60&interval=24h&chain=${dexToolsChainMap[1]}`
-		).then((res) => res.json());
+		const [_, topTokens] = await getTopTokensByChain(1);
 
 		const topPairs =
-			top100Pairs
-				?.filter((pair) => pair.pair.metrics.liquidity > LIQUDITY_THRESHOLD_USD)
+			topTokens
+				?.filter((pair) => Number(pair?.attributes?.reserve_in_usd) > LIQUDITY_THRESHOLD_USD)
 				.reduce(
 					(acc, pair) => ({
 						...acc,
-						[normalizeTokens(pair._id.token, pair._id.tokenRef).join('')]: true
+						[normalizeTokens(pair.token0?.address, pair?.token1?.address).join('')]: true
 					}),
 					{}
 				) ?? {};

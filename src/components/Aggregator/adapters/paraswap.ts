@@ -15,7 +15,8 @@ export const chainToId = {
 	arbitrum: 42161,
 	fantom: 250,
 	optimism: 10,
-	polygonzkevm: 1101
+	polygonzkevm: 1101,
+	base: 8453
 };
 
 export const name = 'ParaSwap';
