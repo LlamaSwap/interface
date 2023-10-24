@@ -31,8 +31,8 @@ export const useGetAllowance = (token: `0x${string}`, spender: `0x${string}`, am
 		abi: erc20ABI,
 		functionName: 'allowance',
 		args: [address, spender],
-		watch: true,
-		enabled: isConnected && !!spender && token !== ethers.constants.AddressZero
+		enabled: isConnected && !!spender && token !== ethers.constants.AddressZero,
+		cacheTime: 10_000
 	});
 
 	const shouldRemoveApproval =
