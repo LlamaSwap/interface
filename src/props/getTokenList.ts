@@ -6,7 +6,7 @@ import { nativeTokens } from '~/components/Aggregator/nativeTokens';
 
 import { chainIdToName, geckoChainsMap, geckoTerminalChainsMap } from '~/components/Aggregator/constants';
 import { ownTokenList } from '~/constants/tokenlist';
-import { protoclIconUrl } from '~/utils';
+import { protoclIconUrl, sleep } from '~/utils';
 import multichainListRaw from '../data/multichain/250.json';
 
 const tokensToRemove = {
@@ -323,9 +323,13 @@ export const getTopTokensByChain = async (chainId) => {
 
 		for (let i = 0; i < 5; i++) {
 			if (prevRes?.links?.next) {
-				prevRes = await fetch(prevRes?.links?.next).then((r) => r.json());
-				resData.push(...prevRes?.data);
-				resIncluded.push(...prevRes?.included);
+				prevRes = await fetch(prevRes?.links?.next).then((r) => r.json().catch(() => null));
+				if (prevRes) {
+					resData.push(...prevRes?.data);
+					resIncluded.push(...prevRes?.included);
+				} else {
+					await sleep((i + 1) * 100);
+				}
 			}
 		}
 
