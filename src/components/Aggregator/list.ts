@@ -14,13 +14,35 @@ import * as paraswap from './adapters/paraswap';
 // import * as odos from './adapters/odos';
 import * as yieldyak from './adapters/yieldyak';
 import * as llamazip from './adapters/llamazip';
+import * as uniswap from './adapters/uniswap';
+
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird, hashflow, llamazip, kyberswap];
+export const adapters = [
+	matcha,
+	inch,
+	cowswap,
+	openocean,
+	yieldyak,
+	paraswap,
+	firebird,
+	hashflow,
+	llamazip,
+	kyberswap,
+	uniswap
+];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, kyberswap.name, paraswap.name];
+export const inifiniteApprovalAllowed = [
+	matcha.name,
+	inch.name,
+	cowswap.name,
+	kyberswap.name,
+	paraswap.name,
+	uniswap.name
+];
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
-	[hashflow.name]: true
+	[hashflow.name]: true,
+	[uniswap.name]: true
 };

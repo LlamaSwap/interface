@@ -6,7 +6,7 @@ import { nativeTokens } from '~/components/Aggregator/nativeTokens';
 
 import { chainIdToName, geckoChainsMap, geckoTerminalChainsMap } from '~/components/Aggregator/constants';
 import { ownTokenList } from '~/constants/tokenlist';
-import { protoclIconUrl } from '~/utils';
+import { protoclIconUrl, sleep } from '~/utils';
 import multichainListRaw from '../data/multichain/250.json';
 
 const tokensToRemove = {
@@ -103,7 +103,7 @@ export async function getTokenList() {
 		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=59144')
 			.then((r) => r.json())
 			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 59144))
-			.catch((e) => [])
+			.catch(() => [])
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -323,9 +323,13 @@ export const getTopTokensByChain = async (chainId) => {
 
 		for (let i = 0; i < 5; i++) {
 			if (prevRes?.links?.next) {
-				prevRes = await fetch(prevRes?.links?.next).then((r) => r.json());
-				resData.push(...prevRes?.data);
-				resIncluded.push(...prevRes?.included);
+				prevRes = await fetch(prevRes?.links?.next).then((r) => r.json().catch(() => null));
+				if (prevRes) {
+					resData.push(...prevRes?.data);
+					resIncluded.push(...prevRes?.included);
+				} else {
+					await sleep((i + 1) * 100);
+				}
 			}
 		}
 

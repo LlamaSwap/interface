@@ -63,3 +63,5 @@ export const normalizeTokens = (t0 = '0', t1 = '0') => {
 
 	return Number(t0) < Number(t1) ? [t0.toLowerCase(), t1.toLowerCase()] : [t1.toLowerCase(), t0.toLowerCase()];
 };
+
+export const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));

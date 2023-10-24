@@ -27,11 +27,10 @@ export function getAllChains() {
 	return chainsOptions;
 }
 
-export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
+export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens, route }) {
 	const aggregator = adaptersMap[adapter];
-
 	try {
-		const res = await aggregator.swap({
+		return await aggregator.swap({
 			chain,
 			from,
 			to,
@@ -39,9 +38,9 @@ export async function swap({ chain, from, to, amount, signer, slippage = '1', ad
 			signer,
 			slippage,
 			rawQuote,
-			tokens
+			tokens,
+			route
 		});
-		return res;
 	} catch (e) {
 		throw e;
 	}

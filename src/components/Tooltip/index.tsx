@@ -13,7 +13,7 @@ interface ITooltip {
 	as?: any
 }
 
-const TooltipPopver = styled(AriaTooltip)`
+const TooltipPopver = styled(AriaTooltip as any)`
 	font-size: 0.85rem;
 	padding: 1rem;
 	color: ${({ theme }) => (theme.mode === 'dark' ? 'hsl(0, 0%, 100%)' : 'hsl(204, 10%, 10%)')};
@@ -25,7 +25,7 @@ const TooltipPopver = styled(AriaTooltip)`
 	max-width: 228px;
 `
 
-const TooltipAnchor2 = styled(TooltipAnchor)`
+const TooltipAnchor2 = styled(TooltipAnchor as any)`
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
