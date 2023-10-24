@@ -90,7 +90,11 @@ export const useEstimateGas = ({
 				return {
 					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance],
 					queryFn: () => estimateGas({ route, token, userAddress, chain, balance }),
-					enabled: traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) && !!userAddress // TODO: figure out why it doesn't work
+					enabled:
+						traceRpcs[chain] !== undefined &&
+						(chain === 'polygon' && isOutput ? false : true) &&
+						!!userAddress &&
+						route.name !== 'Uniswap' // Uniswap api runs simulation
 				};
 			})
 	});

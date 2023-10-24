@@ -1,18 +1,13 @@
-import { CurrencyAmount, Ether, Percent, Token, TradeType, ChainId } from '@uniswap/sdk-core';
-import { AlphaRouter, SwapOptionsUniversalRouter, SwapType } from '@uniswap/smart-order-router';
-import JSBI from 'jsbi';
 import { AllowanceData, AllowanceProvider, AllowanceTransfer, PERMIT2_ADDRESS } from '@uniswap/permit2-sdk';
 import { ethers } from 'ethers';
 import { sendTx } from '../../utils/sendTx';
-import { applyArbitrumFees } from '../../utils/arbitrumFees';
-import BigNumber from 'bignumber.js';
-import { altReferralAddress } from '../../constants';
 import { rpcUrls } from '../../rpcs';
+import { redirectQuoteReq } from '../utils';
 
 export const chainToId = {
-	ethereum: ChainId.MAINNET,
-	arbitrum: ChainId.ARBITRUM_ONE,
-	optimism: ChainId.OPTIMISM
+	ethereum: 1,
+	arbitrum: 42161,
+	optimism: 10
 };
 
 const providers = {
@@ -33,44 +28,94 @@ const providers = {
 export const name = 'Uniswap';
 export const token = 'UNI';
 
-export function fromReadableAmount(amount: string, decimals: number): JSBI {
-	const value = ethers.utils.parseUnits(amount, decimals);
+const fetchQuote = async ({ chain, from, to, amount, userAddress, signature = null, permit = null }) => {
+	console.log(
+		signature
+			? {
+					permitSignature: signature,
+					permitAmount: permit.details.amount,
+					permitExpiration: permit.details.expiration,
+					permitSigDeadline: permit.sigDeadline,
+					permitNonce: permit.details.nonce
+			  }
+			: {}
+	);
+	const quote = await fetch('https://api.uniswap.org/v2/quote', {
+		headers: {
+			origin: 'https://app.uniswap.org/'
+		},
+		referrer: 'https://app.uniswap.org/',
+		referrerPolicy: 'strict-origin-when-cross-origin',
+		body: JSON.stringify({
+			tokenInChainId: chainToId[chain],
+			tokenIn: from,
+			tokenOutChainId: chainToId[chain],
+			tokenOut: to,
+			amount,
+			sendPortionEnabled: false,
+			type: 'EXACT_INPUT',
+			configs: [
+				{
+					protocols: ['V2', 'V3', 'MIXED'],
+					enableUniversalRouter: true,
+					routingType: 'CLASSIC',
+					recipient: userAddress,
+					...(signature
+						? {
+								permitSignature: signature,
+								permitAmount: permit.details.amount,
+								permitExpiration: permit.details.expiration,
+								permitSigDeadline: permit.sigDeadline,
+								permitNonce: permit.details.nonce
+						  }
+						: {})
+				}
+			]
+		}),
+		method: 'POST',
+		mode: 'cors',
+		credentials: 'omit'
+	}).then((r) => r.json());
 
-	return JSBI.BigInt(value);
-}
-
-export const uniToken = (address, decimals, chain) => {
-	if (address === ethers.constants.AddressZero) return Ether.onChain(chainToId[chain]);
-	return new Token(chainToId[chain], address, decimals);
+	return quote;
 };
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
-	const fromToken = uniToken(from, extra.fromToken.decimals, chain);
-	const toToken = uniToken(to, extra.toToken.decimals, chain);
-
-	const router = new AlphaRouter({
-		chainId: chainToId[chain],
-		provider: providers[chain]
+	const { quote } = await fetchQuote({
+		chain,
+		from,
+		to,
+		userAddress: extra.userAddress,
+		amount,
+		permit: extra?.permit,
+		signature: extra?.signature
 	});
+	const routerAddress = quote?.methodParameters?.to;
 
-	const options: SwapOptionsUniversalRouter = {
-		recipient: extra.userAddress,
-		slippageTolerance: new Percent(+extra.slippage * 1000, 100000),
-		type: SwapType.UNIVERSAL_ROUTER
+	return {
+		amountReturned: quote?.quote,
+		estimatedGas: quote?.quoteGasAdjustedDecimals,
+		tokenApprovalAddress: PERMIT2_ADDRESS,
+		rawQuote: {
+			tx: {
+				data: quote?.methodParameters?.calldata,
+				value: quote?.methodParameters?.value,
+				to: routerAddress
+			},
+			gasLimit: quote?.gasUseEstimateQuote
+		}
 	};
+}
 
-	const route = await router.route(
-		CurrencyAmount.fromRawAmount(fromToken, fromReadableAmount(extra.amount, extra.fromToken.decimals).toString()),
-		toToken,
-		TradeType.EXACT_INPUT,
-		options
-	);
-
-	const routerAddress = route.methodParameters.to;
+export async function swap({ chain, signer, rawQuote, ...params }) {
+	const fromAddress = await signer.getAddress();
+	const routerAddress = rawQuote?.tx?.to;
+	const { from, to } = params;
+	const amount = params?.route?.fromAmount;
 
 	const signPermitAndSwap = async (provider: ethers.Wallet) => {
 		const allowanceProvider = new AllowanceProvider(providers[chain], PERMIT2_ADDRESS);
-		const allowance: AllowanceData = await allowanceProvider?.getAllowanceData(from, extra.userAddress, routerAddress);
+		const allowance: AllowanceData = await allowanceProvider?.getAllowanceData(from, fromAddress, routerAddress);
 		const deadline = (new Date().getTime() / 1000 + 300).toFixed(0);
 		const permitDetails = {
 			nonce: allowance.nonce,
@@ -94,61 +139,25 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			sigDeadline: deadline,
 			spender: routerAddress
 		};
-		const route = await router.route(
-			CurrencyAmount.fromRawAmount(fromToken, fromReadableAmount(extra.amount, extra.fromToken.decimals).toString()),
-			toToken,
-			TradeType.EXACT_INPUT,
-			{
-				...options,
-				inputTokenPermit: permit,
-				fee: { fee: new Percent(15, 1000), recipient: altReferralAddress }
-			}
-		);
 
-		const rawQuote = {
-			tx: {
-				data: route.methodParameters.calldata,
-				value: route.methodParameters.value,
-				to: routerAddress
-			},
-			gasLimit: gas
-		};
-		const res = await swap({ chain, signer: provider, rawQuote });
+		const quote = await redirectQuoteReq('Uniswap', chain, from, to, amount, { signature, permit });
+
+		const res = await sendTx(signer, chain, {
+			from: fromAddress,
+			...quote?.rawQuote?.tx,
+			...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		});
 
 		return res;
 	};
-	let gas = route.estimatedGasUsed.toString();
-	if (chain === 'arbitrum')
-		gas = route === null ? null : await applyArbitrumFees(routerAddress, route.methodParameters.calldata, gas);
-	if (chain === 'optimism') gas = BigNumber(7).times(gas).toFixed(0, 1);
 
-	const output = +route.trade.outputAmount.toExact() * 10 ** extra.toToken.decimals;
-	return {
-		amountReturned: (output - (output / 1000) * 15).toFixed(0),
-		estimatedGas: gas,
-		signPermitAndSwap: from === ethers.constants.AddressZero ? null : signPermitAndSwap,
-		tokenApprovalAddress: PERMIT2_ADDRESS,
-		rawQuote: {
-			tx: {
-				data: route.methodParameters.calldata,
-				value: route.methodParameters.value,
-				to: routerAddress
-			},
-			gasLimit: gas
-		}
-	};
-}
-
-export async function swap({ chain, signer, rawQuote }) {
-	const fromAddress = await signer.getAddress();
-
-	const tx = await sendTx(signer, chain, {
-		from: fromAddress,
-		...rawQuote.tx,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
-	});
-
-	return tx;
+	return from === ethers.constants.AddressZero
+		? await sendTx(signer, chain, {
+				from: fromAddress,
+				...rawQuote?.tx,
+				...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		  })
+		: await signPermitAndSwap(signer);
 }
 
 export const getTxData = ({ rawQuote }) => rawQuote?.tx?.data;

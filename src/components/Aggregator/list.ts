@@ -43,5 +43,6 @@ export const inifiniteApprovalAllowed = [
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
-	[hashflow.name]: true
+	[hashflow.name]: true,
+	[uniswap.name]: true
 };
