@@ -41,10 +41,10 @@ const SLIPPAGE_ERRORS = [
 
 export const formatErrorToast = (error, isFailed = false) => {
 	const isSlippage = SLIPPAGE_ERRORS.some((text) => error?.reason?.includes(text));
-	let errorMsg = 'Someting went wrong';
+	let errorMsg = 'Something went wrong';
 
 	if (isFailed) errorMsg = 'Transaction Failed';
-	else if (isSlippage) errorMsg = 'Slippage is too low, try again with higher slppage';
+	else if (isSlippage) errorMsg = 'Slippage is too low, try again with higher slippage';
 	else if (error?.reason) errorMsg = error.reason;
 
 	return {
