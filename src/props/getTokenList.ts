@@ -306,7 +306,7 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 	return [chainId, data];
 };
 
-const notAllowedToFail = ['1', '56', '137', '10', '42161', '43114', '100'];
+const notAllowedToFail = ['1', '56', '137', '10', '42161'];
 
 export const getTopTokensByChain = async (chainId) => {
 	try {
