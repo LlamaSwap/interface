@@ -341,9 +341,6 @@ export const getTopTokensByChain = async (chainId) => {
 
 		return [chainId, result || []];
 	} catch (error) {
-		if (notAllowedToFail.includes(chainId)) {
-			throw error;
-		}
 		return [chainId, []];
 	}
 };
