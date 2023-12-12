@@ -679,6 +679,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		if (chainOnWallet && address) {
 			balance?.refetch() ||
 				wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
+			toTokenBalance?.refetch();
 		}
 	};
 
