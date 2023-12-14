@@ -10,8 +10,8 @@ export const chainToId = {
 	bsc: 56,
 	polygon: 137,
 	fantom: 250,
-	// zksync: 324,
-	// base: 8453,
+	zksync: 324,
+	base: 8453,
 	arbitrum: 42161,
 	avax: 43114,
 };
@@ -22,8 +22,8 @@ const approvalAddresses = {
 	bsc: '0x89b8AA89FDd0507a99d334CBe3C808fAFC7d850E',
 	polygon: '0x4E3288c9ca110bCC82bf38F09A7b425c095d92Bf',
 	fantom: '0xD0c22A5435F4E8E5770C1fAFb5374015FC12F7cD',
-	// zksync: '0x4bBa932E9792A2b917D47830C93a9BC79320E4f7',
-	// base: '0x19cEeAd7105607Cd444F5ad10dd51356436095a1',
+	zksync: '0x4bBa932E9792A2b917D47830C93a9BC79320E4f7',
+	base: '0x19cEeAd7105607Cd444F5ad10dd51356436095a1',
 	arbitrum: '0xa669e7A0d4b3e4Fa48af2dE86BD4CD7126Be4e13',
 	avax: '0x88de50B233052e4Fb783d4F6db78Cc34fEa3e9FC',
 };
