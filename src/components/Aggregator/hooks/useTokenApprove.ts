@@ -1,7 +1,9 @@
 import { BigNumber, ethers } from 'ethers';
 import { useState } from 'react';
-import { erc20ABI, useAccount, useContractRead, useContractWrite, useNetwork, usePrepareContractWrite } from 'wagmi';
+import { erc20ABI, useAccount, useContractWrite, useNetwork, usePrepareContractWrite } from 'wagmi';
 import { nativeAddress } from '../constants';
+import { providers } from '../rpcs';
+import { useQuery } from '@tanstack/react-query';
 
 // To change the approve amount you first have to reduce the addresses`
 //  allowance to zero by calling `approve(_spender, 0)` if it is not
@@ -17,23 +19,51 @@ const chainsWithDefaltGasLimit = {
 	arbitrum: true
 };
 
-export const useGetAllowance = (token: `0x${string}`, spender: `0x${string}`, amount: string) => {
-	const { address, isConnected } = useAccount();
+async function getAllowance({
+	token,
+	chain,
+	address,
+	spender
+}: {
+	token?: string;
+	chain: string;
+	address?: `0x${string}`;
+	spender?: `0x${string}`;
+}) {
+	if (!spender || !token || !address || token === ethers.constants.AddressZero) {
+		return null;
+	}
+	try {
+		const provider = providers[chain];
+		const tokenContract = new ethers.Contract(token, erc20ABI, provider);
+		const allowance = await tokenContract.allowance(address, spender);
+		return allowance;
+	} catch (error) {
+		throw new Error(error instanceof Error ? `[Allowance]:${error.message}` : '[Allowance]: Failed to fetch allowance');
+	}
+}
+
+export const useGetAllowance = (token: `0x${string}`, spender: `0x${string}`, amount: string, chain: string) => {
+	const { address } = useAccount();
 
 	const isOld = token ? oldErc.includes(token?.toLowerCase()) : false;
 
 	const {
 		data: allowance,
 		refetch,
-		isRefetching
-	} = useContractRead({
-		address: token,
-		abi: erc20ABI,
-		functionName: 'allowance',
-		args: [address, spender],
-		enabled: isConnected && !!spender && token !== ethers.constants.AddressZero,
-		cacheTime: 10_000
-	});
+		isRefetching,
+		error: errorFetchingAllowance
+	} = useQuery(
+		['token-allowance', address, token, chain, spender],
+		() =>
+			getAllowance({
+				token,
+				chain,
+				address,
+				spender
+			}),
+		{ retry: 2 }
+	);
 
 	const shouldRemoveApproval =
 		isOld &&
@@ -43,7 +73,7 @@ export const useGetAllowance = (token: `0x${string}`, spender: `0x${string}`, am
 		allowance.lt(BigNumber.from(amount)) &&
 		!allowance.eq(0);
 
-	return { allowance, shouldRemoveApproval, refetch, isRefetching };
+	return { allowance, shouldRemoveApproval, refetch, isRefetching, errorFetchingAllowance };
 };
 
 const setOverrides = (func, overrides) => {
@@ -52,7 +82,7 @@ const setOverrides = (func, overrides) => {
 	return () => func({ recklesslySetUnpreparedOverrides: overrides });
 };
 
-export const useTokenApprove = (token: `0x${string}`, spender: `0x${string}`, amount: string) => {
+export const useTokenApprove = (token: `0x${string}`, spender: `0x${string}`, amount: string, chain: string) => {
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
 	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
 	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);
@@ -60,7 +90,12 @@ export const useTokenApprove = (token: `0x${string}`, spender: `0x${string}`, am
 
 	const { address, isConnected } = useAccount();
 
-	const { allowance, shouldRemoveApproval, refetch } = useGetAllowance(token, spender, amount);
+	const { allowance, shouldRemoveApproval, refetch, errorFetchingAllowance } = useGetAllowance(
+		token,
+		spender,
+		amount,
+		chain
+	);
 
 	const normalizedAmount = Number(amount) ? amount : '0';
 
@@ -147,7 +182,7 @@ export const useTokenApprove = (token: `0x${string}`, spender: `0x${string}`, am
 	if (token === ethers.constants.AddressZero || token?.toLowerCase() === nativeAddress.toLowerCase())
 		return { isApproved: true };
 
-	if (!address || !allowance) return { isApproved: false };
+	if (!address || !allowance) return { isApproved: false, errorFetchingAllowance };
 
 	if (allowance.toString() === ethers.constants.MaxUint256.toString()) return { isApproved: true, allowance };
 
