@@ -543,19 +543,19 @@ export function AggregatorContainer() {
 		isConfirmingInfiniteApproval,
 		shouldRemoveApproval,
 		allowance
-	} = useTokenApprove(
-		finalSelectedFromToken?.address as `0x${string}`,
-		chainToId.arbitrum as any,
-		amountToApprove,
-		'arbitrum'
-	);
+	} = useTokenApprove({
+		token: finalSelectedFromToken?.address as `0x${string}`,
+		spender: chainToId.arbitrum as any,
+		amount: amountToApprove,
+		chain: 'arbitrum'
+	});
 
-	const { approve: approveNonInfinite, isLoading: isApproveNonInfiniteLoading } = useTokenApprove(
-		finalSelectedFromToken?.address as `0x${string}`,
-		chainToId.arbitrum as any,
-		amountToInfiniteApprove,
-		'arbitrum'
-	);
+	const { approve: approveNonInfinite, isLoading: isApproveNonInfiniteLoading } = useTokenApprove({
+		token: finalSelectedFromToken?.address as `0x${string}`,
+		spender: chainToId.arbitrum as any,
+		amount: amountToInfiniteApprove,
+		chain: 'arbitrum'
+	});
 
 	useEffect(() => {
 		if (isConnected && chainOnWallet.id !== 42161) {

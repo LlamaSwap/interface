@@ -82,7 +82,17 @@ const setOverrides = (func, overrides) => {
 	return () => func({ recklesslySetUnpreparedOverrides: overrides });
 };
 
-export const useTokenApprove = (token: `0x${string}`, spender: `0x${string}`, amount: string, chain: string) => {
+export const useTokenApprove = ({
+	token,
+	spender,
+	amount,
+	chain
+}: {
+	token: `0x${string}`;
+	spender: `0x${string}`;
+	amount: string;
+	chain: string;
+}) => {
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
 	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
 	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);

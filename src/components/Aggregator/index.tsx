@@ -706,12 +706,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		shouldRemoveApproval,
 		allowance,
 		errorFetchingAllowance
-	} = useTokenApprove(
-		finalSelectedFromToken?.address as `0x${string}`,
-		selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
-		amountToApprove,
-		selectedChain.value
-	);
+	} = useTokenApprove({
+		token: finalSelectedFromToken?.address as `0x${string}`,
+		spender: selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
+		amount: amountToApprove,
+		chain: selectedChain.value
+	});
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
