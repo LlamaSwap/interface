@@ -6,6 +6,7 @@ import * as firebird from './adapters/firebird';
 import * as hashflow from './adapters/hashflow';
 import * as openocean from './adapters/openocean';
 import * as paraswap from './adapters/paraswap';
+import * as conveyor from './adapters/conveyor';
 // import * as lifi from './adapters/lifi';
 // import * as rango from './adapters/rango';
 
@@ -16,9 +17,9 @@ import * as yieldyak from './adapters/yieldyak';
 import * as llamazip from './adapters/llamazip';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird, hashflow, llamazip];
+export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, firebird, hashflow, llamazip, conveyor];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name];
+export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name, conveyor.name];
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
