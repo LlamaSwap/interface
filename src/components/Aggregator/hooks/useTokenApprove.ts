@@ -43,7 +43,17 @@ async function getAllowance({
 	}
 }
 
-export const useGetAllowance = (token: `0x${string}`, spender: `0x${string}`, amount: string, chain: string) => {
+export const useGetAllowance = ({
+	token,
+	spender,
+	amount,
+	chain
+}: {
+	token: `0x${string}`;
+	spender: `0x${string}`;
+	amount: string;
+	chain: string;
+}) => {
 	const { address } = useAccount();
 
 	const isOld = token ? oldErc.includes(token?.toLowerCase()) : false;
@@ -100,12 +110,12 @@ export const useTokenApprove = ({
 
 	const { address, isConnected } = useAccount();
 
-	const { allowance, shouldRemoveApproval, refetch, errorFetchingAllowance } = useGetAllowance(
+	const { allowance, shouldRemoveApproval, refetch, errorFetchingAllowance } = useGetAllowance({
 		token,
 		spender,
 		amount,
 		chain
-	);
+	});
 
 	const normalizedAmount = Number(amount) ? amount : '0';
 
