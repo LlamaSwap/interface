@@ -43,15 +43,15 @@ async function getAllowance({
 	}
 }
 
-export const useGetAllowance = ({
+const useGetAllowance = ({
 	token,
 	spender,
 	amount,
 	chain
 }: {
-	token: `0x${string}`;
-	spender: `0x${string}`;
-	amount: string;
+	token?: `0x${string}`;
+	spender?: `0x${string}`;
+	amount?: string;
 	chain: string;
 }) => {
 	const { address } = useAccount();
@@ -98,9 +98,9 @@ export const useTokenApprove = ({
 	amount,
 	chain
 }: {
-	token: `0x${string}`;
-	spender: `0x${string}`;
-	amount: string;
+	token?: `0x${string}`;
+	spender?: `0x${string}`;
+	amount?: string;
 	chain: string;
 }) => {
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
@@ -117,14 +117,14 @@ export const useTokenApprove = ({
 		chain
 	});
 
-	const normalizedAmount = Number(amount) ? amount : '0';
+	const normalizedAmount = !Number.isNaN(Number(amount)) ? amount : '0';
 
 	const { config, data } = usePrepareContractWrite({
 		address: token,
 		abi: erc20ABI,
 		functionName: 'approve',
 		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
-		enabled: isConnected && !!spender && !!token
+		enabled: isConnected && !!spender && !!token && normalizedAmount !== '0'
 	});
 
 	const customGasLimit =
