@@ -4,12 +4,12 @@ import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
+import { nativeAddress } from '../constants';
 
 export const name = 'Conveyor';
 export const token = null;
 
 const api = 'https://api.conveyor.finance/';
-const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
 export const chainToId = {
 	ethereum: 1,
@@ -21,8 +21,8 @@ export const chainToId = {
 };
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenFrom = from === ethers.constants.AddressZero ? nativeAddress : from;
+	const tokenTo = to === ethers.constants.AddressZero ? nativeAddress : to;
 	const receiver = extra.userAddress || ethers.constants.AddressZero;
 	const tokenApprovalAddress = '0xd5eC61bCa0Af24Ad06BE431585A0920142C98890';
 	let payload = {
