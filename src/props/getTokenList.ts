@@ -93,10 +93,11 @@ export async function getTokenList() {
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
 		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json')
 			.then((res) => res.json())
-			.then((r) => r.filter((t) => t.chainId === 7700)),
-		fetch('https://raw.githubusercontent.com/muteio/token-directory/main/zksync.json')
-			.then((res) => res.json())
-			.then((r) => r.filter((t) => t.chainId === 324)),
+			.then((r) => r.filter((t) => t.chainId === 7700)),		
+		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=324')		
+			.then((r) => r.json())
+			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 324))
+			.catch((e) => []),
 		fetch('https://unpkg.com/quickswap-default-token-list@latest/build/quickswap-default.tokenlist.json')
 			.then((res) => res.json())
 			.then((r) => r.tokens.filter((t) => t.chainId === 1101)),
