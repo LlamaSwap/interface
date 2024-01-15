@@ -128,10 +128,10 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 			[
 				to,
 				fromAddress,
-				rawQuote.quote.sellAmount,
+				BigNumber(rawQuote.quote.sellAmount).plus(rawQuote.quote.feeAmount).toFixed(0),
 				rawQuote.quote.buyAmount,
 				rawQuote.quote.appData,
-				rawQuote.quote.feeAmount,
+				0,
 				rawQuote.quote.validTo,
 				rawQuote.quote.partiallyFillable,
 				rawQuote.id
@@ -144,12 +144,12 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 		const order = {
 			sellToken: rawQuote.quote.sellToken,
 			buyToken: rawQuote.quote.buyToken,
-			sellAmount: rawQuote.quote.sellAmount,
+			sellAmount: BigNumber(rawQuote.quote.sellAmount).plus(rawQuote.quote.feeAmount).toFixed(0),
 			buyAmount: rawQuote.quote.buyAmount,
 			validTo: rawQuote.quote.validTo,
 			appData: rawQuote.quote.appData,
 			receiver: fromAddress,
-			feeAmount: rawQuote.quote.feeAmount,
+			feeAmount: 0,
 			kind: rawQuote.quote.kind,
 			partiallyFillable: rawQuote.quote.partiallyFillable
 		};
