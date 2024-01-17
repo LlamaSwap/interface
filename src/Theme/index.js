@@ -13,8 +13,8 @@ const getStyle = (name, defaultValue) => {
 };
 
 const theme = (mode = 'dark') => {
-	const modeQueryString = getStyle('mode', mode)
-	const isDark = modeQueryString === 'dark'
+	const colorMode = getStyle('mode', mode)
+	const isDark = colorMode === 'dark'
 
 	return ({
 		mode: isDark ? 'dark' : 'light',
