@@ -55,13 +55,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
 	const tokenFrom = isEthflowOrder ? wrappedTokens[chain] : from;
 	const isBuyOrder = extra.amountOut && extra.amountOut !== '0';
-	
+
 	// Ethflow orders are always sell orders.
 	// Source: https://github.com/cowprotocol/ethflowcontract/blob/v1.0.0/src/libraries/EthFlowOrder.sol#L93-L95
 	if (isEthflowOrder && isBuyOrder) {
 		throw new Error('buy orders from Ether are not allowed');
 	}
-	
+
 	// amount should include decimals
 	const data = await fetch(`${chainToId[chain]}/api/v1/quote`, {
 		method: 'POST',
@@ -128,10 +128,10 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 			[
 				to,
 				fromAddress,
-				rawQuote.quote.sellAmount,
+				BigNumber(rawQuote.quote.sellAmount).plus(rawQuote.quote.feeAmount).toFixed(0),
 				rawQuote.quote.buyAmount,
 				rawQuote.quote.appData,
-				rawQuote.quote.feeAmount,
+				0,
 				rawQuote.quote.validTo,
 				rawQuote.quote.partiallyFillable,
 				rawQuote.id
@@ -144,12 +144,12 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 		const order = {
 			sellToken: rawQuote.quote.sellToken,
 			buyToken: rawQuote.quote.buyToken,
-			sellAmount: rawQuote.quote.sellAmount,
+			sellAmount: BigNumber(rawQuote.quote.sellAmount).plus(rawQuote.quote.feeAmount).toFixed(0),
 			buyAmount: rawQuote.quote.buyAmount,
 			validTo: rawQuote.quote.validTo,
 			appData: rawQuote.quote.appData,
 			receiver: fromAddress,
-			feeAmount: rawQuote.quote.feeAmount,
+			feeAmount: 0,
 			kind: rawQuote.quote.kind,
 			partiallyFillable: rawQuote.quote.partiallyFillable
 		};
@@ -167,6 +167,8 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 			method: 'POST',
 			body: JSON.stringify({
 				...rawQuote.quote,
+				sellAmount: order.sellAmount,
+				feeAmount: '0',
 				signature,
 				signingScheme: 'eip712'
 			}),
