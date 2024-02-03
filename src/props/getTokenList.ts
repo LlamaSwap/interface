@@ -157,8 +157,9 @@ export async function getTokenList() {
 			if (!uniqueTokenList[chain]) {
 				uniqueTokenList[chain] = new Set();
 			}
-
-			uniqueTokenList[chain].add(token.address);
+			if (token.address !== '') {
+				uniqueTokenList[chain].add(token.address);
+			}
 		});
 	}
 
@@ -170,7 +171,7 @@ export async function getTokenList() {
 			Object.entries(geckoToken.platforms || {}).forEach(([chain, address]: [string, string]) => {
 				const id = geckoChainsMap[chain];
 
-				if (id && !uniqueTokenList[String(id)]?.has(address.toLowerCase())) {
+				if (id && address !== '' && !uniqueTokenList[String(id)]?.has(address.toLowerCase())) {
 					if (!geckoListByChain[id]) {
 						geckoListByChain[id] = new Set();
 					}
@@ -184,7 +185,9 @@ export async function getTokenList() {
 	// fetch name, symbol, decimals fo coingecko tokens
 	const geckoTokensList = await Promise.allSettled(
 		Object.entries(geckoListByChain)
-			.filter(([chain]) => chain !== '43114')
+			.filter(
+				([chain]) => !['58', '100', '199', '324', '369', '1101', '7700', '8453', '59144', '1666600000'].includes(chain)
+			)
 			.map(([chain, tokens]: [string, Set<string>]) => getTokensData([chain, Array.from(tokens || new Set())]))
 	);
 
@@ -241,6 +244,7 @@ export async function getTokenList() {
 
 // use multicall to fetch tokens name, symbol and decimals
 const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promise<[string, Array<IToken>]> => {
+	console.log('fetching tokens data for ', chainId);
 	const chainName = chainIdToName(chainId);
 
 	if (process.env.NODE_ENV === 'development') {
@@ -302,6 +306,8 @@ const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promis
 			});
 		}
 	});
+
+	console.log('done fetching tokens data for ', chainId);
 
 	return [chainId, data];
 };
