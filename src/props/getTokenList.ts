@@ -245,7 +245,13 @@ export async function getTokenList() {
 // use multicall to fetch tokens name, symbol and decimals
 const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promise<[string, Array<IToken>]> => {
 	console.log('fetching tokens data for ', chainId);
-	const chainName = chainIdToName(chainId);
+	const replacements = {
+		100: 'xdai',
+		199: 'bittorrent',
+		324: 'era',
+		1101: 'polygon_zkevm'
+	};
+	const chainName: string = replacements[chainId] ?? chainIdToName(chainId);
 
 	if (process.env.NODE_ENV === 'development') {
 		return [chainId, []];
