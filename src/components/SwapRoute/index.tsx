@@ -61,13 +61,15 @@ const Route = ({
 	isFetchingGasPrice,
 	amountOut,
 	toTokenPrice,
-	amountIn
+	amountIn,
+	selectedChain
 }: IRoute) => {
-	const { isApproved } = useTokenApprove(
-		fromToken?.address as `0x${string}`,
-		price?.tokenApprovalAddress as `0x${string}`,
-		amountFrom
-	);
+	const { isApproved } = useTokenApprove({
+		token: fromToken?.address as `0x${string}`,
+		spender: price?.tokenApprovalAddress as `0x${string}`,
+		amount: amountFrom,
+		chain: selectedChain
+	});
 
 	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap')) return null;
 
