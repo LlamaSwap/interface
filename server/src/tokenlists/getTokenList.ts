@@ -44,7 +44,7 @@ const fixTotkens = (tokenlist) => {
 	return tokenlist;
 };
 
-const markMultichain = async (tokens) => {
+const markMultichain = (tokens) => {
 	const multichainList = Object.values(multichainListRaw);
 
 	tokens[FANTOM_ID] = tokens[FANTOM_ID].map((token) => {
@@ -57,6 +57,13 @@ const markMultichain = async (tokens) => {
 			isMultichain
 		};
 	});
+	Object.values(tokens).map((tokensOnChain: any[]) =>
+		tokensOnChain.map((token) => {
+			if (token.symbol.startsWith('any')) {
+				token.isMultichain = true;
+			}
+		})
+	);
 
 	return tokens;
 };
@@ -133,7 +140,7 @@ export async function getTokenList() {
 
 	tokensFiltered = fixTotkens(tokensFiltered);
 
-	tokensFiltered = await markMultichain(tokensFiltered);
+	tokensFiltered = markMultichain(tokensFiltered);
 
 	// get top tokens on each chain
 	const topTokensByChain = await Promise.all(Object.keys(tokensFiltered).map((chain) => getTopTokensByChain(chain)));
