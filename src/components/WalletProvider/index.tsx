@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { allChains } from './chains';
 import { rpcsKeys } from '../Aggregator/rpcs';
 import { rabbyWallet, injectedWallet, walletConnectWallet, metaMaskWallet } from '@rainbow-me/rainbowkit/wallets';
+import { useQueryParams } from '~/hooks/useQueryParams';
 
 const { provider, chains } = configureChains(
 	[...allChains],
@@ -44,10 +45,13 @@ const wagmiClient = createClient({
 });
 
 export const WalletWrapper = ({ children }: { children: React.ReactNode }) => {
+	const { chainName } = useQueryParams();
+	const chain = allChains.find((chain) => chain.network === chainName);
+	const chainId = chain?.id ?? allChains[0].id;
 	return (
 		<WagmiConfig client={wagmiClient}>
 			<Provider>
-				<RainbowKitProvider chains={chains} showRecentTransactions={true} theme={darkTheme()}>
+				<RainbowKitProvider initialChain={chainId} chains={chains} showRecentTransactions={true} theme={darkTheme()}>
 					{children}
 				</RainbowKitProvider>
 			</Provider>
