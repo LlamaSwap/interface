@@ -3,7 +3,8 @@ import { ethers } from 'ethers';
 import { nativeTokens } from './nativeTokens';
 import { geckoChainsMap, geckoTerminalChainsMap } from './constants';
 import { ownTokenList } from './ownTokenlist';
-import multichainListRaw from './multichain/250.json';
+import multichainListRawFantom from './multichain/250.json';
+import multichainListRawAll from './multichain/anyswap.json';
 import { getTokensData } from './getTokensData';
 import type { IToken } from './types';
 
@@ -45,21 +46,19 @@ const fixTotkens = (tokenlist) => {
 };
 
 const markMultichain = (tokens) => {
-	const multichainList = Object.values(multichainListRaw);
-
-	tokens[FANTOM_ID] = tokens[FANTOM_ID].map((token) => {
-		const isMultichain = !!multichainList.find(
-			(multitoken: any) => multitoken.address?.toLowerCase() === token.address.toLowerCase()
-		);
-
-		return {
-			...token,
-			isMultichain
-		};
+	const multichainTokens = {};
+	multichainListRawAll.bridgeList.map((multi) => {
+		if (!multichainTokens[multi.chainId]) {
+			multichainTokens[multi.chainId] = {};
+		}
+		multichainTokens[multi.chainId][multi.token?.toLowerCase()] = true;
 	});
-	Object.values(tokens).map((tokensOnChain: any[]) =>
+	Object.values(multichainListRawFantom).map((t) => {
+		multichainTokens[FANTOM_ID][t.address?.toLowerCase()] = true;
+	});
+	Object.entries(tokens).map(([chainId, tokensOnChain]: [string, any[]]) =>
 		tokensOnChain.map((token) => {
-			if (token.symbol.startsWith('any')) {
+			if (token.symbol.startsWith('any') || multichainTokens[chainId]?.[token.address.toLowerCase()] === true) {
 				token.isMultichain = true;
 			}
 		})
