@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { chainIconUrl } from '~/utils/index';
+import { chainIconUrl } from '../../utils/index';
 
 const ethereum = {
 	mcap: Number.MAX_SAFE_INTEGER,
