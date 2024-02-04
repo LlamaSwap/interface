@@ -1,7 +1,7 @@
 import { geckoTerminalChainsMap } from '~/components/Aggregator/constants';
 
 export async function getTokenList() {
-	return fetch(`http://llama-tokenlists.s3-website.eu-central-1.amazonaws.com/tokenlists.json`).then((r) => r.json());
+	return fetch(`https://d3g10bzo9rdluh.cloudfront.net/tokenlists.json`).then((r) => r.json());
 }
 
 export const getTopTokensByChain = async (chainId) => {
