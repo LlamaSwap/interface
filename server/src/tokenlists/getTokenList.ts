@@ -25,7 +25,10 @@ const oneInchChains = {
 	avax: 43114,
 	gnosis: 100,
 	fantom: 250,
-	klaytn: 8217
+	//klaytn: 8217,
+	base: 8453,
+	zksync: 324,
+	aurora: 1313161554
 };
 
 const fixTotkens = (tokenlist) => {
@@ -72,9 +75,14 @@ export async function getTokenList() {
 	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
 
 	const oneInch = await Promise.all(
-		Object.values(oneInchChains).map(async (chainId) =>
-			fetch(`https://tokens.1inch.io/v1.1/${chainId}`).then((r) => r.json())
-		)
+		Object.values(oneInchChains).map(async (chainId) => {
+			for (let i = 0; i < 3; i++) {
+				try {
+					return await fetch(`https://tokens.1inch.io/v1.1/${chainId}`).then((r) => r.json());
+				} catch (e) {}
+			}
+			throw new Error(`Failed fetching 1inch tokens for chain ${chainId}`);
+		})
 	);
 
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
@@ -93,16 +101,15 @@ export async function getTokenList() {
 		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json')
 			.then((res) => res.json())
 			.then((r) => r.filter((t) => t.chainId === 7700)),
-		fetch('https://raw.githubusercontent.com/muteio/token-directory/main/zksync.json')
-			.then((res) => res.json())
-			.then((r) => r.filter((t) => t.chainId === 324)),
-		fetch('https://unpkg.com/quickswap-default-token-list@latest/build/quickswap-default.tokenlist.json')
-			.then((res) => res.json())
-			.then((r) => r.tokens.filter((t) => t.chainId === 1101)),
+		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=324')
+			.then((r) => r.json())
+			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 324)),
+		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=1101')
+			.then((r) => r.json())
+			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 1101)),
 		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=59144')
 			.then((r) => r.json())
 			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 59144))
-			.catch((e) => [])
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
