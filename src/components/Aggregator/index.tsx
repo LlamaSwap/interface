@@ -277,6 +277,7 @@ const SwapWrapper = styled.div`
 
 const SwapUnderRoute = styled(SwapWrapper)`
 	margin-top: 16px;
+	min-height: initial;
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
 		display: none;
 	}
@@ -703,12 +704,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		isConfirmingInfiniteApproval,
 		isConfirmingResetApproval,
 		shouldRemoveApproval,
-		allowance
-	} = useTokenApprove(
-		finalSelectedFromToken?.address as `0x${string}`,
-		selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
-		amountToApprove
-	);
+		allowance,
+		errorFetchingAllowance
+	} = useTokenApprove({
+		token: finalSelectedFromToken?.address as `0x${string}`,
+		spender: selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
+		amount: amountToApprove,
+		chain: selectedChain.value
+	});
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
@@ -1210,6 +1213,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							</>
 						)}
 					</SwapWrapper>
+					{errorFetchingAllowance ? (
+						<Text textAlign={'center'} color="red.500">
+							{errorFetchingAllowance instanceof Error ? errorFetchingAllowance.message : 'Failed to fetch allowance'}
+						</Text>
+					) : null}
 				</Body>
 
 				<Routes ref={routesRef} visible={uiState === STATES.ROUTES}>
@@ -1288,7 +1296,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								toToken={finalSelectedToToken}
 								amountFrom={r?.fromAmount}
 								fromToken={finalSelectedFromToken}
-								selectedChain={selectedChain.label}
+								selectedChain={selectedChain.value}
 								gasTokenPrice={gasTokenPrice}
 								toTokenPrice={toTokenPrice}
 								isFetchingGasPrice={fetchingTokenPrices}
@@ -1405,6 +1413,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 											)}
 										</>
 									)}
+
+									{errorFetchingAllowance ? (
+										<Text textAlign={'center'} color="red.500" width="100%">
+											{errorFetchingAllowance instanceof Error
+												? errorFetchingAllowance.message
+												: 'Failed to fetch allowance'}
+										</Text>
+									) : null}
 								</SwapUnderRoute>
 							)}
 						</Fragment>
