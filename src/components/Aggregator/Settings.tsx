@@ -19,14 +19,17 @@ import {
 } from '@chakra-ui/react';
 import { chunk } from 'lodash';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
+import { getStyle } from '~/Theme';
 
 export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onClose: onExternalClose }) => {
+	const colorMode = getStyle('mode')
 	const [isDegenModeEnabled, setIsDegenModeEnabled] = useLocalStorage('llamaswap-degenmode', false);
 	const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 	const onCloseClick = () => {
 		onExternalClose();
 		onClose();
 	};
+
 	const onClick = (name) => (e) => {
 		const isChecked = e.target.checked;
 
@@ -34,12 +37,18 @@ export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onCl
 			isChecked ? adaptersState.filter((adapterName) => adapterName !== name) : adaptersState.concat(name)
 		);
 	};
+
 	const aggregatorChunks = chunk(adapters, 5);
+
 	return (
 		<>
 			<Modal isOpen={isOpen} onClose={onCloseClick} size={'lg'}>
 				<ModalOverlay />
-				<ModalContent color={'white'} justifyContent={'center'}>
+				<ModalContent
+					bg={colorMode === 'light' ? 'var(--chakra-colors-white)' : undefined}
+					color={colorMode === 'light' ? '#1F1F1F' : 'white'}
+					justifyContent={'center'}
+				>
 					<ModalHeader>Settings</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody>
@@ -48,7 +57,15 @@ export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onCl
 							<Tooltip label="Disable price impact warnings.">
 								<InfoOutlineIcon />
 							</Tooltip>
-							<Switch onChange={() => setIsDegenModeEnabled((mode) => !mode)} isChecked={isDegenModeEnabled} />
+							<Switch
+								onChange={() => setIsDegenModeEnabled((mode) => !mode)}
+								isChecked={isDegenModeEnabled}
+								sx={{
+									'.chakra-switch__track:not([data-checked])': {
+										bg: colorMode === 'light' ? 'var(--chakra-colors-blackAlpha-400)' : undefined
+									}
+								}}
+							/>
 						</HStack>
 						<Heading size={'xs'}>Enabled Aggregators</Heading>
 
