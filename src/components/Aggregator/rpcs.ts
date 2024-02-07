@@ -40,14 +40,14 @@ export const rpcUrls = {
 		blastapi: 'https://eth-mainnet.public.blastapi.io'
 	},
 	56: {
-		default: 'https://bsc-dataseed.binance.org',
+		default: 'https://binance.llamarpc.com',
 		defibit: 'https://bsc-dataseed1.defibit.io',
 		ninicoin: 'https://bsc-dataseed1.ninicoin.io',
 		defibit2: 'https://bsc-dataseed2.defibit.io',
 		ninicoin2: 'https://bsc-dataseed2.ninicoin.io'
 	},
 	137: {
-		default: 'https://polygon-rpc.com',
+		default: 'https://polygon.llamarpc.com',
 		llama: 'https://polygon.llamarpc.com',
 		maticvigil: 'https://rpc-mainnet.maticvigil.com',
 		quicknode: 'https://rpc-mainnet.matic.quiknode.pro',
@@ -93,12 +93,12 @@ export const rpcUrls = {
 		default: 'https://exchainrpc.okex.org'
 	},
 	10: {
-		default: 'https://rpc.ankr.com/optimism',
+		default: 'https://optimism.llamarpc.com',
 		onerpc: 'https://1rpc.io/op',
 		blockpi: 'https://optimism.blockpi.network/v1/rpc/public'
 	},
 	42161: {
-		default: 'https://rpc.ankr.com/arbitrum',
+		default: 'https://arbitrum.llamarpc.com',
 		onerpc: 'https://1rpc.io/arb',
 		arb: 'https://arb1.arbitrum.io/rpc'
 	},
