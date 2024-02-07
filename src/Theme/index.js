@@ -6,7 +6,7 @@ export default function ThemeProvider({ children }) {
 	return <StyledComponentsThemeProvider theme={theme('dark')}>{children}</StyledComponentsThemeProvider>;
 }
 
-const getStyle = (name, defaultValue) => {
+export const getStyle = (name, defaultValue) => {
 	const queryParams = new URLSearchParams(window.location.search);
 
 	return queryParams.get(name) || defaultValue;

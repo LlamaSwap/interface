@@ -61,6 +61,7 @@ import { ArrowBackIcon, ArrowForwardIcon, SettingsIcon } from '@chakra-ui/icons'
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
+import { getStyle } from '~/Theme';
 
 /*
 Integrated:
@@ -931,6 +932,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		pairSandwichData ? <Sandwich sandiwichData={pairSandwichData} key="sandwich" /> : null
 	].filter(Boolean);
 
+	const colorMode = getStyle('mode')
+
 	return (
 		<Wrapper>
 			{isSettingsModalOpen ? (
@@ -970,6 +973,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 											id="privacy-switch"
 											onChange={(e) => setIsPrivacyEnabled(e?.target?.checked)}
 											isChecked={isPrivacyEnabled}
+											sx={{
+												'.chakra-switch__track:not([data-checked])': {
+													bg: colorMode === 'light' ? 'var(--chakra-colors-blackAlpha-400)' : undefined
+												}
+											}}
 										/>
 									</FormControl>
 								</Tooltip>
