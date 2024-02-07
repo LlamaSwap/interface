@@ -218,9 +218,8 @@ const RouteWrapper = styled.div<{ selected?: boolean; best?: boolean }>`
 		background-color: rgb(3 11 23);
 	}
 
-	background-color: ${({ theme, selected }) =>
-		theme.mode === 'dark' ? (selected ? ' #161616;' : '#2d3039;') : selected ? ' #bec1c7;' : ' #dde3f3;'};
-	border: ${({ theme }) => (theme.mode === 'dark' ? '1px solid #373944;' : '1px solid #c6cae0;')};
+	background-color: ${({ selected }) => selected ? ' #161616;' : '#2d3039;'};
+	border: 1px solid #373944;
 	padding: 7px 15px 9px;
 	border-radius: 8px;
 	cursor: pointer;
@@ -243,7 +242,7 @@ const RouteWrapper = styled.div<{ selected?: boolean; best?: boolean }>`
 		transition: opacity 0.2s linear;
 	}
 	&:hover {
-		background-color: ${({ theme }) => (theme.mode === 'dark' ? '#161616;' : '#b7b7b7;;')};
+		background-color: #161616;
 	}
 	&:hover,
 	&.is-selected,

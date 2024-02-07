@@ -133,10 +133,7 @@ const Body = styled.div`
 		top: 24px;
 	}
 
-	box-shadow: ${({ theme }) =>
-		theme.mode === 'dark'
-			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
-			: '10px 0px 50px 10px rgba(211, 211, 211, 0.9);;'};
+	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.9);
 
 	border-radius: 16px;
 	text-align: left;
@@ -190,10 +187,7 @@ const Routes = styled.div<{ visible: boolean }>`
 		margin-bottom: -6px;
 	}
 
-	box-shadow: ${({ theme }) =>
-		theme.mode === 'dark'
-			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
-			: '10px 0px 50px 10px rgba(211, 211, 211, 0.9);'};
+	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.9);
 
 	&::-webkit-scrollbar {
 		display: none;

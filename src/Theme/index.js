@@ -19,31 +19,31 @@ const theme = (mode = 'dark') => {
 	return ({
 		mode: isDark ? 'dark' : 'light',
 
-		text1: isDark ? getStyle('text1', '#FAFAFA') : '#1F1F1F',
-		text2: isDark ? getStyle('text2', '#C3C5CB') : '#565A69',
-		text3: isDark ? getStyle('text3', '#6C7284') : '#888D9B',
-		text4: isDark ? getStyle('text4', '#565A69') : '#C3C5CB',
-		text5: isDark ? getStyle('text5', '#2C2F36') : '#EDEEF2',
+		text1: getStyle('text1', '#FAFAFA'),
+		text2: getStyle('text2', '#C3C5CB'),
+		text3: getStyle('text3', '#6C7284'),
+		text4: getStyle('text4', '#565A69'),
+		text5: getStyle('text5', '#2C2F36'),
 
 		// special case text types
 		white: '#FFFFFF',
 
 		// backgrounds / greys
-		bg1: isDark ? getStyle('bg1', '#212429') : '#FAFAFA',
-		bg2: isDark ? getStyle('bg2', '#2C2F36') : '#F7F8FA',
-		bg3: isDark ? getStyle('bg3', '#40444F') : '#EDEEF2',
-		bg4: isDark ? getStyle('bg4', '#565A69') : '#CED0D9',
-		bg5: isDark ? getStyle('bg5', '#565A69') : '#888D9B',
-		bg6: isDark ? getStyle('bg6', 'rgb(20 22 25)') : '#FFFFFF',
-		bg7: isDark ? getStyle('bg7', 'rgba(7,14,15,0.7)') : 'rgba(252,252,251,1)',
+		bg1: getStyle('bg1', '#212429'),
+		bg2: getStyle('bg2', '#2C2F36'),
+		bg3: getStyle('bg3', '#40444F'),
+		bg4: getStyle('bg4', '#565A69'),
+		bg5: getStyle('bg5', '#565A69'),
+		bg6: getStyle('bg6', 'rgb(20 22 25)'),
+		bg7: getStyle('bg7', 'rgba(7,14,15,0.7)'),
 
 		//specialty colors
-		background: isDark ? getStyle('background', '#22242A') : '#ffffff',
-		advancedBG: isDark ? getStyle('advancedBG', 'rgba(0,0,0,0.1)') : 'rgba(255,255,255,0.4)',
-		divider: isDark ? getStyle('divider', 'rgba(43, 43, 43, 0.435)') : 'rgba(43, 43, 43, 0.035)',
+		background: getStyle('background', '#22242A'),
+		advancedBG: getStyle('advancedBG', 'rgba(0,0,0,0.1)'),
+		divider: getStyle('divider', 'rgba(43, 43, 43, 0.435)'),
 
 		//primary colors
-		primary1: isDark ? getStyle('primary1', '#2172E5') : '#445ed0',
+		primary1: getStyle('primary1', '#2172E5'),
 
 		// other
 		red1: getStyle('red1', '#FF6871'),
@@ -97,6 +97,14 @@ export const GlobalStyle = createGlobalStyle`
       flex-direction: row;
     }
   }
+
+	#__next, .chakra-modal__content-container, .chakra-modal__overlay {
+		filter: ${({ theme }) => (theme.mode === 'light' ? 'invert(1) hue-rotate(180deg)' : undefined)};
+	}
+
+	#__next img, .chakra-modal__content-container img {
+		filter: ${({ theme }) => (theme.mode === 'light' ? 'invert(1) hue-rotate(180deg)' : undefined)};
+	}
 
   a, input, button, textarea, select {
     &:focus-visible {
