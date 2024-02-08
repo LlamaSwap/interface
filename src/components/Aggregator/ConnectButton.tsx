@@ -1,6 +1,7 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import styled from 'styled-components';
 import { HistoryModal } from '../HistoryModal';
+import { Box } from '@chakra-ui/react';
 
 const Wrapper = styled.div`
 	position: absolute;

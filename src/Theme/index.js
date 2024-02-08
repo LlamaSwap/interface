@@ -98,11 +98,15 @@ export const GlobalStyle = createGlobalStyle`
     }
   }
 
-	#__next, .chakra-modal__content-container, .chakra-modal__overlay {
+	#__next,
+	.chakra-modal__overlay,
+	.chakra-modal__content-container {
 		filter: ${({ theme }) => (theme.mode === 'light' ? 'invert(1) hue-rotate(180deg)' : undefined)};
 	}
 
-	#__next img, .chakra-modal__content-container img {
+	#__next img,
+	.chakra-modal__content-container img,
+	button[data-testid=rk-connect-button] {
 		filter: ${({ theme }) => (theme.mode === 'light' ? 'invert(1) hue-rotate(180deg)' : undefined)};
 	}
 

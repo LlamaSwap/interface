@@ -117,7 +117,7 @@ const Route = ({
 								BEST
 							</Text>
 						) : Number.isFinite(lossPercent) ? (
-							<Text as="span" color="red.600" fontSize={12}>
+							<Text as="span" color="red.300" fontSize={12}>
 								-{Math.abs(100 - lossPercent * 100).toFixed(2)}%
 							</Text>
 						) : null}
