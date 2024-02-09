@@ -13,7 +13,7 @@ const traceRpcs = {
 	moonbeam: 'https://moonbeam.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
 	moonriver: 'https://moonriver.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
 	//palm: 'https://palm-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec', // we don't support it
-	polygon: 'https://polygon.llamarpc.com'
+	polygon: 'https://polygon-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec'
 };
 
 export const estimateGas = async ({ route, token, userAddress, chain, balance }) => {
