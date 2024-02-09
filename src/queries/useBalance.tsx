@@ -63,9 +63,10 @@ export const useBalance = ({
 }> => {
 	const { isConnected } = useAccount();
 
-	const tokenAddress = [ethers.constants.AddressZero, nativeAddress.toLowerCase()].includes(token?.toLowerCase())
-		? null
-		: (token as `0x${string}`);
+	const tokenAddress =
+		!token || [ethers.constants.AddressZero, nativeAddress.toLowerCase()].includes(token.toLowerCase())
+			? null
+			: (token as `0x${string}`);
 
 	const isEnabled = chainId && isConnected && token ? true : false;
 
@@ -73,7 +74,7 @@ export const useBalance = ({
 		address: address,
 		token: tokenAddress,
 		chainId: chainId,
-		enabled: isEnabled,
+		enabled: false,
 		cacheTime: 10_000
 	});
 
