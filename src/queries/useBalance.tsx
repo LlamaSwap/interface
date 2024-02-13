@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { ethers } from 'ethers';
 import { getAddress } from 'ethers/lib/utils';
-import { erc20ABI, useAccount, useBalance as useWagmiBalance } from 'wagmi';
+import { erc20ABI, useAccount } from 'wagmi';
 import { nativeAddress } from '~/components/Aggregator/constants';
 import { rpcUrls } from '~/components/Aggregator/rpcs';
 
@@ -37,6 +37,8 @@ export const getBalance = async ({ address, chainId, token }: IGetBalance) => {
 			return null;
 		}
 
+		console.log({ address });
+
 		const urls = Object.values(rpcUrls[chainId] || {});
 
 		if (urls.length === 0) {
@@ -70,32 +72,18 @@ export const useBalance = ({
 
 	const isEnabled = chainId && isConnected && token ? true : false;
 
-	const wagmiData = useWagmiBalance({
-		address: address,
-		token: tokenAddress,
-		chainId: chainId,
-		enabled: false,
-		cacheTime: 10_000
-	});
-
 	const queryData = useQuery(
-		['balance', address, chainId, token, wagmiData.isLoading || wagmiData.data ? false : true],
-		() => getBalance({ address, chainId, token }),
+		['balance', address, chainId, token],
+		() => getBalance({ address, chainId, token: tokenAddress }),
 		{
 			refetchInterval: 10_000,
-			enabled: isEnabled && !wagmiData.isLoading && !wagmiData.data
+			enabled: isEnabled
 		}
 	);
 
 	// when token is undefined/null, wagmi tries fetch users chain token (for ex :ETH) balance, even though is isEnabled is false
 	// so hardcode data to null
-	return (
-		!isEnabled
-			? { isLoading: false, isSuccess: false, data: null }
-			: wagmiData.isLoading || wagmiData.data
-			? wagmiData
-			: queryData
-	) as UseQueryResult<{
+	return (!isEnabled ? { isLoading: false, isSuccess: false, data: null } : queryData) as UseQueryResult<{
 		value: ethers.BigNumber;
 		formatted: string;
 		decimals?: undefined;
