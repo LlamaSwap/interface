@@ -37,8 +37,6 @@ export const getBalance = async ({ address, chainId, token }: IGetBalance) => {
 			return null;
 		}
 
-		console.log({ address });
-
 		const urls = Object.values(rpcUrls[chainId] || {});
 
 		if (urls.length === 0) {
