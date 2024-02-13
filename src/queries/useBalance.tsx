@@ -73,7 +73,8 @@ export const useBalance = ({
 		address: address,
 		token: tokenAddress,
 		chainId: chainId,
-		enabled: isEnabled
+		enabled: isEnabled,
+		cacheTime: 10_000
 	});
 
 	const queryData = useQuery(
