@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { mapKeys, mapValues, uniq } from 'lodash';
+import { uniq } from 'lodash';
 
 function createProvider(name: string, defaultRpc: string, chainId: number, random = false) {
 	if (process.env.HISTORICAL) {
@@ -29,7 +29,7 @@ function createProvider(name: string, defaultRpc: string, chainId: number, rando
 
 export const rpcUrls = {
 	1: {
-		default: 'https://eth.llamarpc.com',
+		default: 'https://rpc.ankr.com/eth',
 		ankr: 'https://rpc.ankr.com/eth',
 		pokt: 'https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79',
 		cloudflare: 'https://cloudflare-eth.com',
@@ -48,7 +48,6 @@ export const rpcUrls = {
 	},
 	137: {
 		default: 'https://polygon-rpc.com',
-		llama: 'https://polygon.llamarpc.com',
 		maticvigil: 'https://rpc-mainnet.maticvigil.com',
 		quicknode: 'https://rpc-mainnet.matic.quiknode.pro',
 		ankr: 'https://rpc.ankr.com/polygon'
