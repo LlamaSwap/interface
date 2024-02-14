@@ -6,7 +6,15 @@ import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import styled from 'styled-components';
 import { allChains } from './chains';
 import { rpcsKeys } from '../Aggregator/rpcs';
-import { rabbyWallet, injectedWallet, walletConnectWallet, metaMaskWallet } from '@rainbow-me/rainbowkit/wallets';
+import {
+	rabbyWallet,
+	injectedWallet,
+	walletConnectWallet,
+	metaMaskWallet,
+	braveWallet,
+	coinbaseWallet,
+	phantomWallet
+} from '@rainbow-me/rainbowkit/wallets';
 
 const { provider, chains } = configureChains(
 	[...allChains],
@@ -27,12 +35,15 @@ const Provider = styled.div`
 const projectId = 'b3d4ba9fb97949ab12267b470a6f31d2';
 const connectors = connectorsForWallets([
 	{
-		groupName: 'Recommended',
+		groupName: 'Popular',
 		wallets: [
 			injectedWallet({ chains }),
-			metaMaskWallet({ chains, projectId }),
+			rabbyWallet({ chains }),
 			walletConnectWallet({ projectId, chains }),
-			rabbyWallet({ chains })
+			metaMaskWallet({ chains, projectId }),
+			coinbaseWallet({ chains, appName: 'LlamaSwap' }),
+			phantomWallet({ chains }),
+			braveWallet({ chains })
 		]
 	}
 ]);
