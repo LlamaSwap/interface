@@ -13,19 +13,7 @@ import {
 	metaMaskWallet,
 	braveWallet,
 	coinbaseWallet,
-	phantomWallet,
-	argentWallet,
-	okxWallet,
-	bitskiWallet,
-	zerionWallet,
-	dawnWallet,
-	imTokenWallet,
-	mewWallet,
-	trustWallet,
-	xdefiWallet,
-	safeWallet,
-	omniWallet,
-	tahoWallet
+	phantomWallet
 } from '@rainbow-me/rainbowkit/wallets';
 
 const { provider, chains } = configureChains(
@@ -50,30 +38,12 @@ const connectors = connectorsForWallets([
 		groupName: 'Popular',
 		wallets: [
 			injectedWallet({ chains }),
-			metaMaskWallet({ chains, projectId }),
+			rabbyWallet({ chains }),
 			walletConnectWallet({ projectId, chains }),
-			rabbyWallet({ chains })
-		]
-	},
-	{
-		groupName: 'Others',
-		wallets: [
-			braveWallet({ chains }),
+			metaMaskWallet({ chains, projectId }),
 			coinbaseWallet({ chains, appName: 'LlamaSwap' }),
 			phantomWallet({ chains }),
-			argentWallet({ chains, projectId }),
-			safeWallet({ chains }),
-			okxWallet({ chains, projectId }),
-			bitskiWallet({ chains }),
-			zerionWallet({ chains, projectId }),
-			dawnWallet({ chains }),
-			imTokenWallet({ chains, projectId }),
-			mewWallet({ chains }),
-			trustWallet({ chains, projectId }),
-			xdefiWallet({ chains }),
-			dawnWallet({ chains }),
-			omniWallet({ chains, projectId }),
-			tahoWallet({ chains })
+			braveWallet({ chains })
 		]
 	}
 ]);
