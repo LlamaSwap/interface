@@ -18,6 +18,16 @@ interface IPrice {
 	gasPriceData?: {};
 }
 
+type DexScreenerTokenPair = {
+	priceUsd: string;
+	baseToken: {
+		address: string;
+	};
+	liquidity: {
+		usd: number;
+	};
+};
+
 function convertChain(chain: string) {
 	if (chain === 'gnosis') return 'xdai';
 	return chain;
@@ -78,8 +88,9 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 			);
 
 			gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
-			fromTokenPrice = fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price;
-			toTokenPrice = toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price;
+			fromTokenPrice =
+				fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || (await getExperimentalPrice(fromToken));
+			toTokenPrice = toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || (await getExperimentalPrice(toToken));
 		}
 
 		return {
@@ -96,6 +107,27 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 		};
 	}
 }
+
+const getExperimentalPrice = async (token: string): Promise<number | undefined> => {
+	try {
+		const expirementalPrices = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`).then((res) =>
+			res.json()
+		);
+
+		let correctPairs = 0;
+		const total = expirementalPrices.pairs.reduce((acc: number, pair: DexScreenerTokenPair) => {
+			if (pair.baseToken.address === token && pair.liquidity.usd > 10000) {
+				correctPairs++;
+				return acc + Number(pair.priceUsd);
+			} else {
+				return acc;
+			}
+		}, 0);
+		return total / correctPairs;
+	} catch (e) {
+		return undefined;
+	}
+};
 
 export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPriceProps) {
 	try {
