@@ -287,6 +287,7 @@ export const providers = {
 	rsk: createProvider('rsk', getUrls(30), 30),
 	tomochain: createProvider('tomochain', getUrls(88), 88),
 	xdai: createProvider('xdai', getUrls(100), 100),
+	gnosis: createProvider('xdai', getUrls(100), 100),
 	avax: createProvider('avax', getUrls(43114), 43114),
 	wan: createProvider('wan', getUrls(888), 888),
 	harmony: createProvider('harmony', getUrls(1666600000), 1666600000),
