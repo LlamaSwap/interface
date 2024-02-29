@@ -39,6 +39,7 @@ const approvaAddressByChain = {
 	linea: '0x6352a56caadC4F1E25CD6c75970Fa768A3304e64',
 	okexchain: '0xc0006Be82337585481044a7d11941c0828FFD2D4'
 };
+const apiUrl = 'https://defillama.openocean.finance/v2';
 
 export const name = 'OpenOcean';
 export const token = 'OOE';
@@ -53,13 +54,9 @@ export function approvalAddress() {
 // returns a AAVE->MPH trade that returns 10.3k MPH, when in reality that trade only gets you 3.8k MPH
 // Replaced API with the one you get from snooping in their frontend, which works fine
 export async function getQuote(chain: string, from: string, to: string, amount: string, { slippage, userAddress }) {
-	const gasPrice = await fetch(`https://ethapi.openocean.finance/v2/${chainToId[chain]}/gas-price`).then((r) =>
-		r.json()
-	);
+	const gasPrice = await fetch(`${apiUrl}/${chainToId[chain]}/gas-price`).then((r) => r.json());
 	const data = await fetch(
-		`https://ethapi.openocean.finance/v2/${
-			chainToId[chain]
-		}/swap?inTokenAddress=${from}&outTokenAddress=${to}&amount=${amount}&gasPrice=${
+		`${apiUrl}/${chainToId[chain]}/swap?inTokenAddress=${from}&outTokenAddress=${to}&amount=${amount}&gasPrice=${
 			gasPrice.fast?.maxFeePerGas ?? gasPrice.fast
 		}&slippage=${+slippage * 100}&account=${
 			userAddress || ethers.constants.AddressZero
