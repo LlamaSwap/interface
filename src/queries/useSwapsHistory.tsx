@@ -10,7 +10,7 @@ const getSwapsHistory = async ({ userId, chain: chainId, tokensUrlMap, tokensSym
 
 	const chainTokensSymbols = tokensSymbolsMap[chainId];
 	const chainTokensUrls = tokensUrlMap[chainId];
-	const history = await fetch(`https://api.llama.fi/getSwapsHistory/?chain=${chain}&userId=${userId}`).then((r) =>
+	const history = await fetch(`https://llamaswap-stats.llama.fi/history?chain=${chain}&userId=${userId}`).then((r) =>
 		r.json()
 	);
 
