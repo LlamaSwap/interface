@@ -2,6 +2,7 @@ import { ArrowForwardIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
+	CircularProgress,
 	HStack,
 	Modal,
 	ModalBody,
@@ -93,6 +94,9 @@ function HistoryModal({ tokensUrlMap, tokensSymbolsMap }) {
 		tokensSymbolsMap,
 		isOpen
 	});
+
+	const hasActiveCowSwaps = history?.some((tx) => !!tx.cancelSwap);
+
 	return (
 		<>
 			<Button
@@ -103,7 +107,7 @@ function HistoryModal({ tokensUrlMap, tokensSymbolsMap }) {
 				colorScheme={'twitter'}
 				display={{ base: 'none', sm: 'none', lg: 'block', md: 'block' }}
 			>
-				History
+				History {hasActiveCowSwaps ? <CircularProgress isIndeterminate color="blue.300" w="20px" ml="2" /> : null}
 			</Button>
 
 			<Modal isOpen={isOpen} onClose={onClose} size="lg">
@@ -123,12 +127,13 @@ function HistoryModal({ tokensUrlMap, tokensSymbolsMap }) {
 								) : (
 									history?.map((tx) =>
 										tx?.route ? (
-											<RouteWrapper key={tx.id} onClick={() => window.open(tx.txUrl)}>
+											<RouteWrapper key={tx.id} onClick={() => (tx?.cancelSwap ? null : window.open(tx.txUrl))}>
 												<VStack>
 													<HStack justifyContent={'space-between'} w="100%">
 														<VStack alignItems={'baseline'}>
 															<div style={{ fontWeight: '500', display: 'flex' }}>
 																<HStack>
+																	{tx?.cancelSwap ? <CircularProgress isIndeterminate size="20px" /> : null}
 																	<img
 																		src={tx.fromIcon}
 																		style={{ borderRadius: '50%', width: '20px', height: '20px' }}
@@ -140,30 +145,41 @@ function HistoryModal({ tokensUrlMap, tokensSymbolsMap }) {
 																		alt="toIcon"
 																	/>
 																</HStack>
-																<div style={{ marginLeft: '8px' }}>
-																	{tx.fromSymbol} <ArrowForwardIcon /> {tx.toSymbol} via {tx.aggregator}
-																</div>
+																<HStack style={{ marginLeft: '8px' }}>
+																	<Text>{tx.fromSymbol}</Text>
+																	<ArrowForwardIcon />{' '}
+																	<Text>
+																		{tx.toSymbol} via {tx.aggregator}
+																	</Text>{' '}
+																</HStack>
 															</div>
 															<Text>{new Date(tx.createdAt).toLocaleDateString()}</Text>
 														</VStack>
-														<VStack>
-															<Text w="100%" textAlign={'end'} color="red.400">
-																-
-																{Number(tx?.amount).toLocaleString('en', {
-																	maximumFractionDigits: 5,
-																	notation: 'compact'
-																})}{' '}
-																{tx.fromSymbol}
-															</Text>
-															<Text w="100%" textAlign={'end'} color="green.400">
-																+
-																{Number(tx?.route?.amount).toLocaleString('en', {
-																	maximumFractionDigits: 5,
-																	notation: 'compact'
-																})}{' '}
-																{tx.toSymbol}
-															</Text>
-														</VStack>
+
+														{tx?.cancelSwap ? (
+															<Button onClick={tx.cancelSwap} colorScheme="orange" size={'sm'}>
+																Cancel Order
+															</Button>
+														) : (
+															<VStack>
+																<Text w="100%" textAlign={'end'} color="red.400">
+																	-
+																	{Number(tx?.amount).toLocaleString('en', {
+																		maximumFractionDigits: 5,
+																		notation: 'compact'
+																	})}{' '}
+																	{tx.fromSymbol}
+																</Text>
+																<Text w="100%" textAlign={'end'} color="green.400">
+																	+
+																	{Number(tx?.route?.amount).toLocaleString('en', {
+																		maximumFractionDigits: 5,
+																		notation: 'compact'
+																	})}{' '}
+																	{tx.toSymbol}
+																</Text>
+															</VStack>
+														)}
 													</HStack>
 												</VStack>
 											</RouteWrapper>

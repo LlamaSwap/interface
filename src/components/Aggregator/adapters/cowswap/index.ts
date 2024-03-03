@@ -1,7 +1,7 @@
 // Source: https://docs.cow.fi/off-chain-services/api
 
 import { ExtraData } from '../../types';
-import { domain, SigningScheme, signOrder, OrderKind } from '@gnosis.pm/gp-v2-contracts';
+import { domain, SigningScheme, signOrder } from '@gnosis.pm/gp-v2-contracts';
 import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainnet/GPv2Settlement.json';
 
 import { ethers } from 'ethers';
@@ -181,6 +181,25 @@ export async function swap({ chain, signer, rawQuote, from, to }) {
 
 		return { id: data, waitForOrder: waitForOrder(data, signer.provider, fromAddress) };
 	}
+}
+
+export async function cancelSwap({ chain, signer, rawQuote, to }) {
+	const fromAddress = await signer.getAddress();
+	const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer);
+
+	const tx = await nativeSwap.invalidateOrder([
+		to,
+		fromAddress,
+		rawQuote.quote.sellAmount,
+		rawQuote.quote.buyAmount,
+		rawQuote.quote.appData,
+		rawQuote.quote.feeAmount,
+		rawQuote.quote.validTo,
+		rawQuote.quote.partiallyFillable,
+		rawQuote.id
+	]);
+
+	return tx;
 }
 
 export const getTxData = () => '';

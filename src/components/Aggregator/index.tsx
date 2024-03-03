@@ -1,6 +1,14 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useAccount, useFeeData, useNetwork, useQueryClient, useSigner, useSwitchNetwork, useToken } from 'wagmi';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+	useAccount,
+	useFeeData,
+	useNetwork,
+	useQueryClient as useWagmiQueryClient,
+	useSigner,
+	useSwitchNetwork,
+	useToken
+} from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
@@ -309,7 +317,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const { openConnectModal } = useConnectModal();
 	const { switchNetwork } = useSwitchNetwork();
 	const addRecentTransaction = useAddRecentTransaction();
-	const wagmiClient = useQueryClient();
+	const wagmiClient = useWagmiQueryClient();
+	const reactQueryClient = useQueryClient();
 
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState(null);
@@ -676,12 +685,15 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '';
 
-	const forceRefreshTokenBalance = () => {
+	const refetchAfterSwap = () => {
 		if (chainOnWallet && address) {
 			balance?.refetch() ||
 				wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
 			toTokenBalance?.refetch();
 		}
+
+		reactQueryClient.refetchQueries(['getSwapsHistory']);
+		reactQueryClient.refetchQueries(['getCowHistory']);
 	};
 
 	// approve/swap tokens
@@ -746,7 +758,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
 				setTxUrl(txUrl);
 				data.waitForOrder(() => {
-					forceRefreshTokenBalance();
+					refetchAfterSwap();
 
 					toast(formatSuccessToast(variables));
 
@@ -784,8 +796,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				.wait?.()
 				?.then((final) => {
 					if (final.status === 1) {
-						forceRefreshTokenBalance();
-
 						if (confirmingTxToastRef.current) {
 							toast.close(confirmingTxToastRef.current);
 						}
@@ -819,7 +829,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							route: variables.route,
 							reportedOutput: Number(variables.amount) || 0,
 							realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
-						})
+						}).then(() => refetchAfterSwap())
 					);
 				});
 		},
