@@ -2,7 +2,7 @@ import { useQueries, UseQueryOptions, UseQueryResult } from '@tanstack/react-que
 import { partial, first, omit } from 'lodash';
 
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
-import { getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
+import { chainsWithOpFees, getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
 import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/list';
 
 interface IGetListRoutesProps {
@@ -89,7 +89,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 		const txData = adapter?.getTxData?.(price) ?? '';
 		let l1Gas: number | 'Unknown' = 0;
 
-		if (chain === 'optimism') {
+		if (chainsWithOpFees.includes(chain)) {
 			l1Gas = await getOptimismFee(txData);
 		}
 

@@ -5,6 +5,9 @@ import { FEE_ABI } from './abi';
 
 const FEE_ADDRESS = '0x420000000000000000000000000000000000000F';
 
+export const chainsWithOpFees = ['optimism', 'base'];
+const chainIdsWithOpFees = [10, 8453];
+
 export const useOptimismFees = (txData, gasTokenPrice) => {
 	const { chain } = useNetwork();
 
@@ -13,7 +16,7 @@ export const useOptimismFees = (txData, gasTokenPrice) => {
 		abi: FEE_ABI,
 		functionName: 'getL1Fee',
 		args: [txData],
-		enabled: chain?.id === 10,
+		enabled: chainIdsWithOpFees.includes(chain?.id),
 		cacheTime: 10_000
 	});
 
