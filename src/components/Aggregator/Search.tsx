@@ -36,10 +36,7 @@ export const ModalWrapper = styled.div`
 	width: 100%;
 	margin: 0 20px;
 	border: 1px solid #2f333c;
-	box-shadow: ${({ theme }) =>
-		theme.mode === 'dark'
-			? '10px 0px 50px 10px rgba(26, 26, 26, 0.9);'
-			: '10px 0px 50px 10px rgba(211, 211, 211, 0.9);;'};
+	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.9);
 	padding: 16px;
 	border-radius: 16px;
 	z-index: 2;
@@ -71,7 +68,7 @@ export const PairRow = styled.div<{ hover?: boolean }>`
 	gap: 8px;
 	padding: 8px 4px;
 	align-items: center;
-	border-bottom: ${({ theme }) => (theme.mode === 'dark' ? '1px solid #373944;' : '2px solid #c6cae0;')};
+	border-bottom: 1px solid #373944;
 
 	cursor: pointer;
 

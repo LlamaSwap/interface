@@ -6,73 +6,78 @@ export default function ThemeProvider({ children }) {
 	return <StyledComponentsThemeProvider theme={theme('dark')}>{children}</StyledComponentsThemeProvider>;
 }
 
-const getStyle = (name, defaultValue) => {
+export const getStyle = (name, defaultValue) => {
 	const queryParams = new URLSearchParams(window.location.search);
 
 	return queryParams.get(name) || defaultValue;
 };
 
-const theme = (darkMode) => ({
-	mode: darkMode ? 'dark' : 'light',
+const theme = (mode = 'dark') => {
+	const colorMode = getStyle('mode', mode)
+	const isDark = colorMode === 'dark'
 
-	text1: darkMode ? getStyle('text1', '#FAFAFA') : '#1F1F1F',
-	text2: darkMode ? getStyle('text2', '#C3C5CB') : '#565A69',
-	text3: darkMode ? getStyle('text3', '#6C7284') : '#888D9B',
-	text4: darkMode ? getStyle('text4', '#565A69') : '#C3C5CB',
-	text5: darkMode ? getStyle('text5', '#2C2F36') : '#EDEEF2',
+	return ({
+		mode: isDark ? 'dark' : 'light',
 
-	// special case text types
-	white: '#FFFFFF',
+		text1: getStyle('text1', '#FAFAFA'),
+		text2: getStyle('text2', '#C3C5CB'),
+		text3: getStyle('text3', '#6C7284'),
+		text4: getStyle('text4', '#565A69'),
+		text5: getStyle('text5', '#2C2F36'),
 
-	// backgrounds / greys
-	bg1: darkMode ? getStyle('bg1', '#212429') : '#FAFAFA',
-	bg2: darkMode ? getStyle('bg2', '#2C2F36') : '#F7F8FA',
-	bg3: darkMode ? getStyle('bg3', '#40444F') : '#EDEEF2',
-	bg4: darkMode ? getStyle('bg4', '#565A69') : '#CED0D9',
-	bg5: darkMode ? getStyle('bg5', '#565A69') : '#888D9B',
-	bg6: darkMode ? getStyle('bg6', 'rgb(20 22 25)') : '#FFFFFF',
-	bg7: darkMode ? getStyle('bg7', 'rgba(7,14,15,0.7)') : 'rgba(252,252,251,1)',
+		// special case text types
+		white: '#FFFFFF',
 
-	//specialty colors
-	background: darkMode ? getStyle('background', '#22242A') : '#ffffff',
-	advancedBG: darkMode ? getStyle('advancedBG', 'rgba(0,0,0,0.1)') : 'rgba(255,255,255,0.4)',
-	divider: darkMode ? getStyle('divider', 'rgba(43, 43, 43, 0.435)') : 'rgba(43, 43, 43, 0.035)',
+		// backgrounds / greys
+		bg1: getStyle('bg1', '#212429'),
+		bg2: getStyle('bg2', '#2C2F36'),
+		bg3: getStyle('bg3', '#40444F'),
+		bg4: getStyle('bg4', '#565A69'),
+		bg5: getStyle('bg5', '#565A69'),
+		bg6: getStyle('bg6', 'rgb(20 22 25)'),
+		bg7: getStyle('bg7', 'rgba(7,14,15,0.7)'),
 
-	//primary colors
-	primary1: darkMode ? getStyle('primary1', '#2172E5') : '#445ed0',
+		//specialty colors
+		background: getStyle('background', '#22242A'),
+		advancedBG: getStyle('advancedBG', 'rgba(0,0,0,0.1)'),
+		divider: getStyle('divider', 'rgba(43, 43, 43, 0.435)'),
 
-	// other
-	red1: getStyle('red1', '#FF6871'),
-	green1: getStyle('green1', '#27AE60'),
-	link: getStyle('link', '#2172E5'),
-	blue: getStyle('blue', '#2f80ed'),
+		//primary colors
+		primary1: getStyle('primary1', '#2172E5'),
 
-	//shadow
-	shadowSm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-	shadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-	shadowMd: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-	shadowLg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+		// other
+		red1: getStyle('red1', '#FF6871'),
+		green1: getStyle('green1', '#27AE60'),
+		link: getStyle('link', '#2172E5'),
+		blue: getStyle('blue', '#2f80ed'),
 
-	// breakpoints
-	bpSm: `${sm}rem`,
-	bpMed: `${med}rem`,
-	bpLg: `${lg}rem`,
-	bpXl: `${xl}rem`,
-	bp2Xl: `${twoXl}rem`,
+		//shadow
+		shadowSm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+		shadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+		shadowMd: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+		shadowLg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
 
-	maxSm: `@media screen and (max-width: ${sm}rem)`,
-	maxMed: `@media screen and (max-width: ${med}rem)`,
-	maxLg: `@media screen and (max-width: ${lg}rem)`,
-	maxXl: `@media screen and (max-width: ${xl}rem)`,
+		// breakpoints
+		bpSm: `${sm}rem`,
+		bpMed: `${med}rem`,
+		bpLg: `${lg}rem`,
+		bpXl: `${xl}rem`,
+		bp2Xl: `${twoXl}rem`,
 
-	minSm: `@media screen and (min-width: ${sm}rem)`,
-	minMed: `@media screen and (min-width: ${med}rem)`,
-	minLg: `@media screen and (min-width: ${lg}rem)`,
-	minXl: `@media screen and (min-width: ${xl}rem)`,
-	min2Xl: `@media screen and (min-width: ${twoXl}rem)`,
+		maxSm: `@media screen and (max-width: ${sm}rem)`,
+		maxMed: `@media screen and (max-width: ${med}rem)`,
+		maxLg: `@media screen and (max-width: ${lg}rem)`,
+		maxXl: `@media screen and (max-width: ${xl}rem)`,
 
-	breakpoints: [`${sm}rem`, `${med}rem`, `${lg}rem`, `${xl}rem`]
-});
+		minSm: `@media screen and (min-width: ${sm}rem)`,
+		minMed: `@media screen and (min-width: ${med}rem)`,
+		minLg: `@media screen and (min-width: ${lg}rem)`,
+		minXl: `@media screen and (min-width: ${xl}rem)`,
+		min2Xl: `@media screen and (min-width: ${twoXl}rem)`,
+
+		breakpoints: [`${sm}rem`, `${med}rem`, `${lg}rem`, `${xl}rem`]
+	})
+}
 
 export const GlobalStyle = createGlobalStyle`
 	body, #__next {
@@ -92,6 +97,18 @@ export const GlobalStyle = createGlobalStyle`
       flex-direction: row;
     }
   }
+
+	#__next,
+	.chakra-modal__overlay,
+	.chakra-modal__content-container {
+		filter: ${({ theme }) => (theme.mode === 'light' ? 'invert(1) hue-rotate(180deg)' : undefined)};
+	}
+
+	#__next img,
+	.chakra-modal__content-container img,
+	button[data-testid=rk-connect-button] {
+		filter: ${({ theme }) => (theme.mode === 'light' ? 'invert(1) hue-rotate(180deg)' : undefined)};
+	}
 
   a, input, button, textarea, select {
     &:focus-visible {

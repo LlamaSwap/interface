@@ -16,12 +16,11 @@ interface ITooltip {
 const TooltipPopver = styled(AriaTooltip)`
 	font-size: 0.85rem;
 	padding: 1rem;
-	color: ${({ theme }) => (theme.mode === 'dark' ? 'hsl(0, 0%, 100%)' : 'hsl(204, 10%, 10%)')};
-	background: ${({ theme }) => (theme.mode === 'dark' ? 'hsl(204, 3%, 12%)' : 'hsl(204, 20%, 100%)')};
-	border: 1px solid ${({ theme }) => (theme.mode === 'dark' ? 'hsl(204, 3%, 32%)' : 'hsl(204, 20%, 88%)')};
+	color: hsl(0, 0%, 100%);
+	background: hsl(204, 3%, 12%);
+	border: 1px solid hsl(204, 3%, 32%);
 	border-radius: 8px;
-	filter: ${({ theme }) =>
-		theme.mode === 'dark' ? 'drop-shadow(0 4px 6px rgba(0, 0, 0, 40%))' : 'drop-shadow(0 4px 6px rgba(0, 0, 0, 15%))'};
+	filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 40%));
 	max-width: 228px;
 `
 
