@@ -592,7 +592,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			.push(
 				{
 					pathname: '/',
-					query: { chain: newChain.value, from: ethers.constants.AddressZero }
+					query: { ...router.query, chain: newChain.value, from: ethers.constants.AddressZero, to: undefined }
 				},
 				undefined,
 				{ shallow: true }
