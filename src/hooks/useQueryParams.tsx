@@ -11,7 +11,7 @@ export function useQueryParams() {
 	const { isConnected } = useAccount();
 	const { chain: chainOnWallet } = useNetwork();
 
-	const { chain: chainOnURL, from: fromToken, to: toToken } = router.query;
+	const { chain: chainOnURL, from: fromToken, to: toToken, ...query } = router.query;
 
 	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
 	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
@@ -26,7 +26,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { chain: chain.value, from: ethers.constants.AddressZero }
+						query: { ...query, chain: chain.value, from: ethers.constants.AddressZero }
 					},
 					undefined,
 					{ shallow: true }
@@ -36,7 +36,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { chain: 'ethereum', from: ethers.constants.AddressZero }
+						query: { ...query, chain: 'ethereum', from: ethers.constants.AddressZero }
 					},
 					undefined,
 					{ shallow: true }
