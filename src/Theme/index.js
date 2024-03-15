@@ -16,40 +16,40 @@ const theme = (mode = 'dark') => {
 	const colorMode = getStyle('mode', mode)
 	const isDark = colorMode === 'dark'
 
-	return ({
+	return {
 		mode: isDark ? 'dark' : 'light',
 
-		text1: getStyle('text1', '#FAFAFA'),
-		text2: getStyle('text2', '#C3C5CB'),
-		text3: getStyle('text3', '#6C7284'),
-		text4: getStyle('text4', '#565A69'),
-		text5: getStyle('text5', '#2C2F36'),
+		text1: '#FAFAFA',
+		text2: '#C3C5CB',
+		text3: '#6C7284',
+		text4: '#565A69',
+		text5: '#2C2F36',
 
 		// special case text types
 		white: '#FFFFFF',
 
 		// backgrounds / greys
-		bg1: getStyle('bg1', '#212429'),
-		bg2: getStyle('bg2', '#2C2F36'),
-		bg3: getStyle('bg3', '#40444F'),
-		bg4: getStyle('bg4', '#565A69'),
-		bg5: getStyle('bg5', '#565A69'),
-		bg6: getStyle('bg6', 'rgb(20 22 25)'),
-		bg7: getStyle('bg7', 'rgba(7,14,15,0.7)'),
+		bg1: '#212429',
+		bg2: '#2C2F36',
+		bg3: '#40444F',
+		bg4: '#565A69',
+		bg5: '#565A69',
+		bg6: 'rgb(20 22 25)',
+		bg7: 'rgba(7,14,15,0.7)',
 
 		//specialty colors
-		background: getStyle('background', '#22242A'),
-		advancedBG: getStyle('advancedBG', 'rgba(0,0,0,0.1)'),
-		divider: getStyle('divider', 'rgba(43, 43, 43, 0.435)'),
+		background: '#22242A',
+		advancedBG: 'rgba(0,0,0,0.1)',
+		divider: 'rgba(43, 43, 43, 0.435)',
 
 		//primary colors
-		primary1: getStyle('primary1', '#2172E5'),
+		primary1: '#2172E5',
 
 		// other
-		red1: getStyle('red1', '#FF6871'),
-		green1: getStyle('green1', '#27AE60'),
-		link: getStyle('link', '#2172E5'),
-		blue: getStyle('blue', '#2f80ed'),
+		red1: '#FF6871',
+		green1: '#27AE60',
+		link: '#2172E5',
+		blue: '#2f80ed',
 
 		//shadow
 		shadowSm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
@@ -76,7 +76,7 @@ const theme = (mode = 'dark') => {
 		min2Xl: `@media screen and (min-width: ${twoXl}rem)`,
 
 		breakpoints: [`${sm}rem`, `${med}rem`, `${lg}rem`, `${xl}rem`]
-	})
+	};
 }
 
 export const GlobalStyle = createGlobalStyle`
