@@ -1,5 +1,6 @@
 import { sendTx } from '../../utils/sendTx';
 
+// https://api.odos.xyz/info/chains
 export const chainToId = {
 	ethereum: 1,
 	arbitrum: 42161,
