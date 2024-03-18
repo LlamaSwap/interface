@@ -25,7 +25,7 @@ export const partner = 'llamaswap';
 export const isOutputAvailable = true;
 
 export function approvalAddress() {
-	return '0x216b4b4ba9f3e719726886d34a177484278bfcae';
+	return '0x00000000FdAC7708D0D360BDDc1bc7d097F47439';
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 export async function getQuote(
@@ -43,12 +43,12 @@ export async function getQuote(
 	const side = amountOut && amountOut !== '0' ? 'BUY' : 'SELL';
 	const finalAmount = side === 'BUY' ? amountOut : amount;
 	const data = await fetch(
-		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${finalAmount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=${side}&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders`
+		`https://api.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${finalAmount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=${side}&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders&version=6`
 	).then((r) => r.json());
 
 	const dataSwap =
 		userAddress !== ethers.constants.AddressZero
-			? await fetch(`https://apiv5.paraswap.io/transactions/${chainToId[chain]}?ignoreChecks=true`, {
+			? await fetch(`https://api.paraswap.io/transactions/${chainToId[chain]}?ignoreChecks=true`, {
 					method: 'POST',
 					body: JSON.stringify({
 						srcToken: data.priceRoute.srcToken,
