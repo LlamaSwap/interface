@@ -16,7 +16,7 @@ import * as yieldyak from './adapters/yieldyak';
 import * as llamazip from './adapters/llamazip';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, openocean, yieldyak, paraswap, hashflow, llamazip, kyberswap];
+export const adapters = [matcha, inch, cowswap, yieldyak, paraswap, hashflow, llamazip, kyberswap];
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name];
 
