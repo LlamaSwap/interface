@@ -1,5 +1,9 @@
 import { ethers } from 'ethers';
-import { chainIconUrl } from '../../utils/index';
+
+const ICONS_CDN = 'https://icons.llamao.fi/icons';
+export function chainIconUrl(chain) {
+	return `${ICONS_CDN}/chains/rsz_${chain.toLowerCase()}?w=48&h=48`;
+}
 
 const ethereum = {
 	mcap: Number.MAX_SAFE_INTEGER,
