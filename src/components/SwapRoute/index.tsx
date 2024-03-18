@@ -142,13 +142,6 @@ const Route = ({
 						) : null}
 					</Flex>
 				)}
-
-				{airdrop ? (
-					<Tooltip content="This project has no token and might airdrop one in the future">
-						<Gift size={14} color="#A0AEC0" />
-					</Tooltip>
-				) : null}
-
 				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
 					<Text
 						display="flex"
@@ -157,6 +150,11 @@ const Route = ({
 						color="gray.400"
 						flexDirection={['column', 'row', 'row', 'row']}
 					>
+						{airdrop ? (
+							<Tooltip content="This project has no token and might airdrop one in the future">
+								<Gift size={14} color="#A0AEC0" />
+							</Tooltip>
+						) : null}
 						{name === 'CowSwap' ? (
 							<Tooltip content="Gas is taken from output amount">
 								<Text as="span" display="flex" alignItems="center" gap="4px" color="gray.400" fontWeight={500}>
