@@ -1,5 +1,5 @@
 import { chunk } from 'lodash';
-import { normalizeTokens } from '~/utils';
+import { normalizeTokens } from './utils';
 import { getTopTokensByChain } from './getTokenList';
 
 const LIQUDITY_THRESHOLD_USD = 1_500_000;
@@ -29,13 +29,23 @@ export const getSandwichList = async () => {
 			30
 		);
 		const pairsData = (
-			await Promise.allSettled(
-				poolAddresses.map(
-					async (pools) =>
-						await fetch(`https://api.dexscreener.com/latest/dex/pairs/ethereum/${pools.join(',')}`).then((r) =>
-							r.json()
-						)
-				)
+			await Promise.all(
+				poolAddresses.map(async (pools) => {
+					try {
+						const value = await fetch(`https://api.dexscreener.com/latest/dex/pairs/ethereum/${pools.join(',')}`).then(
+							(r) => r.json()
+						);
+						return {
+							value,
+							status: 'fulfilled'
+						};
+					} catch (e) {
+						return {
+							value: null,
+							status: 'failed'
+						};
+					}
+				})
 			)
 		)
 			.filter(({ status }) => status === 'fulfilled')
