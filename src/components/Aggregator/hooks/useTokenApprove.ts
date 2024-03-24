@@ -1,6 +1,12 @@
 import { BigNumber, ethers } from 'ethers';
-import { useState } from 'react';
-import { erc20ABI, useAccount, useContractWrite, useNetwork, usePrepareContractWrite } from 'wagmi';
+import {
+	erc20ABI,
+	useAccount,
+	useContractWrite,
+	useNetwork,
+	usePrepareContractWrite,
+	useWaitForTransaction
+} from 'wagmi';
 import { nativeAddress } from '../constants';
 import { providers } from '../rpcs';
 import { useQuery } from '@tanstack/react-query';
@@ -23,13 +29,17 @@ async function getAllowance({
 	token,
 	chain,
 	address,
-	spender
+	spender,
+	reset
 }: {
 	token?: string;
 	chain: string;
 	address?: `0x${string}`;
 	spender?: `0x${string}`;
+	reset: () => void;
 }) {
+	reset();
+
 	if (!spender || !token || !address || token === ethers.constants.AddressZero) {
 		return null;
 	}
@@ -47,12 +57,14 @@ const useGetAllowance = ({
 	token,
 	spender,
 	amount,
-	chain
+	chain,
+	reset
 }: {
 	token?: `0x${string}`;
 	spender?: `0x${string}`;
 	amount?: string;
 	chain: string;
+	reset: () => void;
 }) => {
 	const { address } = useAccount();
 
@@ -61,6 +73,7 @@ const useGetAllowance = ({
 	const {
 		data: allowance,
 		refetch,
+		isLoading,
 		isRefetching,
 		error: errorFetchingAllowance
 	} = useQuery(
@@ -70,7 +83,8 @@ const useGetAllowance = ({
 				token,
 				chain,
 				address,
-				spender
+				spender,
+				reset
 			}),
 		{ retry: 2 }
 	);
@@ -83,7 +97,7 @@ const useGetAllowance = ({
 		allowance.lt(BigNumber.from(amount)) &&
 		!allowance.eq(0);
 
-	return { allowance, shouldRemoveApproval, refetch, isRefetching, errorFetchingAllowance };
+	return { allowance, isLoading, shouldRemoveApproval, refetch, isRefetching, errorFetchingAllowance };
 };
 
 const setOverrides = (func, overrides) => {
@@ -103,19 +117,9 @@ export const useTokenApprove = ({
 	amount?: string;
 	chain: string;
 }) => {
-	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
-	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
-	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);
 	const network = useNetwork();
 
 	const { address, isConnected } = useAccount();
-
-	const { allowance, shouldRemoveApproval, refetch, errorFetchingAllowance } = useGetAllowance({
-		token,
-		spender,
-		amount,
-		chain
-	});
 
 	const normalizedAmount = !Number.isNaN(Number(amount)) ? amount : '0';
 
@@ -126,11 +130,13 @@ export const useTokenApprove = ({
 		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token && normalizedAmount !== '0'
 	});
-
-	const customGasLimit =
-		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaltGasLimit[network.chain.network]
-			? null
-			: { gasLimit: data?.request?.gasLimit.mul(140).div(100) };
+	const { data: approveData, write: approve, isLoading, reset: resetApprovalData } = useContractWrite(config);
+	const { data: approveDataOnChain, isLoading: isConfirmingApproval } = useWaitForTransaction({
+		hash: approveData?.hash,
+		onError: (err) => {
+			console.log(err);
+		}
+	});
 
 	const { config: configInfinite } = usePrepareContractWrite({
 		address: token,
@@ -139,6 +145,44 @@ export const useTokenApprove = ({
 		args: [spender, ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token
 	});
+	const {
+		data: approveInfiniteData,
+		write: approveInfinite,
+		isLoading: isInfiniteLoading,
+		reset: resetInfiniteApprovalData
+	} = useContractWrite(configInfinite);
+	const { data: approveInfiniteDataOnChain, isLoading: isConfirmingInfiniteApproval } = useWaitForTransaction({
+		hash: approveInfiniteData?.hash,
+		onError: (err) => {
+			console.log(err);
+		}
+	});
+
+	if (approveDataOnChain || approveInfiniteDataOnChain) {
+		console.log(approveDataOnChain, approveInfiniteDataOnChain);
+	}
+
+	const {
+		allowance,
+		isLoading: isFetchingAllowance,
+		shouldRemoveApproval,
+		refetch,
+		errorFetchingAllowance
+	} = useGetAllowance({
+		token,
+		spender,
+		amount,
+		chain,
+		reset: () => {
+			resetApprovalData();
+			resetInfiniteApprovalData();
+		}
+	});
+
+	const customGasLimit =
+		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaltGasLimit[network.chain.network]
+			? null
+			: { gasLimit: data?.request?.gasLimit.mul(140).div(100) };
 
 	const { config: configReset } = usePrepareContractWrite({
 		address: token,
@@ -147,59 +191,23 @@ export const useTokenApprove = ({
 		args: [spender, BigNumber.from('0')],
 		enabled: isConnected && !!spender && !!token && shouldRemoveApproval
 	});
-
-	const { write: approve, isLoading } = useContractWrite({
-		...config,
-		onSuccess: (data) => {
-			setIsConfirmingApproval(true);
-
-			data
-				.wait()
-				.then(() => {
-					refetch();
-				})
-				.catch((err) => console.log(err))
-				.finally(() => {
-					setIsConfirmingApproval(false);
-				});
+	const { data: approveResetData, write: approveReset, isLoading: isResetLoading } = useContractWrite(configReset);
+	const { isLoading: isConfirmingResetApproval } = useWaitForTransaction({
+		hash: approveResetData?.hash,
+		onError: (err) => {
+			console.log(err);
+		},
+		onSuccess: () => {
+			refetch();
 		}
 	});
 
-	const { write: approveInfinite, isLoading: isInfiniteLoading } = useContractWrite({
-		...configInfinite,
-		onSuccess: (data) => {
-			setIsConfirmingInfiniteApproval(true);
-
-			data
-				.wait()
-				.then(() => {
-					refetch();
-				})
-				.catch((err) => console.log(err))
-				.finally(() => {
-					setIsConfirmingInfiniteApproval(false);
-				});
-		}
-	});
-
-	const { write: approveReset, isLoading: isResetLoading } = useContractWrite({
-		...configReset,
-		onSuccess: (data) => {
-			setIsConfirmingResetApproval(true);
-
-			data
-				.wait()
-				.then(() => {
-					refetch();
-				})
-				.catch((err) => console.log(err))
-				.finally(() => {
-					setIsConfirmingResetApproval(false);
-				});
-		}
-	});
-
-	if (token === ethers.constants.AddressZero || token?.toLowerCase() === nativeAddress.toLowerCase())
+	if (
+		approveDataOnChain?.status === 1 ||
+		approveInfiniteDataOnChain?.status === 1 ||
+		token === ethers.constants.AddressZero ||
+		token?.toLowerCase() === nativeAddress.toLowerCase()
+	)
 		return { isApproved: true };
 
 	if (!address || !allowance) return { isApproved: false, errorFetchingAllowance };
@@ -213,7 +221,7 @@ export const useTokenApprove = ({
 		approve: setOverrides(approve, customGasLimit),
 		approveInfinite: setOverrides(approveInfinite, customGasLimit),
 		approveReset: setOverrides(approveReset, customGasLimit),
-		isLoading: isLoading || isConfirmingApproval,
+		isLoading: isFetchingAllowance || isLoading || isConfirmingApproval,
 		isConfirmingApproval,
 		isInfiniteLoading: isInfiniteLoading || isConfirmingInfiniteApproval,
 		isConfirmingInfiniteApproval,
