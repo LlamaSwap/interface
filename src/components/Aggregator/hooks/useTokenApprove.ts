@@ -158,10 +158,6 @@ export const useTokenApprove = ({
 		}
 	});
 
-	if (approveDataOnChain || approveInfiniteDataOnChain) {
-		console.log(approveDataOnChain, approveInfiniteDataOnChain);
-	}
-
 	const {
 		allowance,
 		isLoading: isFetchingAllowance,
