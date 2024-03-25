@@ -36,7 +36,7 @@ import { useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD, WETH } from './constants';
-import Tooltip from '../Tooltip';
+import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
@@ -57,7 +57,7 @@ import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
 import { Sandwich } from './Sandwich';
-import { ArrowBackIcon, ArrowForwardIcon, SettingsIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
@@ -699,7 +699,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		isConfirmingResetApproval,
 		shouldRemoveApproval,
 		allowance,
-		errorFetchingAllowance
+		errorFetchingAllowance,
+		refetch: refetchTokenAllowance
 	} = useTokenApprove({
 		token: finalSelectedFromToken?.address as `0x${string}`,
 		spender: selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
@@ -1201,6 +1202,19 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													<PopoverContent mr="8">{warnings}</PopoverContent>
 												</Popover>
 											) : null}
+
+											{!isApproved && selectedRoute ? (
+												<Tooltip2 content="Already approved? Click to refetch token allowance">
+													<Button
+														colorScheme={'messenger'}
+														width={'24px'}
+														padding={'4px'}
+														onClick={() => refetchTokenAllowance()}
+													>
+														<RepeatIcon w="16px	" h="16px" />
+													</Button>
+												</Tooltip2>
+											) : null}
 										</>
 									</>
 								)}
@@ -1402,6 +1416,19 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																{'Approve Infinite'}
 															</Button>
 														)}
+
+														{!isApproved && selectedRoute ? (
+															<Tooltip2 content="Already approved? Click to refetch token allowance">
+																<Button
+																	colorScheme={'messenger'}
+																	width={'24px'}
+																	padding={'4px'}
+																	onClick={() => refetchTokenAllowance()}
+																>
+																	<RepeatIcon w="16px	" h="16px" />
+																</Button>
+															</Tooltip2>
+														) : null}
 													</>
 												</>
 											)}

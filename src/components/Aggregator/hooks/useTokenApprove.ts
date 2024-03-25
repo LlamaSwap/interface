@@ -61,7 +61,7 @@ const useGetAllowance = ({
 	const {
 		data: allowance,
 		refetch,
-		isRefetching,
+		isLoading,
 		error: errorFetchingAllowance
 	} = useQuery(
 		['token-allowance', address, token, chain, spender],
@@ -83,7 +83,7 @@ const useGetAllowance = ({
 		allowance.lt(BigNumber.from(amount)) &&
 		!allowance.eq(0);
 
-	return { allowance, shouldRemoveApproval, refetch, isRefetching, errorFetchingAllowance };
+	return { allowance, shouldRemoveApproval, refetch, isLoading, errorFetchingAllowance };
 };
 
 const setOverrides = (func, overrides) => {
@@ -110,7 +110,13 @@ export const useTokenApprove = ({
 
 	const { address, isConnected } = useAccount();
 
-	const { allowance, shouldRemoveApproval, refetch, errorFetchingAllowance } = useGetAllowance({
+	const {
+		allowance,
+		shouldRemoveApproval,
+		refetch,
+		isLoading: isFetchingAllowance,
+		errorFetchingAllowance
+	} = useGetAllowance({
 		token,
 		spender,
 		amount,
@@ -213,13 +219,14 @@ export const useTokenApprove = ({
 		approve: setOverrides(approve, customGasLimit),
 		approveInfinite: setOverrides(approveInfinite, customGasLimit),
 		approveReset: setOverrides(approveReset, customGasLimit),
-		isLoading: isLoading || isConfirmingApproval,
+		isLoading: isFetchingAllowance || isLoading || isConfirmingApproval,
 		isConfirmingApproval,
 		isInfiniteLoading: isInfiniteLoading || isConfirmingInfiniteApproval,
 		isConfirmingInfiniteApproval,
 		isResetLoading: isResetLoading || isConfirmingResetApproval,
 		isConfirmingResetApproval,
 		allowance,
-		shouldRemoveApproval
+		shouldRemoveApproval,
+		refetch
 	};
 };
