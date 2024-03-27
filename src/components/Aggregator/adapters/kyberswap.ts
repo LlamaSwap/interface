@@ -19,7 +19,10 @@ export const chainToId = {
 	zksync: 'zksync',
 	polygonzkevm: 'polygon-zkevm',
 	linea: 'linea',
-	base: 'base'
+	base: 'base',
+	blast: 'blast',
+	mantle: 'mantle',
+	scroll: 'scroll'
 	//velas
 	//oasis
 };
