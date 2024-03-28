@@ -26,13 +26,14 @@ export const chainToId = {
 	linea: 59144,
 	base: 8453,
 	//starknet
-	//telos
+	telos: 40,
 	celo: 42220,
 	//harmony
 	//tron,
 	scroll: 534352,
 	mantle: 5000,
-	blast: 81457
+	blast: 81457,
+	opbnb: 204
 };
 
 // https://docs.openocean.finance/dev/contracts-of-chains#openoceans-current-contract-addresses
