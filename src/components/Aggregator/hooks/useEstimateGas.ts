@@ -4,23 +4,24 @@ import { ethers } from 'ethers';
 import { last } from 'lodash';
 import { erc20ABI } from 'wagmi';
 import { IRoute } from '~/queries/useGetRoutes';
+import { providers } from '../rpcs';
 
 const traceRpcs = {
 	// https://docs.blastapi.io/blast-documentation/trace-api
-	ethereum: 'https://eth-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
-	bsc: 'https://bsc-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
-	gnosis: 'https://gnosis-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
-	moonbeam: 'https://moonbeam.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
-	moonriver: 'https://moonriver.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec',
-	//palm: 'https://palm-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec', // we don't support it
-	polygon: 'https://polygon-mainnet.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec'
+	ethereum: 'https://eth-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
+	bsc: 'https://bsc-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
+	gnosis: 'https://gnosis-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
+	moonbeam: 'https://moonbeam.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
+	moonriver: 'https://moonriver.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
+	//palm: 'https://palm-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1', // we don't support it
+	polygon: 'https://polygon-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1'
 };
 
 export const estimateGas = async ({ route, token, userAddress, chain, balance }) => {
 	if (!Number.isFinite(balance) || balance < +route.fromAmount) return null;
 
 	try {
-		const provider = new ethers.providers.JsonRpcProvider(traceRpcs[chain]);
+		const provider = new ethers.providers.StaticJsonRpcProvider(traceRpcs[chain], providers[chain]._network);
 		const tokenContract = new ethers.Contract(token, erc20ABI, provider);
 		const tx = route?.tx;
 		const isNative = token === ethers.constants.AddressZero;
@@ -62,7 +63,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, balance })
 			return null;
 		}
 	} catch (ee) {
-		console.log(ee);
+		console.log('[ESTIMATE GAS]', ee);
 	}
 };
 
