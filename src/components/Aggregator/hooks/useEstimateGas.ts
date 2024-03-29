@@ -14,7 +14,8 @@ const traceRpcs = {
 	moonbeam: 'https://moonbeam.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
 	moonriver: 'https://moonriver.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
 	//palm: 'https://palm-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1', // we don't support it
-	polygon: 'https://polygon-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1'
+	polygon: 'https://polygon-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
+	arbitrum: 'https://arbitrum-one.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1'
 };
 
 export const estimateGas = async ({ route, token, userAddress, chain, balance }) => {
@@ -50,7 +51,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, balance })
 				]),
 				'latest'
 			];
-			const res = await provider.send('trace_callMany', callParams);
+			const res = await provider.send(chain === 'arbitrum' ? 'arbtrace_callMany' : 'trace_callMany', callParams);
 			const swapTx = last<{ trace: Array<{ result: { gasUsed: string }; error: string }> }>(res);
 			return {
 				gas: (Number(swapTx.trace[0].result.gasUsed) + 21e3).toString(), // ignores calldata and accesslist costs
