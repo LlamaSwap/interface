@@ -16,11 +16,11 @@ import * as yieldyak from './adapters/yieldyak';
 import * as llamazip from './adapters/llamazip';
 // import * as krystal from './adapters/krystal'
 
-export const adapters = [matcha, inch, cowswap, yieldyak, paraswap, llamazip, kyberswap, odos];
+export const adapters = [matcha];
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name];
 
 export const adaptersWithApiKeys = {
-	[matcha.name]: true
+	// [matcha.name]: true
 	//[hashflow.name]: true
 };
