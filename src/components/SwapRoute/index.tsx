@@ -43,6 +43,7 @@ interface IRoute {
 	amountOut: string;
 	toTokenPrice: number;
 	amountIn: string;
+	isGasless: boolean;
 }
 
 const Route = ({
@@ -62,7 +63,8 @@ const Route = ({
 	amountOut,
 	toTokenPrice,
 	amountIn,
-	selectedChain
+	selectedChain,
+	isGasless
 }: IRoute) => {
 	const { isApproved } = useTokenApprove({
 		token: fromToken?.address as `0x${string}`,
@@ -131,15 +133,28 @@ const Route = ({
 						Input Amount
 					</Flex>
 				) : (
-					<Flex className="mobile-column" as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
-						{afterFees ? <span>{`≈ ${afterFees} after fees`}</span> : null}
-						{isGasNotKnown && !isFetchingGasPrice ? (
-							<Flex as="span" gap="4px" alignItems="center" color="#d97706" className="inline-alert">
+					<Flex
+						className="mobile-column"
+						as="span"
+						columnGap="4px"
+						display="flex"
+						color="gray.400"
+						fontWeight={500}
+						flexWrap={'wrap'}
+					>
+						{afterFees ? <Text whiteSpace={'nowrap'}>{`≈ ${afterFees} after fees`}</Text> : null}
+						{isGasNotKnown && !isFetchingGasPrice && !isGasless ? (
+							<Text
+								display="flex"
+								gap="4px"
+								alignItems="center"
+								color="#d97706"
+								className="inline-alert"
+								whiteSpace={'nowrap'}
+							>
 								<AlertCircle size="14" /> unknown gas fees
-							</Flex>
-						) : afterFees ? (
-							<span></span>
-						) : null}
+							</Text>
+						) : afterFees ? null : null}
 					</Flex>
 				)}
 				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
@@ -149,6 +164,7 @@ const Route = ({
 						gap="4px"
 						color="gray.400"
 						flexDirection={['column', 'row', 'row', 'row']}
+						whiteSpace={'nowrap'}
 					>
 						{airdrop ? (
 							<Tooltip content="This project has no token and might airdrop one in the future">
@@ -216,7 +232,7 @@ const RouteWrapper = styled.div<{ selected?: boolean; best?: boolean }>`
 		background-color: rgb(3 11 23);
 	}
 
-	background-color: ${({ selected }) => selected ? ' #161616;' : '#2d3039;'};
+	background-color: ${({ selected }) => (selected ? ' #161616;' : '#2d3039;')};
 	border: 1px solid #373944;
 	padding: 7px 15px 9px;
 	border-radius: 8px;

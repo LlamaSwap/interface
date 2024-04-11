@@ -1,6 +1,15 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useFeeData, useNetwork, useQueryClient, useSigner, useSwitchNetwork, useToken } from 'wagmi';
+import {
+	useAccount,
+	useFeeData,
+	useNetwork,
+	useQueryClient,
+	useSigner,
+	useSignTypedData,
+	useSwitchNetwork,
+	useToken
+} from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
@@ -304,6 +313,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const { switchNetwork } = useSwitchNetwork();
 	const addRecentTransaction = useAddRecentTransaction();
 	const wagmiClient = useQueryClient();
+	const { signTypedDataAsync } = useSignTypedData();
 
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState(null);
@@ -687,7 +697,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					.toFixed(0)
 			: selectedRoute?.fromAmount;
 	const {
-		isApproved,
+		isApproved: isTokenApproved,
 		approve,
 		approveInfinite,
 		approveReset,
@@ -706,6 +716,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		amount: amountToApprove,
 		chain: selectedChain.value
 	});
+	const isApproved = selectedRoute?.isGasless ? true : isTokenApproved;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
@@ -718,6 +729,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			amountIn: string;
 			adapter: string;
 			signer: ethers.Signer;
+			signTypedDataAsync: typeof signTypedDataAsync;
 			slippage: string;
 			rawQuote: any;
 			tokens: { toToken: IToken; fromToken: IToken };
@@ -726,6 +738,43 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
+
+			if (data.txStatus) {
+				if (data.txStatus === 'confirmed') {
+					toast(formatSuccessToast(variables));
+					const hash = data.txStatus.transactions[0].hash;
+					addRecentTransaction({
+						hash: hash,
+						description: `Swap transaction using ${variables.adapter} is sent.`
+					});
+					const explorerUrl = chainOnWallet.blockExplorers.default.url;
+					setTxModalOpen(true);
+					txUrl = `${explorerUrl}/tx/${hash}`;
+					setTxUrl(txUrl);
+				} else {
+					toast(formatErrorToast({ reason: data.txStatus.reason }, false));
+				}
+
+				sendSwapEvent({
+					chain: selectedChain.value,
+					user: address,
+					from: variables.from,
+					to: variables.to,
+					aggregator: variables.adapter,
+					isError: data.txStatus === 'confirmed' ? false : true,
+					quote: variables.rawQuote,
+					txUrl,
+					amount: String(variables.amountIn),
+					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
+					errorData: data.txStatus,
+					slippage,
+					routePlace: String(variables?.index),
+					route: variables.route
+				});
+
+				return;
+			}
+
 			if (data.hash) {
 				addRecentTransaction({
 					hash: data.hash,
@@ -856,6 +905,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				from: finalSelectedFromToken.value,
 				to: finalSelectedToToken.value,
 				signer,
+				signTypedDataAsync,
 				slippage,
 				adapter: selectedRoute.name,
 				rawQuote: selectedRoute.price.rawQuote,
@@ -1296,6 +1346,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								isFetchingGasPrice={fetchingTokenPrices}
 								amountOut={amountOutWithDecimals}
 								amountIn={r?.amountIn}
+								isGasless={r?.isGasless}
 							/>
 
 							{aggregator === r.name && (
@@ -1348,7 +1399,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														) : (
 															<Button
 																isLoading={swapMutation.isLoading || isApproveLoading}
-																loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+																loadingText={
+																	isConfirmingApproval || selectedRoute.isGasless
+																		? 'Confirming'
+																		: 'Preparing transaction'
+																}
 																colorScheme={'messenger'}
 																onClick={() => {
 																	if (approve) approve();
