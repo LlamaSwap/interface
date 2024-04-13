@@ -61,7 +61,7 @@ export async function swap({ signTypedDataAsync, rawQuote, chain }) {
 			value: rawQuote.approval.eip712.message
 		}).then((hash) => ethers.utils.splitSignature(hash));
 
-		body.approve = {
+		body.approval = {
 			type: rawQuote.approval.type,
 			eip712: rawQuote.approval.eip712,
 			signature: {
@@ -69,7 +69,7 @@ export async function swap({ signTypedDataAsync, rawQuote, chain }) {
 				r: approvalSignature.r,
 				s: approvalSignature.s,
 				recoveryParam: approvalSignature.recoveryParam,
-				signatureType: '2'
+				signatureType: 2
 			}
 		};
 	}
@@ -89,7 +89,7 @@ export async function swap({ signTypedDataAsync, rawQuote, chain }) {
 			r: tradeSignature.r,
 			s: tradeSignature.s,
 			recoveryParam: tradeSignature.recoveryParam,
-			signatureType: '2'
+			signatureType: 2
 		}
 	};
 
