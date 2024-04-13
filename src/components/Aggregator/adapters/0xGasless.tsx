@@ -40,8 +40,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	).then((r) => r.json());
 
 	// do not show quote if there's not enough liquidity or gasless swap is not available for the sell token
-	// can only initiate gasless approval for sell token if isGaslessAvailable & isRequired are true
-	if (!data.liquidityAvailable || !data.approval?.isGaslessAvailable || !data.approval?.isRequired) return null;
+	if (!data.liquidityAvailable) return null;
 
 	return {
 		amountReturned: data?.buyAmount || 0,
@@ -53,18 +52,46 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 export async function swap({ signTypedDataAsync, rawQuote, chain }) {
 	// user must sign approval.eip712 and the trade.eip712 objects returned by /quote for gasless approvals
-	const approvalSignature = await signTypedDataAsync({
-		domain: rawQuote.approval.eip712.domain,
-		types: rawQuote.approval.eip712.types,
-		primaryType: rawQuote.approval.eip712.primaryType,
-		value: rawQuote.approval.eip712.message
-	}).then((hash) => ethers.utils.splitSignature(hash));
+	const body: any = {};
+	if (rawQuote.approval.isRequired && rawQuote.approval.isGaslessAvailable) {
+		const approvalSignature = await signTypedDataAsync({
+			domain: rawQuote.approval.eip712.domain,
+			types: rawQuote.approval.eip712.types,
+			primaryType: rawQuote.approval.eip712.primaryType,
+			value: rawQuote.approval.eip712.message
+		}).then((hash) => ethers.utils.splitSignature(hash));
+
+		body.approve = {
+			type: rawQuote.approval.type,
+			eip712: rawQuote.approval.eip712,
+			signature: {
+				v: approvalSignature.v,
+				r: approvalSignature.r,
+				s: approvalSignature.s,
+				recoveryParam: approvalSignature.recoveryParam,
+				signatureType: '2'
+			}
+		};
+	}
+
 	const tradeSignature = await signTypedDataAsync({
 		domain: rawQuote.trade.eip712.domain,
 		types: rawQuote.trade.eip712.types,
 		primaryType: rawQuote.trade.eip712.primaryType,
 		value: rawQuote.trade.eip712.message
 	}).then((hash) => ethers.utils.splitSignature(hash));
+
+	body.trade = {
+		type: rawQuote.trade.type,
+		eip712: rawQuote.trade.eip712,
+		signature: {
+			v: tradeSignature.v,
+			r: tradeSignature.r,
+			s: tradeSignature.s,
+			recoveryParam: tradeSignature.recoveryParam,
+			signatureType: '2'
+		}
+	};
 
 	const tx = await fetch(`https://api.0x.org/tx-relay/v1/swap/submit`, {
 		headers: {
@@ -73,48 +100,23 @@ export async function swap({ signTypedDataAsync, rawQuote, chain }) {
 			'Content-Type': 'application/json'
 		},
 		method: 'POST',
-		body: JSON.stringify({
-			trade: {
-				type: rawQuote.trade.type,
-				eip712: rawQuote.trade.eip712,
-				signature: {
-					v: tradeSignature.v,
-					r: tradeSignature.r,
-					s: tradeSignature.s,
-					signatureType: '2' // type of eip712
-				}
-			},
-			approval: {
-				type: rawQuote.approval.type,
-				eip712: rawQuote.approval.eip712,
-				signature: {
-					v: approvalSignature.v,
-					r: approvalSignature.r,
-					s: approvalSignature.s,
-					signatureType: '2' // type of eip712
-				}
-			}
-		})
+		body: JSON.stringify(body)
 	})
 		.then((r) => r.json())
 		.catch((err) => {
 			console.log({ err });
 		});
 
-	const txStatus = await fetch(`https://api.0x.org/tx-relay/v1/swap/status/${tx.tradeHash}`, {
+	if (!tx.tradeHash) {
+		return { gaslessTxReceipt: { status: 'failed', reason: tx.reason ?? 'Something went wrong' } };
+	}
+
+	const gaslessTxReceipt = await fetch(`https://api.0x.org/tx-relay/v1/swap/status/${tx.tradeHash}`, {
 		headers: {
 			'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
 			'0x-chain-id': chainToId[chain]
 		}
 	}).then((res) => res.json());
 
-	return { txStatus };
+	return { gaslessTxReceipt };
 }
-
-export const getTxData = ({ rawQuote }) => rawQuote?.data;
-
-export const getTx = ({ rawQuote }) => ({
-	to: rawQuote.to,
-	data: rawQuote.data,
-	value: rawQuote.value
-});

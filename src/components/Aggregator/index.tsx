@@ -738,11 +738,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
-
-			if (data.txStatus) {
-				if (data.txStatus === 'confirmed') {
+			if (data.gaslessTxReceipt) {
+				if (data.gaslessTxReceipt.status === 'confirmed') {
 					toast(formatSuccessToast(variables));
-					const hash = data.txStatus.transactions[0].hash;
+					const hash = data.gaslessTxReceipt.transactions[0].hash;
 					addRecentTransaction({
 						hash: hash,
 						description: `Swap transaction using ${variables.adapter} is sent.`
@@ -752,7 +751,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					txUrl = `${explorerUrl}/tx/${hash}`;
 					setTxUrl(txUrl);
 				} else {
-					toast(formatErrorToast({ reason: data.txStatus.reason }, false));
+					toast(formatErrorToast({ reason: data.gaslessTxReceipt.reason }, false));
 				}
 
 				sendSwapEvent({
@@ -761,12 +760,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					from: variables.from,
 					to: variables.to,
 					aggregator: variables.adapter,
-					isError: data.txStatus === 'confirmed' ? false : true,
+					isError: data.gaslessTxReceipt.status === 'confirmed' ? false : true,
 					quote: variables.rawQuote,
 					txUrl,
 					amount: String(variables.amountIn),
 					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
-					errorData: data.txStatus,
+					errorData: data.gaslessTxReceipt,
 					slippage,
 					routePlace: String(variables?.index),
 					route: variables.route
