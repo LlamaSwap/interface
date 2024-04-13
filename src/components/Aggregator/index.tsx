@@ -1180,7 +1180,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 											) : (
 												<Button
 													isLoading={swapMutation.isLoading || isApproveLoading}
-													loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+													loadingText={
+														isConfirmingApproval || selectedRoute?.isGasless ? 'Confirming' : 'Preparing transaction'
+													}
 													colorScheme={'messenger'}
 													onClick={() => {
 														//scroll Routes into view
@@ -1399,7 +1401,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 															<Button
 																isLoading={swapMutation.isLoading || isApproveLoading}
 																loadingText={
-																	isConfirmingApproval || selectedRoute.isGasless
+																	isConfirmingApproval || selectedRoute?.isGasless
 																		? 'Confirming'
 																		: 'Preparing transaction'
 																}
