@@ -108,7 +108,14 @@ export async function swap({ signTypedDataAsync, rawQuote, chain }) {
 		});
 
 	if (!tx.tradeHash) {
-		return { gaslessTxReceipt: { status: 'failed', reason: tx.reason ?? 'Something went wrong' } };
+		return {
+			gaslessTxReceipt: {
+				status: 'failed',
+				reason: tx.validationErrors
+					? tx.validationErrors.map((t) => t.reason).join(', ')
+					: tx.reason ?? 'Something went wrong'
+			}
+		};
 	}
 
 	const gaslessTxReceipt = await fetch(`https://api.0x.org/tx-relay/v1/swap/status/${tx.tradeHash}`, {
