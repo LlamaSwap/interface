@@ -739,7 +739,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		onSuccess: (data, variables) => {
 			let txUrl;
 			if (data.gaslessTxReceipt) {
-				if (data.gaslessTxReceipt.status === 'confirmed') {
+				if (data.gaslessTxReceipt.status === 'confirmed' || data.gaslessTxReceipt.status === 'submitted') {
 					toast(formatSuccessToast(variables));
 					const hash = data.gaslessTxReceipt.transactions[0].hash;
 					addRecentTransaction({
@@ -1276,8 +1276,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						cursor="pointer"
 					/>
 					{normalizedRoutes?.length ? (
-						<Flex alignItems="center" justifyContent="space-between">
-							<FormHeader> Select a route to perform a swap </FormHeader>
+						<Flex as="h1" alignItems="center" justifyContent="space-between">
+							<FormHeader as="span"> Select a route to perform a swap </FormHeader>
 
 							<RefreshIcon refetch={refetch} lastFetched={lastFetched} />
 						</Flex>
@@ -1291,19 +1291,20 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					  routes.length ? (
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
-					<Box display={{ base: 'none', md: 'block', lg: 'block' }}>
-						<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
-							{normalizedRoutes?.length ? `Best route is selected based on net output after gas fees.` : null}
-						</span>
 
-						<span style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
-							{failedRoutes.length > 0
-								? `Routes for aggregators ${failedRoutes
-										.map((r) => r.name)
-										.join(', ')} have been hidden since they could not be executed`
-								: null}
-						</span>
-					</Box>
+					{normalizedRoutes?.length ? (
+						<p style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
+							Best route is selected based on net output after gas fees.
+						</p>
+					) : null}
+
+					{failedRoutes.length > 0 ? (
+						<p style={{ fontSize: '12px', color: '#999999', marginLeft: '4px', marginTop: '4px', display: 'flex' }}>
+							{`Routes for aggregators ${failedRoutes
+								.map((r) => r.name)
+								.join(', ')} have been hidden since they could not be executed`}
+						</p>
+					) : null}
 
 					{isLoading &&
 					(debouncedAmount || debouncedAmountOut) &&
