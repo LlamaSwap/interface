@@ -78,8 +78,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		throw new Error(`Router address does not match`);
 	}
 
+	if (swapData.simulation.isSuccess !== true) {
+		throw new Error('tx reverts');
+	}
+
 	return {
-		amountReturned: swapData.outputTokens[0].amount,
+		amountReturned: swapData.simulation.amountsOut[0],
 		estimatedGas: swapData.transaction.gas <= 0 ? swapData.gasEstimate : swapData.transaction.gas,
 		rawQuote: swapData,
 		tokenApprovalAddress: routers[chain]
