@@ -37,7 +37,7 @@ import {
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
-import { adaptersNames, getAllChains, swap } from './router';
+import { adaptersNames, getAllChains, swap, gaslessApprove } from './router';
 import { inifiniteApprovalAllowed } from './list';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
@@ -696,6 +696,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					.div(100)
 					.toFixed(0)
 			: selectedRoute?.fromAmount;
+
+	const isGaslessApproval =
+		selectedRoute?.isGasless &&
+		(selectedRoute.price.rawQuote as any).approval.isRequired &&
+		(selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
+			? true
+			: false;
+
 	const {
 		isApproved: isTokenApproved,
 		approve,
@@ -712,14 +720,22 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		errorFetchingAllowance
 	} = useTokenApprove({
 		token: finalSelectedFromToken?.address as `0x${string}`,
-		spender: selectedRoute && selectedRoute.price ? selectedRoute.price.tokenApprovalAddress : null,
+		spender:
+			selectedRoute && selectedRoute.price && !isGaslessApproval ? selectedRoute.price.tokenApprovalAddress : null,
 		amount: amountToApprove,
 		chain: selectedChain.value
 	});
+	const gaslessApprovalMutation = useMutation({
+		mutationFn: (params: { adapter: string; signTypedDataAsync: typeof signTypedDataAsync; rawQuote: any }) =>
+			gaslessApprove(params)
+	});
+
 	const isApproved = selectedRoute?.isGasless
 		? (selectedRoute.price.rawQuote as any).approval.isRequired
-			? (selectedRoute.price.rawQuote as any).approval.isGasless
-				? false
+			? (selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
+				? gaslessApprovalMutation.data
+					? true
+					: false
 				: isTokenApproved
 			: true
 		: isTokenApproved;
@@ -741,6 +757,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			tokens: { toToken: IToken; fromToken: IToken };
 			index: number;
 			route: any;
+			approvalData: any;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -919,9 +936,17 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				index: selectedRoute.index,
 				route: selectedRoute,
 				amount: selectedRoute.amount,
-				amountIn: selectedRoute.amountIn
+				amountIn: selectedRoute.amountIn,
+				approvalData: gaslessApprovalMutation?.data ?? {}
 			});
 		}
+	};
+	const handleGaslessApproval = () => {
+		gaslessApprovalMutation.mutate({
+			signTypedDataAsync,
+			adapter: selectedRoute.name,
+			rawQuote: selectedRoute.price.rawQuote
+		});
 	};
 
 	const pairSandwichData =
@@ -1186,14 +1211,21 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												/>
 											) : (
 												<Button
-													isLoading={swapMutation.isLoading || isApproveLoading}
+													isLoading={swapMutation.isLoading || isApproveLoading || gaslessApprovalMutation.isLoading}
 													loadingText={
-														isConfirmingApproval || selectedRoute?.isGasless ? 'Confirming' : 'Preparing transaction'
+														isConfirmingApproval || selectedRoute?.isGasless || gaslessApprovalMutation.isLoading
+															? 'Confirming'
+															: 'Preparing transaction'
 													}
 													colorScheme={'messenger'}
 													onClick={() => {
 														//scroll Routes into view
 														!selectedRoute && routesRef.current.scrollIntoView({ behavior: 'smooth' });
+
+														if (!isApproved && isGaslessApproval) {
+															handleGaslessApproval();
+															return;
+														}
 
 														if (approve) approve();
 
@@ -1209,6 +1241,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													disabled={
 														isUSDTNotApprovedOnEthereum ||
 														swapMutation.isLoading ||
+														gaslessApprovalMutation.isLoading ||
 														isApproveLoading ||
 														isApproveResetLoading ||
 														!(finalSelectedFromToken && finalSelectedToToken) ||
@@ -1228,26 +1261,30 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												</Button>
 											)}
 
-											{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
-												<Button
-													colorScheme={'messenger'}
-													loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
-													isLoading={isApproveInfiniteLoading}
-													onClick={() => {
-														if (approveInfinite) approveInfinite();
-													}}
-													disabled={
-														isUSDTNotApprovedOnEthereum ||
-														swapMutation.isLoading ||
-														isApproveLoading ||
-														isApproveResetLoading ||
-														isApproveInfiniteLoading ||
-														!selectedRoute
-													}
-												>
-													{'Approve Infinite'}
-												</Button>
-											)}
+											{!isApproved &&
+												!isGaslessApproval &&
+												selectedRoute &&
+												inifiniteApprovalAllowed.includes(selectedRoute.name) && (
+													<Button
+														colorScheme={'messenger'}
+														loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+														isLoading={isApproveInfiniteLoading}
+														onClick={() => {
+															if (approveInfinite) approveInfinite();
+														}}
+														disabled={
+															isUSDTNotApprovedOnEthereum ||
+															swapMutation.isLoading ||
+															gaslessApprovalMutation.isLoading ||
+															isApproveLoading ||
+															isApproveResetLoading ||
+															isApproveInfiniteLoading ||
+															!selectedRoute
+														}
+													>
+														{'Approve Infinite'}
+													</Button>
+												)}
 
 											{isSmallScreen && warnings?.length ? (
 												<Popover>
@@ -1407,14 +1444,21 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 															/>
 														) : (
 															<Button
-																isLoading={swapMutation.isLoading || isApproveLoading}
+																isLoading={
+																	swapMutation.isLoading || isApproveLoading || gaslessApprovalMutation.isLoading
+																}
 																loadingText={
-																	isConfirmingApproval || selectedRoute?.isGasless
+																	isConfirmingApproval || selectedRoute?.isGasless || gaslessApprovalMutation.isLoading
 																		? 'Confirming'
 																		: 'Preparing transaction'
 																}
 																colorScheme={'messenger'}
 																onClick={() => {
+																	if (!isApproved && isGaslessApproval) {
+																		handleGaslessApproval();
+																		return;
+																	}
+
 																	if (approve) approve();
 
 																	if (
@@ -1429,6 +1473,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																disabled={
 																	isUSDTNotApprovedOnEthereum ||
 																	swapMutation.isLoading ||
+																	gaslessApprovalMutation.isLoading ||
 																	isApproveLoading ||
 																	isApproveResetLoading ||
 																	!selectedRoute ||
@@ -1446,26 +1491,30 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 															</Button>
 														)}
 
-														{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
-															<Button
-																colorScheme={'messenger'}
-																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
-																isLoading={isApproveInfiniteLoading}
-																onClick={() => {
-																	if (approveInfinite) approveInfinite();
-																}}
-																disabled={
-																	isUSDTNotApprovedOnEthereum ||
-																	swapMutation.isLoading ||
-																	isApproveLoading ||
-																	isApproveResetLoading ||
-																	isApproveInfiniteLoading ||
-																	!selectedRoute
-																}
-															>
-																{'Approve Infinite'}
-															</Button>
-														)}
+														{!isApproved &&
+															!isGaslessApproval &&
+															selectedRoute &&
+															inifiniteApprovalAllowed.includes(selectedRoute.name) && (
+																<Button
+																	colorScheme={'messenger'}
+																	loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+																	isLoading={isApproveInfiniteLoading}
+																	onClick={() => {
+																		if (approveInfinite) approveInfinite();
+																	}}
+																	disabled={
+																		isUSDTNotApprovedOnEthereum ||
+																		swapMutation.isLoading ||
+																		gaslessApprovalMutation.isLoading ||
+																		isApproveLoading ||
+																		isApproveResetLoading ||
+																		isApproveInfiniteLoading ||
+																		!selectedRoute
+																	}
+																>
+																	{'Approve Infinite'}
+																</Button>
+															)}
 													</>
 												</>
 											)}
