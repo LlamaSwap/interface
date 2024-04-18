@@ -716,7 +716,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		amount: amountToApprove,
 		chain: selectedChain.value
 	});
-	const isApproved = selectedRoute?.isGasless ? true : isTokenApproved;
+	const isApproved = selectedRoute?.isGasless
+		? (selectedRoute.price.rawQuote as any).approval.isRequired
+			? (selectedRoute.price.rawQuote as any).approval.isGasless
+				? false
+				: isTokenApproved
+			: true
+		: isTokenApproved;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
