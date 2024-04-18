@@ -726,8 +726,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		chain: selectedChain.value
 	});
 	const gaslessApprovalMutation = useMutation({
-		mutationFn: (params: { adapter: string; signTypedDataAsync: typeof signTypedDataAsync; rawQuote: any }) =>
-			gaslessApprove(params)
+		mutationFn: (params: {
+			adapter: string;
+			signTypedDataAsync: typeof signTypedDataAsync;
+			rawQuote: any;
+			isInfiniteApproval: boolean;
+		}) => gaslessApprove(params)
 	});
 
 	const isApproved = selectedRoute?.isGasless
@@ -941,11 +945,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			});
 		}
 	};
-	const handleGaslessApproval = () => {
+	const handleGaslessApproval = ({ isInfiniteApproval }: { isInfiniteApproval: boolean }) => {
 		gaslessApprovalMutation.mutate({
 			signTypedDataAsync,
 			adapter: selectedRoute.name,
-			rawQuote: selectedRoute.price.rawQuote
+			rawQuote: selectedRoute.price.rawQuote,
+			isInfiniteApproval
 		});
 	};
 
@@ -1223,7 +1228,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														!selectedRoute && routesRef.current.scrollIntoView({ behavior: 'smooth' });
 
 														if (!isApproved && isGaslessApproval) {
-															handleGaslessApproval();
+															handleGaslessApproval({ isInfiniteApproval: false });
 															return;
 														}
 
@@ -1270,6 +1275,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
 														isLoading={isApproveInfiniteLoading}
 														onClick={() => {
+															if (!isApproved && isGaslessApproval) {
+																handleGaslessApproval({ isInfiniteApproval: true });
+																return;
+															}
+
 															if (approveInfinite) approveInfinite();
 														}}
 														disabled={
@@ -1455,7 +1465,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																colorScheme={'messenger'}
 																onClick={() => {
 																	if (!isApproved && isGaslessApproval) {
-																		handleGaslessApproval();
+																		handleGaslessApproval({ isInfiniteApproval: false });
 																		return;
 																	}
 
@@ -1500,6 +1510,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
 																	isLoading={isApproveInfiniteLoading}
 																	onClick={() => {
+																		if (!isApproved && isGaslessApproval) {
+																			handleGaslessApproval({ isInfiniteApproval: true });
+																			return;
+																		}
+
 																		if (approveInfinite) approveInfinite();
 																	}}
 																	disabled={

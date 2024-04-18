@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { defillamaReferrerAddress } from '../constants';
 
 export const chainToId = {
@@ -18,6 +18,14 @@ const feeCollectorAddress = '0x9Ab6164976514F1178E2BB4219DA8700c9D96E9A';
 export const isGasless = true;
 
 export const isOutputAvailable = true;
+
+const routers = {
+	ethereum: '0xdef1c0ded9bec7f1a1670819833240f027b25eff',
+	arbitrum: '0xdef1c0ded9bec7f1a1670819833240f027b25eff',
+	optimism: '0xdef1abe32c034e558cdd535791643c58a13acc10',
+	base: '0xdef1c0ded9bec7f1a1670819833240f027b25eff',
+	polygon: '0xdef1c0ded9bec7f1a1670819833240f027b25eff'
+};
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// amount should include decimals
@@ -44,24 +52,54 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	// do not show quote if there's not enough liquidity
 	if (!data.liquidityAvailable) return null;
 
+	// hide quote if it's unknown gasless approval signature
+	if (
+		data.approval.isRequired &&
+		data.approval.isGaslessAvailable &&
+		!['Permit', 'MetaTransaction'].includes(data.approval.eip712.primaryType)
+	)
+		return null;
+
+	if (data.allowanceTarget !== routers[chain].toLowerCase()) {
+		throw new Error(`Router address does not match`);
+	}
+
 	return {
-		amountReturned: data?.buyAmount,
-		amountIn: data?.sellAmount,
+		amountReturned: data.buyAmount,
+		amountIn: data.sellAmount,
 		rawQuote: data,
-		tokenApprovalAddress: data?.allowanceTarget ?? null,
+		tokenApprovalAddress: data.allowanceTarget ?? null,
 		logo: 'https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F1690203644-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FKX9pG8rH3DbKDOvV7di7%252Ficon%252F1nKfBhLbPxd2KuXchHET%252F0x%2520logo.png%3Falt%3Dmedia%26token%3D25a85a3e-7f72-47ea-a8b2-e28c0d24074b'
 	};
 }
 
-export async function gaslessApprove({ signTypedDataAsync, rawQuote }) {
+export async function gaslessApprove({ signTypedDataAsync, rawQuote, isInfiniteApproval }) {
 	// user must sign approval.eip712 and the trade.eip712 objects returned by /quote for gasless approvals
 	const body: any = {};
+
 	if (rawQuote.approval.isRequired && rawQuote.approval.isGaslessAvailable) {
+		const value = isInfiniteApproval
+			? rawQuote.approval.eip712.message
+			: rawQuote.approval.eip712.primaryType === 'Permit'
+			? {
+					...rawQuote.approval.eip712.message,
+					value: rawQuote.sellAmount
+			  }
+			: rawQuote.approval.eip712.primaryType === 'MetaTransaction'
+			? {
+					...rawQuote.approval.eip712.message,
+					functionSignature: new ethers.utils.Interface(['function approve(address, uint)']).encodeFunctionData(
+						'approve',
+						[ethers.utils.getAddress(rawQuote.allowanceTarget), BigNumber.from(rawQuote.sellAmount)]
+					)
+			  }
+			: rawQuote.approval.eip712.message;
+
 		const approvalSignature = await signTypedDataAsync({
 			domain: rawQuote.approval.eip712.domain,
 			types: rawQuote.approval.eip712.types,
 			primaryType: rawQuote.approval.eip712.primaryType,
-			value: rawQuote.approval.eip712.message
+			value
 		}).then((hash) => ethers.utils.splitSignature(hash));
 
 		body.approval = {

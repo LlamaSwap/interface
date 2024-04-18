@@ -60,7 +60,7 @@ export async function swap({
 		throw e;
 	}
 }
-export async function gaslessApprove({ signTypedDataAsync, adapter, rawQuote }) {
+export async function gaslessApprove({ signTypedDataAsync, adapter, rawQuote, isInfiniteApproval }) {
 	const aggregator = adaptersMap[adapter];
 
 	if (!aggregator.gaslessApprove) return;
@@ -68,7 +68,8 @@ export async function gaslessApprove({ signTypedDataAsync, adapter, rawQuote }) 
 	try {
 		const res = await aggregator.gaslessApprove({
 			signTypedDataAsync,
-			rawQuote
+			rawQuote,
+			isInfiniteApproval
 		});
 		return res;
 	} catch (e) {
