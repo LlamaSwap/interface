@@ -80,7 +80,7 @@ export async function gaslessApprove({ signTypedDataAsync, rawQuote }) {
 export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }) {
 	// user must sign approval.eip712 and the trade.eip712 objects returned by /quote for gasless approvals
 	const body = { ...(approvalData ?? {}) };
-	console.log({ body });
+
 	const tradeSignature = await signTypedDataAsync({
 		domain: rawQuote.trade.eip712.domain,
 		types: rawQuote.trade.eip712.types,
