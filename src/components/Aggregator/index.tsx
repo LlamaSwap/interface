@@ -778,11 +778,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					setTxModalOpen(true);
 					txUrl = `${explorerUrl}/tx/${hash}`;
 					setTxUrl(txUrl);
-					forceRefreshTokenBalance();
 				} else {
 					toast(formatErrorToast({ reason: data.gaslessTxReceipt.reason }, false));
 				}
-
+				forceRefreshTokenBalance();
 				sendSwapEvent({
 					chain: selectedChain.value,
 					user: address,
