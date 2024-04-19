@@ -104,7 +104,7 @@ export async function gaslessApprove({ signTypedDataAsync, rawQuote, isInfiniteA
 
 		body.approval = {
 			type: rawQuote.approval.type,
-			eip712: rawQuote.approval.eip712,
+			eip712: { ...rawQuote.approval.eip712, message: value },
 			signature: {
 				v: approvalSignature.v,
 				r: approvalSignature.r,
