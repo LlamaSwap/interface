@@ -762,6 +762,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		onSuccess: (data, variables) => {
 			let txUrl;
 			if (data.gaslessTxReceipt) {
+				gaslessApprovalMutation.reset();
 				if (data.gaslessTxReceipt.status === 'confirmed' || data.gaslessTxReceipt.status === 'submitted') {
 					toast(formatSuccessToast(variables));
 					const hash = data.gaslessTxReceipt.transactions[0].hash;

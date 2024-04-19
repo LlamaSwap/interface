@@ -138,8 +138,9 @@ export async function gaslessApprove({ signTypedDataAsync, rawQuote, isInfiniteA
 
 	return body;
 }
+
 export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }) {
-	const body = { ...(approvalData ?? {}) };
+	const body = { ...(rawQuote.approval.isRequired && rawQuote.approval.isGaslessAvailable ? approvalData ?? {} : {}) };
 
 	const tradeSignature = await signTypedDataAsync({
 		domain: rawQuote.trade.eip712.domain,
