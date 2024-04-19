@@ -60,7 +60,24 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	)
 		return null;
 
-	if (data.allowanceTarget !== routers[chain].toLowerCase()) {
+	let spender;
+
+	if (data.approval.eip712.primaryType === 'Permit') {
+		spender = data.approval.eip712.message.spender;
+	}
+
+	if (data.approval.eip712.primaryType === 'MetaTransaction') {
+		spender = new ethers.utils.Interface(['function approve(address, uint)']).decodeFunctionData(
+			'approve',
+			data.approval.eip712.message.functionSignature
+		)[0];
+	}
+
+	if (
+		data.allowanceTarget.toLowerCase() !== routers[chain].toLowerCase() ||
+		!spender ||
+		spender.toLowerCase() !== routers[chain].toLowerCase()
+	) {
 		throw new Error(`Router address does not match`);
 	}
 
