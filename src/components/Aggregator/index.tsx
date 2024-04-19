@@ -52,7 +52,7 @@ import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
 import { normalizeTokens } from '~/utils';
 import RoutesPreview from './RoutesPreview';
-import { formatSuccessToast, formatErrorToast } from '~/utils/formatToast';
+import { formatSuccessToast, formatErrorToast, formatSubmittedToast } from '~/utils/formatToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -778,6 +778,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					setTxModalOpen(true);
 					txUrl = `${explorerUrl}/tx/${hash}`;
 					setTxUrl(txUrl);
+				} else if (data.gaslessTxReceipt.status === 'pending') {
+					toast(formatSubmittedToast(variables));
 				} else {
 					toast(formatErrorToast({ reason: data.gaslessTxReceipt.reason }, false));
 				}
