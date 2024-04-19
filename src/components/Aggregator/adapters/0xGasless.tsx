@@ -53,40 +53,44 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	if (!data.liquidityAvailable) return null;
 
 	// hide quote if it's unknown gasless approval signature
-	if (
-		data.approval.isRequired &&
-		data.approval.isGaslessAvailable &&
-		!['Permit', 'MetaTransaction'].includes(data.approval.eip712.primaryType)
-	)
-		return null;
+	if (data.approval.isRequired && data.approval.isGaslessAvailable) {
+		if (!['Permit', 'MetaTransaction'].includes(data.approval.eip712.primaryType)) {
+			return null;
+		}
 
-	let spender;
+		let spender;
 
-	if (data.approval.eip712.primaryType === 'Permit') {
-		spender = data.approval.eip712.message.spender;
-	}
+		if (data.approval.eip712.primaryType === 'Permit') {
+			spender = data.approval.eip712.message.spender;
+		}
 
-	if (data.approval.eip712.primaryType === 'MetaTransaction') {
-		spender = new ethers.utils.Interface(['function approve(address, uint)']).decodeFunctionData(
-			'approve',
-			data.approval.eip712.message.functionSignature
-		)[0];
+		if (data.approval.eip712.primaryType === 'MetaTransaction') {
+			spender = new ethers.utils.Interface(['function approve(address, uint)']).decodeFunctionData(
+				'approve',
+				data.approval.eip712.message.functionSignature
+			)[0];
+		}
+
+		if (!spender || spender.toLowerCase() !== routers[chain].toLowerCase()) {
+			throw new Error(`Router address does not match`);
+		}
 	}
 
 	if (
 		data.allowanceTarget.toLowerCase() !== routers[chain].toLowerCase() ||
-		!spender ||
-		spender.toLowerCase() !== routers[chain].toLowerCase() ||
 		data.trade.eip712.domain.verifyingContract.toLowerCase() !== routers[chain].toLowerCase()
 	) {
 		throw new Error(`Router address does not match`);
 	}
+
+	const isGaslessApproval = data.approval.isRequired && data.approval.isGaslessAvailable ? true : false;
 
 	return {
 		amountReturned: data.buyAmount,
 		amountIn: data.sellAmount,
 		rawQuote: data,
 		tokenApprovalAddress: data.allowanceTarget ?? null,
+		isGaslessApproval,
 		logo: 'https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F1690203644-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FKX9pG8rH3DbKDOvV7di7%252Ficon%252F1nKfBhLbPxd2KuXchHET%252F0x%2520logo.png%3Falt%3Dmedia%26token%3D25a85a3e-7f72-47ea-a8b2-e28c0d24074b'
 	};
 }

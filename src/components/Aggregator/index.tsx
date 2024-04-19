@@ -697,12 +697,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					.toFixed(0)
 			: selectedRoute?.fromAmount;
 
-	const isGaslessApproval =
-		selectedRoute?.isGasless &&
-		(selectedRoute.price.rawQuote as any).approval.isRequired &&
-		(selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
-			? true
-			: false;
+	const isGaslessApproval = selectedRoute?.price?.isGaslessApproval ?? false;
 
 	const {
 		isApproved: isTokenApproved,

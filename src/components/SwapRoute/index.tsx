@@ -18,6 +18,7 @@ interface IPrice {
 	estimatedGas: string;
 	tokenApprovalAddress: string;
 	logo: string;
+	isGaslessApproval?: boolean;
 	rawQuote?: {};
 	isMEVSafe?: boolean;
 }

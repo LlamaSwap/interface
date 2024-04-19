@@ -21,6 +21,7 @@ export interface IRoute {
 		estimatedGas: any;
 		tokenApprovalAddress: any;
 		logo: string;
+		isGaslessApproval?: boolean;
 		feeAmount?: number;
 		rawQuote?: {};
 	} | null;
