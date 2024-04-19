@@ -74,7 +74,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function gaslessApprove({ signTypedDataAsync, rawQuote, isInfiniteApproval }) {
-	// user must sign approval.eip712 and the trade.eip712 objects returned by /quote for gasless approvals
 	const body: any = {};
 
 	if (rawQuote.approval.isRequired && rawQuote.approval.isGaslessAvailable) {
@@ -118,7 +117,6 @@ export async function gaslessApprove({ signTypedDataAsync, rawQuote, isInfiniteA
 	return body;
 }
 export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }) {
-	// user must sign approval.eip712 and the trade.eip712 objects returned by /quote for gasless approvals
 	const body = { ...(approvalData ?? {}) };
 
 	const tradeSignature = await signTypedDataAsync({
