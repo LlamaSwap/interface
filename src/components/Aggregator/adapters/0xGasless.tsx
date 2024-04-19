@@ -76,7 +76,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	if (
 		data.allowanceTarget.toLowerCase() !== routers[chain].toLowerCase() ||
 		!spender ||
-		spender.toLowerCase() !== routers[chain].toLowerCase()
+		spender.toLowerCase() !== routers[chain].toLowerCase() ||
+		data.trade.eip712.domain.verifyingContract.toLowerCase() !== routers[chain].toLowerCase()
 	) {
 		throw new Error(`Router address does not match`);
 	}
