@@ -43,7 +43,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}&feeRecipient=${feeCollectorAddress}`,
 		{
 			headers: {
-				'0x-api-key': process.env.OX_API_KEY,
+				'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
 				'0x-chain-id': chainToId[chain]
 			}
 		}
@@ -163,7 +163,7 @@ export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }
 
 	const tx = await fetch(`https://api.0x.org/tx-relay/v1/swap/submit`, {
 		headers: {
-			'0x-api-key': process.env.OX_API_KEY,
+			'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
 			'0x-chain-id': chainToId[chain],
 			'Content-Type': 'application/json'
 		},
@@ -188,7 +188,7 @@ export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }
 
 	const gaslessTxReceipt = await fetch(`https://api.0x.org/tx-relay/v1/swap/status/${tx.tradeHash}`, {
 		headers: {
-			'0x-api-key': process.env.OX_API_KEY,
+			'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
 			'0x-chain-id': chainToId[chain]
 		}
 	}).then((res) => res.json());
