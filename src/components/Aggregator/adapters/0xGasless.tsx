@@ -161,6 +161,11 @@ export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }
 		}
 	};
 
+	const res = await submitSwap({ chain, body });
+	return res;
+}
+
+export async function submitSwap({ chain, body }) {
 	const tx = await fetch(`https://api.0x.org/tx-relay/v1/swap/submit`, {
 		headers: {
 			'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
@@ -186,12 +191,27 @@ export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }
 		};
 	}
 
-	const gaslessTxReceipt = await fetch(`https://api.0x.org/tx-relay/v1/swap/status/${tx.tradeHash}`, {
-		headers: {
-			'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
-			'0x-chain-id': chainToId[chain]
+	let gaslessTxReceipt;
+	let runs = 0;
+	do {
+		runs += 1;
+
+		gaslessTxReceipt = await fetch(`https://api.0x.org/tx-relay/v1/swap/status/${tx.tradeHash}`, {
+			headers: {
+				'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
+				'0x-chain-id': chainToId[chain]
+			}
+		}).then((res) => res.json());
+
+		if (gaslessTxReceipt.status !== 'pending') {
+			return { gaslessTxReceipt };
+		} else {
+			// sleep for 10 seconds
+			await sleep(10_000);
 		}
-	}).then((res) => res.json());
+	} while (gaslessTxReceipt.status === 'pending' && runs < 6); // keep querying status upto a min
 
 	return { gaslessTxReceipt };
 }
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
