@@ -1,7 +1,7 @@
 import { adapters } from './dexAggregators/list';
 
 const handler = async (event: AWSLambda.APIGatewayEvent): Promise<any> => {
-	const { protocol, chain, from, to, amount } = event.queryStringParameters!;
+	const { protocol, chain } = event.queryStringParameters!;
 	const body = JSON.parse(event.body!);
 	const agg = adapters.find((ag) => decodeURIComponent(ag.name) === protocol);
 	if (agg === undefined) {
@@ -14,14 +14,20 @@ const handler = async (event: AWSLambda.APIGatewayEvent): Promise<any> => {
 			}
 		};
 	}
-	const quote = await agg.getQuote(chain!, from!, to!, amount!, body!);
+	if (!(agg as any).submitSwap) {
+		return {
+			statusCode: 400,
+			body: JSON.stringify({ message: "Aggregator doesn't support submitting swap" }),
+			headers: {
+				'Cache-Control': `max-age=${3600}`,
+				'Access-Control-Allow-Origin': '*'
+			}
+		};
+	}
+	const res = await (agg as any).submitSwap({ chain, body });
 	return {
 		statusCode: 200,
-		body: JSON.stringify(quote),
-		headers: {
-			'Cache-Control': `max-age=${10}`,
-			'Access-Control-Allow-Origin': '*'
-		}
+		body: JSON.stringify(res)
 	};
 };
 

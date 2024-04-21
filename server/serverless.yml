@@ -68,6 +68,14 @@ functions:
       - http:
           path: dexAggregatorQuote
           method: post
+  submitSwap:
+    handler: src/submitSwap.default
+    timeout: 30
+    memorySize: 512
+    events:
+      - http:
+          path: submitSwap
+          method: post
     environment:
       EIGEN_API_KEY: ${env:EIGEN_API_KEY}
       HASHFLOW_API_KEY: ${env:HASHFLOW_API_KEY}

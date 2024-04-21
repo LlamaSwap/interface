@@ -7,7 +7,9 @@ export const redirectQuoteReq = async (
 	extra: any
 ) => {
 	const data = await fetch(
-		`https://swap-api.defillama.com/dexAggregatorQuote?protocol=${protocol}&chain=${chain}&from=${from}&to=${to}&amount=${amount}&api_key=nsr_UYWxuvj1hOCgHxJhDEKZ0g30c4Be3I5fOMBtFAA`,
+		`https://swap-api.defillama.com/dexAggregatorQuote?protocol=${encodeURIComponent(
+			protocol
+		)}&chain=${chain}&from=${from}&to=${to}&amount=${amount}&api_key=nsr_UYWxuvj1hOCgHxJhDEKZ0g30c4Be3I5fOMBtFAA`,
 		{
 			method: 'POST',
 			body: JSON.stringify(extra)

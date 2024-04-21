@@ -161,6 +161,15 @@ export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }
 		}
 	};
 
+	// const res = await fetch(
+	// 	`https://swap-api.defillama.com/submitSwap?protocol=${encodeURIComponent(
+	// 		name
+	// 	)}&chain=${chain}&api_key=nsr_UYWxuvj1hOCgHxJhDEKZ0g30c4Be3I5fOMBtFAA`,
+	// 	{
+	// 		method: 'POST',
+	// 		body: JSON.stringify(body)
+	// 	}
+	// ).then((res) => res.json());
 	const res = await submitSwap({ chain, body });
 	return res;
 }
