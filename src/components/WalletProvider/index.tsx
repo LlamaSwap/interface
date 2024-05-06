@@ -13,7 +13,8 @@ import {
 	metaMaskWallet,
 	braveWallet,
 	coinbaseWallet,
-	phantomWallet
+	phantomWallet,
+	safeWallet
 } from '@rainbow-me/rainbowkit/wallets';
 
 const { provider, chains } = configureChains(
@@ -43,7 +44,8 @@ const connectors = connectorsForWallets([
 			metaMaskWallet({ chains, projectId }),
 			coinbaseWallet({ chains, appName: 'LlamaSwap' }),
 			phantomWallet({ chains }),
-			braveWallet({ chains })
+			braveWallet({ chains }),
+			safeWallet({ chains })
 		]
 	}
 ]);
