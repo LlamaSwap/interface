@@ -9,7 +9,7 @@ export const chainToId = {
 	base: '8453'
 };
 
-export const name = 'Matcha/0x Gasless';
+export const name = '0x Gasless';
 export const token = 'ZRX';
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
