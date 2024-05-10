@@ -763,7 +763,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			let txUrl;
 			if (data.gaslessTxReceipt) {
 				gaslessApprovalMutation.reset();
-				if (data.gaslessTxReceipt.status === 'confirmed' || data.gaslessTxReceipt.status === 'submitted') {
+				if (
+					data.gaslessTxReceipt.status === 'confirmed' ||
+					data.gaslessTxReceipt.status === 'submitted' ||
+					data.gaslessTxReceipt.status === 'succeeded'
+				) {
 					toast(formatSuccessToast(variables));
 					const hash = data.gaslessTxReceipt.transactions[0].hash;
 					addRecentTransaction({
