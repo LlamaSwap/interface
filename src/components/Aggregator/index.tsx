@@ -1216,7 +1216,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												<Button
 													isLoading={swapMutation.isLoading || isApproveLoading || gaslessApprovalMutation.isLoading}
 													loadingText={
-														isConfirmingApproval || selectedRoute?.isGasless || gaslessApprovalMutation.isLoading
+														isConfirmingApproval || gaslessApprovalMutation.isLoading
 															? 'Confirming'
 															: 'Preparing transaction'
 													}
@@ -1453,7 +1453,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	swapMutation.isLoading || isApproveLoading || gaslessApprovalMutation.isLoading
 																}
 																loadingText={
-																	isConfirmingApproval || selectedRoute?.isGasless || gaslessApprovalMutation.isLoading
+																	isConfirmingApproval || gaslessApprovalMutation.isLoading
 																		? 'Confirming'
 																		: 'Preparing transaction'
 																}
