@@ -3,7 +3,7 @@ import { adapters } from './dexAggregators/list';
 const handler = async (event: AWSLambda.APIGatewayEvent): Promise<any> => {
 	const { protocol, chain, from, to, amount } = event.queryStringParameters!;
 	const body = JSON.parse(event.body!);
-	const agg = adapters.find((ag) => decodeURIComponent(ag.name) === protocol);
+	const agg = adapters.find((ag) => ag.name === protocol);
 	if (agg === undefined) {
 		return {
 			statusCode: 404,
