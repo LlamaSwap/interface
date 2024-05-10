@@ -69,8 +69,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({
 			userAddr: extra.userAddress, // the checksummed address used to generate the quote
-			pathId: quote.pathId, // Replace with the pathId from quote response in step 1
-			simulate: true // this can be set to true if the user isn't doing their own estimate gas call for the transaction
+			pathId: quote.pathId // Replace with the pathId from quote response in step 1
+			//simulate: true // this can be set to true if the user isn't doing their own estimate gas call for the transaction
 		})
 	}).then((res) => res.json());
 
@@ -78,12 +78,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		throw new Error(`Router address does not match`);
 	}
 
-	if (swapData.simulation.isSuccess !== true) {
-		throw new Error('tx reverts');
-	}
-
 	return {
-		amountReturned: swapData.simulation.amountsOut[0],
+		amountReturned: swapData.outputTokens[0].amount,
 		estimatedGas: swapData.transaction.gas <= 0 ? swapData.gasEstimate : swapData.transaction.gas,
 		rawQuote: swapData,
 		tokenApprovalAddress: routers[chain]
