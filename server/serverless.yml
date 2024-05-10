@@ -70,7 +70,7 @@ functions:
           method: post
   submitSwap:
     handler: src/submitSwap.default
-    timeout: 30
+    timeout: 240
     memorySize: 512
     events:
       - http:
