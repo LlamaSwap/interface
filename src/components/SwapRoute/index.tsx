@@ -74,7 +74,7 @@ const Route = ({
 		chain: selectedChain
 	});
 
-	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap')) return null;
+	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap' && !isGasless)) return null;
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
