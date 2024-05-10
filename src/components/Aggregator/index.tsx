@@ -763,21 +763,24 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			let txUrl;
 			if (data.gaslessTxReceipt) {
 				gaslessApprovalMutation.reset();
-				if (
+				const isSuccess =
 					data.gaslessTxReceipt.status === 'confirmed' ||
 					data.gaslessTxReceipt.status === 'submitted' ||
-					data.gaslessTxReceipt.status === 'succeeded'
-				) {
+					data.gaslessTxReceipt.status === 'succeeded';
+				if (isSuccess) {
 					toast(formatSuccessToast(variables));
-					const hash = data.gaslessTxReceipt.transactions[0].hash;
-					addRecentTransaction({
-						hash: hash,
-						description: `Swap transaction using ${variables.adapter} is sent.`
-					});
-					const explorerUrl = chainOnWallet.blockExplorers.default.url;
-					setTxModalOpen(true);
-					txUrl = `${explorerUrl}/tx/${hash}`;
-					setTxUrl(txUrl);
+					const transactions = data.gaslessTxReceipt.transactions;
+					const hash = transactions[transactions.length - 1]?.hash;
+					if (hash) {
+						addRecentTransaction({
+							hash: hash,
+							description: `Swap transaction using ${variables.adapter} is sent.`
+						});
+						const explorerUrl = chainOnWallet.blockExplorers.default.url;
+						setTxModalOpen(true);
+						txUrl = `${explorerUrl}/tx/${hash}`;
+						setTxUrl(txUrl);
+					}
 				} else if (data.gaslessTxReceipt.status === 'pending') {
 					toast(formatSubmittedToast(variables));
 				} else {
@@ -790,12 +793,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					from: variables.from,
 					to: variables.to,
 					aggregator: variables.adapter,
-					isError: data.gaslessTxReceipt.status === 'confirmed' ? false : true,
+					isError: isSuccess || data.gaslessTxReceipt.status === 'pending',
 					quote: variables.rawQuote,
 					txUrl,
 					amount: String(variables.amountIn),
 					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
-					errorData: data.gaslessTxReceipt,
+					errorData: data,
 					slippage,
 					routePlace: String(variables?.index),
 					route: variables.route
