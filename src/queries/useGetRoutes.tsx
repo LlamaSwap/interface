@@ -93,7 +93,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 		const txData = adapter?.getTxData?.(price) ?? '';
 		let l1Gas: number | 'Unknown' = 0;
 
-		if (chainsWithOpFees.includes(chain)) {
+		if (chainsWithOpFees.includes(chain) && adapter.isGasless !== true) {
 			l1Gas = await getOptimismFee(txData);
 		}
 
