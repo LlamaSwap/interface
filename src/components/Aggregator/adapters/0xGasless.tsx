@@ -40,10 +40,10 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			extra.slippage / 100
 		}&affiliateAddress=${defillamaReferrerAddress}&takerAddress=${
 			extra.userAddress
-		}&feeRecipient=${feeCollectorAddress}`,
+		}&feeRecipient=${feeCollectorAddress}&feeSellTokenPercentage=0.0015`,
 		{
 			headers: {
-				'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
+				'0x-api-key': process.env.OX_API_KEY,
 				'0x-chain-id': chainToId[chain]
 			}
 		}
@@ -114,7 +114,7 @@ export async function gaslessApprove({ signTypedDataAsync, rawQuote, isInfiniteA
 						[ethers.utils.getAddress(rawQuote.allowanceTarget), BigNumber.from(rawQuote.sellAmount)]
 					)
 			  }
-			: rawQuote.approval.eip712.message;
+			: null;
 
 		const approvalSignature = await signTypedDataAsync({
 			domain: rawQuote.approval.eip712.domain,
@@ -161,23 +161,22 @@ export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }
 		}
 	};
 
-	// const res = await fetch(
-	// 	`https://swap-api.defillama.com/submitSwap?protocol=${encodeURIComponent(
-	// 		name
-	// 	)}&chain=${chain}&api_key=nsr_UYWxuvj1hOCgHxJhDEKZ0g30c4Be3I5fOMBtFAA`,
-	// 	{
-	// 		method: 'POST',
-	// 		body: JSON.stringify(body)
-	// 	}
-	// ).then((res) => res.json());
-	const res = await submitSwap({ chain, body });
+	const res = await fetch(
+		`https://swap-api.defillama.com/submitSwap?protocol=${encodeURIComponent(
+			name
+		)}&chain=${chain}&api_key=nsr_UYWxuvj1hOCgHxJhDEKZ0g30c4Be3I5fOMBtFAA`,
+		{
+			method: 'POST',
+			body: JSON.stringify(body)
+		}
+	).then((res) => res.json());
 	return res;
 }
 
 export async function submitSwap({ chain, body }) {
 	const tx = await fetch(`https://api.0x.org/tx-relay/v1/swap/submit`, {
 		headers: {
-			'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
+			'0x-api-key': process.env.OX_API_KEY,
 			'0x-chain-id': chainToId[chain],
 			'Content-Type': 'application/json'
 		},
@@ -207,7 +206,7 @@ export async function submitSwap({ chain, body }) {
 
 		gaslessTxReceipt = await fetch(`https://api.0x.org/tx-relay/v1/swap/status/${tx.tradeHash}`, {
 			headers: {
-				'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b',
+				'0x-api-key': process.env.OX_API_KEY,
 				'0x-chain-id': chainToId[chain]
 			}
 		}).then((res) => res.json());
@@ -215,10 +214,10 @@ export async function submitSwap({ chain, body }) {
 		if (gaslessTxReceipt.status !== 'pending') {
 			return { gaslessTxReceipt };
 		} else {
-			// sleep for 10 seconds
-			await sleep(10_000);
+			// sleep for 5 seconds
+			await sleep(5_000);
 		}
-	} while (gaslessTxReceipt.status === 'pending' && runs < 6); // keep querying status upto a min
+	} while (gaslessTxReceipt.status === 'pending' && runs < 12); // keep querying status upto a min
 
 	return { gaslessTxReceipt };
 }
