@@ -27,7 +27,19 @@ export function getAllChains() {
 	return chainsOptions;
 }
 
-export async function swap({ chain, from, to, amount, signer, slippage = '1', adapter, rawQuote, tokens }) {
+export async function swap({
+	chain,
+	from,
+	to,
+	amount,
+	signer,
+	signTypedDataAsync,
+	slippage = '1',
+	adapter,
+	rawQuote,
+	tokens,
+	approvalData
+}) {
 	const aggregator = adaptersMap[adapter];
 
 	try {
@@ -37,9 +49,27 @@ export async function swap({ chain, from, to, amount, signer, slippage = '1', ad
 			to,
 			amount,
 			signer,
+			signTypedDataAsync,
 			slippage,
 			rawQuote,
-			tokens
+			tokens,
+			approvalData
+		});
+		return res;
+	} catch (e) {
+		throw e;
+	}
+}
+export async function gaslessApprove({ signTypedDataAsync, adapter, rawQuote, isInfiniteApproval }) {
+	const aggregator = adaptersMap[adapter];
+
+	if (!aggregator.gaslessApprove) return;
+
+	try {
+		const res = await aggregator.gaslessApprove({
+			signTypedDataAsync,
+			rawQuote,
+			isInfiniteApproval
 		});
 		return res;
 	} catch (e) {
