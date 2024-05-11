@@ -1226,7 +1226,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														isApproveLoading ||
 														(gaslessApprovalMutation.isLoading && !gaslessApprovalMutation.variables.isInfiniteApproval)
 													}
-													loadingText={isConfirmingApproval ? 'Confirming' : 'Preparing transaction'}
+													loadingText={
+														isConfirmingApproval ||
+														(gaslessApprovalMutation.isLoading && !gaslessApprovalMutation.variables.isInfiniteApproval)
+															? 'Confirming'
+															: 'Preparing transaction'
+													}
 													colorScheme={'messenger'}
 													onClick={() => {
 														//scroll Routes into view
@@ -1275,7 +1280,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 											{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
 												<Button
 													colorScheme={'messenger'}
-													loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
+													loadingText={
+														isConfirmingInfiniteApproval ||
+														(gaslessApprovalMutation.isLoading && gaslessApprovalMutation.variables.isInfiniteApproval)
+															? 'Confirming'
+															: 'Preparing transaction'
+													}
 													isLoading={
 														isApproveInfiniteLoading ||
 														(gaslessApprovalMutation.isLoading && gaslessApprovalMutation.variables.isInfiniteApproval)
@@ -1461,10 +1471,15 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														) : (
 															<Button
 																isLoading={
-																	swapMutation.isLoading || isApproveLoading || gaslessApprovalMutation.isLoading
+																	swapMutation.isLoading ||
+																	isApproveLoading ||
+																	(gaslessApprovalMutation.isLoading &&
+																		!gaslessApprovalMutation.variables.isInfiniteApproval)
 																}
 																loadingText={
-																	isConfirmingApproval || gaslessApprovalMutation.isLoading
+																	isConfirmingApproval ||
+																	(gaslessApprovalMutation.isLoading &&
+																		!gaslessApprovalMutation.variables.isInfiniteApproval)
 																		? 'Confirming'
 																		: 'Preparing transaction'
 																}
@@ -1510,8 +1525,18 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
 															<Button
 																colorScheme={'messenger'}
-																loadingText={isConfirmingInfiniteApproval ? 'Confirming' : 'Preparing transaction'}
-																isLoading={isApproveInfiniteLoading}
+																loadingText={
+																	isConfirmingInfiniteApproval ||
+																	(gaslessApprovalMutation.isLoading &&
+																		gaslessApprovalMutation.variables.isInfiniteApproval)
+																		? 'Confirming'
+																		: 'Preparing transaction'
+																}
+																isLoading={
+																	isApproveInfiniteLoading ||
+																	(gaslessApprovalMutation.isLoading &&
+																		gaslessApprovalMutation.variables.isInfiniteApproval)
+																}
 																onClick={() => {
 																	if (!isApproved && isGaslessApproval) {
 																		handleGaslessApproval({ isInfiniteApproval: true });
