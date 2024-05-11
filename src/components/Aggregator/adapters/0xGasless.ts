@@ -54,7 +54,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	// hide quote if it's unknown gasless approval signature
 	if (data.approval.isRequired && data.approval.isGaslessAvailable) {
-		if (!['Permit', 'MetaTransaction'].includes(data.approval.eip712.primaryType)) {
+		if (!['Permit'].includes(data.approval.eip712.primaryType)) {
 			return null;
 		}
 
