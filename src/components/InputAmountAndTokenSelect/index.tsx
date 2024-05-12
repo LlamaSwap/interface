@@ -124,7 +124,11 @@ export function InputAmountAndTokenSelect({
 										: '#a2a2a2'
 								}
 							>
-								{priceImpact && !Number.isNaN(priceImpact) ? ` (-${priceImpact.toFixed(2)}%)` : ''}
+								{priceImpact && !Number.isNaN(priceImpact)
+									? priceImpact < 0
+										? ` (+${(priceImpact * -1).toFixed(2)}%)`
+										: ` (-${priceImpact.toFixed(2)}%)`
+									: ''}
 							</Text>
 						</>
 					)}
