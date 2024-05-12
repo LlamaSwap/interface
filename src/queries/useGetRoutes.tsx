@@ -21,6 +21,7 @@ export interface IRoute {
 		estimatedGas: any;
 		tokenApprovalAddress: any;
 		logo: string;
+		isGaslessApproval?: boolean;
 		feeAmount?: number;
 		rawQuote?: {};
 	} | null;
@@ -35,6 +36,7 @@ export interface IRoute {
 		data: string;
 	};
 	isOutputAvailable: boolean;
+	isGasless: boolean;
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
@@ -53,7 +55,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			txData: '',
 			l1Gas: 0,
 			tx: {},
-			isOutputAvailable: false
+			isOutputAvailable: false,
+			isGasless: adapter.isGasless ?? false
 		};
 	}
 
@@ -78,7 +81,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 				txData: '',
 				l1Gas: 0,
 				tx: {},
-				isOutputAvailable: false
+				isOutputAvailable: false,
+				isGasless: adapter.isGasless ?? false
 			};
 		} else {
 			price = await quouteFunc(chain, from, to, amount, extra);
@@ -89,7 +93,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 		const txData = adapter?.getTxData?.(price) ?? '';
 		let l1Gas: number | 'Unknown' = 0;
 
-		if (chainsWithOpFees.includes(chain)) {
+		if (chainsWithOpFees.includes(chain) && adapter.isGasless !== true) {
 			l1Gas = await getOptimismFee(txData);
 		}
 
@@ -101,7 +105,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			name: adapter.name,
 			airdrop: !adapter.token,
 			fromAmount: amountIn,
-			isOutputAvailable: adapter.isOutputAvailable
+			isOutputAvailable: adapter.isOutputAvailable,
+			isGasless: adapter.isGasless ?? false
 		};
 
 		return res;
@@ -115,7 +120,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			fromAmount: amount,
 			txData: '',
 			tx: {},
-			isOutputAvailable: false
+			isOutputAvailable: false,
+			isGasless: adapter.isGasless ?? false
 		};
 	}
 }
