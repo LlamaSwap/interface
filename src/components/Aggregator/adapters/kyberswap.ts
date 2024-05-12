@@ -20,8 +20,10 @@ export const chainToId = {
 	polygonzkevm: 'polygon-zkevm',
 	linea: 'linea',
 	base: 'base'
-	//velas
-	//oasis
+	//mantle
+	//scroll
+	//blast
+	//xlayer
 };
 
 export const name = 'KyberSwap';

@@ -141,7 +141,15 @@ export function PriceImpact({
 								<WarningTwoIcon style={{ marginLeft: 'auto' }} />
 							) : null}
 
-							<span>{isPriceImpactNotKnown ? 'Unknown' : `${selectedRoutesPriceImpact.toFixed(2)}%`}</span>
+							<span>
+								{isPriceImpactNotKnown
+									? 'Unknown'
+									: `${
+											selectedRoutesPriceImpact < 0
+												? '+' + (selectedRoutesPriceImpact * -1).toFixed(2)
+												: selectedRoutesPriceImpact.toFixed(2)
+									  }%`}
+							</span>
 						</Text>
 						<Text
 							display="flex"
