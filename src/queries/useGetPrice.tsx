@@ -20,6 +20,7 @@ interface IPrice {
 
 type DexScreenerTokenPair = {
 	priceUsd: string;
+	chainId: string;
 	baseToken: {
 		address: string;
 	};
@@ -88,9 +89,10 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 			);
 
 			gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
-			fromTokenPrice =
-				fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || (await getExperimentalPrice(fromToken));
-			toTokenPrice = toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || (await getExperimentalPrice(toToken));
+			[fromTokenPrice, toTokenPrice] = await Promise.all([
+				fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain, fromToken),
+				toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || getExperimentalPrice(rawChain, toToken)
+			]);
 		}
 
 		return {
@@ -108,7 +110,8 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 	}
 }
 
-const getExperimentalPrice = async (token: string): Promise<number | undefined> => {
+const getExperimentalPrice = async (chain: string, token: string): Promise<number | undefined> => {
+	if (chain === 'gnosis') chain = 'gnosischain';
 	try {
 		const expirementalPrices = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`).then((res) =>
 			res.json()
@@ -116,7 +119,7 @@ const getExperimentalPrice = async (token: string): Promise<number | undefined> 
 
 		let correctPairs = 0;
 		const total = expirementalPrices.pairs.reduce((acc: number, pair: DexScreenerTokenPair) => {
-			if (pair.baseToken.address === token && pair.liquidity.usd > 10000) {
+			if (pair.baseToken.address === token && pair.liquidity.usd > 10000 && pair.chainId === chain) {
 				correctPairs++;
 				return acc + Number(pair.priceUsd);
 			} else {
