@@ -10,8 +10,11 @@ export const chainToId = {
 	avax: 43114,
 	bsc: 56,
 	fantom: 250,
-	zksync: 324
+	zksync: 324,
 	//polygonzkevm: 1101
+	//mantle
+	//mode:
+	linea: 59144
 };
 
 export const name = 'Odos';
@@ -29,7 +32,8 @@ const routers = {
 	avax: '0x88de50b233052e4fb783d4f6db78cc34fea3e9fc',
 	bsc: '0x89b8aa89fdd0507a99d334cbe3c808fafc7d850e',
 	fantom: '0xd0c22a5435f4e8e5770c1fafb5374015fc12f7cd',
-	zksync: '0x4bBa932E9792A2b917D47830C93a9BC79320E4f7'
+	zksync: '0x4bBa932E9792A2b917D47830C93a9BC79320E4f7',
+	linea: '0x2d8879046f1559E53eb052E949e9544bCB72f414'
 	//polygonzkevm: '0x2b8B3f0949dfB616602109D2AAbBA11311ec7aEC'
 };
 
