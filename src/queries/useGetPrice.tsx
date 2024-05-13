@@ -113,21 +113,24 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 const getExperimentalPrice = async (chain: string, token: string): Promise<number | undefined> => {
 	if (chain === 'gnosis') chain = 'gnosischain';
 	try {
-		const expirementalPrices = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`).then((res) =>
+		const experimentalPrices = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`).then((res) =>
 			res.json()
 		);
 
-		let correctPairs = 0;
-		const total = expirementalPrices.pairs.reduce((acc: number, pair: DexScreenerTokenPair) => {
-			if (pair.baseToken.address === token && pair.liquidity.usd > 10000 && pair.chainId === chain) {
-				correctPairs++;
-				return acc + Number(pair.priceUsd);
-			} else {
-				return acc;
+		let weightedPrice = 0;
+		let totalLiquidity = 0;
+
+		experimentalPrices.pairs.forEach((pair: DexScreenerTokenPair) => {
+			const { priceUsd, liquidity, chainId, baseToken } = pair;
+			if (baseToken.address === token && liquidity.usd > 10000 && chainId === chain) {
+				weightedPrice += Number(priceUsd) * liquidity.usd;
+				totalLiquidity += liquidity.usd;
 			}
-		}, 0);
-		return total / correctPairs;
-	} catch (e) {
+		});
+
+		return totalLiquidity > 0 ? weightedPrice / totalLiquidity : undefined;
+	} catch (error) {
+		console.log(error);
 		return undefined;
 	}
 };
