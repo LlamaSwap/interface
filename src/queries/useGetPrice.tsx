@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { chainGasToken, llamaToGeckoChainsMap } from '~/components/Aggregator/constants';
 import { providers } from '~/components/Aggregator/rpcs';
+import { ethers } from 'ethers';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -122,7 +123,7 @@ const getExperimentalPrice = async (chain: string, token: string): Promise<numbe
 
 		experimentalPrices.pairs.forEach((pair: DexScreenerTokenPair) => {
 			const { priceUsd, liquidity, chainId, baseToken } = pair;
-			if (baseToken.address === token && liquidity.usd > 10000 && chainId === chain) {
+			if (baseToken.address === ethers.utils.getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
 				weightedPrice += Number(priceUsd) * liquidity.usd;
 				totalLiquidity += liquidity.usd;
 			}
