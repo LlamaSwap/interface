@@ -93,12 +93,10 @@ export const rpcUrls = {
 	},
 	10: {
 		default: 'https://rpc.ankr.com/optimism',
-		onerpc: 'https://1rpc.io/op',
 		blockpi: 'https://optimism.blockpi.network/v1/rpc/public'
 	},
 	42161: {
 		default: 'https://rpc.ankr.com/arbitrum',
-		onerpc: 'https://1rpc.io/arb',
 		arb: 'https://arb1.arbitrum.io/rpc'
 	},
 	321: {
@@ -253,7 +251,6 @@ export const rpcUrls = {
 	},
 	8453: {
 		default: 'https://mainnet.base.org',
-		second: 'https://1rpc.io/base',
 		third: 'https://base-mainnet.public.blastapi.io'
 	},
 	59144: {
