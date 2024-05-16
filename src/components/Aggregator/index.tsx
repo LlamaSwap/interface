@@ -70,6 +70,7 @@ import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chak
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
+import { useGetAutoSlippage } from '~/queries/useGetAutoSlippage';
 
 /*
 Integrated:
@@ -320,7 +321,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
 
-	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
+	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', 'auto');
 	const [lastOutputValue, setLastOutputValue] = useState(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
@@ -409,6 +410,25 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		return { finalSelectedFromToken, finalSelectedToToken };
 	}, [fromToken2, selectedChain?.id, toToken2, selectedFromToken, selectedToToken]);
 
+	const { data: autoSlippage, isLoading: fetchingAutoSlippage } = useGetAutoSlippage({
+		chainId: selectedChain?.chainId,
+		fromToken: finalSelectedFromToken?.value,
+		toToken: finalSelectedToToken?.value,
+		disabled: slippage !== 'auto',
+		onError: () => {
+			setSlippage('0.5');
+		}
+	});
+
+	useEffect(() => {
+		// auto slippage is only supported on ethereum
+		if (chainOnWallet?.id !== 1 && slippage === 'auto') {
+			setSlippage('0.5');
+		}
+	}, [chainOnWallet, slippage]);
+
+	const finalSlippage = autoSlippage ?? slippage;
+
 	// format input amount of selected from token
 	const amountWithDecimals = BigNumber(debouncedAmount && debouncedAmount !== '' ? debouncedAmount : '0')
 		.times(BigNumber(10).pow(finalSelectedFromToken?.decimals || 18))
@@ -475,10 +495,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			amount: debouncedAmount,
 			fromToken: finalSelectedFromToken,
 			toToken: finalSelectedToToken,
-			slippage,
+			slippage: finalSlippage,
 			isPrivacyEnabled,
 			amountOut: amountOutWithDecimals
-		}
+		},
+		disabled: fetchingAutoSlippage || finalSlippage === 'auto'
 	});
 
 	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
@@ -678,7 +699,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			? +selectedRoute?.fromAmount > +balance.data.value
 			: false;
 
-	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '';
+	const slippageIsWorng = !!finalSlippage || Number.isNaN(Number(finalSlippage));
 
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
@@ -690,9 +711,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	// approve/swap tokens
 	const amountToApprove =
-		amountOut && amountOut !== ''
+		!!finalSlippage && amountOut && amountOut !== ''
 			? BigNumber(selectedRoute?.fromAmount)
-					.times(100 + Number(slippage) * 2)
+					.times(100 + Number(finalSlippage) * 2)
 					.div(100)
 					.toFixed(0)
 			: selectedRoute?.fromAmount;
@@ -800,7 +821,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					amount: String(variables.amountIn),
 					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 					errorData: data,
-					slippage,
+					slippage: finalSlippage,
 					routePlace: String(variables?.index),
 					route: variables.route
 				});
@@ -838,7 +859,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						amount: String(variables.amountIn),
 						amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 						errorData: {},
-						slippage,
+						slippage: finalSlippage,
 						routePlace: String(variables?.index),
 						route: variables.route
 					});
@@ -890,7 +911,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							amount: String(variables.amountIn),
 							amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 							errorData: {},
-							slippage,
+							slippage: finalSlippage,
 							routePlace: String(variables?.index),
 							route: variables.route,
 							reportedOutput: Number(variables.amount) || 0,
@@ -915,7 +936,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					amount: String(variables.amountIn),
 					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
 					errorData: err,
-					slippage,
+					slippage: finalSlippage,
 					routePlace: String(variables?.index),
 					route: variables.route
 				});
@@ -939,7 +960,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				to: finalSelectedToToken.value,
 				signer,
 				signTypedDataAsync,
-				slippage,
+				slippage: finalSlippage,
 				adapter: selectedRoute.name,
 				rawQuote: selectedRoute.price.rawQuote,
 				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
@@ -979,7 +1000,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const warnings = [
 		aggregator === 'CowSwap' ? (
 			<>
-				{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 2 ? (
+				{!!finalSlippage &&
+				finalSelectedFromToken.value === ethers.constants.AddressZero &&
+				Number(finalSlippage) < 2 ? (
 					<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow1">
 						<AlertIcon />
 						Swaps from {finalSelectedFromToken.symbol} on CowSwap need to have slippage higher than 2%.
@@ -1141,10 +1164,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						setSlippage={setSlippage}
 						fromToken={finalSelectedFromToken?.symbol}
 						toToken={finalSelectedToToken?.symbol}
+						finalSlippage={finalSlippage}
 					/>
 
 					<PriceImpact
-						isLoading={isLoading || fetchingTokenPrices}
+						isLoading={isLoading || fetchingTokenPrices || fetchingAutoSlippage}
 						fromTokenPrice={fromTokenPrice}
 						fromToken={finalSelectedFromToken}
 						toTokenPrice={toTokenPrice}
@@ -1154,7 +1178,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						}
 						selectedRoutesPriceImpact={selectedRoutesPriceImpact}
 						amount={selectedRoute?.amountIn}
-						slippage={slippage}
+						slippage={finalSlippage}
 						isPriceImpactNotKnown={isPriceImpactNotKnown}
 					/>
 					<Box display={['none', 'none', 'flex', 'flex']} flexDirection="column" gap="4px">
@@ -1395,6 +1419,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					finalSelectedFromToken &&
 					finalSelectedToToken &&
 					!(disabledAdapters.length === adaptersNames.length) ? (
+						<Loader />
+					) : fetchingAutoSlippage ? (
 						<Loader />
 					) : (!debouncedAmount && !debouncedAmountOut) ||
 					  !finalSelectedFromToken ||
