@@ -699,7 +699,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			? +selectedRoute?.fromAmount > +balance.data.value
 			: false;
 
-	const slippageIsWorng = !!finalSlippage || Number.isNaN(Number(finalSlippage));
+	const slippageIsWrong = finalSlippage === '' || Number.isNaN(Number(finalSlippage));
 
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
@@ -945,7 +945,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	});
 
 	const handleSwap = () => {
-		if (selectedRoute && selectedRoute.price && !slippageIsWorng) {
+		if (selectedRoute && selectedRoute.price && !slippageIsWrong) {
 			if (hasMaxPriceImpact && !isDegenModeEnabled) {
 				toast({
 					title: 'Price impact is too high!',
@@ -1287,7 +1287,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														!(finalSelectedFromToken && finalSelectedToToken) ||
 														insufficientBalance ||
 														!selectedRoute ||
-														slippageIsWorng ||
+														slippageIsWrong ||
 														!isAmountSynced ||
 														isApproveInfiniteLoading
 													}
@@ -1296,7 +1296,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														? 'Select Aggregator'
 														: isApproved
 														? `Swap via ${selectedRoute.name}`
-														: slippageIsWorng
+														: slippageIsWrong
 														? 'Set Slippage'
 														: 'Approve'}
 												</Button>
@@ -1548,7 +1548,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	isApproveLoading ||
 																	isApproveResetLoading ||
 																	!selectedRoute ||
-																	slippageIsWorng ||
+																	slippageIsWrong ||
 																	!isAmountSynced
 																}
 															>
@@ -1556,7 +1556,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	? 'Select Aggregator'
 																	: isApproved
 																	? `Swap via ${selectedRoute?.name}`
-																	: slippageIsWorng
+																	: slippageIsWrong
 																	? 'Set Slippage'
 																	: 'Approve'}
 															</Button>
