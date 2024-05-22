@@ -1028,18 +1028,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				/>
 			) : null}
 
-			<Text fontSize="1rem" fontWeight="500" display={{ base: 'none', md: 'block', lg: 'block' }}>
-				This product is still in beta. If you run into any issue please let us know in our{' '}
-				<a
-					style={{ textDecoration: 'underline' }}
-					target={'_blank'}
-					rel="noreferrer noopener"
-					href="https://discord.swap.defillama.com/"
-				>
-					discord server
-				</a>
-			</Text>
-
 			<BodyWrapper>
 				<Body>
 					<div>
@@ -1624,7 +1612,17 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			</BodyWrapper>
 
 			{window === parent ? <FAQs /> : null}
-
+			<Text fontSize="1rem" fontWeight="500" display={{ base: 'none', md: 'block', lg: 'block' }}>
+				This product is still in beta. If you run into any issue please let us know in our{' '}
+				<a
+					style={{ textDecoration: 'underline' }}
+					target={'_blank'}
+					rel="noreferrer noopener"
+					href="https://discord.swap.defillama.com/"
+				>
+					discord server
+				</a>
+			</Text>
 			<TransactionModal open={txModalOpen} setOpen={setTxModalOpen} link={txUrl} />
 		</Wrapper>
 	);
