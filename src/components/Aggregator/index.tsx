@@ -324,7 +324,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', 'auto');
 	const [lastOutputValue, setLastOutputValue] = useState(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
-	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
+	const [isDegenModeEnabled] = useLocalStorage('llamaswap-degenmode', false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 
 	// mobile states
@@ -422,10 +422,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	useEffect(() => {
 		// auto slippage is only supported on ethereum
-		if (chainOnWallet?.id !== 1 && slippage === 'auto') {
+		if (isConnected && chainOnWallet?.id !== 1 && slippage === 'auto') {
 			setSlippage('0.5');
 		}
-	}, [chainOnWallet, slippage]);
+	}, [isConnected, chainOnWallet, slippage]);
 
 	const finalSlippage = autoSlippage ?? slippage;
 
