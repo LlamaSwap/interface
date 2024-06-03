@@ -48,7 +48,6 @@ export const rpcUrls = {
 	},
 	137: {
 		default: 'https://polygon-rpc.com',
-		maticvigil: 'https://rpc-mainnet.maticvigil.com',
 		quicknode: 'https://rpc-mainnet.matic.quiknode.pro',
 		ankr: 'https://rpc.ankr.com/polygon'
 	},
