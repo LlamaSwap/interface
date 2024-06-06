@@ -435,7 +435,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			chainTokenList
 				?.concat(savedTokens)
 				.map((token) => {
-					const tokenBalance = tokenBalances?.find((t) => t.address.toLowerCase() === token?.address?.toLowerCase());
+					const tokenBalance = tokenBalances?.[token?.address?.toLowerCase()];
 
 					return {
 						...token,

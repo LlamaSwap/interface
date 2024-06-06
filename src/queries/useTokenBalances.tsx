@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { IToken } from '~/types';
 
-type Balances = Array<IToken>;
+type Balances = Record<string, any>;
 
 function scramble(str: string) {
 	return str.split('').reduce((a, b) => {
@@ -18,17 +18,20 @@ const getBalances = async (address, chain) => {
 		)}/v1/${chain}/address/${address}/balances_v2/`
 	).then((r) => r.json());
 
-	return balances.data.items.map((t: any) => ({
-		address:
+	return balances.data.items.reduce((all: Balances, t: any) => {
+		const address =
 			t.contract_address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 				? '0x0000000000000000000000000000000000000000'
-				: t.contract_address,
-		decimals: t.contract_decimals,
-		symbol: t.contract_ticker_symbol ?? 'UNKNOWN',
-		price: t.quote_rate,
-		amount: t.balance,
-		balanceUSD: t.quote ?? 0
-	}));
+				: t.contract_address;
+		all[address.toLowerCase()] = {
+			decimals: t.contract_decimals,
+			symbol: t.contract_ticker_symbol ?? 'UNKNOWN',
+			price: t.quote_rate,
+			amount: t.balance,
+			balanceUSD: t.quote ?? 0
+		};
+		return all;
+	}, {} as Balances);
 };
 
 export const useTokenBalances = (address, chain) => {
