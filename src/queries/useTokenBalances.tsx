@@ -10,7 +10,7 @@ function scramble(str: string) {
 }
 
 const getBalances = async (address, chain) => {
-	if (!address || chain) return [];
+	if (!address || !chain) return [];
 
 	const balances: any = await fetch(
 		`https://covalent-api.blastapi.io/${scramble(
@@ -19,7 +19,10 @@ const getBalances = async (address, chain) => {
 	).then((r) => r.json());
 
 	return balances.data.items.map((t: any) => ({
-		address: t.contract_address,
+		address:
+			t.contract_address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+				? '0x0000000000000000000000000000000000000000'
+				: t.contract_address,
 		decimals: t.contract_decimals,
 		symbol: t.contract_ticker_symbol ?? 'UNKNOWN',
 		price: t.quote_rate,
