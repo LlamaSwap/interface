@@ -424,7 +424,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
 	// selected from token's balances
 	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain.id });
-	const { data: tokenBalances } = useTokenBalances(address);
+	const { data: tokenBalances } = useTokenBalances(address, selectedChain.id);
 	const { data: gasPriceData } = useFeeData({
 		chainId: selectedChain?.id,
 		enabled: selectedChain ? true : false
@@ -435,9 +435,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			chainTokenList
 				?.concat(savedTokens)
 				.map((token) => {
-					const tokenBalance = tokenBalances?.[selectedChain?.id]?.find(
-						(t) => t.address.toLowerCase() === token?.address?.toLowerCase()
-					);
+					const tokenBalance = tokenBalances?.find((t) => t.address.toLowerCase() === token?.address?.toLowerCase());
 
 					return {
 						...token,
