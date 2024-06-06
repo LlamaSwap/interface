@@ -358,7 +358,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		address: fromTokenAddress as `0x${string}`,
 		chainId: selectedChain.id,
 		enabled:
-			typeof fromTokenAddress === 'string' && fromTokenAddress.length === 42 && selectedChain && !selectedFromToken
+			router.isReady &&
+			typeof fromTokenAddress === 'string' &&
+			fromTokenAddress.length === 42 &&
+			selectedChain &&
+			!selectedFromToken
 				? true
 				: false
 	});
@@ -366,7 +370,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		address: toTokenAddress as `0x${string}`,
 		chainId: selectedChain.id,
 		enabled:
-			typeof toTokenAddress === 'string' && toTokenAddress.length === 42 && selectedChain && !selectedToToken
+			router.isReady &&
+			typeof toTokenAddress === 'string' &&
+			toTokenAddress.length === 42 &&
+			selectedChain &&
+			!selectedToToken
 				? true
 				: false
 	});
@@ -424,7 +432,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
 	// selected from token's balances
 	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain.id });
-	const { data: tokenBalances } = useTokenBalances(address, selectedChain.id);
+	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain.id : null);
 	const { data: gasPriceData } = useFeeData({
 		chainId: selectedChain?.id,
 		enabled: selectedChain ? true : false
