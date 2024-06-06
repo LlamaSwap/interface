@@ -35,7 +35,5 @@ const getBalances = async (address, chain) => {
 };
 
 export const useTokenBalances = (address, chain) => {
-	return useQuery<Balances>(['balances', address, chain], () => getBalances(address, chain), {
-		refetchInterval: 20_000
-	});
+	return useQuery<Balances>(['balances', address, chain], () => getBalances(address, chain));
 };
