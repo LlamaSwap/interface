@@ -1,0 +1,933 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Swap API v1 → v2 migration guide</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+    margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-uiBlue { background-color: rgba(35, 131, 226, .07); }
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-transparentGray { background-color: rgba(227, 226, 224, 0); }
+.select-value-color-translucentGray { background-color: rgba(255, 255, 255, 0.0375); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(253, 236, 200, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+.select-value-color-pageGlass { background-color: undefined; }
+.select-value-color-washGlass { background-color: undefined; }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="c0f1a854-4f7b-4e1f-8988-4de26d880964" class="page sans"><header><div class="page-header-icon undefined"><span class="icon">📦</span></div><h1 class="page-title">Swap API v1 → v2 migration guide</h1><p class="page-description"></p></header><div class="page-body"><p id="6f54ed59-a595-4e11-a753-28cab170c8f7" class=""><em>Learn how to migrate to the latest version (v2) of Swap API</em></p><p id="691015b6-e422-4d7f-a385-19da3b1a71c2" class="">
+</p><figure class="block-color-yellow_background callout" style="white-space:pre-wrap;display:flex" id="5121a62a-d51e-4d9f-95a6-91ba15740c63"><div style="font-size:1.5em"><span class="icon">⚡</span></div><div style="width:100%">Quicklink for API V2 demo repo: <a href="https://github.com/0xProject/0x-examples/tree/jlin/update-with-swap-v2/swap-next-app-v2">link</a></div></figure><p id="10488c20-55dc-4d8f-b7cb-f5ee59816514" class="">
+</p><p id="68cac33b-f553-4dfc-b640-53322ddabbef" class="">The Swap API has undergone a major update that will require updates in your integration. This new version offers:</p><ul id="122e066e-52bf-40ec-95fd-035126c115dd" class="bulleted-list"><li style="list-style-type:disc">a new set of 0x smart contracts that offer secure upgradability</li></ul><ul id="de14547b-931f-4f56-b082-76d717964760" class="bulleted-list"><li style="list-style-type:disc">increased security via the <a href="https://blog.uniswap.org/permit2-and-universal-router">Permit2 contract</a> for allowances</li></ul><ul id="3cc3fa7b-c702-41dd-8022-559378ac111f" class="bulleted-list"><li style="list-style-type:disc">improved swap pricing</li></ul><ul id="1234ab43-4d5a-4658-b7bb-8e531a9793c1" class="bulleted-list"><li style="list-style-type:disc">improved monetization features (trade surplus coming soon)</li></ul><hr id="ddcd9496-9f0b-4102-a4d9-a02138a7e4cc"/><h2 id="15ff30c9-c42e-4d68-a86a-324a9658c633" class="">Migration to v2</h2><h3 id="2a29c257-2314-43e5-81ae-6672428d5750" class="">Summary of changes</h3><p id="c7014f6b-89c2-4639-957c-d24783131401" class="">Here is a summary of changes to take into account when upgrading your integration from v1 → v2 👇</p><ul id="ccf30f24-1012-42d4-a5e8-c6367eaa3205" class="bulleted-list"><li style="list-style-type:disc">Urls have been updated<ul id="df6b8dd0-7a2a-4e62-96d3-bd345e3037c3" class="bulleted-list"><li style="list-style-type:circle"><code>https://api.0x.org/swap/</code><code><strong>v1/price</strong></code> → <code>https://api.0x.org/swap/</code><code><strong>permit2/price</strong></code></li></ul><ul id="50e3f29b-d697-4a73-87c1-c8fad71f8012" class="bulleted-list"><li style="list-style-type:circle"><code>https://api.0x.org/swap/</code><code><strong>v1/quote</strong></code> → <code>https://api.0x.org/swap/</code><code><strong>permit2/quote</strong></code></li></ul></li></ul><ul id="c388e66b-7fa8-4243-b991-02e93d4433a1" class="bulleted-list"><li style="list-style-type:disc">The chain is no longer designated by the url endpoint. You will need to use the new <code>chainId</code> query parameter in when making <code>/price</code> and <code>/quote</code> requests<ul id="d60ae473-28b9-4388-a93e-e51b58001172" class="bulleted-list"><li style="list-style-type:circle"><code>https://</code><code><strong>polygon</strong></code><code>.api.0x.org/swap/v1/quote</code> → <code>https://api.0x.org/swap/permit2/quote</code><code><strong>?chainId=137</strong></code></li></ul></li></ul><ul id="39384c1e-dbd8-40a4-ac3d-a98df0432f04" class="bulleted-list"><li style="list-style-type:disc">The shape of the API responses has changed - some response parameters have been deprecated, while new ones were added.</li></ul><ul id="6e15b7cb-bb0b-4a51-8492-b856555e7cdc" class="bulleted-list"><li style="list-style-type:disc">The API response now includes a new <code>issues</code> object, which returns a list of validation issues that need to be resolved before the data can be submitted by the taker. As part of this update, we have removed the <code>skipValidation</code> field. Validation will always be performed, even if the taker has an insufficient balance or lacks the necessary allowance. All validation issues including those related to balance, allowance, and slippage will now be returned in the <code>issues</code> field.</li></ul><ul id="51c655cc-1b57-4c1f-a31a-032679a67c3f" class="bulleted-list"><li style="list-style-type:disc">For token allowances, instead of granting the approval to 0x Exchange Proxy, grant the Permit2 contract instead (<code>0x000000000022d473030f116ddee9f6b43ac78ba3</code>).</li></ul><ul id="92bcd26b-08f5-42ff-8194-8fadfa89c45a" class="bulleted-list"><li style="list-style-type:disc">To submit a transaction to the network, upon receiving the <code>/quote</code> response, you will need (1) sign a Permit2 EIP-712 message from the <code>/quote</code> response, (2) inject the signature into the call data, and (3) send transaction to the network.</li></ul><div id="c0138dc9-6b36-4040-81a2-809ac4af9709" class="column-list"><div id="8d89cfac-c846-4d0e-9264-2ae67b989243" style="width:50%" class="column"><p id="46c3b0f8-1930-4a6c-b78b-3d0d90e6b225" class=""><mark class="highlight-gray">In v1</mark></p><ol type="1" id="bc957648-542f-41c9-b29c-2cccc30c855e" class="numbered-list" start="1"><li><mark class="highlight-gray">Build price params</mark></li></ol><ol type="1" id="dd859038-3d04-46ca-970e-2d7cbe034b4b" class="numbered-list" start="2"><li><mark class="highlight-gray">Call /price</mark></li></ol><ol type="1" id="c462871b-add8-4949-aec7-5f69aa81110e" class="numbered-list" start="3"><li><mark class="highlight-gray">Approve token allowance for 0x Exchange Proxy</mark></li></ol><ol type="1" id="68550fe3-d8ea-42fe-bfb7-140536ef788f" class="numbered-list" start="4"><li><mark class="highlight-gray">Build quote params</mark></li></ol><ol type="1" id="e1e230c5-a853-4f86-be63-3bcd6188f33d" class="numbered-list" start="5"><li><mark class="highlight-gray">Call /quote</mark></li></ol><ol type="1" id="d7cbf420-2cf9-4168-8b46-80eb4c61742e" class="numbered-list" start="6"><li><mark class="highlight-gray">Send transaction to the network</mark></li></ol><p id="3dec2482-7f59-4f74-8947-55243c75f1e7" class="">
+</p></div><div id="603b9bd1-dba5-44cb-a8c1-afefdcad647c" style="width:50%" class="column"><p id="16d4c363-9ae4-4b84-92a4-76f9868595f5" class="">In v2</p><ol type="1" id="20b49cff-ab00-4c20-a155-35d17e9a4ff1" class="numbered-list" start="1"><li><mark class="highlight-gray">Build price params</mark></li></ol><ol type="1" id="71cccf75-9842-41d7-a995-234c1740d622" class="numbered-list" start="2"><li><mark class="highlight-gray">Call /price</mark></li></ol><ol type="1" id="d9a737bb-b2d0-4807-9a34-9b6679973a0f" class="numbered-list" start="3"><li><strong>(New)</strong> Approve token allowance for Permit2</li></ol><ol type="1" id="284dfa17-dac3-44b0-8ac3-38b6957a1b09" class="numbered-list" start="4"><li><mark class="highlight-gray">Build quote params</mark></li></ol><ol type="1" id="8397bfaa-f213-4b79-a0cf-c7ab862d80a7" class="numbered-list" start="5"><li><mark class="highlight-gray">Call /quote</mark></li></ol><ol type="1" id="6fcb5e38-1151-4f46-8fb6-df3432bd321c" class="numbered-list" start="6"><li><strong>(New)</strong> Sign Permit2 coupon from quote response</li></ol><ol type="1" id="480fb23c-2257-4b8b-85a7-b1fe1ef6776e" class="numbered-list" start="7"><li><strong>(New) </strong>Inject signature into call data -&gt; Send transaction to the network.</li></ol></div></div><p id="6bf47bad-817c-4316-b099-4fe19289ce77" class="">
+</p><h2 id="5e5fc20f-c220-45cb-9908-4f36ed99c074" class="">Sample Request and Response</h2><p id="50468b64-14db-40be-a966-3b7ea1d2df65" class="">Request</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="97925b01-a494-46f5-a174-c561261f01bb" class="code"><code class="language-JavaScript">curl --request GET \
+  --url &#x27;https://api.0x.org/swap/permit2/quote?sellAmount=100000000000000000000000&amp;taker=0xa423C7Be031E988B25fb7Ec39b7906582f6858c6&amp;chainId=1&amp;sellToken=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&amp;buyToken=0x6b175474e89094c44da98b954eedeac495271d0f&#x27; \
+  --header &#x27;0x-api-key: &lt;YOUR_API_KEY&gt;&#x27;</code></pre><p id="b00b25f2-de08-49a0-ac78-03e152eb26ea" class="">Response</p><ul id="5b2041e8-03f3-42de-8d27-31b6a1994ed6" class="toggle"><li><details open=""><summary>Expand to see</summary><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="1aa1f4a2-9a66-4b49-ae69-cd81f1e1c170" class="code"><code class="language-JSON">{
+	&quot;allowanceTarget&quot;: &quot;0x000000000022d473030f116ddee9f6b43ac78ba3&quot;,
+	&quot;buyAmount&quot;: &quot;162529986234082274943434752&quot;,
+	&quot;buyToken&quot;: &quot;0x6b175474e89094c44da98b954eedeac495271d0f&quot;,
+	&quot;fees&quot;: {
+		&quot;integratorFee&quot;: null,
+		&quot;zeroExFee&quot;: null,
+		&quot;gasFee&quot;: null
+	},
+	&quot;minBuyAmount&quot;: &quot;162529986234082274943434752&quot;,
+	&quot;permit2&quot;: {
+		&quot;type&quot;: &quot;Permit2&quot;,
+		&quot;hash&quot;: &quot;0xcb5e78bbdc9345d10d60e8f4e54eadd1d9441926501188a9693af037c8549a1d&quot;,
+		&quot;eip712&quot;: {
+			&quot;types&quot;: {
+				&quot;PermitTransferFrom&quot;: [
+					{
+						&quot;name&quot;: &quot;permitted&quot;,
+						&quot;type&quot;: &quot;TokenPermissions&quot;
+					},
+					{
+						&quot;name&quot;: &quot;spender&quot;,
+						&quot;type&quot;: &quot;address&quot;
+					},
+					{
+						&quot;name&quot;: &quot;nonce&quot;,
+						&quot;type&quot;: &quot;uint256&quot;
+					},
+					{
+						&quot;name&quot;: &quot;deadline&quot;,
+						&quot;type&quot;: &quot;uint256&quot;
+					}
+				],
+				&quot;EIP712Domain&quot;: [
+					{
+						&quot;name&quot;: &quot;name&quot;,
+						&quot;type&quot;: &quot;string&quot;
+					},
+					{
+						&quot;name&quot;: &quot;chainId&quot;,
+						&quot;type&quot;: &quot;uint256&quot;
+					},
+					{
+						&quot;name&quot;: &quot;verifyingContract&quot;,
+						&quot;type&quot;: &quot;address&quot;
+					}
+				],
+				&quot;TokenPermissions&quot;: [
+					{
+						&quot;name&quot;: &quot;token&quot;,
+						&quot;type&quot;: &quot;address&quot;
+					},
+					{
+						&quot;name&quot;: &quot;amount&quot;,
+						&quot;type&quot;: &quot;uint256&quot;
+					}
+				]
+			},
+			&quot;domain&quot;: {
+				&quot;name&quot;: &quot;Permit2&quot;,
+				&quot;chainId&quot;: 1,
+				&quot;verifyingContract&quot;: &quot;0x000000000022d473030f116ddee9f6b43ac78ba3&quot;
+			},
+			&quot;message&quot;: {
+				&quot;permitted&quot;: {
+					&quot;token&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+					&quot;amount&quot;: &quot;100000000000000000000000&quot;
+				},
+				&quot;spender&quot;: &quot;0x7966af62034313d87ede39380bf60f1a84c62be7&quot;,
+				&quot;nonce&quot;: &quot;2241959297937691820908574931991567&quot;,
+				&quot;deadline&quot;: &quot;1715157784&quot;
+			},
+			&quot;primaryType&quot;: &quot;PermitTransferFrom&quot;
+		}
+	},
+	&quot;route&quot;: {
+		&quot;fills&quot;: [
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0x2260fac5e5542a773aa44fbcfedf7c193bc2c599&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;1000&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0x2260fac5e5542a773aa44fbcfedf7c193bc2c599&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;250&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0x6b175474e89094c44da98b954eedeac495271d0f&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;250&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0x6b175474e89094c44da98b954eedeac495271d0f&quot;,
+				&quot;source&quot;: &quot;Sushiswap&quot;,
+				&quot;proportionBps&quot;: &quot;250&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0x6b175474e89094c44da98b954eedeac495271d0f&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;250&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0x6b175474e89094c44da98b954eedeac495271d0f&quot;,
+				&quot;source&quot;: &quot;UniswapV2&quot;,
+				&quot;proportionBps&quot;: &quot;250&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;499&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;source&quot;: &quot;UniswapV2&quot;,
+				&quot;proportionBps&quot;: &quot;1999&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;499&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;source&quot;: &quot;Curve&quot;,
+				&quot;proportionBps&quot;: &quot;749&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;source&quot;: &quot;Sushiswap&quot;,
+				&quot;proportionBps&quot;: &quot;250&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;source&quot;: &quot;UniswapV2&quot;,
+				&quot;proportionBps&quot;: &quot;2000&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;source&quot;: &quot;Curve&quot;,
+				&quot;proportionBps&quot;: &quot;250&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;source&quot;: &quot;PancakeswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;250&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;source&quot;: &quot;Curve&quot;,
+				&quot;proportionBps&quot;: &quot;250&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;749&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;to&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;251&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0x2260fac5e5542a773aa44fbcfedf7c193bc2c599&quot;,
+				&quot;to&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;526&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0x2260fac5e5542a773aa44fbcfedf7c193bc2c599&quot;,
+				&quot;to&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;724&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;to&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;source&quot;: &quot;Curve&quot;,
+				&quot;proportionBps&quot;: &quot;3225&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;to&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;source&quot;: &quot;PancakeswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;450&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;to&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;source&quot;: &quot;UniswapV3&quot;,
+				&quot;proportionBps&quot;: &quot;798&quot;
+			},
+			{
+				&quot;from&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;to&quot;: &quot;0x6b175474e89094c44da98b954eedeac495271d0f&quot;,
+				&quot;source&quot;: &quot;MakerPsm&quot;,
+				&quot;proportionBps&quot;: &quot;8999&quot;
+			}
+		],
+		&quot;tokens&quot;: [
+			{
+				&quot;address&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+				&quot;symbol&quot;: &quot;WETH&quot;
+			},
+			{
+				&quot;address&quot;: &quot;0x2260fac5e5542a773aa44fbcfedf7c193bc2c599&quot;,
+				&quot;symbol&quot;: &quot;WBTC&quot;
+			},
+			{
+				&quot;address&quot;: &quot;0xdac17f958d2ee523a2206206994597c13d831ec7&quot;,
+				&quot;symbol&quot;: &quot;USDT&quot;
+			},
+			{
+				&quot;address&quot;: &quot;0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&quot;,
+				&quot;symbol&quot;: &quot;USDC&quot;
+			},
+			{
+				&quot;address&quot;: &quot;0x6b175474e89094c44da98b954eedeac495271d0f&quot;,
+				&quot;symbol&quot;: &quot;DAI&quot;
+			}
+		]
+	},
+	&quot;sellAmount&quot;: &quot;100000000000000000000000&quot;,
+	&quot;sellToken&quot;: &quot;0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2&quot;,
+	&quot;totalTransactionFee&quot;: &quot;0&quot;,
+	&quot;transaction&quot;: {
+		&quot;to&quot;: &quot;0x7966af62034313d87ede39380bf60f1a84c62be7&quot;,
+		&quot;data&quot;: &quot;0xe4b11b2900000000000000000000000000000000000000000000000000000000000000800000000000000000000000006b175474e89094c44da98b954eedeac495271d0f000000000000000000000000a423c7be031e988b25fb7ec39b7906582f6858c60000000000000000000000000000000000000000008609cfe761276a892f1aa000000000000000000000000000000000000000000000000000000000000000180000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000048000000000000000000000000000000000000000000000000000000000000005a000000000000000000000000000000000000000000000000000000000000006c000000000000000000000000000000000000000000000000000000000000007e000000000000000000000000000000000000000000000000000000000000008e00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000b000000000000000000000000000000000000000000000000000000000000000c200000000000000000000000000000000000000000000000000000000000000d200000000000000000000000000000000000000000000000000000000000000e4000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001100000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000013c0000000000000000000000000000000000000000000000000000000000000160000000000000000000000000000000000000000000000000000000000000017c000000000000000000000000000000000000000000000000000000000000018e00000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000001b200000000000000000000000000000000000000000000000000000000000001c400000000000000000000000000000000000000000000000000000000000001de0000000000000000000000000000000000000000000000000000000000000202000000000000000000000000000000000000000000000000000000000000021400000000000000000000000000000000000000000000000000000000000000144828bf4f40000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000152d02c7e14af68000000000000000000000000000000000000000006e898131631616b1779bad70bc0f00000000000000000000000000000000000000000000000000000000663b3b1800000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000041ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be700000000000000000000000000000000000000000000000000000000000003e800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000bb82260fac5e5542a773aa44fbcfedf7c193bc2c5990000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000000000000000000000000000000000000000011500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc20001f42260fac5e5542a773aa44fbcfedf7c193bc2c5990000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000000000000000000000000000000000000000011d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc20001f46b175474e89094c44da98b954eedeac495271d0f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c4ee45a2a40000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000c3d03e4f041fd4cd388c549ee2a29a9e5075882f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000000000000000000000000000000000000000012f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000bb86b175474e89094c44da98b954eedeac495271d0f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c4ee45a2a40000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a478c2975ab1ea89e8196811f51a7b7ade33eb110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000013800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000000000000000000000000000000000000000028500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000bb8a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c4ee45a2a40000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000b4e16d0168e52d35cacd2c6185b44281ec28c9dc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ac600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be700000000000000000000000000000000000000000000000000000000000003b800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc20001f4a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001841cc408a90000000000000000000000007f86bf177dd4f3494b841a37e810a34dd56c829b000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000000000000000000000000000000000000000062a000000000000000000000000000000000000000000000000000000000000004400000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a45b41b90800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c4ee45a2a40000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000397ff1542f962076d0bfe58ea045ffa2d347aca00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000027100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c4ee45a2a40000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000000d4a11d5eeaac28ec3f61d100daf4d40471f1852000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000014d500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001841cc408a9000000000000000000000000d51a44d3fae010294c616388b506acda1bfaae46000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000000000000000000000000000000000000000000594000000000000000000000000000000000000000000000000000000000000004400000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a45b41b90800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002041cc408a90000000000000000000000001b81d678ffb9c0263b24a97847620c99d213eb14000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000000000000000000000000000000000000000000682000000000000000000000000000000000000000000000000000000000000008400000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000124c04b8d59000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000007966af62034313d87ede39380bf60f1a84c62be700000000000000000000000000000000000000000000000000000000663b3b1800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc20001f4dac17f958d2ee523a2206206994597c13d831ec7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001841cc408a9000000000000000000000000f5f5b97624542d72a9e06f04804bf81baa15e2b4000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000000000007d0000000000000000000000000000000000000000000000000000000000000004400000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000a45b41b90800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be70000000000000000000000000000000000000000000000000000000000001d4b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000bb8dac17f958d2ee523a2206206994597c13d831ec70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000000000000000000000000000000000000000271000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002bc02aaa39b223fe8d0a0e5c4f27ead9083c756cc20001f4dac17f958d2ee523a2206206994597c13d831ec70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000000000000000000000000000000000000000107200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002b2260fac5e5542a773aa44fbcfedf7c193bc2c599000bb8a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000000000000000000000000000000000000000271000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002b2260fac5e5542a773aa44fbcfedf7c193bc2c599000bb8dac17f958d2ee523a2206206994597c13d831ec70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001641cc408a9000000000000000000000000bebc44782c7db0a1a60cb6fe97d0b483032ff1c7000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec70000000000000000000000000000000000000000000000000000000000001c29000000000000000000000000000000000000000000000000000000000000004400000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000843df021240000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002041cc408a90000000000000000000000001b81d678ffb9c0263b24a97847620c99d213eb14000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec70000000000000000000000000000000000000000000000000000000000000e1b000000000000000000000000000000000000000000000000000000000000008400000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000124c04b8d59000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000007966af62034313d87ede39380bf60f1a84c62be700000000000000000000000000000000000000000000000000000000663b3b1800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002bdac17f958d2ee523a2206206994597c13d831ec7000064a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e4c102e1590000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000000000000000000000000000000000000000271000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000002bdac17f958d2ee523a2206206994597c13d831ec7000064a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000084eb53ad580000000000000000000000007966af62034313d87ede39380bf60f1a84c62be7000000000000000000000000000000000000000000000000000000000000271000000000000000000000000089b78cfa322f6c5de0abceecab66aee45393cc5a000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000&quot;,
+		&quot;gas&quot;: &quot;48308913&quot;,
+		&quot;gasPrice&quot;: &quot;0&quot;,
+		&quot;value&quot;: &quot;0&quot;
+	}
+}</code></pre></details></li></ul><h2 id="ea08ebd1-966c-4f19-a417-b801f55660b7" class="">Detailed Migration Guide</h2><p id="f1e7d7cd-80f7-4510-979b-b19dbab704ea" class=""><em>Overview on how to update Swap API price and quote to handle the new v2 endpoints </em></p><ol type="1" id="b230a61a-f751-492b-9ab9-59072b51f08c" class="numbered-list" start="0"><li><a href="https://0x.org/docs/introduction/getting-started">Get a 0x API key</a></li></ol><ol type="1" id="1277de54-9141-4830-b809-0518eb8ccf41" class="numbered-list" start="1"><li>Call <code>/swap/permit2/price</code> (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/app/api/price/route.ts">code</a>)<ol type="a" id="7ac34030-b80f-447a-81ef-0c2310a63d05" class="numbered-list" start="1"><li>Build required price params<ol type="i" id="503361a6-d11f-4a42-b0ed-2f3532804b95" class="numbered-list" start="1"><li>Add <code>chainId</code> as new param</li></ol><ol type="i" id="cbd21c7c-b059-4b05-a877-7eddb8029d61" class="numbered-list" start="2"><li><code>takerAddress</code> has changed to <code>taker</code></li></ol></li></ol><ol type="a" id="6362e326-ae3e-45c1-8b64-b2a07352adf9" class="numbered-list" start="2"><li>In the response: <code>sellTokenAddress</code> changed to <code>sellToken</code>, <code>buyTokenAddress</code> changed to <code>buyToken</code> (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/src/utils/types.ts#L5-L27">code</a>)</li></ol></li></ol><ol type="1" id="73e6b062-00a2-443a-bb35-ddf4a16e60bb" class="numbered-list" start="2"><li>Check approval for <code>PERMIT2</code> to token allowance. Approve token allowance if not set already. (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/app/components/price.tsx#L393-L420">code</a>)</li></ol><ol type="1" id="847b7ae8-545a-4d39-98ad-84828a55547d" class="numbered-list" start="3"><li>Call <code>/swap/permit2/quote</code> (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/app/api/quote/route.ts">code</a>)<ol type="a" id="aeed9c5f-151d-4e13-980d-c3afe4d974d9" class="numbered-list" start="1"><li>Build required quote params (price params + taker address)<ol type="i" id="63e24806-8458-4f3d-baca-804de29bef10" class="numbered-list" start="1"><li>Add <code>chainId</code> as new param</li></ol><ol type="i" id="6320f79a-82ba-4fb2-b740-52d122f2781c" class="numbered-list" start="2"><li><code>takerAddress</code> has changed to <code>taker</code></li></ol></li></ol><ol type="a" id="87aa8a71-eeaf-47f2-9867-4a632474e3e5" class="numbered-list" start="2"><li>In the responses: <code>sellTokenAddress</code> changed to <code>sellToken</code>, <code>buyTokenAddress</code> changed to <code>buyToken</code> (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/src/utils/types.ts#L32-L63">code</a>)</li></ol></li></ol><ol type="1" id="14eba49d-3eff-4bc7-b8fe-fc3f83ebf374" class="numbered-list" start="4"><li>Sign the Permit2 EIP-712 message  from <code>/quote</code> response<ol type="a" id="5214e318-4f23-428c-8615-917dfda8f5ef" class="numbered-list" start="1"><li><code>signature = await signTypedDataAsync(swapQuoteV2.permit2.eip712);</code> (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/app/components/quote.tsx#L146-L147">code</a>)</li></ol><ol type="a" id="a067f4d5-a127-457f-933c-0b158fc42b6b" class="numbered-list" start="2"><li>Update <code>PriceResponse</code> and <code>QuoteResponse</code> types (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/src/utils/types.ts">code</a>)</li></ol><ol type="a" id="7ae3bf26-5a53-4cf6-a949-8c72bea169e8" class="numbered-list" start="3"><li>Replace <code>MAGIC_CALLDATA_STRING</code> (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/app/components/quote.tsx#L156-L159">code</a>)</li></ol></li></ol><ol type="1" id="7af690f3-cf1e-4e19-97c7-34418f50b781" class="numbered-list" start="5"><li>Submit the transaction with permit2 signature<ol type="a" id="55ed024b-5d35-47b1-a0d3-64320f68534f" class="numbered-list" start="1"><li>Use <code>sendTransaction({account, gas, txOptions, data, value, chain)</code> (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/app/components/quote.tsx#L149-L161">code</a>)</li></ol><ol type="a" id="902f1d32-e5bb-415f-8bdb-69f78b82f57a" class="numbered-list" start="2"><li>Note that the <code>/quote</code> response structure has changed from v1 to v2 (<code>to</code>, <code>data</code> → have moved under <code>quoteResponse.transaction.to</code>, <code>quoteResponse.transaction.data</code>) (<a href="https://github.com/0xProject/0x-examples/blob/jlin/update-with-swap-v2/swap-next-app-v2/app/components/quote.tsx#L155-L156">code</a>)</li></ol></li></ol><p id="bce4be1e-ede5-4931-a022-a8241fe7acbf" class="">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
