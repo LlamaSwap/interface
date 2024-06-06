@@ -358,11 +358,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		address: fromTokenAddress as `0x${string}`,
 		chainId: selectedChain.id,
 		enabled:
-			router.isReady &&
-			typeof fromTokenAddress === 'string' &&
-			fromTokenAddress.length === 42 &&
-			selectedChain &&
-			!selectedFromToken
+			typeof fromTokenAddress === 'string' && fromTokenAddress.length === 42 && selectedChain && !selectedFromToken
 				? true
 				: false
 	});
@@ -370,11 +366,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		address: toTokenAddress as `0x${string}`,
 		chainId: selectedChain.id,
 		enabled:
-			router.isReady &&
-			typeof toTokenAddress === 'string' &&
-			toTokenAddress.length === 42 &&
-			selectedChain &&
-			!selectedToToken
+			typeof toTokenAddress === 'string' && toTokenAddress.length === 42 && selectedChain && !selectedToToken
 				? true
 				: false
 	});
