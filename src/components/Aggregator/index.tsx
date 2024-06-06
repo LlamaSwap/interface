@@ -424,7 +424,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
 	// selected from token's balances
 	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain.id });
-	const { data: tokenBalances } = useTokenBalances(address, selectedChain.id);
+	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain.id : null);
 	const { data: gasPriceData } = useFeeData({
 		chainId: selectedChain?.id,
 		enabled: selectedChain ? true : false

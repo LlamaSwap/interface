@@ -125,11 +125,7 @@ export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPric
 	return useQuery<IPrice>(['gasPrice', chain, fromToken, toToken], () => getPrice({ chain, fromToken, toToken }), {
 		...(skipRefetch
 			? {
-					refetchOnMount: false,
-					refetchInterval: 5 * 60 * 1000, // 5 minutes
-					refetchOnWindowFocus: false,
-					refetchOnReconnect: false,
-					refetchIntervalInBackground: false
+					staleTime: 5 * 60 * 1000
 			  }
 			: { refetchInterval: 20_000 })
 	});
