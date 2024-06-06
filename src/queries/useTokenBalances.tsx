@@ -35,5 +35,7 @@ const getBalances = async (address, chain) => {
 };
 
 export const useTokenBalances = (address, chain) => {
-	return useQuery<Balances>(['balances', address, chain], () => getBalances(address, chain));
+	return useQuery<Balances>(['balances', address, chain], () => getBalances(address, chain), {
+		staleTime: 60 * 1000
+	});
 };

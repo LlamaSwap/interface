@@ -18,10 +18,6 @@ export async function getMcap({ id }: IGetMcap) {
 
 export function useGetMcap({ id }: IGetMcap) {
 	return useQuery(['mcap', id], () => getMcap({ id }), {
-		refetchOnMount: false,
-		refetchInterval: 5 * 60 * 1000, // 5 minutes
-		refetchOnWindowFocus: false,
-		refetchOnReconnect: false,
-		refetchIntervalInBackground: false
+		staleTime: 5 * 60 * 1000
 	});
 }
