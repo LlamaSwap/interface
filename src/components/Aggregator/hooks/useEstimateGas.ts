@@ -2,7 +2,7 @@ import { useQueries, UseQueryOptions } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { last } from 'lodash';
-import { erc20ABI } from 'wagmi';
+import { erc20Abi } from 'viem';
 import { IRoute } from '~/queries/useGetRoutes';
 import { providers } from '../rpcs';
 
@@ -23,7 +23,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, balance })
 
 	try {
 		const provider = new ethers.providers.StaticJsonRpcProvider(traceRpcs[chain], providers[chain]._network);
-		const tokenContract = new ethers.Contract(token, erc20ABI, provider);
+		const tokenContract = new ethers.Contract(token, erc20Abi, provider);
 		const tx = route?.tx;
 		const isNative = token === ethers.constants.AddressZero;
 		try {

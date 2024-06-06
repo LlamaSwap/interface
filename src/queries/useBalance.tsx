@@ -1,7 +1,8 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { ethers } from 'ethers';
 import { getAddress } from 'ethers/lib/utils';
-import { erc20ABI, useAccount, useBalance as useWagmiBalance } from 'wagmi';
+import { useAccount, useBalance as useWagmiBalance } from 'wagmi';
+import { erc20Abi } from 'viem';
 import { nativeAddress } from '~/components/Aggregator/constants';
 import { rpcUrls } from '~/components/Aggregator/rpcs';
 
@@ -21,7 +22,7 @@ const createProviderAndGetBalance = async ({ rpcUrl, address, token }) => {
 			return { value: balance, formatted: ethers.utils.formatEther(balance) };
 		}
 
-		const contract = new ethers.Contract(getAddress(token), erc20ABI, provider);
+		const contract = new ethers.Contract(getAddress(token), erc20Abi, provider);
 
 		const [balance, decimals] = await Promise.all([contract.balanceOf(getAddress(address)), contract.decimals()]);
 
@@ -73,8 +74,7 @@ export const useBalance = ({
 		address: address,
 		token: tokenAddress,
 		chainId: chainId,
-		enabled: isEnabled,
-		cacheTime: 10_000
+		query: { enabled: isEnabled, cacheTime: 10_000 }
 	});
 
 	const queryData = useQuery(
@@ -92,8 +92,8 @@ export const useBalance = ({
 		!isEnabled
 			? { isLoading: false, isSuccess: false, data: null }
 			: wagmiData.isLoading || wagmiData.data
-			? wagmiData
-			: queryData
+				? wagmiData
+				: queryData
 	) as UseQueryResult<{
 		value: ethers.BigNumber;
 		formatted: string;

@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { uniq } from 'lodash';
+import { fallback, http } from 'wagmi';
 
 function createProvider(name: string, defaultRpc: string, chainId: number, random = false) {
 	if (process.env.HISTORICAL) {
@@ -267,10 +268,11 @@ export const rpcsMap = Object.entries(rpcUrls).reduce((acc, [chainId, rpcs]) => 
 	return { ...acc, [chainId]: normalizedRpcs };
 }, {});
 
-export const rpcsKeys = uniq(
-	Object.values(rpcsMap)
-		.map((obj) => Object.keys(obj))
-		.flat()
+export const rpcsTransports = Object.fromEntries(
+	Object.entries(rpcsMap).map((chain: [string, Record<number, string>]) => [
+		chain[0],
+		fallback(uniq(Object.values(chain[1])).map((rpc) => http(rpc)))
+	])
 );
 
 const getUrls = (chainId: keyof typeof rpcUrls) => Object.values(rpcUrls[chainId]).join(',');
