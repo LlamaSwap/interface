@@ -46,55 +46,16 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 	let gasTokenPrice, fromTokenPrice, toTokenPrice;
 
 	try {
-		const cgPrices = await Promise.allSettled([
-			fetchTimeout(
-				`https://api.coingecko.com/api/v3/simple/price?ids=${chainGasToken[rawChain]}&vs_currencies=usd`,
-				600
-			).then((res) => res.json()),
-			fetchTimeout(
-				`https://api.coingecko.com/api/v3/simple/token_price/${llamaToGeckoChainsMap[rawChain]}?contract_addresses=${fromToken}%2C${toToken}&vs_currencies=usd`,
-				600
-			).then((res) => res.json())
-		]);
-
-		if (cgPrices[0].status === 'fulfilled') {
-			gasTokenPrice = cgPrices[0].value?.[chainGasToken[rawChain]]?.['usd'];
-
-			fromTokenPrice = fromToken === ZERO_ADDRESS ? gasTokenPrice : undefined;
-			toTokenPrice = toToken === ZERO_ADDRESS ? gasTokenPrice : undefined;
-		}
-
-		if (cgPrices[1].status === 'fulfilled') {
-			fromTokenPrice = fromTokenPrice || cgPrices[1].value[fromToken]?.['usd'];
-			toTokenPrice = toTokenPrice || cgPrices[1].value[toToken]?.['usd'];
-		}
-
-		let llamaApi = [];
 		const llamaChain = convertChain(rawChain);
+		let llamaApi = [`${llamaChain}:${ZERO_ADDRESS}`, `${llamaChain}:${fromToken}`, `${llamaChain}:${toToken}`];
 
-		if (!gasTokenPrice) {
-			llamaApi.push(`${llamaChain}:${ZERO_ADDRESS}`);
-		}
+		const { coins } = await fetch(`https://coins.llama.fi/prices/current/${llamaApi.join(',')}`).then((r) => r.json());
 
-		if (!fromTokenPrice) {
-			llamaApi.push(`${llamaChain}:${fromToken}`);
-		}
-
-		if (!toTokenPrice) {
-			llamaApi.push(`${llamaChain}:${toToken}`);
-		}
-
-		if (llamaApi.length > 0) {
-			const { coins } = await fetch(`https://coins.llama.fi/prices/current/${llamaApi.join(',')}`).then((r) =>
-				r.json()
-			);
-
-			gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
-			[fromTokenPrice, toTokenPrice] = await Promise.all([
-				fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain, fromToken),
-				toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || getExperimentalPrice(rawChain, toToken)
-			]);
-		}
+		gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
+		[fromTokenPrice, toTokenPrice] = await Promise.all([
+			fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain, fromToken),
+			toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || getExperimentalPrice(rawChain, toToken)
+		]);
 
 		return {
 			gasTokenPrice,
@@ -114,8 +75,8 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 const getExperimentalPrice = async (chain: string, token: string): Promise<number | undefined> => {
 	if (chain === 'gnosis') chain = 'gnosischain';
 	try {
-		const experimentalPrices = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`).then((res) =>
-			res.json()
+		const experimentalPrices = await fetchTimeout(`https://api.dexscreener.com/latest/dex/tokens/${token}`, 1.5e3).then(
+			(res) => res.json()
 		);
 
 		let weightedPrice = 0;
