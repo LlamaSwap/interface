@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { chainGasToken, llamaToGeckoChainsMap } from '~/components/Aggregator/constants';
 import { providers } from '~/components/Aggregator/rpcs';
+import { ethers } from 'ethers';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -17,6 +18,17 @@ interface IPrice {
 	toTokenPrice?: number;
 	gasPriceData?: {};
 }
+
+type DexScreenerTokenPair = {
+	priceUsd: string;
+	chainId: string;
+	baseToken: {
+		address: string;
+	};
+	liquidity: {
+		usd: number;
+	};
+};
 
 function convertChain(chain: string) {
 	if (chain === 'gnosis') return 'xdai';
@@ -78,8 +90,10 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 			);
 
 			gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
-			fromTokenPrice = fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price;
-			toTokenPrice = toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price;
+			[fromTokenPrice, toTokenPrice] = await Promise.all([
+				fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain, fromToken),
+				toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || getExperimentalPrice(rawChain, toToken)
+			]);
 		}
 
 		return {
@@ -96,6 +110,31 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 		};
 	}
 }
+
+const getExperimentalPrice = async (chain: string, token: string): Promise<number | undefined> => {
+	if (chain === 'gnosis') chain = 'gnosischain';
+	try {
+		const experimentalPrices = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`).then((res) =>
+			res.json()
+		);
+
+		let weightedPrice = 0;
+		let totalLiquidity = 0;
+
+		experimentalPrices.pairs.forEach((pair: DexScreenerTokenPair) => {
+			const { priceUsd, liquidity, chainId, baseToken } = pair;
+			if (baseToken.address === ethers.utils.getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
+				weightedPrice += Number(priceUsd) * liquidity.usd;
+				totalLiquidity += liquidity.usd;
+			}
+		});
+
+		return totalLiquidity > 0 ? weightedPrice / totalLiquidity : undefined;
+	} catch (error) {
+		console.log(error);
+		return undefined;
+	}
+};
 
 export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPriceProps) {
 	try {
