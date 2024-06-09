@@ -159,7 +159,7 @@ const Lending = (props) => {
 						isClearable
 					/>
 				</Box>
-				<Box mx={4}>
+				<Box mx={4} display={'flex'} flexDirection={'column'} justifyContent={'center'}>
 					<Flex alignItems="center" h="40px">
 						<Icon as={ArrowRightIcon} fontSize="24px" />
 					</Flex>

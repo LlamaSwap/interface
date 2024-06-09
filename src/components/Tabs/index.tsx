@@ -6,7 +6,6 @@ const TabsContainer = styled.div`
 	width: 100%;
 	background-color: rgb(34, 36, 42);
 	border-radius: 10px;
-	padding: 20px;
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 	display: flex;
 	flex-direction: column;
@@ -45,8 +44,11 @@ const Tab = styled.li<{ active: boolean }>`
 	background-color: ${({ active, theme }) => (active ? theme.primary1 : theme.bg3)};
 	color: ${({ active, theme }) => (active ? theme.white : theme.text1)};
 	transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-	font-size: 1.1rem;
+	font-size: 16px;
 	font-weight: bold;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
 
 	&:hover {
 		background-color: ${({ theme }) => theme.primary1};
@@ -60,17 +62,13 @@ const Wrapper = styled.div`
 	flex-direction: column;
 	gap: 8px;
 	padding: 16px;
+	padding-top: 36px;
 	padding-bottom: 0;
 	width: 100%;
 	align-self: flex-start;
 	z-index: 1;
 	text-align: left;
 	background-color: #22242a;
-
-	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
-		position: sticky;
-		top: 24px;
-	}
 `;
 
 const tabs = [

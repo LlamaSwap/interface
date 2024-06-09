@@ -160,9 +160,8 @@ const Wrapper = styled.div`
 	display: flex;
 	flex-direction: column;
 	grid-row-gap: 36px;
-	margin: 10px auto 40px;
+	margin: 0px auto 40px;
 	position: relative;
-	top: 36px;
 
 	h1 {
 		font-weight: 500;
@@ -225,11 +224,6 @@ const BodyWrapper = styled.div`
 	width: 100%;
 	z-index: 1;
 	position: relative;
-
-	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-		margin-top: 8px;
-		height: fi;
-	}
 
 	& > * {
 		margin: 0 auto;

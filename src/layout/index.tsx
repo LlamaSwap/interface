@@ -28,6 +28,10 @@ const Center = styled.main`
 	min-height: 100%;
 	margin: 0 auto;
 	color: ${({ theme }) => theme.text1};
+
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		gap: 0px;
+	}
 `;
 
 interface ILayoutProps {
