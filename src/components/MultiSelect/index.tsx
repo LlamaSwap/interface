@@ -10,13 +10,15 @@ interface IReactSelect extends Props {
 const formatOptionLabel = ({ label, ...rest }) => {
 	return (
 		<div style={{ display: 'flex' }}>
-			<div style={{color: '#ccc' }}>
+			<div style={{ color: '#ccc' }}>
 				{rest.logoURI ? (
 					<img
 						src={rest.logoURI}
 						style={{
-							width: 20,
-							height: 20,
+							minWidth: '20px',
+							minHeight: '20px',
+							width: '20px',
+							height: '20px',
 							marginRight: 8,
 							borderRadius: '50%',
 							aspectRatio: 1
@@ -72,6 +74,14 @@ const customStyles = {
 		background: 'var(--menu-background)',
 		zIndex: 10
 	}),
+	menuList: (provided) => ({
+		...provided,
+		'scrollbar-width': 'none',
+		'-ms-overflow-style': 'none',
+		'&::-webkit-scrollbar': {
+			display: 'none'
+		}
+	}),
 	option: (provided, state) => ({
 		...provided,
 		color: state.isActive ? 'black' : 'var(--color)'
@@ -95,8 +105,6 @@ const customStyles = {
 		color: 'var(--color)'
 	})
 };
-
-const height = 35;
 
 const ReactSelect = ({ options, style, ...props }: IReactSelect) => (
 	<Wrapper style={style}>

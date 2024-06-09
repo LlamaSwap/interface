@@ -37,7 +37,7 @@ const TabList = styled.ul`
 	padding: 0;
 `;
 
-const Tab = styled.li`
+const Tab = styled.li<{ active: boolean }>`
 	border-radius: 25px;
 	padding: 0.625rem 1.25rem;
 	margin: 0 0.75rem;
@@ -55,31 +55,12 @@ const Tab = styled.li`
 	}
 `;
 
-const TabPanels = styled.div`
-	width: 100%;
-	background-color: rgb(34, 36, 42);
-	border-radius: 10px;
-	padding: 1rem;
-
-	margin-top: 0.5rem;
-	display: flex;
-	justify-content: center;
-
-	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-		padding: 0.5rem;
-		margin-top: 0.25rem;
-	}
-`;
-
-const TabPanel = styled.div`
-	text-align: center;
-`;
-
 const Wrapper = styled.div`
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 	padding: 16px;
+	padding-bottom: 0;
 	width: 100%;
 	align-self: flex-start;
 	z-index: 1;
@@ -92,16 +73,31 @@ const Wrapper = styled.div`
 	}
 `;
 
-const Tabs = ({ tabs }) => {
+const tabs = [
+	{
+		id: '/',
+		name: 'Swap'
+	},
+	{
+		id: 'yields',
+		name: 'Yields'
+	},
+	{
+		id: 'lend-borrow',
+		name: 'Lend & Borrow'
+	}
+];
+
+const Tabs = () => {
 	const router = useRouter();
-	const { tab: activeTabId } = router.query;
+	const activeTabId = router.pathname.split('/')[1];
 
 	const [activeTab, setActiveTab] = React.useState(activeTabId || tabs[0].id);
 
 	const handleTabChange = (index) => {
 		const tabId = tabs[index].id;
 		setActiveTab(tabId);
-		router.push(`?tab=${tabId}`, undefined, { shallow: true });
+		router.push(`/${tabId}`, undefined, { shallow: true });
 	};
 
 	return (
@@ -116,14 +112,6 @@ const Tabs = ({ tabs }) => {
 						))}
 					</TabList>
 				</TabButtonsWrapper>
-
-				<TabPanels>
-					{tabs.map((tab) => (
-						<TabPanel key={tab.id} style={{ display: tab.id === activeTab ? 'block' : 'none' }}>
-							{tab.content}
-						</TabPanel>
-					))}
-				</TabPanels>
 			</TabsContainer>
 		</Wrapper>
 	);

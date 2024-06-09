@@ -3,6 +3,9 @@ import Head from 'next/head';
 import styled from 'styled-components';
 import ThemeProvider, { GlobalStyle } from '~/Theme';
 import { Phishing } from './Phishing';
+import ConnectButton from '~/components/Aggregator/ConnectButton';
+import Header from '~/components/Aggregator/Header';
+import Tabs from '~/components/Tabs';
 
 const PageWrapper = styled.div`
 	flex: 1;
@@ -45,7 +48,13 @@ export default function Layout({ title, children, ...props }: ILayoutProps) {
 			<ThemeProvider>
 				<GlobalStyle />
 				<PageWrapper>
-					<Center {...props}>{children}</Center>
+					<Center {...props}>
+						<Header>
+							<ConnectButton {...(props as any)} />
+						</Header>
+						<Tabs />
+						{children}
+					</Center>
 				</PageWrapper>
 			</ThemeProvider>
 		</>
