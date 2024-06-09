@@ -32,6 +32,7 @@ type DexScreenerTokenPair = {
 
 function convertChain(chain: string) {
 	if (chain === 'gnosis') return 'xdai';
+	if (chain === 'zksync') return 'era';
 	return chain;
 }
 
@@ -85,6 +86,13 @@ const getExperimentalPrice = async (chain: string, token: string): Promise<numbe
 		experimentalPrices.pairs.forEach((pair: DexScreenerTokenPair) => {
 			const { priceUsd, liquidity, chainId, baseToken } = pair;
 			if (baseToken.address === ethers.utils.getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
+				if (totalLiquidity !== 0) {
+					const avgPrice = weightedPrice / totalLiquidity;
+					const priceDiff = Math.abs(Number(priceUsd) - avgPrice) / avgPrice;
+					if (0.9 > priceDiff || priceDiff > 1.1) {
+						throw new Error('Large price deviation');
+					}
+				}
 				weightedPrice += Number(priceUsd) * liquidity.usd;
 				totalLiquidity += liquidity.usd;
 			}
