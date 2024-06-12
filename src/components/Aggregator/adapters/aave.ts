@@ -1,7 +1,8 @@
 import { IStaticATokenLM_ABI, tokenlist } from '@bgd-labs/aave-address-book';
 import { sendTx } from '../utils/sendTx';
-import { Signer } from 'ethers';
-import { AbiCoder, Interface } from 'ethers/lib/utils.js';
+import { ethers, Signer } from 'ethers';
+import { Interface } from 'ethers/lib/utils.js';
+import { providers } from '../rpcs';
 
 export const chainToId = {
 	ethereum: 1,
@@ -37,8 +38,10 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const isFromUnderlying = targetAsset.extensions.underlying.toLowerCase() === from.toLowerCase();
 	const isFromAToken = targetAsset.extensions.underlyingAToken.toLowerCase() === from.toLowerCase();
 	if (!isFromAToken && !isFromUnderlying) return null;
+	const stataToken = new ethers.Contract(to, IStaticATokenLM_ABI, providers[chain]);
+	const amountOut = await stataToken.previewDeposit(amount);
 	return {
-		amountReturned: amount,
+		amountReturned: amountOut,
 		estimatedGas: isFromUnderlying ? 250_000 : 100_000,
 		tokenApprovalAddress: to,
 		rawQuote: { to, amount, isFromUnderlying } as Quote

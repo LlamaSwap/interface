@@ -144,10 +144,10 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
-"@bgd-labs/aave-address-book@^2.29.0":
-  version "2.29.0"
-  resolved "https://registry.yarnpkg.com/@bgd-labs/aave-address-book/-/aave-address-book-2.29.0.tgz#57a33e7853d11802bba1129043f2fcb20b105a11"
-  integrity sha512-lb8H6/OplzrMC0LD3SN8w/1e5dlEavMzrVDYuY01lsYkt8NyiXgEQYjCA9f6ofZBRKPAhOZIKO0gVzcOTT6Vrg==
+"@bgd-labs/aave-address-book@2.29.1-65ecb8d09b257f961384e428c8c7a08f358c4a59.0":
+  version "2.29.1-65ecb8d09b257f961384e428c8c7a08f358c4a59.0"
+  resolved "https://registry.yarnpkg.com/@bgd-labs/aave-address-book/-/aave-address-book-2.29.1-65ecb8d09b257f961384e428c8c7a08f358c4a59.0.tgz#dbc6bf654b23f234a55bdd722372f8528c47ec83"
+  integrity sha512-iWZUr/Y3bH47Bk/Zd7b6khn7BEkfxcxL2Fyo49MnR+r16HmkWBmDdSuw9WMD76F0+mhFaXAb4Jf7fY02M0wRUA==
 
 "@chakra-ui/accordion@2.0.3":
   version "2.0.3"
