@@ -14,6 +14,7 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
+		"@bgd-labs/aave-address-book": "^2.29.0",
 		"@chakra-ui/icons": "^2.0.12",
 		"@chakra-ui/react": "2.2.1",
 		"@defillama/sdk": "^3.0.25",
