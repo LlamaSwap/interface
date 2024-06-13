@@ -49,10 +49,16 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ signer, rawQuote, chain }: { signer: Signer; rawQuote: Quote; chain: string }) {
+	const from = await signer.getAddress();
 	const txObject = {
-		from: signer.getAddress(),
+		from: from,
 		to: rawQuote.to,
-		data: stata.encodeFunctionData('deposit', [rawQuote.amount, signer.getAddress(), 0, rawQuote.isFromUnderlying]),
+		data: stata.encodeFunctionData('deposit(uint256, address, uint16, bool)', [
+			rawQuote.amount,
+			from,
+			0,
+			rawQuote.isFromUnderlying
+		]),
 		value: 0
 	};
 	const gasPrediction = await signer.estimateGas(txObject);
