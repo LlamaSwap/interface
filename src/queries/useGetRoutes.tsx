@@ -37,6 +37,7 @@ export interface IRoute {
 	};
 	isOutputAvailable: boolean;
 	isGasless: boolean;
+	isSignatureNeededForSwap: boolean;
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
@@ -56,7 +57,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			l1Gas: 0,
 			tx: {},
 			isOutputAvailable: false,
-			isGasless: adapter.isGasless ?? false
+			isGasless: adapter.isGasless ?? false,
+			isSignatureNeededForSwap: adapter.isSignatureNeededForSwap ?? false
 		};
 	}
 
@@ -82,7 +84,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 				l1Gas: 0,
 				tx: {},
 				isOutputAvailable: false,
-				isGasless: adapter.isGasless ?? false
+				isGasless: adapter.isGasless ?? false,
+				isSignatureNeededForSwap: adapter.isSignatureNeededForSwap ?? false
 			};
 		} else {
 			price = await quouteFunc(chain, from, to, amount, extra);
@@ -106,7 +109,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			airdrop: !adapter.token,
 			fromAmount: amountIn,
 			isOutputAvailable: adapter.isOutputAvailable,
-			isGasless: adapter.isGasless ?? false
+			isGasless: adapter.isGasless ?? false,
+			isSignatureNeededForSwap: adapter.isSignatureNeededForSwap ?? false
 		};
 
 		return res;
@@ -121,7 +125,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			txData: '',
 			tx: {},
 			isOutputAvailable: false,
-			isGasless: adapter.isGasless ?? false
+			isGasless: adapter.isGasless ?? false,
+			isSignatureNeededForSwap: adapter.isSignatureNeededForSwap ?? false
 		};
 	}
 }

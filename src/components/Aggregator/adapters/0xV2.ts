@@ -12,6 +12,8 @@ export const chainToId = {
 	base: '8453'
 };
 
+export const isSignatureNeededForSwap = true;
+
 export function approvalAddress() {
 	return '0x000000000022d473030f116ddee9f6b43ac78ba3';
 }
@@ -37,7 +39,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}&feeRecipientTradeSurplus=${feeCollectorAddress}`,
 		{
 			headers: {
-				'0x-api-key': 'e3fae20a-652c-4341-8013-7de52e31029b'
+				'0x-api-key': process.env.OX_API_KEY
 			}
 		}
 	).then((r) => {
@@ -69,15 +71,19 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 const MAGIC_CALLDATA_STRING = 'f'.repeat(130); // used when signing the eip712 message
 
-export async function swap({ signer, rawQuote, chain, signTypedDataAsync }) {
-	const fromAddress = await signer.getAddress();
-
+export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 	const signature = await signTypedDataAsync({
 		domain: rawQuote.permit2.eip712.domain,
 		types: rawQuote.permit2.eip712.types,
 		primaryType: rawQuote.permit2.eip712.primaryType,
 		value: rawQuote.permit2.eip712.message
 	});
+
+	return signature;
+}
+
+export async function swap({ signer, rawQuote, chain, signature }) {
+	const fromAddress = await signer.getAddress();
 
 	const tx = await sendTx(signer, chain, {
 		from: fromAddress,
