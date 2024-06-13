@@ -33,44 +33,11 @@ export const chainsMap = {
 	pulse: 369,
 	metis: 1088,
 	base: 8453,
-	linea: 59144
-} as const;
-
-// https://api.coingecko.com/api/v3/asset_platforms
-export const geckoChainsMap: Record<string, typeof chainsMap[keyof typeof chainsMap]> = {
-	ethereum: 1,
-	'binance-smart-chain': 56,
-	'polygon-pos': 137,
-	'optimistic-ethereum': 10,
-	'arbitrum-one': 42161,
-	avalanche: 43114,
-	xdai: 100,
-	fantom: 250,
-	'klay-token': 8217,
-	aurora: 1313161554,
-	celo: 42220,
-	cronos: 25,
-	dogechain: 2000,
-	moonriver: 1285,
-	bittorrent: 199,
-	oasis: 42262,
-	velas: 106,
-	heco: 128,
-	'harmony-shard-0': 1666600000,
-	boba: 288,
-	'okex-chain': 66,
-	fuse: 122,
-	moonbeam: 1284,
-	canto: 7700,
-	'polygon-zkevm': 1101,
-	zksync: 324,
-	pulsechain: 369,
-	kava: 2222,
-	ontology: 58,
-	'metis-andromeda': 1088,
 	linea: 59144,
-	base: 8453
-};
+	mode: 34443,
+	mantle: 5000,
+	scroll: 534352
+} as const;
 
 export const chainGasToken: Record<keyof typeof chainsMap, string> = {
 	ethereum: 'ethereum',
@@ -104,21 +71,11 @@ export const chainGasToken: Record<keyof typeof chainsMap, string> = {
 	pulse: 'pulsechain',
 	metis: 'metis-token',
 	base: 'ethereum',
-	linea: 'ethereum'
+	linea: 'ethereum',
+	mode: 'ethereum',
+	mantle: 'mantle',
+	scroll: 'ethereum'
 };
-
-export const llamaToGeckoChainsMap = Object.fromEntries(
-	Object.entries(chainsMap)
-		.map(([lllamaChainName, chainId]) => {
-			const gchain = Object.entries(geckoChainsMap).find((geckoChain) => chainId === geckoChain[1]);
-
-			if (gchain) {
-				return [lllamaChainName, gchain[0]];
-			}
-			return null;
-		})
-		.filter((c) => c !== null)
-);
 
 export const geckoTerminalChainsMap = {
 	1: 'eth',

@@ -14,7 +14,8 @@ export const chainToId = {
 	//polygonzkevm: 1101
 	//mantle
 	//mode:
-	linea: 59144
+	linea: 59144,
+	scroll: 534352
 };
 
 export const name = 'Odos';
