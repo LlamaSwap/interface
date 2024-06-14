@@ -5,6 +5,7 @@ import Panel from './Panel';
 import Filters from './Filters';
 import NotFound from '../Lending/NotFound';
 import { formatAmountString } from '~/utils/formatAmount';
+import { useRouter } from 'next/router';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -36,6 +37,8 @@ const YieldsRow = ({ data, index, style }) => (
 	</RowContainer>
 );
 
+const noSymbolText = 'To see the list of available pools, please open the filters panel and search for symbol.';
+
 const Yields = ({ data: initialData }) => {
 	const [bodyHeight, setBodyHeight] = useState(0);
 
@@ -44,6 +47,8 @@ const Yields = ({ data: initialData }) => {
 	const [sortBy, setSortBy] = useState('');
 	const [sortDirection, setSortDirection] = useState('desc');
 	const containerRef = useRef(null);
+	const router = useRouter();
+	const { search } = router.query;
 
 	const rowVirtualizer = useVirtualizer({
 		count: data.length,
@@ -86,7 +91,7 @@ const Yields = ({ data: initialData }) => {
 						TVL {sortBy === 'tvlUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
 					</YieldsCell>
 				</ColumnHeader>
-				{data.length ? (
+				{data.length && search ? (
 					<YieldsBody style={{ height: `${bodyHeight}px`, minHeight: '480px' }}>
 						{rowVirtualizer.getVirtualItems().map((virtualRow) => (
 							<YieldsRow
@@ -103,7 +108,7 @@ const Yields = ({ data: initialData }) => {
 						))}
 					</YieldsBody>
 				) : (
-					<NotFound hasSelectedFilters />
+					<NotFound hasSelectedFilters text={noSymbolText} />
 				)}
 			</YieldsContainer>
 

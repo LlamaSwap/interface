@@ -10,30 +10,37 @@ const TabsContainer = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 8px;
-
-	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-		padding: 16px;
-		gap: 4px;
-	}
+	padding: 16px;
 `;
 
 const TabButtonsWrapper = styled.div`
 	background-color: ${({ theme }) => theme.background};
-	display: inline-flex;
+	display: flex;
 	justify-content: center;
 	border-radius: 25px;
 	padding: 12.5px 7.5px;
 	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.6);
-	transition: box-shadow 0.3s ease;
+	position: relative;
+	overflow: hidden;
 `;
 
 const TabList = styled.ul`
-	display: inline-flex;
-	justify-content: center;
+	display: flex;
 	list-style: none;
 	margin: 0;
 	padding: 0;
+	position: relative;
+`;
+
+const ActiveTabBackground = styled.div`
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	background-color: ${({ theme }) => theme.primary1};
+	border-radius: 25px;
+	transition: transform 0.3s ease, width 0.3s ease;
+	will-change: transform, width;
 `;
 
 const Tab = styled.li<{ active: boolean }>`
@@ -41,61 +48,76 @@ const Tab = styled.li<{ active: boolean }>`
 	padding: 0.625rem 1.25rem;
 	margin: 0 0.75rem;
 	cursor: pointer;
-	background-color: ${({ active, theme }) => (active ? theme.primary1 : theme.bg3)};
 	color: ${({ active, theme }) => (active ? theme.white : theme.text1)};
-	transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+	transition: color 0.3s ease, background-color 0.3s ease;
 	font-size: 16px;
 	font-weight: bold;
 	display: flex;
-	flex-direction: row;
 	align-items: center;
+	z-index: 1;
+	background-color: ${({ active, theme }) => (active ? theme.primary1 : 'transparent')};
+	position: relative;
+	overflow: hidden;
 
 	&:hover {
-		background-color: ${({ theme }) => theme.primary1};
+		background-color: rgba(33, 114, 229, 0.1);
 		color: ${({ theme }) => theme.white};
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+	}
+
+	&:hover::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color:
+		border-radius: 25px;
 	}
 `;
-
 const Wrapper = styled.div`
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	padding: 16px;
-	padding-top: 36px;
-	padding-bottom: 0;
 	width: 100%;
 	align-self: flex-start;
-	z-index: 1;
 	text-align: left;
 	background-color: #22242a;
 `;
 
 const tabs = [
-	{
-		id: '/',
-		name: 'Swap'
-	},
-	{
-		id: 'yields',
-		name: 'Yields'
-	},
-	{
-		id: 'lend-borrow',
-		name: 'Lend & Borrow'
-	}
+	{ id: 'swap', name: 'Swap' },
+	{ id: 'yields', name: 'Earn' },
+	{ id: 'lend-borrow', name: 'Lend & Borrow' }
 ];
 
 const Tabs = () => {
 	const router = useRouter();
-	const activeTabId = router.pathname.split('/')[1];
+	const activeTabId = router.query.tab || tabs[0].id;
+	const [activeTab, setActiveTab] = React.useState(activeTabId);
+	const tabRefs = React.useRef([]);
+	tabRefs.current = tabs.map((_, i) => tabRefs.current[i] ?? React.createRef());
 
-	const [activeTab, setActiveTab] = React.useState(activeTabId || tabs[0].id);
+	React.useEffect(() => {
+		setActiveTab(activeTabId);
+	}, [activeTabId]);
 
 	const handleTabChange = (index) => {
 		const tabId = tabs[index].id;
 		setActiveTab(tabId);
 		router.push(`/${tabId}`, undefined, { shallow: true });
+	};
+
+	const getActiveTabStyles = () => {
+		const activeIndex = tabs.findIndex((tab) => tab.id === activeTab);
+		const activeTabRef = tabRefs.current[activeIndex];
+		const width = activeTabRef.current ? activeTabRef.current.offsetWidth : 0;
+		const left = activeTabRef.current ? activeTabRef.current.offsetLeft : 0;
+
+		return {
+			width: `${width}px`,
+			transform: `translateX(${left}px)`
+		};
 	};
 
 	return (
@@ -104,10 +126,16 @@ const Tabs = () => {
 				<TabButtonsWrapper>
 					<TabList>
 						{tabs.map((tab, index) => (
-							<Tab key={tab.id} active={tab.id === activeTab} onClick={() => handleTabChange(index)}>
+							<Tab
+								ref={tabRefs.current[index]}
+								key={tab.id}
+								active={tab.id === activeTab}
+								onClick={() => handleTabChange(index)}
+							>
 								{tab.name}
 							</Tab>
 						))}
+						<ActiveTabBackground style={getActiveTabStyles()} />
 					</TabList>
 				</TabButtonsWrapper>
 			</TabsContainer>

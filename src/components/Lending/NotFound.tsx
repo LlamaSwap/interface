@@ -3,11 +3,7 @@ import llamaWifBinoculars from './llama_wif_binoculars.png';
 
 import { Text } from '@chakra-ui/react';
 
-const NotFound = ({
-	hasSelectedFilters,
-	notFoundText = 'No pools found for the selected filters.',
-	defaultText = ''
-}) => {
+const NotFound = ({ hasSelectedFilters, text }) => {
 	return (
 		<div
 			style={{
@@ -21,11 +17,11 @@ const NotFound = ({
 		>
 			<img
 				src={hasSelectedFilters ? llamaWifBinoculars.src : llamasWifCoins.src}
-				style={{ width: '200px', height: 'auto' }}
+				style={{ width: '128px', height: 'auto' }}
 				alt="llamas"
 			/>
 			<Text fontSize="16px" w={'240px'} textAlign={'center'} mt={4} color="gray.300">
-				{hasSelectedFilters ? notFoundText : defaultText}
+				{text}
 			</Text>
 		</div>
 	);

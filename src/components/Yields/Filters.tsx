@@ -20,7 +20,15 @@ const wrapSingleQueryString = (value) => (Array.isArray(value) ? value : [value]
 
 const Filters = ({ setData, initialData }) => {
 	const router = useRouter();
-	let { chains = [], projects = [], search = '', apyFrom = 0, apyTo = 200 } = router.query as any;
+	let {
+		chains = [],
+		projects = [],
+		search = '',
+		apyFrom = 0,
+		apyTo = 200,
+		tvlFrom = '',
+		tvlTo = ''
+	} = router.query as any;
 	[chains, projects] = [wrapSingleQueryString(chains), wrapSingleQueryString(projects)];
 
 	const [displayedApyRange, setDisplayedApyRange] = useState([+apyFrom, +apyTo]);
@@ -58,11 +66,14 @@ const Filters = ({ setData, initialData }) => {
 					const projectMatch = projects.length === 0 || projects.includes(item.config.name);
 					const symbolMatch = search === '' || item.symbol.toLowerCase().includes(search.toLowerCase());
 					const apyMatch = apyTo[1] === 200 ? true : item.apyMean30d >= +apyFrom && item.apyMean30d <= +apyTo;
-					return chainMatch && projectMatch && symbolMatch && apyMatch;
+					const tvlFromMatch = tvlFrom === '' || item.tvlUsd >= +tvlFrom;
+					const tvlToMatch = tvlTo === '' || item.tvlUsd <= +tvlTo;
+
+					return chainMatch && projectMatch && symbolMatch && apyMatch && tvlFromMatch && tvlToMatch;
 				});
 			});
 		},
-		[chains, projects, search, apyFrom, apyTo, initialData, setData]
+		[chains, projects, search, apyFrom, apyTo, initialData, setData, tvlFrom, tvlTo]
 	);
 
 	const handleQueryChange = useCallback(
@@ -98,6 +109,17 @@ const Filters = ({ setData, initialData }) => {
 			handleQueryChange(value, 'search');
 		}, 500),
 		[]
+	);
+
+	const handleTvlFromChange = useCallback(
+		debounce((value) => {
+			handleQueryChange(value, 'tvlFrom');
+		}, 500),
+		[handleQueryChange]
+	);
+	const handleTvlToChange = useCallback(
+		debounce((value) => handleQueryChange(value, 'tvlTo'), 500),
+		[handleQueryChange]
 	);
 
 	const changeApyRange = useCallback((values) => {
@@ -142,6 +164,7 @@ const Filters = ({ setData, initialData }) => {
 					/>
 				</Box>
 			</Box>
+
 			<Box>
 				<Text fontWeight="medium" mb={2}>
 					Project
@@ -170,6 +193,29 @@ const Filters = ({ setData, initialData }) => {
 					fontSize={'14px'}
 					_focusVisible={{ outline: 'none' }}
 				/>
+			</Box>
+			<Box>
+				<Text fontWeight="medium" mb={2}>
+					TVL USD
+				</Text>
+				<Flex gap={2}>
+					<Input
+						placeholder="From"
+						onChange={(e) => handleTvlFromChange(e.target.value)}
+						bg="rgb(20, 22, 25)"
+						borderColor="transparent"
+						fontSize={'14px'}
+						_focusVisible={{ outline: 'none' }}
+					/>
+					<Input
+						placeholder="To"
+						onChange={(e) => handleTvlToChange(e.target.value)}
+						bg="rgb(20, 22, 25)"
+						borderColor="transparent"
+						fontSize={'14px'}
+						_focusVisible={{ outline: 'none' }}
+					/>
+				</Flex>
 			</Box>
 
 			<Box>
