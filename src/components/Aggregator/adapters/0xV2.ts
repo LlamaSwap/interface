@@ -40,7 +40,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const amountParam = `sellAmount=${amount}`;
 
 	const data = await fetch(
-		`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${extra.slippage}&affiliateAddress=${defillamaReferrerAddress}&taker=${extra.userAddress}&tradeSurplusRecipient=${feeCollectorAddress}`,
+		`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&swapFeeBps=0&slippageBps=${extra.slippage}&affiliateAddress=${defillamaReferrerAddress}&taker=${extra.userAddress}&tradeSurplusRecipient=${feeCollectorAddress}`,
 		{
 			headers: {
 				'0x-api-key': process.env.OX_API_KEY
