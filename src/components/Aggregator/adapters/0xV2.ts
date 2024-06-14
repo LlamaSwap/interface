@@ -5,10 +5,17 @@ import BigNumber from 'bignumber.js';
 
 export const name = 'Matcha/0x V2';
 export const token = 'ZRX';
-export const isOutputAvailable = true;
+export const isOutputAvailable = false;
 
 export const chainToId = {
 	ethereum: '1',
+	bsc: '56',
+	polygon: '137',
+	optimism: '10',
+	arbitrum: '42161',
+	avax: '43114',
+	fantom: '250',
+	celo: '42220',
 	base: '8453'
 };
 
@@ -26,17 +33,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
 	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
-	const amountParam =
-		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
+
+	if (extra.amountOut && extra.amountOut !== '0') {
+		throw new Error('Invalid query params');
+	}
+
+	const amountParam = `sellAmount=${amount}`;
 
 	const data = await fetch(
-		`https://api.0x.org/swap/permit2/quote?chainId=${
-			chainToId[chain]
-		}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
-			extra.slippage / 100
-		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&&taker=${
-			extra.userAddress
-		}&feeRecipientTradeSurplus=${feeCollectorAddress}`,
+		`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&affiliateAddress=${defillamaReferrerAddress}&taker=${extra.userAddress}&tradeSurplusRecipient=${feeCollectorAddress}`,
 		{
 			headers: {
 				'0x-api-key': process.env.OX_API_KEY
