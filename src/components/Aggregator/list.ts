@@ -16,10 +16,18 @@ import * as yieldyak from './adapters/yieldyak';
 import * as llamazip from './adapters/llamazip';
 // import * as krystal from './adapters/krystal'
 import * as matchaGasless from './adapters/0xGasless';
+import * as aave from './adapters/aave/aave';
 
-export const adapters = [matcha, inch, cowswap, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless];
+export const adapters = [matcha, inch, cowswap, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless, aave];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name, matchaGasless.name];
+export const inifiniteApprovalAllowed = [
+	matcha.name,
+	inch.name,
+	cowswap.name,
+	paraswap.name,
+	matchaGasless.name,
+	aave.name
+];
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,

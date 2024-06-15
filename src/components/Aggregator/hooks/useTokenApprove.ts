@@ -205,6 +205,8 @@ export const useTokenApprove = ({
 		}
 	});
 
+	if (!spender) return { isApproved: true, allowance: ethers.constants.MaxUint256 };
+
 	if (token === ethers.constants.AddressZero || token?.toLowerCase() === nativeAddress.toLowerCase())
 		return { isApproved: true };
 

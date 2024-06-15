@@ -1,0 +1,318 @@
+[
+	{
+		"type": "function",
+		"name": "METADEPOSIT_TYPEHASH",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "METAWITHDRAWAL_TYPEHASH",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes32",
+				"internalType": "bytes32"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "deposit",
+		"inputs": [
+			{
+				"name": "assets",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "receiver",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "referralCode",
+				"type": "uint16",
+				"internalType": "uint16"
+			},
+			{
+				"name": "depositToAave",
+				"type": "bool",
+				"internalType": "bool"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "metaDeposit",
+		"inputs": [
+			{
+				"name": "depositor",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "receiver",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "assets",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "referralCode",
+				"type": "uint16",
+				"internalType": "uint16"
+			},
+			{
+				"name": "depositToAave",
+				"type": "bool",
+				"internalType": "bool"
+			},
+			{
+				"name": "deadline",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "permit",
+				"type": "tuple",
+				"internalType": "struct IStaticATokenLM.PermitParams",
+				"components": [
+					{
+						"name": "owner",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "spender",
+						"type": "address",
+						"internalType": "address"
+					},
+					{
+						"name": "value",
+						"type": "uint256",
+						"internalType": "uint256"
+					},
+					{
+						"name": "deadline",
+						"type": "uint256",
+						"internalType": "uint256"
+					},
+					{
+						"name": "v",
+						"type": "uint8",
+						"internalType": "uint8"
+					},
+					{
+						"name": "r",
+						"type": "bytes32",
+						"internalType": "bytes32"
+					},
+					{
+						"name": "s",
+						"type": "bytes32",
+						"internalType": "bytes32"
+					}
+				]
+			},
+			{
+				"name": "sigParams",
+				"type": "tuple",
+				"internalType": "struct IStaticATokenLM.SignatureParams",
+				"components": [
+					{
+						"name": "v",
+						"type": "uint8",
+						"internalType": "uint8"
+					},
+					{
+						"name": "r",
+						"type": "bytes32",
+						"internalType": "bytes32"
+					},
+					{
+						"name": "s",
+						"type": "bytes32",
+						"internalType": "bytes32"
+					}
+				]
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "metaWithdraw",
+		"inputs": [
+			{
+				"name": "owner",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "receiver",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "shares",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "assets",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "withdrawFromAave",
+				"type": "bool",
+				"internalType": "bool"
+			},
+			{
+				"name": "deadline",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "sigParams",
+				"type": "tuple",
+				"internalType": "struct IStaticATokenLM.SignatureParams",
+				"components": [
+					{
+						"name": "v",
+						"type": "uint8",
+						"internalType": "uint8"
+					},
+					{
+						"name": "r",
+						"type": "bytes32",
+						"internalType": "bytes32"
+					},
+					{
+						"name": "s",
+						"type": "bytes32",
+						"internalType": "bytes32"
+					}
+				]
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "previewDeposit",
+		"inputs": [
+			{
+				"name": "assets",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "previewRedeem",
+		"inputs": [
+			{
+				"name": "shares",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "redeem",
+		"inputs": [
+			{
+				"name": "shares",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "receiver",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "owner",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "withdrawFromAave",
+				"type": "bool",
+				"internalType": "bool"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256",
+				"internalType": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable"
+	}
+]
