@@ -19,14 +19,19 @@ const ChainIcon = styled.img`
 
 const YieldsRow = ({ data, index, style }) => {
 	const row = data[index];
-	const { lendUsdAmount, borrowUsdAmount, minAmountToLend } = row;
+	const {
+		lendUsdAmount,
+		borrowUsdAmount,
+		minAmountToLend,
+		config: { url }
+	} = row;
 	const lend =
 		minAmountToLend || lendUsdAmount
 			? formatAmountString(lendUsdAmount ? lendUsdAmount?.toFixed(2) : minAmountToLend?.toFixed(2), '$')
 			: '-';
 	const borrow = formatAmountString(borrowUsdAmount ? borrowUsdAmount?.toFixed(2) : '-', '$');
 	return (
-		<RowContainer style={style}>
+		<RowContainer style={style} onClick={() => (url ? window.open(url, '_blank') : null)}>
 			<YieldsCell style={{ overflow: 'hidden', display: 'block', textAlign: 'center' }}>
 				{row.symbol} ➞ {row.borrowPool?.symbol}
 			</YieldsCell>
@@ -69,8 +74,8 @@ const TokenAmountSelector = ({
 	onAmountChange,
 	tokenPlaceholder,
 	amountPlaceholder,
-	isBorrow,
-	isDisabled
+	isBorrow = false,
+	isDisabled = false
 }) => {
 	return (
 		<Box flex="3">
@@ -155,8 +160,8 @@ const Lending = (props) => {
 	const [sortBy, setSortBy] = useState('');
 	const [sortDirection, setSortDirection] = useState('desc');
 	const containerRef = useRef(null);
-	const [selectedLendToken, setSelectedLendToken] = useState(lendToken);
-	const [selectedBorrowToken, setSelectedBorrowToken] = useState(borrowToken);
+	const [selectedLendToken, setSelectedLendToken] = useState({ value: lendToken, label: lendToken });
+	const [selectedBorrowToken, setSelectedBorrowToken] = useState({ value: borrowToken, label: borrowToken });
 	const [selectedChain, setSelectedChain] = useState(null);
 	const [amountToLend, setAmountToLend] = useState('');
 	const [amountToBorrow, setAmountToBorrow] = useState('');
@@ -207,7 +212,7 @@ const Lending = (props) => {
 	}, []);
 	useEffect(() => {
 		const filterPools = (pools, token) => {
-			if (!token) return [];
+			if (!token || token?.includes('-')) return [];
 			return pools.filter((p) => {
 				const symbolMatch = p?.stablecoin
 					? token === 'STABLES'
@@ -241,19 +246,29 @@ const Lending = (props) => {
 				}
 				const poolPairs = filteredBorrowPools.map((borrowPool) => {
 					const lendTokenPrice =
-						prices?.[
-							`${mapChainName(lendPool?.chain?.toLowerCase())}:${lendPool?.underlyingTokens?.[0]?.toLowerCase()}`
-						]?.price;
+						selectedLendToken?.value === 'STABLES'
+							? 1
+							: prices?.[
+									`${mapChainName(lendPool?.chain?.toLowerCase())}:${lendPool?.underlyingTokens?.[0]?.toLowerCase()}`
+							  ]?.price;
 					const borrowTokenPrice =
-						prices?.[
-							`${mapChainName(borrowPool?.chain?.toLowerCase())}:${borrowPool?.underlyingTokens?.[0]?.toLowerCase()}`
-						]?.price;
+						selectedBorrowToken?.value === 'STABLES'
+							? 1
+							: prices?.[
+									`${mapChainName(
+										borrowPool?.chain?.toLowerCase()
+									)}:${borrowPool?.underlyingTokens?.[0]?.toLowerCase()}`
+							  ]?.price;
 					const lendUsdAmount = lendTokenPrice * parseFloat(amountToLend);
 					const maxAmountToBorrow = lendUsdAmount * lendPool.ltv;
-					const borrowUsdAmount = amountToBorrow ? borrowTokenPrice * parseFloat(amountToBorrow) : maxAmountToBorrow;
-
+					let borrowUsdAmount = amountToBorrow
+						? amountToBorrow?.includes('%')
+							? (maxAmountToBorrow * Number(amountToBorrow.replace('%', ''))) / 100
+							: borrowTokenPrice * +amountToBorrow
+						: maxAmountToBorrow;
+					borrowUsdAmount = maxAmountToBorrow <= borrowUsdAmount ? 0 : borrowUsdAmount;
 					const minAmountToLend = borrowUsdAmount / lendPool.ltv;
-					const lendBorrowRatio = lendUsdAmount / borrowUsdAmount || lendPool?.ltv;
+					const lendBorrowRatio = borrowUsdAmount / lendUsdAmount || lendPool?.ltv;
 					const pairNetApy = lendPool.apy + borrowPool.apyBorrow * lendPool.ltv * lendBorrowRatio;
 					const pairRewardApy = lendPool.apyReward + borrowPool.apyRewardBorrow * lendPool.ltv * lendBorrowRatio;
 
@@ -276,19 +291,30 @@ const Lending = (props) => {
 			.filter(Boolean)
 			.flat();
 
-		setPoolPairs(pairs);
-	}, [lendingPools, borrowPools, prices, selectedLendToken, selectedBorrowToken, amountToLend, amountToBorrow]);
+		setPoolPairs(
+			pairs.sort((a, b) => {
+				console.log(sortBy, sortDirection);
+				const fieldA = sortBy === 'totalAvailableUsd' ? a.borrowPool[sortBy] : a[sortBy];
+				const fieldB = sortBy === 'totalAvailableUsd' ? b.borrowPool[sortBy] : b[sortBy];
+				if (fieldA < fieldB) return sortDirection === 'asc' ? -1 : 1;
+				if (fieldA > fieldB) return sortDirection === 'asc' ? 1 : -1;
+				return 0;
+			})
+		);
+	}, [
+		lendingPools,
+		borrowPools,
+		prices,
+		selectedLendToken,
+		selectedBorrowToken,
+		amountToLend,
+		amountToBorrow,
+		sortBy,
+		sortDirection
+	]);
 	const handleSort = (field) => {
 		setSortDirection((sortDirection) => (sortDirection === 'asc' ? 'desc' : 'asc'));
 		setSortBy(field);
-		const direction = sortDirection === 'asc' ? 'desc' : 'asc';
-		setPoolPairs((data) => {
-			return [...data].sort((a, b) => {
-				if (a[field] < b[field]) return direction === 'asc' ? -1 : 1;
-				if (a[field] > b[field]) return direction === 'asc' ? 1 : -1;
-				return 0;
-			});
-		});
 	};
 
 	const resetFilters = () => {
@@ -308,7 +334,7 @@ const Lending = (props) => {
 					</Text>
 				</Flex>
 				{poolPairs.length === 0 ? (
-					<NotFound text={'Seclet a lending and borrowing token to see the available pairs.'} />
+					<NotFound text={'Seclet a lending and borrowing token to see the available pairs.'} size="200px" />
 				) : (
 					<YieldsContainer ref={containerRef}>
 						<ColumnHeader style={{ gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr 1fr 1fr' }}>
@@ -319,8 +345,8 @@ const Lending = (props) => {
 							<YieldsCell onClick={() => handleSort('pairNetApy')}>
 								Net APY {sortBy === 'pairNetApy' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
 							</YieldsCell>
-							<YieldsCell onClick={() => handleSort('tvlUsd')}>
-								Available {sortBy === 'tvlUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+							<YieldsCell onClick={() => handleSort('totalAvailableUsd')}>
+								Available {sortBy === 'totalAvailableUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
 							</YieldsCell>
 							<YieldsCell>Lend</YieldsCell>
 							<YieldsCell>Borrow</YieldsCell>

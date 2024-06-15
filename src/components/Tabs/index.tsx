@@ -85,13 +85,21 @@ const Wrapper = styled.div`
 	background-color: #22242a;
 `;
 
-const tabs = [
-	{ id: 'swap', name: 'Swap' },
-	{ id: 'yields', name: 'Earn' },
-	{ id: 'lend-borrow', name: 'Lend & Borrow' }
-];
+const TabPanels = styled.div`
+	width: 100%;
+	background-color: rgb(34, 36, 42);
+	border-radius: 10px;
+	padding: 1rem;
+	margin-top: 0.5rem;
+	display: flex;
+	justify-content: center;
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		padding: 0.5rem;
+		margin-top: 0.25rem;
+	}
+`;
 
-const Tabs = () => {
+const Tabs = ({ tabs }) => {
 	const router = useRouter();
 	const activeTabId = router.query.tab || tabs[0].id;
 	const [activeTab, setActiveTab] = React.useState(activeTabId);
@@ -105,7 +113,7 @@ const Tabs = () => {
 	const handleTabChange = (index) => {
 		const tabId = tabs[index].id;
 		setActiveTab(tabId);
-		router.push(`/${tabId}`, undefined, { shallow: true });
+		router.push(`?tab=${tabId}`, undefined, { shallow: true });
 	};
 
 	const getActiveTabStyles = () => {
@@ -138,6 +146,7 @@ const Tabs = () => {
 						<ActiveTabBackground style={getActiveTabStyles()} />
 					</TabList>
 				</TabButtonsWrapper>
+				<TabPanels>{tabs.find((tab) => tab.id === activeTab)?.content}</TabPanels>
 			</TabsContainer>
 		</Wrapper>
 	);

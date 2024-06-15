@@ -5,6 +5,9 @@ import { CSSProperties } from 'react';
 
 interface IReactSelect extends Props {
 	style?: CSSProperties;
+	defaultOptions?: boolean;
+	itemCount?: number;
+	cacheOptions?: boolean;
 }
 
 const formatOptionLabel = ({ label, ...rest }) => {
@@ -122,7 +125,7 @@ const ReactSelect = ({ options, style, ...props }: IReactSelect) => (
 					}
 				};
 			}}
-			formatOptionLabel={formatOptionLabel}
+			formatOptionLabel={props.defaultOptions ? undefined : formatOptionLabel}
 			{...props}
 		/>
 	</Wrapper>

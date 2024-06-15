@@ -3,7 +3,7 @@ import llamaWifBinoculars from './llama_wif_binoculars.png';
 
 import { Text } from '@chakra-ui/react';
 
-const NotFound = ({ hasSelectedFilters, text }) => {
+const NotFound = ({ hasSelectedFilters = false, text, size = '150px' }) => {
 	return (
 		<div
 			style={{
@@ -17,7 +17,7 @@ const NotFound = ({ hasSelectedFilters, text }) => {
 		>
 			<img
 				src={hasSelectedFilters ? llamaWifBinoculars.src : llamasWifCoins.src}
-				style={{ width: '128px', height: 'auto' }}
+				style={{ width: size, height: 'auto' }}
 				alt="llamas"
 			/>
 			<Text fontSize="16px" w={'240px'} textAlign={'center'} mt={4} color="gray.300">

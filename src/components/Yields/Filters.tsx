@@ -15,8 +15,22 @@ import {
 import MultiSelect from '../MultiSelect';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
 import { useRouter } from 'next/router';
+import { FixedSizeList as List } from 'react-window';
+import { createFilter } from 'react-select';
 
 const wrapSingleQueryString = (value) => (Array.isArray(value) ? value : [value]);
+
+const MenuList = (props) => {
+	const { options, children, maxHeight, getValue } = props;
+	const [value] = getValue();
+	const initialOffset = options.indexOf(value) * 35;
+
+	return (
+		<List height={maxHeight} itemCount={children.length} itemSize={35} initialScrollOffset={initialOffset}>
+			{({ index, style }) => <div style={style}>{children[index]}</div>}
+		</List>
+	);
+};
 
 const Filters = ({ setData, initialData }) => {
 	const router = useRouter();
@@ -51,9 +65,26 @@ const Filters = ({ setData, initialData }) => {
 		logoURI: `https://icons.llamao.fi/icons/protocols/${project}?w=48&h=48`
 	}));
 
+	const allTokens = useMemo(
+		() => Array.from(new Set(initialData.map((item) => item.symbol))).filter((s: string) => s.split('-')?.length === 1),
+		[initialData.length]
+	);
+	const tokensOptions = allTokens.map((token) => ({
+		value: token,
+		label: token
+	}));
+
 	const handleFilterChanges = useCallback(
-		(query) => {
-			let { chains = [], projects = [], search = '', apyFrom = 0, apyTo = 2000 } = query as any;
+		debounce((query) => {
+			let {
+				chains = [],
+				projects = [],
+				search = '',
+				apyFrom = 0,
+				apyTo = 200,
+				tvlFrom = '',
+				tvlTo = ''
+			} = query as any;
 			[chains, projects] = [wrapSingleQueryString(chains), wrapSingleQueryString(projects)];
 
 			setData(() => {
@@ -65,6 +96,7 @@ const Filters = ({ setData, initialData }) => {
 					const chainMatch = chains.length === 0 || chains.includes(item.chain);
 					const projectMatch = projects.length === 0 || projects.includes(item.config.name);
 					const symbolMatch = search === '' || item.symbol.toLowerCase().includes(search.toLowerCase());
+					console.log({ search, symbolMatch, item });
 					const apyMatch = apyTo[1] === 200 ? true : item.apyMean30d >= +apyFrom && item.apyMean30d <= +apyTo;
 					const tvlFromMatch = tvlFrom === '' || item.tvlUsd >= +tvlFrom;
 					const tvlToMatch = tvlTo === '' || item.tvlUsd <= +tvlTo;
@@ -72,7 +104,7 @@ const Filters = ({ setData, initialData }) => {
 					return chainMatch && projectMatch && symbolMatch && apyMatch && tvlFromMatch && tvlToMatch;
 				});
 			});
-		},
+		}, 500),
 		[chains, projects, search, apyFrom, apyTo, initialData, setData, tvlFrom, tvlTo]
 	);
 
@@ -85,9 +117,9 @@ const Filters = ({ setData, initialData }) => {
 			} else query = { ...router.query, [key]: value };
 
 			router.push({ query }, undefined, { shallow: true });
-			handleFilterChanges(query);
+			handleFilterChanges({ ...query, [key]: value });
 		},
-		[router]
+		[handleFilterChanges, router]
 	);
 
 	const handleChainChange = (options) => {
@@ -104,21 +136,23 @@ const Filters = ({ setData, initialData }) => {
 		);
 	};
 
-	const handleSymbolSearch = useCallback(
-		debounce((value) => {
-			handleQueryChange(value, 'search');
-		}, 500),
-		[]
-	);
+	const handleSymbolSearch = useCallback((value) => {
+		handleQueryChange(value, 'search');
+	}, []);
 
 	const handleTvlFromChange = useCallback(
-		debounce((value) => {
+		(e) => {
+			const value = e.target.value;
 			handleQueryChange(value, 'tvlFrom');
-		}, 500),
+		},
 		[handleQueryChange]
 	);
+
 	const handleTvlToChange = useCallback(
-		debounce((value) => handleQueryChange(value, 'tvlTo'), 500),
+		(e) => {
+			const value = e.target.value;
+			handleQueryChange(value, 'tvlTo');
+		},
 		[handleQueryChange]
 	);
 
@@ -136,7 +170,7 @@ const Filters = ({ setData, initialData }) => {
 	const handleResetFilters = () => {
 		setDisplayedApyRange([0, 200]);
 		setData(initialData);
-		router.push({ query: {} }, undefined, { shallow: true });
+		router.push({ query: { tab: 'yields' } }, undefined, { shallow: true });
 	};
 
 	const thumbColor = useColorModeValue('gray.300', 'gray.600');
@@ -147,6 +181,25 @@ const Filters = ({ setData, initialData }) => {
 				<Text fontWeight="bold" mb={4} fontSize={16}>
 					Filters
 				</Text>
+				<Box mb={2}>
+					<Text fontWeight="medium" mb={2}>
+						Symbol
+					</Text>
+					<MultiSelect
+						itemCount={allTokens.length}
+						options={tokensOptions}
+						value={{
+							label: search,
+							value: search
+						}}
+						onChange={(value: { value: string }) => handleSymbolSearch(value?.value)}
+						placeholder="Search symbols..."
+						components={{ MenuList }}
+						cacheOptions
+						defaultOptions
+						filterOption={createFilter({ ignoreAccents: false })}
+					/>
+				</Box>
 				<Box>
 					<Text fontWeight="medium" mb={2}>
 						Chain
@@ -181,19 +234,7 @@ const Filters = ({ setData, initialData }) => {
 					placeholder="Select projects..."
 				/>
 			</Box>
-			<Box>
-				<Text fontWeight="medium" mb={2}>
-					Symbol
-				</Text>
-				<Input
-					placeholder="Search symbols..."
-					onChange={(e) => handleSymbolSearch(e.target.value)}
-					bg="rgb(20, 22, 25)"
-					borderColor="transparent"
-					fontSize={'14px'}
-					_focusVisible={{ outline: 'none' }}
-				/>
-			</Box>
+
 			<Box>
 				<Text fontWeight="medium" mb={2}>
 					TVL USD
@@ -201,19 +242,21 @@ const Filters = ({ setData, initialData }) => {
 				<Flex gap={2}>
 					<Input
 						placeholder="From"
-						onChange={(e) => handleTvlFromChange(e.target.value)}
+						onChange={(e) => handleTvlFromChange(e)}
 						bg="rgb(20, 22, 25)"
 						borderColor="transparent"
 						fontSize={'14px'}
 						_focusVisible={{ outline: 'none' }}
+						value={tvlFrom}
 					/>
 					<Input
 						placeholder="To"
-						onChange={(e) => handleTvlToChange(e.target.value)}
+						onChange={(e) => handleTvlToChange(e)}
 						bg="rgb(20, 22, 25)"
 						borderColor="transparent"
 						fontSize={'14px'}
 						_focusVisible={{ outline: 'none' }}
+						value={tvlTo}
 					/>
 				</Flex>
 			</Box>
@@ -225,6 +268,7 @@ const Filters = ({ setData, initialData }) => {
 				<Flex justify="center">
 					<Box width="240px">
 						<RangeSlider
+							// eslint-disable-next-line jsx-a11y/aria-proptypes
 							aria-label={['min', 'max']}
 							defaultValue={[0, 200]}
 							value={[displayedApyRange[0], displayedApyRange[1]] as any}

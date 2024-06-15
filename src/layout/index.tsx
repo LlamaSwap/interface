@@ -56,7 +56,6 @@ export default function Layout({ title, children, ...props }: ILayoutProps) {
 						<Header>
 							<ConnectButton {...(props as any)} />
 						</Header>
-						<Tabs />
 						{children}
 					</Center>
 				</PageWrapper>
