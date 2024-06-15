@@ -555,7 +555,7 @@ const pairs: Record<number, Token[]> = {
 };
 
 type Quote = {
-	to: string;
+	target: string;
 	amount: string;
 	toUnderlying?: boolean;
 	fromUnderlying?: boolean;
@@ -598,7 +598,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: amountOut,
 		estimatedGas: estimatedGas,
 		tokenApprovalAddress: swapSide === SwapSide.DEPOSIT ? to : undefined,
-		rawQuote: { to, amount, toUnderlying, fromUnderlying, swapSide } as Quote
+		rawQuote: {
+			target: swapSide === SwapSide.DEPOSIT ? to : from,
+			amount,
+			toUnderlying,
+			fromUnderlying,
+			swapSide
+		} as Quote
 	};
 }
 
@@ -606,7 +612,7 @@ export async function swap({ signer, rawQuote, chain }: { signer: Signer; rawQuo
 	const from = await signer.getAddress();
 	const txObject = {
 		from: from,
-		to: rawQuote.to,
+		to: rawQuote.target,
 		data:
 			rawQuote.swapSide === SwapSide.DEPOSIT
 				? stata.encodeFunctionData('deposit(uint256, address, uint16, bool)', [
