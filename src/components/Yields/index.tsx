@@ -56,7 +56,6 @@ const Yields = ({ data: initialData, tokens }) => {
 			icon: token.logoURI
 		}));
 	}, []);
-	console.log(tokensList);
 
 	const rowVirtualizer = useVirtualizer({
 		count: data.length,
@@ -121,9 +120,13 @@ const Yields = ({ data: initialData, tokens }) => {
 					<>
 						<InfiniteList
 							items={tokensList}
-							setToken={(token) =>
-								router?.push({ query: { ...router.query, tab: 'yields', search: token } }, undefined, { shallow: true })
-							}
+							setToken={(token) => {
+								setData(initialData.filter((item) => item.symbol?.toLowerCase()?.includes(token?.toLowerCase())));
+
+								router?.push({ query: { ...router.query, tab: 'yields', search: token } }, undefined, {
+									shallow: true
+								});
+							}}
 						/>
 					</>
 				)}
