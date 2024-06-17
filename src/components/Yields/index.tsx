@@ -50,7 +50,7 @@ const Yields = ({ data: initialData, tokens }) => {
 
 	const tokensList = React.useMemo(() => {
 		const allTokens = Object.values(tokens).flat();
-		return allTokens.map((token) => ({
+		return allTokens.map((token: Record<string, string>) => ({
 			value: token.symbol,
 			label: token.name,
 			icon: token.logoURI
