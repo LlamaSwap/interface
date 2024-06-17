@@ -20,7 +20,7 @@ import { createFilter } from 'react-select';
 
 const wrapSingleQueryString = (value) => (Array.isArray(value) ? value : [value]);
 
-const MenuList = (props) => {
+export const MenuList = (props) => {
 	const { options, children, maxHeight, getValue } = props;
 	const [value] = getValue();
 	const initialOffset = options.indexOf(value) * 35;

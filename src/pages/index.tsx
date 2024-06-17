@@ -34,7 +34,7 @@ export async function getStaticProps() {
 export default function Aggregator(props) {
 	const tabData = [
 		{ id: 'swap', name: 'Swap', content: <AggregatorContainer {...props?.swapProps} /> },
-		{ id: 'yields', name: 'Earn', content: <Yields {...props.yieldsProps} /> },
+		{ id: 'yields', name: 'Earn', content: <Yields {...props.yieldsProps} tokens={props.swapProps?.tokenList} /> },
 		{ id: 'lending', name: 'Lend & Borrow', content: <Lending {...props?.lendingProps} /> }
 	];
 	return (

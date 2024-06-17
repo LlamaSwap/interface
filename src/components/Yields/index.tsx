@@ -3,9 +3,9 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
 import Panel from './Panel';
 import Filters from './Filters';
-import NotFound from '../Lending/NotFound';
 import { formatAmountString } from '~/utils/formatAmount';
 import { useRouter } from 'next/router';
+import { InfiniteList } from './List';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -37,11 +37,9 @@ const YieldsRow = ({ data, index, style }) => (
 	</RowContainer>
 );
 
-const noSymbolText = 'To see the list of available pools, please open the filters panel and search for symbol.';
-
-const Yields = ({ data: initialData }) => {
+const Yields = ({ data: initialData, tokens }) => {
 	const [bodyHeight, setBodyHeight] = useState(0);
-
+	console.log(tokens);
 	const [showFilters, setShowFilters] = useState(false);
 	const [data, setData] = useState(initialData);
 	const [sortBy, setSortBy] = useState('');
@@ -49,6 +47,16 @@ const Yields = ({ data: initialData }) => {
 	const containerRef = useRef(null);
 	const router = useRouter();
 	const { search } = router.query;
+
+	const tokensList = React.useMemo(() => {
+		const allTokens = Object.values(tokens).flat();
+		return allTokens.map((token) => ({
+			value: token.symbol,
+			label: token.name,
+			icon: token.logoURI
+		}));
+	}, []);
+	console.log(tokensList);
 
 	const rowVirtualizer = useVirtualizer({
 		count: data.length,
@@ -80,35 +88,44 @@ const Yields = ({ data: initialData }) => {
 	return (
 		<YieldsWrapper>
 			<YieldsContainer ref={containerRef}>
-				<ColumnHeader>
-					<YieldsCell>Symbol</YieldsCell>
-					<YieldsCell>Project</YieldsCell>
-					<YieldsCell>Chain</YieldsCell>
-					<YieldsCell onClick={() => handleSort('apyMean30d')}>
-						30d APY {sortBy === 'apyMean30d' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-					</YieldsCell>
-					<YieldsCell onClick={() => handleSort('tvlUsd')}>
-						TVL {sortBy === 'tvlUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-					</YieldsCell>
-				</ColumnHeader>
 				{data.length && search ? (
-					<YieldsBody style={{ height: `${bodyHeight}px`, minHeight: '480px' }}>
-						{rowVirtualizer.getVirtualItems().map((virtualRow) => (
-							<YieldsRow
-								key={virtualRow.index}
-								data={data}
-								index={virtualRow.index}
-								style={{
-									position: 'absolute',
-									top: `${virtualRow.start}px`,
-									height: `${virtualRow.size}px`,
-									width: '100%'
-								}}
-							/>
-						))}
-					</YieldsBody>
+					<>
+						<ColumnHeader>
+							<YieldsCell>Symbol</YieldsCell>
+							<YieldsCell>Project</YieldsCell>
+							<YieldsCell>Chain</YieldsCell>
+							<YieldsCell onClick={() => handleSort('apyMean30d')}>
+								30d APY {sortBy === 'apyMean30d' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+							</YieldsCell>
+							<YieldsCell onClick={() => handleSort('tvlUsd')}>
+								TVL {sortBy === 'tvlUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+							</YieldsCell>
+						</ColumnHeader>
+						<YieldsBody style={{ height: `${bodyHeight}px`, minHeight: '480px' }}>
+							{rowVirtualizer.getVirtualItems().map((virtualRow) => (
+								<YieldsRow
+									key={virtualRow.index}
+									data={data}
+									index={virtualRow.index}
+									style={{
+										position: 'absolute',
+										top: `${virtualRow.start}px`,
+										height: `${virtualRow.size}px`,
+										width: '100%'
+									}}
+								/>
+							))}
+						</YieldsBody>
+					</>
 				) : (
-					<NotFound hasSelectedFilters text={noSymbolText} />
+					<>
+						<InfiniteList
+							items={tokensList}
+							setToken={(token) =>
+								router?.push({ query: { ...router.query, tab: 'yields', search: token } }, undefined, { shallow: true })
+							}
+						/>
+					</>
 				)}
 			</YieldsContainer>
 

@@ -327,49 +327,6 @@ const Lending = (props) => {
 
 	return (
 		<div style={{ display: 'flex', gap: '16px' }}>
-			<YieldsWrapper style={{ overflow: 'hidden', paddingBottom: '10px', width: '600px' }}>
-				<Flex justifyContent={'center'} pt="4">
-					<Text fontSize={'20px'} fontWeight={'bold'}>
-						Pools
-					</Text>
-				</Flex>
-				{poolPairs.length === 0 ? (
-					<NotFound text={'Seclet a lending and borrowing token to see the available pairs.'} size="200px" />
-				) : (
-					<YieldsContainer ref={containerRef}>
-						<ColumnHeader style={{ gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr 1fr 1fr' }}>
-							<YieldsCell>Symbol</YieldsCell>
-							<YieldsCell>Project</YieldsCell>
-							<YieldsCell>Chain</YieldsCell>
-
-							<YieldsCell onClick={() => handleSort('pairNetApy')}>
-								Net APY {sortBy === 'pairNetApy' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-							</YieldsCell>
-							<YieldsCell onClick={() => handleSort('totalAvailableUsd')}>
-								Available {sortBy === 'totalAvailableUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-							</YieldsCell>
-							<YieldsCell>Lend</YieldsCell>
-							<YieldsCell>Borrow</YieldsCell>
-						</ColumnHeader>
-						<YieldsBody style={{ height: `380px` }}>
-							{rowVirtualizer.getVirtualItems().map((virtualRow) => (
-								<YieldsRow
-									key={virtualRow.index}
-									data={poolPairs}
-									index={virtualRow.index}
-									style={{
-										gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr 1fr 1fr',
-										position: 'absolute',
-										top: `${virtualRow.start}px`,
-										height: `${virtualRow.size}px`,
-										width: '100%'
-									}}
-								/>
-							))}
-						</YieldsBody>
-					</YieldsContainer>
-				)}
-			</YieldsWrapper>
 			<YieldsWrapper style={{ overflow: 'hidden', paddingBottom: '10px' }}>
 				<Flex justifyContent={'center'} pt="4">
 					<Text fontSize={'20px'} fontWeight={'bold'}>
@@ -451,6 +408,49 @@ const Lending = (props) => {
 				>
 					Clear Filters
 				</Button>
+			</YieldsWrapper>
+			<YieldsWrapper style={{ overflow: 'hidden', paddingBottom: '10px', width: '600px' }}>
+				<Flex justifyContent={'center'} pt="4">
+					<Text fontSize={'20px'} fontWeight={'bold'}>
+						Pools
+					</Text>
+				</Flex>
+				{poolPairs.length === 0 ? (
+					<NotFound text={'Seclet a lending and borrowing token to see the available pairs.'} size="200px" />
+				) : (
+					<YieldsContainer ref={containerRef}>
+						<ColumnHeader style={{ gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr 1fr 1fr' }}>
+							<YieldsCell>Symbol</YieldsCell>
+							<YieldsCell>Project</YieldsCell>
+							<YieldsCell>Chain</YieldsCell>
+
+							<YieldsCell onClick={() => handleSort('pairNetApy')}>
+								Net APY {sortBy === 'pairNetApy' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+							</YieldsCell>
+							<YieldsCell onClick={() => handleSort('totalAvailableUsd')}>
+								Available {sortBy === 'totalAvailableUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+							</YieldsCell>
+							<YieldsCell>Lend</YieldsCell>
+							<YieldsCell>Borrow</YieldsCell>
+						</ColumnHeader>
+						<YieldsBody style={{ height: `380px` }}>
+							{rowVirtualizer.getVirtualItems().map((virtualRow) => (
+								<YieldsRow
+									key={virtualRow.index}
+									data={poolPairs}
+									index={virtualRow.index}
+									style={{
+										gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr 1fr 1fr',
+										position: 'absolute',
+										top: `${virtualRow.start}px`,
+										height: `${virtualRow.size}px`,
+										width: '100%'
+									}}
+								/>
+							))}
+						</YieldsBody>
+					</YieldsContainer>
+				)}
 			</YieldsWrapper>
 		</div>
 	);

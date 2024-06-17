@@ -30,6 +30,7 @@ const TabList = styled.ul`
 	margin: 0;
 	padding: 0;
 	position: relative;
+	z-index: 1000;
 `;
 
 const ActiveTabBackground = styled.div`
@@ -83,6 +84,11 @@ const Wrapper = styled.div`
 	align-self: flex-start;
 	text-align: left;
 	background-color: #22242a;
+	margin-top: -24px;
+
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		margin-top: 48px;
+	}
 `;
 
 const TabPanels = styled.div`

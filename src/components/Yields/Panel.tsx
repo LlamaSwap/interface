@@ -81,19 +81,17 @@ const PanelContent = styled.div<{ isVisible: boolean }>`
 export const PanelButton = styled.button<{ isVisible: boolean }>`
 	position: absolute;
 	top: 50%;
-	right: ${({ isVisible }) => (isVisible ? '308px' : '-1px')};
+	right: ${({ isVisible }) => (isVisible ? '288px' : '-20px')};
 	font-size: 1rem;
-	transform: translateY(-50%) rotate(180deg);
+	transform: translateY(-50%) rotate(270deg);
 	background-color: rgb(34, 36, 42);
 	color: ${(props) => props.theme.text1};
 	border: none;
-	border-radius: 0 12px 12px 0;
-	padding: 16px 0px 16px 4px;
+	border-radius: 12px 12px 0px 0;
+	padding: 2px 12px 2px 12px;
 	cursor: pointer;
-	writing-mode: vertical-rl;
-	text-orientation: mixed;
 	border-top: 1px solid #2f333c;
-	border-bottom: 1px solid #2f333c;
+	border-left: 1px solid #2f333c;
 	border-right: 1px solid #2f333c;
 	z-index: 100;
 

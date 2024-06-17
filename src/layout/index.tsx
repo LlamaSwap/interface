@@ -5,7 +5,6 @@ import ThemeProvider, { GlobalStyle } from '~/Theme';
 import { Phishing } from './Phishing';
 import ConnectButton from '~/components/Aggregator/ConnectButton';
 import Header from '~/components/Aggregator/Header';
-import Tabs from '~/components/Tabs';
 
 const PageWrapper = styled.div`
 	flex: 1;
