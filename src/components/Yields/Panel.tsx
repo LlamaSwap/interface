@@ -1,9 +1,11 @@
+import { useRouter } from 'next/router';
 import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 const Panel = ({ isVisible, children, setVisible }) => {
 	const panelRef = useRef(null);
 	const buttonRef = useRef(null);
+	const router = useRouter();
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -26,9 +28,11 @@ const Panel = ({ isVisible, children, setVisible }) => {
 
 	return (
 		<>
-			<PanelButton onClick={() => setVisible(!isVisible)} isVisible={isVisible} ref={buttonRef}>
-				Filters
-			</PanelButton>
+			{router?.query?.search ? (
+				<PanelButton onClick={() => setVisible(!isVisible)} isVisible={isVisible} ref={buttonRef}>
+					Filters
+				</PanelButton>
+			) : null}
 			<PanelBody isVisible={isVisible} ref={panelRef}>
 				{isVisible && <PanelContent isVisible={isVisible}>{children}</PanelContent>}
 			</PanelBody>

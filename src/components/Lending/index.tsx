@@ -220,7 +220,7 @@ const Lending = (props) => {
 					? p.symbol?.toLowerCase()?.includes(token?.toLowerCase())
 					: false;
 
-				const chainMatch = selectedChain ? p.chain === selectedChain.value : false;
+				const chainMatch = selectedChain ? p.chain === selectedChain.value : true;
 
 				return symbolMatch && chainMatch;
 			});
@@ -238,7 +238,8 @@ const Lending = (props) => {
 		const pairs = lendingPools
 			.map((lendPool) => {
 				const filteredBorrowPools = borrowPools?.filter(
-					(p) => p.project === lendPool.project && p.chain === lendPool.chain && lendPool.pool !== p.pool
+					(p) =>
+						p.project === lendPool.project && p.chain === lendPool.chain && lendPool.pool !== p.pool && p?.borrowable
 				);
 
 				if (!filteredBorrowPools?.length) {
@@ -293,7 +294,6 @@ const Lending = (props) => {
 
 		setPoolPairs(
 			pairs.sort((a, b) => {
-				console.log(sortBy, sortDirection);
 				const fieldA = sortBy === 'totalAvailableUsd' ? a.borrowPool[sortBy] : a[sortBy];
 				const fieldB = sortBy === 'totalAvailableUsd' ? b.borrowPool[sortBy] : b[sortBy];
 				if (fieldA < fieldB) return sortDirection === 'asc' ? -1 : 1;
@@ -324,6 +324,8 @@ const Lending = (props) => {
 		setAmountToLend('');
 		setAmountToBorrow('');
 	};
+
+	console.log(poolPairs);
 
 	return (
 		<div style={{ display: 'flex', gap: '16px' }}>
