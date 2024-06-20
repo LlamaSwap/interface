@@ -3,19 +3,19 @@ import { defillamaReferrerAddress } from '../constants';
 import { sendTx } from '../utils/sendTx';
 import BigNumber from 'bignumber.js';
 
-export const name = 'Matcha/0x V2';
+export const name = 'Argon';
 export const token = 'ZRX';
 export const isOutputAvailable = false;
 
 export const chainToId = {
 	ethereum: '1',
-	bsc: '56',
-	polygon: '137',
-	optimism: '10',
-	arbitrum: '42161',
-	avax: '43114',
-	fantom: '250',
-	celo: '42220',
+	// bsc: '56',
+	// polygon: '137',
+	// optimism: '10',
+	// arbitrum: '42161',
+	// avax: '43114',
+	// fantom: '250',
+	// celo: '42220',
 	base: '8453'
 };
 
