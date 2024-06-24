@@ -54,10 +54,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		return data;
 	});
 
-	if (
-		data.allowanceTarget.toLowerCase() !== approvalAddress().toLowerCase() ||
-		data.permit2.eip712.domain.verifyingContract.toLowerCase() !== approvalAddress().toLowerCase()
-	) {
+	if (data.permit2.eip712.domain.verifyingContract.toLowerCase() !== approvalAddress().toLowerCase()) {
 		throw new Error(`Router address does not match`);
 	}
 
