@@ -123,7 +123,7 @@ const Yields = ({ data: initialData, tokens }) => {
 							setToken={(token) => {
 								setData(initialData.filter((item) => item.symbol?.toLowerCase()?.includes(token?.toLowerCase())));
 
-								router?.push({ query: { ...router.query, tab: 'yields', search: token } }, undefined, {
+								router?.push({ query: { ...router.query, tab: 'earn', search: token } }, undefined, {
 									shallow: true
 								});
 							}}
