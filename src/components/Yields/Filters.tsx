@@ -170,7 +170,7 @@ const Filters = ({ setData, initialData }) => {
 	const handleResetFilters = () => {
 		setDisplayedApyRange([0, 200]);
 		setData(initialData);
-		router.push({ query: { tab: 'yields' } }, undefined, { shallow: true });
+		router.push({ query: { tab: 'earn' } }, undefined, { shallow: true });
 	};
 
 	const thumbColor = useColorModeValue('gray.300', 'gray.600');
