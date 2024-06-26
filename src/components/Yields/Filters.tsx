@@ -162,15 +162,18 @@ const Filters = ({ setData, initialData, config }) => {
 		[handleQueryChange]
 	);
 
-	const changeApyRange = useCallback((values) => {
-		handleQueryChange(values, 'apy');
-	}, []);
+	const changeApyRange = useCallback(
+		(values) => {
+			handleQueryChange(values, 'apy');
+		},
+		[handleQueryChange]
+	);
 
 	const handleApyRangeChange = useCallback(
 		(values) => {
 			setDisplayedApyRange(values);
 		},
-		[setDisplayedApyRange, handleQueryChange]
+		[setDisplayedApyRange]
 	);
 
 	const handleResetFilters = () => {
