@@ -320,7 +320,7 @@ const Lending = () => {
 	const resetFilters = () => {
 		router.push(
 			{
-				query: { tab: 'lending' }
+				query: { tab: 'borrow' }
 			},
 			undefined,
 			{ shallow: true }

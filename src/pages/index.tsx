@@ -26,8 +26,8 @@ export async function getStaticProps() {
 export default function Aggregator(props) {
 	const tabData = [
 		{ id: 'swap', name: 'Swap', content: <AggregatorContainer {...props} /> },
-		{ id: 'yields', name: 'Earn', content: <Yields tokens={props?.tokenList} /> },
-		{ id: 'lending', name: 'Lend & Borrow', content: <Lending /> }
+		{ id: 'earn', name: 'Earn', content: <Yields tokens={props?.tokenList} /> },
+		{ id: 'borrow', name: 'Borrow', content: <Lending /> }
 	];
 	return (
 		<Layout title={`Meta-dex aggregator - DefiLlama`} defaultSEO>
