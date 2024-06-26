@@ -363,7 +363,7 @@ const Lending = () => {
 											? { label: selectedChain, value: selectedChain, logoURI: chainIconUrl(selectedChain) }
 											: null
 									}
-									onChange={(selectedChain: string) => {
+									onChange={(selectedChain: Record<string, string>) => {
 										router.push(
 											{
 												query: { ...router.query, poolChain: selectedChain?.value }
