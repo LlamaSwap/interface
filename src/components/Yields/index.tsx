@@ -6,7 +6,6 @@ import Filters from './Filters';
 import { formatAmountString } from '~/utils/formatAmount';
 import { useRouter } from 'next/router';
 import { InfiniteList } from './List';
-import { useYieldProps } from '~/queries/useYieldProps';
 import Loader from '../Aggregator/Loader';
 import NotFound from '../Lending/NotFound';
 
@@ -40,12 +39,7 @@ const YieldsRow = ({ data, index, style }) => (
 	</RowContainer>
 );
 
-const Yields = ({ tokens }) => {
-	const props = useYieldProps();
-	const {
-		isLoading,
-		data: { data: initialData, config }
-	} = props;
+const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 	const [bodyHeight, setBodyHeight] = useState(0);
 	const [showFilters, setShowFilters] = useState(false);
 	const [data, setData] = useState(initialData);

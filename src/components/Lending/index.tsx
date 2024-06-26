@@ -9,7 +9,6 @@ import NotFound from './NotFound';
 import { formatAmountString } from '~/utils/formatAmount';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
-import { useLendingProps } from '~/queries/useLendingProps';
 import { MenuList } from '../Yields/MenuList';
 import Loader from '../Aggregator/Loader';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
@@ -154,12 +153,7 @@ const mapChainName = (chain) => {
 	return chainNameMap[chain?.toLowerCase()] || chain;
 };
 
-const Lending = () => {
-	const {
-		data: { yields: initialData, ...props },
-		isLoading
-	} = useLendingProps();
-
+const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 	const router = useRouter();
 	const { lendToken, borrowToken, poolChain: selectedChain } = router.query;
 
@@ -208,25 +202,31 @@ const Lending = () => {
 	}, [props.tokens]);
 
 	const chainList = useMemo(() => {
-		return initialData
-			.reduce((acc, pool) => {
-				if (!acc.includes(pool.chain)) {
-					acc.push(pool.chain);
-				}
-				return acc;
-			}, [])
-			.map((chain) => ({
-				label: chain,
-				value: chain,
-				logoURI: chainIconUrl(chain)
-			}));
+		return [{ label: 'All Chains', value: 'All Chains', logoURI: false }].concat(
+			initialData
+				.reduce((acc, pool) => {
+					if (!acc.includes(pool.chain)) {
+						acc.push(pool.chain);
+					}
+					return acc;
+				}, [])
+				.map((chain) => ({
+					label: chain,
+					value: chain,
+					logoURI: chainIconUrl(chain)
+				}))
+		);
 	}, [initialData]);
 
 	useEffect(() => {
 		const filterPools = (pools, token) => {
 			if (!token || token?.includes('-')) return [];
 			const isStables = token === 'STABLES';
-			const chainFilter = selectedChain ? (p) => p.chain === selectedChain : () => false;
+			const chainFilter = selectedChain
+				? selectedChain === 'All Chains'
+					? () => true
+					: (p) => p.chain === selectedChain
+				: () => false;
 
 			return pools.filter((p) => {
 				const symbolMatch = isStables ? p?.stablecoin : p.symbol?.toLowerCase()?.includes(token?.toLowerCase());
@@ -360,7 +360,11 @@ const Lending = () => {
 								<ReactSelect
 									value={
 										selectedChain
-											? { label: selectedChain, value: selectedChain, logoURI: chainIconUrl(selectedChain) }
+											? {
+													label: selectedChain,
+													value: selectedChain,
+													logoURI: selectedChain === 'All Chains' ? false : chainIconUrl(selectedChain)
+											  }
 											: null
 									}
 									onChange={(selectedChain: Record<string, string>) => {

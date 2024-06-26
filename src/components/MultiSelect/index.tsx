@@ -28,7 +28,7 @@ const formatOptionLabel = ({ label, ...rest }) => {
 						}}
 						alt=""
 					/>
-				) : (
+				) : rest?.logoURI === false ? null : (
 					<QuestionIcon height="20px" width="20px" marginRight={'8px'} />
 				)}
 			</div>

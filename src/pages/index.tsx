@@ -7,6 +7,8 @@ import Layout from '~/layout';
 import { getSandwichList } from '~/props/getSandwichList';
 import { getTokenList } from '~/props/getTokenList';
 import { getTokensMaps } from '~/props/getTokensMaps';
+import { useLendingProps } from '~/queries/useLendingProps';
+import { useYieldProps } from '~/queries/useYieldProps';
 
 export async function getStaticProps() {
 	const tokenList = await getTokenList();
@@ -24,10 +26,12 @@ export async function getStaticProps() {
 }
 
 export default function Aggregator(props) {
+	const yeildProps = useYieldProps();
+	const lendingProps = useLendingProps();
 	const tabData = [
 		{ id: 'swap', name: 'Swap', content: <AggregatorContainer {...props} /> },
-		{ id: 'earn', name: 'Earn', content: <Yields tokens={props?.tokenList} /> },
-		{ id: 'borrow', name: 'Borrow', content: <Lending /> }
+		{ id: 'earn', name: 'Earn', content: <Yields tokens={props?.tokenList} {...yeildProps} /> },
+		{ id: 'borrow', name: 'Borrow', content: <Lending {...lendingProps} /> }
 	];
 	return (
 		<Layout title={`Meta-dex aggregator - DefiLlama`} defaultSEO>
