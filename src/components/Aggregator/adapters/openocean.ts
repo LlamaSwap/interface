@@ -4,13 +4,13 @@ import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 
 export const chainToId = {
-	ethereum: 1,
-	bsc: 56,
-	polygon: 137,
-	optimism: 10,
-	arbitrum: 42161,
+	//ethereum: 1,
+	//bsc: 56,
+	//polygon: 137,
+	//optimism: 10,
+	//arbitrum: 42161,
 	gnosis: 100,
-	avax: 43114,
+	//avax: 43114,
 	fantom: 250,
 	aurora: 1313161554,
 	heco: 128,
@@ -24,10 +24,11 @@ export const chainToId = {
 	metis: 1088,
 	zksync: 324,
 	linea: 59144,
-	base: 8453,
+	//base: 8453,
 	//starknet
 	//telos
-	celo: 42220
+	celo: 42220,
+	scroll: 534352
 	//harmony
 	//tron
 };

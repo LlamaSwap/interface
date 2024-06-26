@@ -19,9 +19,9 @@ export const chainToId = {
 	zksync: 'zksync',
 	polygonzkevm: 'polygon-zkevm',
 	linea: 'linea',
-	base: 'base'
+	base: 'base',
 	//mantle
-	//scroll
+	scroll: 'scroll'
 	//blast
 	//xlayer
 };
