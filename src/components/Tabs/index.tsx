@@ -105,16 +105,20 @@ const TabPanels = styled.div`
 	}
 `;
 
-const Tabs = ({ tabs }) => {
+const Tabs = ({ tabs = [] }) => {
 	const router = useRouter();
-	const activeTabId = router.query.tab || tabs?.[0]?.id || 'swap';
-	const [activeTab, setActiveTab] = React.useState(activeTabId);
+	const [isRouterReady, setIsRouterReady] = React.useState(false);
+	const [activeTab, setActiveTab] = React.useState('');
 	const tabRefs = React.useRef([]);
 	tabRefs.current = tabs.map((_, i) => tabRefs.current[i] ?? React.createRef());
 
 	React.useEffect(() => {
-		setActiveTab(activeTabId);
-	}, [activeTabId]);
+		if (router.isReady) {
+			const activeTabId = router.query.tab || 'swap';
+			setActiveTab(activeTabId as string);
+			setIsRouterReady(true);
+		}
+	}, [router.isReady, router.query.tab]);
 
 	const handleTabChange = (index) => {
 		const tabId = tabs[index].id;
@@ -133,6 +137,10 @@ const Tabs = ({ tabs }) => {
 			transform: `translateX(${left}px)`
 		};
 	};
+
+	if (!isRouterReady) {
+		return null;
+	}
 
 	return (
 		<Wrapper>
