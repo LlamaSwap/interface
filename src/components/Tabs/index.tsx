@@ -107,7 +107,7 @@ const TabPanels = styled.div`
 
 const Tabs = ({ tabs }) => {
 	const router = useRouter();
-	const activeTabId = router.query.tab || tabs[0].id;
+	const activeTabId = router.query.tab || tabs?.[0]?.id || 'swap';
 	const [activeTab, setActiveTab] = React.useState(activeTabId);
 	const tabRefs = React.useRef([]);
 	tabRefs.current = tabs.map((_, i) => tabRefs.current[i] ?? React.createRef());

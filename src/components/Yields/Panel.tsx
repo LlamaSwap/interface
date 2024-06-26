@@ -34,7 +34,9 @@ const Panel = ({ isVisible, children, setVisible }) => {
 				</PanelButton>
 			) : null}
 			<PanelBody isVisible={isVisible} ref={panelRef}>
-				{isVisible && <PanelContent isVisible={isVisible}>{children}</PanelContent>}
+				<div style={{ display: isVisible ? 'block' : 'none' }}>
+					<PanelContent isVisible={isVisible}>{children}</PanelContent>
+				</div>
 			</PanelBody>
 			<BlurWrapper isVisible={isVisible} />
 		</>

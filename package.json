@@ -34,7 +34,6 @@
 		"react-dom": "^18.2.0",
 		"react-feather": "^2.0.10",
 		"react-select": "^5.3.2",
-		"react-window": "^1.8.10",
 		"styled-components": "^5.3.5",
 		"wagmi": "^0.12.0"
 	},

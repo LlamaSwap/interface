@@ -7,8 +7,7 @@ export async function getYieldsProps() {
 		.then((c) => c.protocols);
 
 	return {
-		data: yields.map((pool) => {
-			return { ...pool, config: yieldsConfig[pool.project] || {} };
-		})
+		data: yields,
+		config: yieldsConfig
 	};
 }

@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
 	Box,
 	Flex,
@@ -15,59 +15,91 @@ import {
 import MultiSelect from '../MultiSelect';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
 import { useRouter } from 'next/router';
-import { FixedSizeList as List } from 'react-window';
 import { createFilter } from 'react-select';
+import { MenuList } from './MenuList';
 
-const wrapSingleQueryString = (value) => (Array.isArray(value) ? value : [value]);
+const createIndex = (data, key) => {
+	return data.reduce((acc, item) => {
+		const value = item[key];
+		if (!acc[value]) acc[value] = [];
+		acc[value].push(item);
+		return acc;
+	}, {});
+};
 
-export const MenuList = (props) => {
-	const { options, children, maxHeight, getValue } = props;
-	const [value] = getValue();
-	const initialOffset = options.indexOf(value) * 35;
+const useAdvancedFilter = (initialData) => {
+	const indexes = useMemo(
+		() => ({
+			chain: createIndex(initialData, 'chain'),
+			project: createIndex(initialData, 'project')
+		}),
+		[initialData]
+	);
 
-	return (
-		<List height={maxHeight} itemCount={children.length} itemSize={35} initialScrollOffset={initialOffset}>
-			{({ index, style }) => <div style={style}>{children[index]}</div>}
-		</List>
+	return useCallback(
+		(query) => {
+			const { chains = '', projects = '', search = '', apyFrom = 0, apyTo = 200, tvlFrom = '', tvlTo = '' } = query;
+
+			let filteredData = initialData;
+
+			if (chains) {
+				const chainArray = chains.split(',');
+				filteredData = chainArray.flatMap((chain) => indexes.chain[chain] || []);
+			}
+
+			if (projects) {
+				const projectArray = projects.split(',');
+				filteredData = filteredData.filter((item) => projectArray.includes(item.project));
+			}
+
+			if (search) {
+				const searchLower = search.toLowerCase();
+				filteredData = filteredData.filter((item) => item.symbol.toLowerCase().includes(searchLower));
+			}
+
+			filteredData = filteredData.filter((item) => item.apyMean30d >= +apyFrom && item.apyMean30d <= +apyTo);
+
+			if (tvlFrom || tvlTo) {
+				filteredData = filteredData.filter(
+					(item) => (!tvlFrom || item.tvlUsd >= +tvlFrom) && (!tvlTo || item.tvlUsd <= +tvlTo)
+				);
+			}
+
+			return filteredData;
+		},
+		[initialData, indexes]
 	);
 };
 
-const Filters = ({ setData, initialData }) => {
+const Filters = ({ setData, initialData, config }) => {
 	const router = useRouter();
-	let {
-		chains = [],
-		projects = [],
-		search = '',
-		apyFrom = 0,
-		apyTo = 200,
-		tvlFrom = '',
-		tvlTo = ''
-	} = router.query as any;
-	[chains, projects] = [wrapSingleQueryString(chains), wrapSingleQueryString(projects)];
+	const advancedFilter = useAdvancedFilter(initialData);
+
+	let { chains = '', projects = '', search = '', apyFrom = 0, apyTo = 200, tvlFrom = '', tvlTo = '' } = router.query;
 
 	const [displayedApyRange, setDisplayedApyRange] = useState([+apyFrom, +apyTo]);
 
-	const allChains = useMemo(() => Array.from(new Set(initialData.map((item) => item.chain))), [initialData.length]);
+	const allChains = useMemo(() => Array.from(new Set(initialData.map((item) => item.chain))), [initialData]);
 	const chainOptions = allChains.map((chain: string) => ({
 		value: chain,
 		label: chain,
 		logoURI: chainIconUrl(chain?.toLowerCase())
 	}));
 
-	const allProjects = useMemo(
-		() => Array.from(new Set(initialData.map((item) => item.config.name))),
-		[initialData.length]
+	const allProjects = useMemo(() => Object.keys(config), [config]);
+	const projectOptions = useMemo(
+		() =>
+			allProjects.map((project) => ({
+				value: project,
+				label: config?.[project]?.name,
+				logoURI: `https://icons.llamao.fi/icons/protocols/${project}?w=48&h=48`
+			})),
+		[allProjects, config]
 	);
-
-	const projectOptions = allProjects.map((project) => ({
-		value: project,
-		label: project,
-		logoURI: `https://icons.llamao.fi/icons/protocols/${project}?w=48&h=48`
-	}));
 
 	const allTokens = useMemo(
 		() => Array.from(new Set(initialData.map((item) => item.symbol))).filter((s: string) => s.split('-')?.length === 1),
-		[initialData.length]
+		[initialData]
 	);
 	const tokensOptions = allTokens.map((token) => ({
 		value: token,
@@ -76,64 +108,38 @@ const Filters = ({ setData, initialData }) => {
 
 	const handleFilterChanges = useCallback(
 		debounce((query) => {
-			let {
-				chains = [],
-				projects = [],
-				search = '',
-				apyFrom = 0,
-				apyTo = 200,
-				tvlFrom = '',
-				tvlTo = ''
-			} = query as any;
-			[chains, projects] = [wrapSingleQueryString(chains), wrapSingleQueryString(projects)];
-
-			setData(() => {
-				if (chains.length === 0 && projects.length === 0 && search === '' && apyFrom[0] === 0 && apyTo[1] === 200) {
-					return initialData;
-				}
-
-				return initialData.filter((item) => {
-					const chainMatch = chains.length === 0 || chains.includes(item.chain);
-					const projectMatch = projects.length === 0 || projects.includes(item.config.name);
-					const symbolMatch = search === '' || item.symbol.toLowerCase().includes(search.toLowerCase());
-					console.log({ search, symbolMatch, item });
-					const apyMatch = apyTo[1] === 200 ? true : item.apyMean30d >= +apyFrom && item.apyMean30d <= +apyTo;
-					const tvlFromMatch = tvlFrom === '' || item.tvlUsd >= +tvlFrom;
-					const tvlToMatch = tvlTo === '' || item.tvlUsd <= +tvlTo;
-
-					return chainMatch && projectMatch && symbolMatch && apyMatch && tvlFromMatch && tvlToMatch;
-				});
-			});
+			const filteredData = advancedFilter(query);
+			setData(filteredData);
 		}, 500),
-		[chains, projects, search, apyFrom, apyTo, initialData, setData, tvlFrom, tvlTo]
+		[advancedFilter, setData]
 	);
 
+	useEffect(() => {
+		handleFilterChanges({ chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo });
+	}, [chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, handleFilterChanges]);
+
 	const handleQueryChange = useCallback(
-		(value: string, key: string) => {
+		(value, key) => {
 			let query;
 			if (key === 'apy') {
-				const [apyFrom, apyTo] = value;
-				query = { ...router.query, apyFrom, apyTo };
-			} else query = { ...router.query, [key]: value };
+				const [newApyFrom, newApyTo] = value;
+				query = { ...router.query, apyFrom: newApyFrom, apyTo: newApyTo };
+			} else {
+				query = { ...router.query, [key]: value };
+			}
 
 			router.push({ query }, undefined, { shallow: true });
-			handleFilterChanges({ ...query, [key]: value });
+			handleFilterChanges(query);
 		},
 		[handleFilterChanges, router]
 	);
 
 	const handleChainChange = (options) => {
-		handleQueryChange(
-			options.map((option) => option.value),
-			'chains'
-		);
+		handleQueryChange(options?.value, 'chains');
 	};
 
 	const handleProjectChange = (options) => {
-		handleQueryChange(
-			options.map((option) => option.value),
-			'projects'
-		);
+		handleQueryChange(options?.value, 'projects');
 	};
 
 	const handleSymbolSearch = useCallback((value) => {
@@ -169,14 +175,13 @@ const Filters = ({ setData, initialData }) => {
 
 	const handleResetFilters = () => {
 		setDisplayedApyRange([0, 200]);
-		setData(initialData);
-		router.push({ query: { tab: 'earn' } }, undefined, { shallow: true });
-	};
 
+		router.push({ query: { tab: 'yields' } }, undefined, { shallow: true });
+	};
 	const thumbColor = useColorModeValue('gray.300', 'gray.600');
 
 	return (
-		<Flex direction="column" gap={4} minWidth={'260px'} padding={'20px'}>
+		<Flex direction="column" gap={3} minWidth={'260px'} padding={'20px'}>
 			<Box>
 				<Text fontWeight="bold" mb={4} fontSize={16}>
 					Filters
@@ -188,16 +193,21 @@ const Filters = ({ setData, initialData }) => {
 					<MultiSelect
 						itemCount={allTokens.length}
 						options={tokensOptions}
-						value={{
-							label: search,
-							value: search
-						}}
+						value={
+							search
+								? {
+										label: search,
+										value: search
+								  }
+								: null
+						}
 						onChange={(value: { value: string }) => handleSymbolSearch(value?.value)}
 						placeholder="Search symbols..."
-						components={{ MenuList }}
 						cacheOptions
 						defaultOptions
 						filterOption={createFilter({ ignoreAccents: false })}
+						components={{ MenuList }}
+						isClearable
 					/>
 				</Box>
 				<Box>
@@ -205,15 +215,12 @@ const Filters = ({ setData, initialData }) => {
 						Chain
 					</Text>
 					<MultiSelect
-						isMulti
 						options={chainOptions}
-						value={chains.map((chain) => ({
-							value: chain,
-							label: chain,
-							logoURI: chainIconUrl(chain?.toLowerCase())
-						}))}
+						value={chains ? { value: chains, label: chains, logoURI: chainIconUrl(chains) } : null}
 						onChange={handleChainChange}
 						placeholder="Select chains..."
+						isClearable
+						components={{ MenuList }}
 					/>
 				</Box>
 			</Box>
@@ -223,15 +230,24 @@ const Filters = ({ setData, initialData }) => {
 					Project
 				</Text>
 				<MultiSelect
-					isMulti
 					options={projectOptions}
-					value={projects.map((project) => ({
-						value: project,
-						label: project,
-						logoURI: `https://icons.llamao.fi/icons/protocols/${project}?w=48&h=48`
-					}))}
+					value={
+						projects
+							? {
+									value: projects,
+									label: config?.[projects as string]?.name,
+									logoURI: `https://icons.llamao.fi/icons/protocols/${projects}?w=48&h=48`
+							  }
+							: null
+					}
 					onChange={handleProjectChange}
 					placeholder="Select projects..."
+					itemCount={allProjects.length}
+					cacheOptions
+					defaultOptions
+					filterOption={createFilter({ ignoreAccents: false })}
+					components={{ MenuList }}
+					isClearable
 				/>
 			</Box>
 

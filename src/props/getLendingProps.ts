@@ -1,4 +1,4 @@
-export async function getLendBorrowData(pools) {
+async function getLendBorrowData(pools = []) {
 	const yieldsConfig = await fetch('https://api.llama.fi/config/yields')
 		.then((res) => res.json())
 		.then((c) => c.protocols);
@@ -88,38 +88,14 @@ export async function getLendBorrowData(pools) {
 		chainList: [...new Set(pools.map((p) => p.chain))],
 		categoryList: categoriesToKeep,
 		allPools: pools,
-		symbols: [...tokenSymbols]
+		tokens: [...tokenSymbols].map((s) => ({ name: s, symbol: s }))
 	};
 }
 
 export async function getLendingProps() {
-	const tokensData = {};
-
 	const yields = await fetch('https://yields.llama.fi/pools')
 		.then((res) => res.json())
 		.then((res) => res.data);
-	const cgList = await fetch('https://defillama-datasets.llama.fi/tokenlist/sorted.json').then((res) => res.json());
-	const cgTokens = cgList.filter((x) => x.symbol);
-	const cgPositions = cgList.reduce((acc, e, i) => ({ ...acc, [e.symbol]: i }), {} as any);
 	const lendingData = await getLendBorrowData(yields);
-
-	lendingData.symbols
-		.sort((a, b) => cgPositions[a] - cgPositions[b])
-		.forEach((sRaw) => {
-			const s = sRaw.replaceAll(/\(.*\)/g, '').trim();
-
-			const cgToken = cgTokens.find((x) => x.symbol === sRaw.toLowerCase() || x.symbol === s.toLowerCase());
-
-			tokensData[s] = {
-				name: cgToken?.name ?? s,
-				symbol: s,
-				image: cgToken?.image ?? '',
-				image2: cgToken?.image ?? ''
-			};
-		});
-
-	return {
-		...lendingData,
-		tokensData
-	};
+	return lendingData;
 }

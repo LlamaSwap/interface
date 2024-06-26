@@ -6,6 +6,9 @@ import Filters from './Filters';
 import { formatAmountString } from '~/utils/formatAmount';
 import { useRouter } from 'next/router';
 import { InfiniteList } from './List';
+import { useYieldProps } from '~/queries/useYieldProps';
+import Loader from '../Aggregator/Loader';
+import NotFound from '../Lending/NotFound';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -37,9 +40,13 @@ const YieldsRow = ({ data, index, style }) => (
 	</RowContainer>
 );
 
-const Yields = ({ data: initialData, tokens }) => {
+const Yields = ({ tokens }) => {
+	const props = useYieldProps();
+	const {
+		isLoading,
+		data: { data: initialData, config }
+	} = props;
 	const [bodyHeight, setBodyHeight] = useState(0);
-	console.log(tokens);
 	const [showFilters, setShowFilters] = useState(false);
 	const [data, setData] = useState(initialData);
 	const [sortBy, setSortBy] = useState('');
@@ -87,7 +94,9 @@ const Yields = ({ data: initialData, tokens }) => {
 	return (
 		<YieldsWrapper>
 			<YieldsContainer ref={containerRef}>
-				{data.length && search ? (
+				{isLoading ? (
+					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
+				) : search ? (
 					<>
 						<ColumnHeader>
 							<YieldsCell>Symbol</YieldsCell>
@@ -100,21 +109,25 @@ const Yields = ({ data: initialData, tokens }) => {
 								TVL {sortBy === 'tvlUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
 							</YieldsCell>
 						</ColumnHeader>
-						<YieldsBody style={{ height: `${bodyHeight}px`, minHeight: '480px' }}>
-							{rowVirtualizer.getVirtualItems().map((virtualRow) => (
-								<YieldsRow
-									key={virtualRow.index}
-									data={data}
-									index={virtualRow.index}
-									style={{
-										position: 'absolute',
-										top: `${virtualRow.start}px`,
-										height: `${virtualRow.size}px`,
-										width: '100%'
-									}}
-								/>
-							))}
-						</YieldsBody>
+						{data?.length ? (
+							<YieldsBody style={{ height: `${bodyHeight}px`, minHeight: '480px' }}>
+								{rowVirtualizer.getVirtualItems().map((virtualRow) => (
+									<YieldsRow
+										key={virtualRow.index}
+										data={data}
+										index={virtualRow.index}
+										style={{
+											position: 'absolute',
+											top: `${virtualRow.start}px`,
+											height: `${virtualRow.size}px`,
+											width: '100%'
+										}}
+									/>
+								))}
+							</YieldsBody>
+						) : (
+							<NotFound hasSelectedFilters text={'No pools found, please change filters.'} />
+						)}
 					</>
 				) : (
 					<>
@@ -133,7 +146,7 @@ const Yields = ({ data: initialData, tokens }) => {
 			</YieldsContainer>
 
 			<Panel isVisible={showFilters} setVisible={setShowFilters}>
-				<Filters setData={setData} initialData={initialData} />
+				<Filters setData={setData} initialData={initialData} config={config} />
 			</Panel>
 		</YieldsWrapper>
 	);
