@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import { useLendingProps } from '~/queries/useLendingProps';
 import { MenuList } from '../Yields/MenuList';
 import Loader from '../Aggregator/Loader';
+import { chainIconUrl } from '../Aggregator/nativeTokens';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -160,7 +161,7 @@ const Lending = () => {
 	} = useLendingProps();
 
 	const router = useRouter();
-	const { lendToken, borrowToken } = router.query;
+	const { lendToken, borrowToken, poolChain: selectedChain } = router.query;
 
 	const [lendingPools, setLendingPools] = useState([]);
 	const [borrowPools, setBorrowPools] = useState([]);
@@ -169,7 +170,6 @@ const Lending = () => {
 	const containerRef = useRef(null);
 	const selectedLendToken = lendToken;
 	const selectedBorrowToken = borrowToken;
-	const [selectedChain, setSelectedChain] = useState(null);
 	const [amountToLend, setAmountToLend] = useState('');
 	const [amountToBorrow, setAmountToBorrow] = useState('');
 	const [poolPairs, setPoolPairs] = useState([]);
@@ -218,7 +218,7 @@ const Lending = () => {
 			.map((chain) => ({
 				label: chain,
 				value: chain,
-				logoURI: `https://icons.llamao.fi/icons/chains/rsz_${chain.toLowerCase()}?w=48&h=48`
+				logoURI: chainIconUrl(chain)
 			}));
 	}, [initialData]);
 
@@ -226,7 +226,7 @@ const Lending = () => {
 		const filterPools = (pools, token) => {
 			if (!token || token?.includes('-')) return [];
 			const isStables = token === 'STABLES';
-			const chainFilter = selectedChain ? (p) => p.chain === selectedChain.value : () => false;
+			const chainFilter = selectedChain ? (p) => p.chain === selectedChain : () => false;
 
 			return pools.filter((p) => {
 				const symbolMatch = isStables ? p?.stablecoin : p.symbol?.toLowerCase()?.includes(token?.toLowerCase());
@@ -237,59 +237,71 @@ const Lending = () => {
 		setLendingPools(filterPools(initialData, selectedLendToken));
 		setBorrowPools(filterPools(initialData, selectedBorrowToken));
 	}, [initialData, selectedBorrowToken, selectedChain, selectedLendToken]);
-
 	useEffect(() => {
 		if (!selectedLendToken || !selectedBorrowToken) {
 			return setPoolPairs([]);
 		}
 
-		const lendPoolMap = new Map(lendingPools.map((pool) => [pool.project + pool.chain, pool]));
-		const borrowPoolMap = new Map(borrowPools.map((pool) => [pool.project + pool.chain, pool]));
-
 		const pairs = [];
-		for (const [key, lendPool] of lendPoolMap) {
-			const borrowPool = borrowPoolMap.get(key);
-			if (borrowPool && lendPool.pool !== borrowPool.pool && borrowPool?.borrowable) {
-				const lendTokenPrice =
-					selectedLendToken === 'STABLES'
-						? 1
-						: prices?.[
-								`${mapChainName(lendPool?.chain?.toLowerCase())}:${lendPool?.underlyingTokens?.[0]?.toLowerCase()}`
-						  ]?.price;
-				const borrowTokenPrice =
-					selectedBorrowToken === 'STABLES'
-						? 1
-						: prices?.[
-								`${mapChainName(borrowPool?.chain?.toLowerCase())}:${borrowPool?.underlyingTokens?.[0]?.toLowerCase()}`
-						  ]?.price;
-				const lendUsdAmount = amountToLend ? lendTokenPrice * parseFloat(amountToLend) : null;
-				const maxAmountToBorrow = lendUsdAmount * lendPool.ltv;
-				let borrowUsdAmount = amountToBorrow
-					? amountToBorrow?.includes('%')
-						? (maxAmountToBorrow * Number(amountToBorrow.replace('%', ''))) / 100
-						: borrowTokenPrice * +amountToBorrow
-					: null;
 
-				borrowUsdAmount = borrowUsdAmount && maxAmountToBorrow <= borrowUsdAmount ? 0 : borrowUsdAmount;
-				const minAmountToLend = borrowUsdAmount / lendPool.ltv;
-				const lendBorrowRatio = borrowUsdAmount / lendUsdAmount || 0;
-				const pairNetApy = lendPool.apy + borrowPool.apyBorrow * lendPool.ltv * lendBorrowRatio;
-				const pairRewardApy = lendPool.apyReward + borrowPool.apyRewardBorrow * lendPool.ltv * lendBorrowRatio;
-
-				pairs.push({
-					...lendPool,
-					pairNetApy,
-					pairRewardApy,
-					borrowPool,
-					lendUsdAmount,
-					borrowUsdAmount,
-					lendTokenPrice,
-					borrowTokenPrice,
-					maxAmountToBorrow,
-					minAmountToLend
-				});
+		const borrowPoolMap = new Map();
+		borrowPools.forEach((pool) => {
+			const key = `${pool.project}:${pool.chain}`;
+			if (!borrowPoolMap.has(key)) {
+				borrowPoolMap.set(key, []);
 			}
-		}
+			borrowPoolMap.get(key).push(pool);
+		});
+
+		lendingPools.forEach((lendPool) => {
+			const key = `${lendPool.project}:${lendPool.chain}`;
+			const matchingBorrowPools = borrowPoolMap.get(key) || [];
+
+			matchingBorrowPools.forEach((borrowPool) => {
+				if (lendPool.pool !== borrowPool.pool && borrowPool?.borrowable) {
+					const lendTokenPrice =
+						selectedLendToken === 'STABLES'
+							? 1
+							: prices?.[
+									`${mapChainName(lendPool?.chain?.toLowerCase())}:${lendPool?.underlyingTokens?.[0]?.toLowerCase()}`
+							  ]?.price;
+					const borrowTokenPrice =
+						selectedBorrowToken === 'STABLES'
+							? 1
+							: prices?.[
+									`${mapChainName(
+										borrowPool?.chain?.toLowerCase()
+									)}:${borrowPool?.underlyingTokens?.[0]?.toLowerCase()}`
+							  ]?.price;
+					const lendUsdAmount = amountToLend ? lendTokenPrice * parseFloat(amountToLend) : null;
+					const maxAmountToBorrow = lendUsdAmount * lendPool.ltv;
+					let borrowUsdAmount = amountToBorrow
+						? amountToBorrow?.includes('%')
+							? (maxAmountToBorrow * Number(amountToBorrow.replace('%', ''))) / 100
+							: borrowTokenPrice * +amountToBorrow
+						: null;
+
+					borrowUsdAmount = borrowUsdAmount && maxAmountToBorrow <= borrowUsdAmount ? 0 : borrowUsdAmount;
+					const minAmountToLend = borrowUsdAmount / lendPool.ltv;
+					const lendBorrowRatio = borrowUsdAmount / lendUsdAmount || 0;
+					const pairNetApy = lendPool.apy + borrowPool.apyBorrow * lendPool.ltv * lendBorrowRatio;
+					const pairRewardApy = lendPool.apyReward + borrowPool.apyRewardBorrow * lendPool.ltv * lendBorrowRatio;
+
+					pairs.push({
+						...lendPool,
+						pairNetApy,
+						pairRewardApy,
+						borrowPool,
+						lendUsdAmount,
+						borrowUsdAmount,
+						lendTokenPrice,
+						borrowTokenPrice,
+						maxAmountToBorrow,
+						minAmountToLend
+					});
+				}
+			});
+		});
 
 		setPoolPairs(
 			pairs.sort((a, b) => {
@@ -346,8 +358,20 @@ const Lending = () => {
 									Chain
 								</Text>
 								<ReactSelect
-									value={selectedChain}
-									onChange={setSelectedChain}
+									value={
+										selectedChain
+											? { label: selectedChain, value: selectedChain, logoURI: chainIconUrl(selectedChain) }
+											: null
+									}
+									onChange={(selectedChain: string) => {
+										router.push(
+											{
+												query: { ...router.query, poolChain: selectedChain?.value }
+											},
+											undefined,
+											{ shallow: true }
+										);
+									}}
 									options={chainList}
 									placeholder="Select chain..."
 									isClearable
