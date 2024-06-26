@@ -1,27 +1,30 @@
 // Source: https://docs.cow.fi/off-chain-services/api
 
-import { ExtraData } from '../../types';
-import { domain, SigningScheme, signOrder, OrderKind } from '@gnosis.pm/gp-v2-contracts';
+import { SigningScheme, domain, signOrder } from '@gnosis.pm/gp-v2-contracts';
 import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainnet/GPv2Settlement.json';
+import { ExtraData } from '../../types';
 
-import { ethers } from 'ethers';
-import { ABI } from './abi';
 import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
 import { chainsMap } from '../../constants';
+import { ABI } from './abi';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
-	gnosis: 'https://api.cow.fi/xdai'
+	gnosis: 'https://api.cow.fi/xdai',
+	arbitrum: 'https://api.cow.fi/arbitrum_one'
 };
 
 const wrappedTokens = {
 	ethereum: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-	gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
+	gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+	arbitrum: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
 };
 
 const nativeSwapAddress = {
 	ethereum: '0x40A50cf069e992AA4536211B23F286eF88752187',
-	gnosis: '0x40A50cf069e992AA4536211B23F286eF88752187'
+	gnosis: '0x40A50cf069e992AA4536211B23F286eF88752187',
+	arbitrum: '0x552fcecc218158fff20e505c8f3ad24f8e1dd33c'
 };
 
 export const name = 'CowSwap';
