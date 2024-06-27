@@ -737,6 +737,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					: false
 				: isTokenApproved
 			: true
+		: selectedRoute?.price?.tokenApprovalAddress === null
+		? true
 		: isTokenApproved;
 
 	const isUSDTNotApprovedOnEthereum =
@@ -949,7 +951,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				return;
 			}
 
-			if (selectedRoute.isSignatureNeededForSwap && !signatureForSwapMutation.data) {
+			if (
+				selectedRoute.isSignatureNeededForSwap
+					? (selectedRoute.price.rawQuote as any).permit2
+						? !signatureForSwapMutation.data
+						: false
+					: false
+			) {
 				toast({
 					title: 'Signature needed for swap',
 					description: 'Swap is blocked, please try another route.',
@@ -1240,7 +1248,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												</Flex>
 											)}
 
-											{selectedRoute && isApproved && !isGaslessApproval && selectedRoute.isSignatureNeededForSwap ? (
+											{selectedRoute &&
+											isApproved &&
+											!isGaslessApproval &&
+											selectedRoute.isSignatureNeededForSwap &&
+											(selectedRoute.price.rawQuote as any).permit2 ? (
 												<Button
 													isLoading={signatureForSwapMutation.isLoading}
 													loadingText={'Confirming'}
@@ -1308,7 +1320,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														!isAmountSynced ||
 														isApproveInfiniteLoading ||
 														signatureForSwapMutation.isLoading ||
-														(selectedRoute.isSignatureNeededForSwap && !signatureForSwapMutation.data)
+														(selectedRoute.isSignatureNeededForSwap
+															? (selectedRoute.price.rawQuote as any).permit2
+																? !signatureForSwapMutation.data
+																: false
+															: false)
 													}
 												>
 													{!selectedRoute
@@ -1522,7 +1538,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														{selectedRoute &&
 														isApproved &&
 														!isGaslessApproval &&
-														selectedRoute.isSignatureNeededForSwap ? (
+														selectedRoute.isSignatureNeededForSwap &&
+														(selectedRoute.price.rawQuote as any).permit2 ? (
 															<Button
 																isLoading={signatureForSwapMutation.isLoading}
 																loadingText={'Confirming'}
@@ -1585,7 +1602,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	slippageIsWorng ||
 																	!isAmountSynced ||
 																	signatureForSwapMutation.isLoading ||
-																	(selectedRoute.isSignatureNeededForSwap && !signatureForSwapMutation.data)
+																	(selectedRoute.isSignatureNeededForSwap
+																		? (selectedRoute.price.rawQuote as any).permit2
+																			? !signatureForSwapMutation.data
+																			: false
+																		: false)
 																}
 															>
 																{!selectedRoute
