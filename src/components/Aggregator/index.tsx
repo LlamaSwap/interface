@@ -296,6 +296,30 @@ const ConnectButtonWrapper = styled.div`
 	}
 `;
 
+export const SwapInputArrow = (props) => (
+	<IconButton
+		icon={<ArrowDown size={14} />}
+		aria-label="Switch Tokens"
+		marginTop="auto"
+		w="2.25rem"
+		h="2.25rem"
+		minW={0}
+		p="0"
+		pos="absolute"
+		top="0"
+		bottom="0"
+		right="0"
+		left="0"
+		m="auto"
+		borderRadius="8px"
+		bg="#222429"
+		_hover={{ bg: '#2d3037' }}
+		color="white"
+		zIndex={1}
+		{...props}
+	/>
+);
+
 const chains = getAllChains();
 
 export function AggregatorContainer({ tokenList, sandwichList }) {
@@ -1072,7 +1096,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							tokenPrice={fromTokenPrice}
 						/>
 
-						<IconButton
+						<SwapInputArrow
 							onClick={() =>
 								router.push(
 									{
@@ -1083,24 +1107,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 									{ shallow: true }
 								)
 							}
-							icon={<ArrowDown size={14} />}
-							aria-label="Switch Tokens"
-							marginTop="auto"
-							w="2.25rem"
-							h="2.25rem"
-							minW={0}
-							p="0"
-							pos="absolute"
-							top="0"
-							bottom="0"
-							right="0"
-							left="0"
-							m="auto"
-							borderRadius="8px"
-							bg="#222429"
-							_hover={{ bg: '#2d3037' }}
-							color="white"
-							zIndex={1}
 						/>
 
 						<InputAmountAndTokenSelect

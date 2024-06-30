@@ -17,6 +17,7 @@ import { chainIconUrl } from '../Aggregator/nativeTokens';
 import { useRouter } from 'next/router';
 import { createFilter } from 'react-select';
 import { MenuList } from './MenuList';
+import { arrayFromString } from '../Lending';
 
 const createIndex = (data, key) => {
 	return data.reduce((acc, item) => {
@@ -27,7 +28,7 @@ const createIndex = (data, key) => {
 	}, {});
 };
 
-const useAdvancedFilter = (initialData) => {
+const useAdvancedFilter = (initialData, config = {}) => {
 	const indexes = useMemo(
 		() => ({
 			chain: createIndex(initialData, 'chain'),
@@ -38,18 +39,22 @@ const useAdvancedFilter = (initialData) => {
 
 	return useCallback(
 		(query) => {
-			const { chains = '', projects = '', search = '', apyFrom = 0, apyTo = 200, tvlFrom = '', tvlTo = '' } = query;
+			const { chains, projects, search = '', apyFrom = 0, apyTo = 200, tvlFrom = '', tvlTo = '', category } = query;
 
 			let filteredData = initialData;
 
-			if (chains) {
-				const chainArray = chains.split(',');
+			if (chains && chains.length) {
+				const chainArray = chains;
 				filteredData = chainArray.flatMap((chain) => indexes.chain[chain] || []);
 			}
 
-			if (projects) {
-				const projectArray = projects.split(',');
+			if (projects && projects.length) {
+				const projectArray = projects;
 				filteredData = filteredData.filter((item) => projectArray.includes(item.project));
+			}
+
+			if (category && category.length) {
+				filteredData = filteredData.filter((item) => category.includes(config[item.project]?.category));
 			}
 
 			if (search) {
@@ -73,9 +78,13 @@ const useAdvancedFilter = (initialData) => {
 
 const Filters = ({ setData, initialData, config }) => {
 	const router = useRouter();
-	const advancedFilter = useAdvancedFilter(initialData);
 
-	let { chains = '', projects = '', search = '', apyFrom = 0, apyTo = 200, tvlFrom = '', tvlTo = '' } = router.query;
+	let { chains, projects, search = '', apyFrom = 0, apyTo = 200, tvlFrom = '', tvlTo = '', category } = router.query;
+	const advancedFilter = useAdvancedFilter(initialData, config);
+
+	projects = useMemo(() => arrayFromString(projects), [projects]);
+	chains = useMemo(() => arrayFromString(chains), [chains]);
+	category = useMemo(() => arrayFromString(category), [category]);
 
 	const [displayedApyRange, setDisplayedApyRange] = useState([+apyFrom, +apyTo]);
 
@@ -106,6 +115,16 @@ const Filters = ({ setData, initialData, config }) => {
 		label: token
 	}));
 
+	const allCategories = useMemo(
+		() => Array.from(new Set(Object.values(config).map((c: Record<string, string>) => c.category))),
+		[config]
+	);
+
+	const categoryOptions = allCategories.map((category) => ({
+		value: category,
+		label: category
+	}));
+
 	const handleFilterChanges = useCallback(
 		debounce((query) => {
 			const filteredData = advancedFilter(query);
@@ -113,10 +132,9 @@ const Filters = ({ setData, initialData, config }) => {
 		}, 500),
 		[advancedFilter, setData]
 	);
-
 	useEffect(() => {
-		handleFilterChanges({ chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo });
-	}, [chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, handleFilterChanges]);
+		handleFilterChanges({ chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, category });
+	}, [chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, handleFilterChanges, category]);
 
 	const handleQueryChange = useCallback(
 		(value, key) => {
@@ -135,11 +153,22 @@ const Filters = ({ setData, initialData, config }) => {
 	);
 
 	const handleChainChange = (options) => {
-		handleQueryChange(options?.value, 'chains');
+		const chains = options.map((o) => o.value);
+		handleQueryChange(chains, 'chains');
 	};
 
 	const handleProjectChange = (options) => {
-		handleQueryChange(options?.value, 'projects');
+		handleQueryChange(
+			options.map((p) => p.value),
+			'projects'
+		);
+	};
+
+	const handleCategoryChange = (options) => {
+		handleQueryChange(
+			options.map((p) => p.value),
+			'category'
+		);
 	};
 
 	const handleSymbolSearch = useCallback((value) => {
@@ -218,8 +247,9 @@ const Filters = ({ setData, initialData, config }) => {
 						Chain
 					</Text>
 					<MultiSelect
+						isMulti
 						options={chainOptions}
-						value={chains ? { value: chains, label: chains, logoURI: chainIconUrl(chains) } : null}
+						value={chains.map((c) => ({ value: c, label: c, logoURI: chainIconUrl(c) }))}
 						onChange={handleChainChange}
 						placeholder="Select chains..."
 						isClearable
@@ -233,19 +263,39 @@ const Filters = ({ setData, initialData, config }) => {
 					Project
 				</Text>
 				<MultiSelect
+					isMulti
 					options={projectOptions}
-					value={
-						projects
-							? {
-									value: projects,
-									label: config?.[projects as string]?.name,
-									logoURI: `https://icons.llamao.fi/icons/protocols/${projects}?w=48&h=48`
-							  }
-							: null
-					}
+					value={projects.map((p) => ({
+						value: p,
+						label: config?.[p]?.name,
+						logoURI: `https://icons.llamao.fi/icons/protocols/${p}?w=48&h=48`
+					}))}
 					onChange={handleProjectChange}
 					placeholder="Select projects..."
 					itemCount={allProjects.length}
+					cacheOptions
+					defaultOptions
+					filterOption={createFilter({ ignoreAccents: false })}
+					components={{ MenuList }}
+					isClearable
+				/>
+			</Box>
+			<Box>
+				<Text fontWeight="medium" mb={2}>
+					Category
+				</Text>
+				<MultiSelect
+					isMulti
+					options={categoryOptions}
+					value={
+						category.map((p) => ({
+							value: p,
+							label: p
+						})) || []
+					}
+					onChange={handleCategoryChange}
+					placeholder="Select categories..."
+					itemCount={categoryOptions.length}
 					cacheOptions
 					defaultOptions
 					filterOption={createFilter({ ignoreAccents: false })}

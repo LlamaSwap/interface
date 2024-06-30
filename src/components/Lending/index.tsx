@@ -2,7 +2,6 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
 import { Box, Flex, Icon, Tooltip, Input, Text, Button } from '@chakra-ui/react';
-import { ArrowRightIcon } from '@chakra-ui/icons';
 import ReactSelect from '../MultiSelect';
 import { ColumnHeader, RowContainer, YieldsBody, YieldsCell, YieldsContainer, YieldsWrapper } from '../Yields';
 import NotFound from './NotFound';
@@ -12,6 +11,9 @@ import { useRouter } from 'next/router';
 import { MenuList } from '../Yields/MenuList';
 import Loader from '../Aggregator/Loader';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
+import { LendingInput } from './TokenInput';
+import { SwapInputArrow } from '../Aggregator';
+import { last } from 'lodash';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -23,25 +25,12 @@ const ChainIcon = styled.img`
 const YieldsRow = ({ data, index, style }) => {
 	const row = data[index];
 	const {
-		lendUsdAmount,
-		borrowUsdAmount,
-		minAmountToLend,
-		config: { url }
+		config: { url, name }
 	} = row;
-	const lend =
-		minAmountToLend || lendUsdAmount
-			? formatAmountString(lendUsdAmount ? lendUsdAmount?.toFixed(2) : minAmountToLend?.toFixed(2), '$')
-			: '-';
-	const borrow = formatAmountString(borrowUsdAmount ? borrowUsdAmount?.toFixed(2) : '-', '$');
+
 	return (
 		<RowContainer style={style} onClick={() => (url ? window.open(url, '_blank') : null)}>
-			<YieldsCell style={{ overflow: 'hidden', display: 'block', textAlign: 'center' }}>
-				{row.symbol} ➞ {row.borrowPool?.symbol}
-			</YieldsCell>
-			<YieldsCell>
-				<ChainIcon src={`https://icons.llamao.fi/icons/protocols/${row.project}?w=48&h=48`} alt={row.project} />
-			</YieldsCell>
-			<YieldsCell>
+			<YieldsCell style={{ marginLeft: '24px' }}>
 				<Tooltip label={row.chain} aria-label={row.chain} placement="top">
 					<ChainIcon
 						src={`https://icons.llamao.fi/icons/chains/rsz_${row.chain.toLowerCase()}?w=48&h=48`}
@@ -49,16 +38,26 @@ const YieldsRow = ({ data, index, style }) => {
 					/>
 				</Tooltip>
 			</YieldsCell>
+			<YieldsCell style={{ overflow: 'hidden', display: 'block', textAlign: 'center' }}>
+				{row.symbol} ➞ {row.borrowPool?.symbol}
+			</YieldsCell>
+			<YieldsCell>
+				<ChainIcon
+					src={`https://icons.llamao.fi/icons/protocols/${row.project}?w=48&h=48`}
+					style={{ position: 'absolute' }}
+					alt={row.project}
+				/>
+				<span style={{ marginLeft: '28px' }}>{name}</span>
+			</YieldsCell>
 			<YieldsCell
 				style={{
-					color: row.pairNetApy > 0 ? 'rgba(0, 255, 0, 0.6)' : 'rgba(255, 0, 0, 0.6)'
+					color: row.totalApy > 0 ? 'rgba(0, 255, 0, 0.6)' : 'rgba(255, 0, 0, 0.6)'
 				}}
 			>
-				{row.pairNetApy?.toFixed(2)}%
+				{row.totalApy?.toFixed(2)}%
 			</YieldsCell>
 			<YieldsCell>{'$' + formatAmountString(row.borrowPool?.totalAvailableUsd)}</YieldsCell>
-			<YieldsCell>{lend}</YieldsCell>
-			<YieldsCell>{borrow}</YieldsCell>
+			<YieldsCell>{formatAmountString(row?.ltv * 100)}%</YieldsCell>
 		</RowContainer>
 	);
 };
@@ -67,68 +66,6 @@ const stablecoins = {
 	label: 'Stables',
 	value: 'STABLES',
 	logoURI: 'https://icons.llamao.fi/icons/pegged/usd_native?h=48&w=48'
-};
-
-const TokenAmountSelector = ({
-	tokenOptions,
-	selectedToken,
-	onTokenChange,
-	amount,
-	onAmountChange,
-	tokenPlaceholder,
-	amountPlaceholder,
-	isBorrow = false,
-	isDisabled = false
-}) => {
-	return (
-		<Box flex="3">
-			<Text fontSize={'14px'} pb="2" fontWeight={'bold'}>
-				{tokenPlaceholder}
-			</Text>
-			<ReactSelect
-				options={tokenOptions}
-				value={selectedToken ? { label: selectedToken, value: selectedToken } : null}
-				onChange={onTokenChange}
-				placeholder={tokenPlaceholder}
-				isClearable
-				isDisabled={isDisabled}
-				components={{ MenuList: MenuList }}
-				defaultOptions
-			/>
-			<Text fontSize={'14px'} pb="2" pt="2" fontWeight={'bold'}>
-				{amountPlaceholder}
-			</Text>
-			<Input
-				borderRadius={'12px'}
-				placeholder={selectedToken ? `${selectedToken} amount` : 'Amount'}
-				value={amount}
-				onChange={isDisabled ? () => {} : onAmountChange}
-				bg="rgb(20, 22, 25)"
-				borderColor="transparent"
-				fontSize={'14px'}
-				_focusVisible={{ outline: 'none' }}
-			/>
-			{isBorrow ? (
-				<Flex gap="8px" mt="2" justify={'flex-end'}>
-					<Button onClick={() => onAmountChange({ target: { value: '25%' } })} size={'xs'}>
-						<Text fontSize={'14px'} fontWeight={'bold'}>
-							25%
-						</Text>
-					</Button>
-					<Button onClick={() => onAmountChange({ target: { value: '50%' } })} size={'xs'}>
-						<Text fontSize={'14px'} fontWeight={'bold'}>
-							50%
-						</Text>
-					</Button>
-					<Button onClick={() => onAmountChange({ target: { value: '75%' } })} size={'xs'}>
-						<Text fontSize={'14px'} fontWeight={'bold'}>
-							75%
-						</Text>
-					</Button>
-				</Flex>
-			) : null}
-		</Box>
-	);
 };
 
 const useGetPrices = (tokens) => {
@@ -153,10 +90,27 @@ const mapChainName = (chain) => {
 	return chainNameMap[chain?.toLowerCase()] || chain;
 };
 
-const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
-	const router = useRouter();
-	const { lendToken, borrowToken, poolChain: selectedChain } = router.query;
+export const arrayFromString = (el): Array<any> => (el === undefined ? [] : Array.isArray(el) ? el : [el]);
 
+const safeProjects = [
+	'AAVE',
+	'AAVE V2',
+	'AAVE V3',
+	'AAVE V1',
+	'MakerDAO',
+	'Spark',
+	'Compound',
+	'Compound V1',
+	'Compound V2',
+	'Compound V3'
+];
+
+const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
+	const [activeTab, setActiveTab] = useState(0);
+	const tabs = [{ label: 'Safe' }, { label: 'Degen' }];
+	const router = useRouter();
+	let { lendToken, borrowToken, poolChain: selectedChain = 'All Chains' } = router.query;
+	selectedChain = useMemo(() => arrayFromString(selectedChain), [selectedChain]);
 	const [lendingPools, setLendingPools] = useState([]);
 	const [borrowPools, setBorrowPools] = useState([]);
 	const [sortBy, setSortBy] = useState('');
@@ -223,20 +177,21 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 			if (!token || token?.includes('-')) return [];
 			const isStables = token === 'STABLES';
 			const chainFilter = selectedChain
-				? selectedChain === 'All Chains'
+				? selectedChain?.includes('All Chains')
 					? () => true
-					: (p) => p.chain === selectedChain
+					: (p) => selectedChain?.includes(p.chain)
 				: () => false;
 
 			return pools.filter((p) => {
 				const symbolMatch = isStables ? p?.stablecoin : p.symbol?.toLowerCase()?.includes(token?.toLowerCase());
-				return symbolMatch && chainFilter(p);
+				const safePoolMacth = activeTab === 0 ? safeProjects.includes(p.config.name) : true;
+				return symbolMatch && chainFilter(p) && safePoolMacth;
 			});
 		};
 
 		setLendingPools(filterPools(initialData, selectedLendToken));
 		setBorrowPools(filterPools(initialData, selectedBorrowToken));
-	}, [initialData, selectedBorrowToken, selectedChain, selectedLendToken]);
+	}, [initialData, selectedBorrowToken, selectedChain, selectedLendToken, activeTab]);
 	useEffect(() => {
 		if (!selectedLendToken || !selectedBorrowToken) {
 			return setPoolPairs([]);
@@ -256,7 +211,6 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 		lendingPools.forEach((lendPool) => {
 			const key = `${lendPool.project}:${lendPool.chain}`;
 			const matchingBorrowPools = borrowPoolMap.get(key) || [];
-
 			matchingBorrowPools.forEach((borrowPool) => {
 				if (lendPool.pool !== borrowPool.pool && borrowPool?.borrowable) {
 					const lendTokenPrice =
@@ -286,9 +240,10 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 					const lendBorrowRatio = borrowUsdAmount / lendUsdAmount || 0;
 					const pairNetApy = lendPool.apy + borrowPool.apyBorrow * lendPool.ltv * lendBorrowRatio;
 					const pairRewardApy = lendPool.apyReward + borrowPool.apyRewardBorrow * lendPool.ltv * lendBorrowRatio;
-
+					const totalApy = pairNetApy + pairRewardApy;
 					pairs.push({
 						...lendPool,
+						totalApy,
 						pairNetApy,
 						pairRewardApy,
 						borrowPool,
@@ -340,37 +295,43 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 		setAmountToLend('');
 		setAmountToBorrow('');
 	};
+
 	return (
 		<div style={{ display: 'flex', gap: '16px' }}>
-			<YieldsWrapper style={{ overflow: 'hidden', paddingBottom: '10px' }}>
+			<YieldsWrapper style={{ paddingBottom: '10px' }}>
 				{isLoading ? (
 					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
 				) : (
 					<>
-						<Flex justifyContent={'center'} pt="4">
-							<Text fontSize={'20px'} fontWeight={'bold'}>
+						<Flex justifyContent="center" pt="4">
+							<Text fontSize="20px" fontWeight="bold">
 								Filters
 							</Text>
 						</Flex>
-						<Flex mb={2} pr={4} pl={4}>
+						<Flex pr={4} pl={4}>
 							<Flex pr={4} pl={4} pt={2} w="100%" flexDirection={'column'}>
-								<Text fontSize={'14px'} pb="2" fontWeight={'bold'}>
+								<Text fontSize={'16px'} pb="2" fontWeight={'bold'}>
 									Chain
 								</Text>
 								<ReactSelect
+									isMulti
 									value={
 										selectedChain
-											? {
-													label: selectedChain,
-													value: selectedChain,
-													logoURI: selectedChain === 'All Chains' ? false : chainIconUrl(selectedChain)
-											  }
+											? selectedChain.map((chain) => ({
+													label: chain,
+													value: chain,
+													logoURI: chain.includes('All Chains') ? false : chainIconUrl(chain)
+											  }))
 											: null
 									}
-									onChange={(selectedChain: Record<string, string>) => {
+									onChange={(selectedChain: Array<Record<string, string>>) => {
+										let chains = selectedChain.map((c) => c?.value);
+										if (chains?.length === 2 && chains.includes('All Chains'))
+											chains = chains.filter((c) => c !== 'All Chains');
+										else if (last(chains) === 'All Chains') chains = ['All Chains'];
 										router.push(
 											{
-												query: { ...router.query, poolChain: selectedChain?.value }
+												query: { ...router.query, poolChain: chains }
 											},
 											undefined,
 											{ shallow: true }
@@ -383,9 +344,9 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 								/>
 							</Flex>
 						</Flex>
-						<Flex mb={2} pr={4} pl={4}>
-							<Flex mb={2} pr={4} pl={4} pt={4}>
-								<TokenAmountSelector
+						<Flex pr={4} pl={4}>
+							<Flex mb={2} pr={4} pl={4} pt={4} flexDirection={'column'} gap="4px">
+								<LendingInput
 									tokenOptions={tokensList}
 									selectedToken={selectedLendToken}
 									onTokenChange={(token) => {
@@ -398,16 +359,11 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 										);
 									}}
 									amount={amountToLend || ''}
-									onAmountChange={(e) => setAmountToLend(e.target.value)}
+									onAmountChange={setAmountToLend}
 									tokenPlaceholder="Token to Lend"
-									amountPlaceholder="Amount to Lend"
 								/>
-								<Box mx={4} display={'flex'} flexDirection={'column'} justifyContent={'center'}>
-									<Flex alignItems="center" h="40px">
-										<Icon as={ArrowRightIcon} fontSize="24px" />
-									</Flex>
-								</Box>
-								<TokenAmountSelector
+								<SwapInputArrow top="13%" mt="0" l="50%" />
+								<LendingInput
 									tokenOptions={tokensList}
 									selectedToken={selectedBorrowToken}
 									onTokenChange={(token) => {
@@ -420,24 +376,23 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 										);
 									}}
 									amount={amountToBorrow || ''}
-									onAmountChange={(e) => setAmountToBorrow(e.target.value)}
+									onAmountChange={setAmountToBorrow}
 									tokenPlaceholder="Token to Borrow"
-									amountPlaceholder="Amount to Borrow"
 									isBorrow
 								/>
 							</Flex>
 						</Flex>
 						<Button
 							onClick={resetFilters}
-							colorScheme="red"
-							mt="4"
+							colorScheme="gray"
 							size="sm"
 							variant="outline"
 							style={{
 								position: 'absolute',
-								bottom: '20px',
+								bottom: '32px',
 								right: '20px'
 							}}
+							mr="16px"
 						>
 							Clear Filters
 						</Button>
@@ -445,50 +400,133 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 				)}
 			</YieldsWrapper>
 			<YieldsWrapper style={{ overflow: 'hidden', paddingBottom: '10px', width: '600px' }}>
-				<Flex justifyContent={'center'} pt="4">
-					<Text fontSize={'20px'} fontWeight={'bold'}>
-						Pools
-					</Text>
-				</Flex>
-				{poolPairs.length === 0 ? (
-					<NotFound text={'Seclet a lending and borrowing token to see the available pairs.'} size="200px" />
-				) : (
-					<YieldsContainer ref={containerRef}>
-						<ColumnHeader style={{ gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr 1fr 1fr' }}>
-							<YieldsCell>Symbol</YieldsCell>
-							<YieldsCell>Project</YieldsCell>
-							<YieldsCell>Chain</YieldsCell>
-
-							<YieldsCell onClick={() => handleSort('pairNetApy')}>
-								Net APY {sortBy === 'pairNetApy' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-							</YieldsCell>
-							<YieldsCell onClick={() => handleSort('totalAvailableUsd')}>
-								Available {sortBy === 'totalAvailableUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-							</YieldsCell>
-							<YieldsCell>Lend</YieldsCell>
-							<YieldsCell>Borrow</YieldsCell>
-						</ColumnHeader>
-						<YieldsBody style={{ height: `380px` }}>
-							{rowVirtualizer.getVirtualItems().map((virtualRow) => (
-								<YieldsRow
-									key={virtualRow.index}
-									data={poolPairs}
-									index={virtualRow.index}
+				<Box>
+					<Flex mb={4}>
+						<TabsContainer>
+							<TabButtonsContainer>
+								{tabs.map((tab, index) =>
+									index === activeTab ? (
+										<ActiveTabButton key={index} onClick={() => setActiveTab(index)}>
+											{tab.label}
+										</ActiveTabButton>
+									) : (
+										<TabButton key={index} onClick={() => setActiveTab(index)}>
+											{tab.label}
+										</TabButton>
+									)
+								)}
+								<ActiveTabIndicator
 									style={{
-										gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr 1fr 1fr',
-										position: 'absolute',
-										top: `${virtualRow.start}px`,
-										height: `${virtualRow.size}px`,
-										width: '100%'
+										left: `${(activeTab * 100) / tabs.length}%`,
+										width: `${100 / tabs.length}%`,
+										top: 0
 									}}
 								/>
-							))}
-						</YieldsBody>
-					</YieldsContainer>
-				)}
+							</TabButtonsContainer>
+							<TabContent>
+								{poolPairs.length === 0 ? (
+									<NotFound text={'Seclet a lending and borrowing token to see the available pairs.'} size="200px" />
+								) : (
+									<YieldsContainer ref={containerRef} style={{ paddingTop: 0 }}>
+										<ColumnHeader>
+											<th>Chain</th>
+											<th>Symbol</th>
+											<th>Project</th>
+
+											<th onClick={() => handleSort('pairNetApy')}>
+												Net APY {sortBy === 'pairNetApy' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+											</th>
+											<th onClick={() => handleSort('totalAvailableUsd')}>
+												Available {sortBy === 'totalAvailableUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+											</th>
+											<th>LTV</th>
+										</ColumnHeader>
+										<YieldsBody style={{ height: `380px` }}>
+											{rowVirtualizer.getVirtualItems().map((virtualRow) => (
+												<YieldsRow
+													key={virtualRow.index}
+													data={poolPairs}
+													index={virtualRow.index}
+													style={{
+														gridTemplateColumns: '1fr 2fr 1.5fr 1fr 1fr 1fr',
+														position: 'absolute',
+														top: `${virtualRow.start}px`,
+														height: `${virtualRow.size}px`,
+														width: '100%'
+													}}
+												/>
+											))}
+										</YieldsBody>
+									</YieldsContainer>
+								)}
+							</TabContent>
+						</TabsContainer>
+					</Flex>
+				</Box>
 			</YieldsWrapper>
 		</div>
 	);
 };
 
 export default Lending;
+
+const TabsContainer = styled(Box)`
+	width: 100%;
+	background: ${(props) => props.theme.bg2};
+	border-radius: 8px;
+	overflow: hidden;
+`;
+
+const TabButtonsContainer = styled.div`
+	display: flex;
+	width: 100%;
+	position: relative;
+	z-index: 1;
+`;
+
+const TabButton = styled.button`
+	flex: 1;
+	font-size: 16px;
+	font-weight: bold;
+	background: ${(props) => props.theme.bg2};
+	color: ${(props) => props.theme.text2};
+	padding: 12px 20px;
+	border: none;
+	cursor: pointer;
+	transition: all 0.3s ease;
+
+	&:focus {
+		outline: none;
+	}
+
+	&:hover {
+		background: ${(props) => props.theme.bg3};
+	}
+`;
+
+const ActiveTabButton = styled(TabButton)`
+	background: ${(props) => props.theme.bg1};
+	color: ${(props) => props.theme.text1};
+
+	&:hover {
+		background: ${(props) => props.theme.bg1};
+	}
+`;
+
+const TabContent = styled(Box)`
+	background: ${(props) => props.theme.bg1};
+	color: ${(props) => props.theme.text1};
+	padding: 20px;
+	padding-top: 8px;
+	width: 100%;
+	border-bottom-left-radius: 8px;
+	border-bottom-right-radius: 8px;
+`;
+
+const ActiveTabIndicator = styled.div`
+	position: absolute;
+	bottom: 0;
+	height: 3px;
+	background: ${(props) => props.theme.primary1};
+	transition: all 0.3s ease;
+`;

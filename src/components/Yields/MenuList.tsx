@@ -27,7 +27,8 @@ export const MenuList = (props) => {
 				height: Math.min(maxHeight, children.length * 35),
 				overflow: 'auto',
 				scrollbarWidth: 'none',
-				msOverflowStyle: 'none'
+				msOverflowStyle: 'none',
+				zIndex: 1000
 			}}
 		>
 			<div

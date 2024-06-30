@@ -42,6 +42,7 @@ const YieldsRow = ({ data, index, style }) => (
 const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 	const [bodyHeight, setBodyHeight] = useState(0);
 	const [showFilters, setShowFilters] = useState(false);
+	const [isSearch, setIsSearch] = useState(false);
 	const [data, setData] = useState(initialData);
 	const [sortBy, setSortBy] = useState('');
 	const [sortDirection, setSortDirection] = useState('desc');
@@ -90,8 +91,21 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 			<YieldsContainer ref={containerRef}>
 				{isLoading ? (
 					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
-				) : search ? (
+				) : (
 					<>
+						<InfiniteList
+							items={tokensList}
+							search={search}
+							isSearch={isSearch}
+							setIsSearch={setIsSearch}
+							setToken={(token) => {
+								setData(initialData.filter((item) => item.symbol?.toLowerCase()?.includes(token?.toLowerCase())));
+
+								router?.push({ query: { ...router.query, tab: 'earn', search: token } }, undefined, {
+									shallow: true
+								});
+							}}
+						/>
 						<ColumnHeader>
 							<YieldsCell>Symbol</YieldsCell>
 							<YieldsCell>Project</YieldsCell>
@@ -119,22 +133,9 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 									/>
 								))}
 							</YieldsBody>
-						) : (
+						) : isSearch ? null : (
 							<NotFound hasSelectedFilters text={'No pools found, please change filters.'} />
 						)}
-					</>
-				) : (
-					<>
-						<InfiniteList
-							items={tokensList}
-							setToken={(token) => {
-								setData(initialData.filter((item) => item.symbol?.toLowerCase()?.includes(token?.toLowerCase())));
-
-								router?.push({ query: { ...router.query, tab: 'earn', search: token } }, undefined, {
-									shallow: true
-								});
-							}}
-						/>
 					</>
 				)}
 			</YieldsContainer>
@@ -180,13 +181,13 @@ export const YieldsContainer = styled.div`
 	}
 `;
 
-export const ColumnHeader = styled.div`
-	display: grid;
-	grid-template-columns: repeat(5, 1fr);
+export const ColumnHeader = styled.tr`
+	display: flex;
+	justify-content: space-around;
 	background-color: ${(props) => props.theme.bg2};
 	color: ${(props) => props.theme.text1};
 	font-weight: bold;
-	padding: 10px;
+	padding: 10px 24px;
 	position: sticky;
 	top: 0;
 	z-index: 3;
@@ -201,7 +202,17 @@ export const ColumnHeader = styled.div`
 	}
 `;
 
-export const YieldsBody = styled.div`
+export const YieldsCell = styled.td`
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	width: 100%;
+	text-align: left;
+	display: block;
+`;
+
+export const YieldsBody = styled.tbody`
+	display: block;
 	position: relative;
 	z-index: 2;
 	height: 460px;
@@ -209,13 +220,12 @@ export const YieldsBody = styled.div`
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 	margin-top: 8px;
-
 	&::-webkit-scrollbar {
 		display: none;
 	}
 `;
 
-export const RowContainer = styled.div`
+export const RowContainer = styled.tr`
 	display: grid;
 	grid-template-columns: repeat(5, 1fr);
 	border-bottom: 1px solid ${(props) => props.theme.divider};
@@ -225,7 +235,6 @@ export const RowContainer = styled.div`
 	border-radius: 8px;
 	margin-bottom: 8px;
 	align-items: center;
-
 	&:hover {
 		background-color: ${(props) => props.theme.bg2};
 		cursor: pointer;
@@ -233,13 +242,14 @@ export const RowContainer = styled.div`
 	}
 `;
 
-export const YieldsCell = styled.div`
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+export const YieldsTable = styled.table`
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0 8px;
+`;
+
+export const YieldsHead = styled.thead`
+	display: block;
 `;
 
 export default Yields;
