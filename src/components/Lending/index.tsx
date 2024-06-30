@@ -424,7 +424,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 							</TabButtonsContainer>
 							<TabContent>
 								{poolPairs.length === 0 ? (
-									<NotFound text={'Seclet a lending and borrowing token to see the available pairs.'} size="200px" />
+									<NotFound text={'Select a lending and borrowing token to see the available pairs.'} size="200px" />
 								) : (
 									<YieldsContainer ref={containerRef} style={{ paddingTop: 0 }}>
 										<ColumnHeader>
