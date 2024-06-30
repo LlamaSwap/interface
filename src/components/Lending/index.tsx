@@ -305,11 +305,6 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
 				) : (
 					<>
-						<Flex justifyContent="center" pt="4">
-							<Text fontSize="20px" fontWeight="bold">
-								Filters
-							</Text>
-						</Flex>
 						<Flex pr={4} pl={4}>
 							<Flex pr={4} pl={4} pt={2} w="100%" flexDirection={'column'}>
 								<Text fontSize={'16px'} pb="2" fontWeight={'bold'}>
