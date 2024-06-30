@@ -1,12 +1,14 @@
 import React from 'react';
 import { Flex, Box, Button, Text } from '@chakra-ui/react';
 import {
+	AmountUsd,
 	Container as TokenContainer,
 	StyledInput as TokenInput,
 	Label as TokenLabel
 } from '../InputAmountAndTokenSelect';
 import ReactSelect from '../MultiSelect';
 import { MenuList } from '../Yields/MenuList';
+import { formattedNum } from '~/utils';
 
 const customSelectStyles = {
 	control: (provided, state) => ({
@@ -73,7 +75,8 @@ export function LendingInput({
 	onAmountChange,
 	tokenPlaceholder,
 	isBorrow = false,
-	isDisabled = false
+	isDisabled = false,
+	amountUsd = 0
 }) {
 	return (
 		<TokenContainer h="144px">
@@ -102,25 +105,34 @@ export function LendingInput({
 					/>
 				</Box>
 			</Flex>
-			{isBorrow ? (
-				<Flex gap="8px" mt="2" justify="flex-end">
-					<Button onClick={() => onAmountChange('25%')} size="xs">
-						<Text fontSize={'14px'} fontWeight={'bold'}>
-							25%
+			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem">
+				<AmountUsd>
+					{amountUsd ? (
+						<Text fontSize="14px" color="rgba(255, 255, 255, 0.64)">
+							{formattedNum(amountUsd)}$
 						</Text>
-					</Button>
-					<Button onClick={() => onAmountChange('50%')} size={'xs'}>
-						<Text fontSize={'14px'} fontWeight={'bold'}>
-							50%
-						</Text>
-					</Button>
-					<Button onClick={() => onAmountChange('75%')} size={'xs'}>
-						<Text fontSize={'14px'} fontWeight={'bold'}>
-							75%
-						</Text>
-					</Button>
-				</Flex>
-			) : null}
+					) : null}
+				</AmountUsd>
+				{isBorrow ? (
+					<Flex gap="8px" mt="2" justify="flex-end">
+						<Button onClick={() => onAmountChange('25%')} size="xs">
+							<Text fontSize={'14px'} fontWeight={'bold'}>
+								25%
+							</Text>
+						</Button>
+						<Button onClick={() => onAmountChange('50%')} size={'xs'}>
+							<Text fontSize={'14px'} fontWeight={'bold'}>
+								50%
+							</Text>
+						</Button>
+						<Button onClick={() => onAmountChange('75%')} size={'xs'}>
+							<Text fontSize={'14px'} fontWeight={'bold'}>
+								75%
+							</Text>
+						</Button>
+					</Flex>
+				) : null}
+			</Flex>
 		</TokenContainer>
 	);
 }

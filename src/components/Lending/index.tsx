@@ -219,6 +219,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 							: prices?.[
 									`${mapChainName(lendPool?.chain?.toLowerCase())}:${lendPool?.underlyingTokens?.[0]?.toLowerCase()}`
 							  ]?.price;
+
 					const borrowTokenPrice =
 						selectedBorrowToken === 'STABLES'
 							? 1
@@ -227,9 +228,11 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 										borrowPool?.chain?.toLowerCase()
 									)}:${borrowPool?.underlyingTokens?.[0]?.toLowerCase()}`
 							  ]?.price;
-					const lendUsdAmount = amountToLend ? lendTokenPrice * parseFloat(amountToLend) : null;
+					const parsedLendAmount = amountToLend.replace(' ', '');
+					const lendUsdAmount = parsedLendAmount ? lendTokenPrice * parseFloat(parsedLendAmount) : null;
 					const maxAmountToBorrow = lendUsdAmount * lendPool.ltv;
-					let borrowUsdAmount = amountToBorrow
+					const parsedBorrowAmount = amountToBorrow.replace(' ', '');
+					let borrowUsdAmount = parsedBorrowAmount
 						? amountToBorrow?.includes('%')
 							? (maxAmountToBorrow * Number(amountToBorrow.replace('%', ''))) / 100
 							: borrowTokenPrice * +amountToBorrow
@@ -278,7 +281,6 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 		sortBy,
 		sortDirection
 	]);
-
 	const handleSort = (field) => {
 		setSortDirection((sortDirection) => (sortDirection === 'asc' ? 'desc' : 'asc'));
 		setSortBy(field);
@@ -349,6 +351,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 								<LendingInput
 									tokenOptions={tokensList}
 									selectedToken={selectedLendToken}
+									amountUsd={poolPairs?.[0]?.lendUsdAmount}
 									onTokenChange={(token) => {
 										router.push(
 											{
@@ -366,6 +369,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 								<LendingInput
 									tokenOptions={tokensList}
 									selectedToken={selectedBorrowToken}
+									amountUsd={poolPairs?.[0]?.borrowUsdAmount}
 									onTokenChange={(token) => {
 										router.push(
 											{

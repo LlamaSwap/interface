@@ -43,6 +43,9 @@ const useAdvancedFilter = (initialData, config = {}) => {
 
 			let filteredData = initialData;
 
+			if (search.length === 0) {
+				return [];
+			}
 			if (chains && chains.length) {
 				const chainArray = chains;
 				filteredData = chainArray.flatMap((chain) => indexes.chain[chain] || []);
@@ -72,7 +75,7 @@ const useAdvancedFilter = (initialData, config = {}) => {
 
 			return filteredData;
 		},
-		[initialData, indexes]
+		[initialData, indexes.chain, config]
 	);
 };
 
@@ -85,7 +88,6 @@ const Filters = ({ setData, initialData, config }) => {
 	projects = useMemo(() => arrayFromString(projects), [projects]);
 	chains = useMemo(() => arrayFromString(chains), [chains]);
 	category = useMemo(() => arrayFromString(category), [category]);
-
 	const [displayedApyRange, setDisplayedApyRange] = useState([+apyFrom, +apyTo]);
 
 	const allChains = useMemo(() => Array.from(new Set(initialData.map((item) => item.chain))), [initialData]);
