@@ -185,7 +185,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 	}, [initialData]);
 
 	useEffect(() => {
-		const filterPools = (pools, token) => {
+		const filterPools = (pools, token, isLending = false) => {
 			if (!token || token?.includes('-')) return [];
 			const isStables = token === 'STABLES';
 			const chainFilter = selectedChain
@@ -197,11 +197,12 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 			return pools.filter((p) => {
 				const symbolMatch = isStables ? p?.stablecoin : p.symbol?.toLowerCase()?.includes(token?.toLowerCase());
 				const safePoolMacth = activeTab === 0 ? safeProjects.includes(p.config.name) : true;
-				return symbolMatch && chainFilter(p) && safePoolMacth;
+				const isNotBorrowCDP = p?.category === 'CDP' && !isLending;
+				return symbolMatch && chainFilter(p) && safePoolMacth && !isNotBorrowCDP;
 			});
 		};
 
-		setLendingPools(filterPools(initialData, selectedLendToken));
+		setLendingPools(filterPools(initialData, selectedLendToken, true));
 		setBorrowPools(filterPools(initialData, selectedBorrowToken));
 	}, [initialData, selectedBorrowToken, selectedChain, selectedLendToken, activeTab]);
 	useEffect(() => {
@@ -223,6 +224,18 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 		lendingPools.forEach((lendPool) => {
 			const key = `${lendPool.project}:${lendPool.chain}`;
 			const matchingBorrowPools = borrowPoolMap.get(key) || [];
+			if (lendPool.category === 'CDP') {
+				matchingBorrowPools.push({
+					...lendPool,
+					pool: '',
+					borrowable: true,
+					symbol: lendPool.symbol,
+					totalAvailableUsd: lendPool.totalAvailableUsd,
+					ltv: lendPool.ltv,
+					apyBorrow: lendPool.apyBorrow,
+					apyRewardBorrow: lendPool.apyRewardBorrow
+				});
+			}
 			matchingBorrowPools.forEach((borrowPool) => {
 				if (lendPool.pool !== borrowPool.pool && borrowPool?.borrowable) {
 					if (amountToBorrow?.includes('%') && lendPool?.ltv < +amountToBorrow?.replace('%', '') / 100) return;
