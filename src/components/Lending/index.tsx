@@ -224,12 +224,12 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 		lendingPools.forEach((lendPool) => {
 			const key = `${lendPool.project}:${lendPool.chain}`;
 			const matchingBorrowPools = borrowPoolMap.get(key) || [];
-			if (lendPool.category === 'CDP') {
+			if (lendPool.category === 'CDP' && lendPool.mintedCoin === selectedBorrowToken) {
 				matchingBorrowPools.push({
 					...lendPool,
 					pool: '',
 					borrowable: true,
-					symbol: lendPool.symbol,
+					symbol: selectedBorrowToken,
 					totalAvailableUsd: lendPool.totalAvailableUsd,
 					ltv: lendPool.ltv,
 					apyBorrow: lendPool.apyBorrow,
