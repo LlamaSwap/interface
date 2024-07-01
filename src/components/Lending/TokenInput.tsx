@@ -18,7 +18,8 @@ const customSelectStyles = {
 		boxShadow: state.isFocused ? '0 0 0 1px #4A5568' : 'none',
 		'&:hover': {
 			borderColor: '#4A5568'
-		}
+		},
+		width: '164px'
 	}),
 	menu: (provided) => ({
 		...provided,
@@ -76,7 +77,8 @@ export function LendingInput({
 	tokenPlaceholder,
 	isBorrow = false,
 	isDisabled = false,
-	amountUsd = 0
+	amountUsd = 0,
+	percentAllowed = false
 }) {
 	return (
 		<TokenContainer h="144px">
@@ -88,6 +90,10 @@ export function LendingInput({
 						width="50%"
 						value={amount}
 						onChange={(e) => {
+							if (percentAllowed && e.target.value[e.target.value.length - 1] === '%') {
+								onAmountChange(e.target.value);
+								return;
+							}
 							const value = formatNumber(e.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
 							onAmountChange(value);
 						}}

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useRef } from 'react';
+import React, { useLayoutEffect, useState, useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
 import Panel from './Panel';
@@ -42,13 +42,19 @@ const YieldsRow = ({ data, index, style }) => (
 const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 	const [bodyHeight, setBodyHeight] = useState(0);
 	const [showFilters, setShowFilters] = useState(false);
-	const [isSearch, setIsSearch] = useState(false);
+	const [isSearch, setIsSearch] = useState(true);
 	const [data, setData] = useState(initialData);
 	const [sortBy, setSortBy] = useState('');
 	const [sortDirection, setSortDirection] = useState('desc');
 	const containerRef = useRef(null);
 	const router = useRouter();
 	const { search } = router.query;
+
+	useEffect(() => {
+		if (!search) {
+			setIsSearch(true);
+		}
+	}, [search]);
 
 	const tokensList = React.useMemo(() => {
 		const allTokens = Object.values(tokens).flat();
@@ -180,35 +186,38 @@ export const YieldsContainer = styled.div`
 		display: none;
 	}
 `;
+export const YieldsTable = styled.table`
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0 8px;
+`;
+
+export const YieldsHead = styled.thead`
+	display: block;
+`;
 
 export const ColumnHeader = styled.tr`
-	display: flex;
-	justify-content: space-around;
+	display: grid;
+	grid-template-columns: 1fr 1.5fr 1.5fr 1.2fr 1fr 1fr;
 	background-color: ${(props) => props.theme.bg2};
 	color: ${(props) => props.theme.text1};
 	font-weight: bold;
-	padding: 10px 24px;
+	padding: 10px 0px;
 	position: sticky;
 	top: 0;
 	z-index: 3;
 	align-items: center;
 	border-radius: 16px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-	overflow: hidden;
 	cursor: pointer;
 
 	&:hover {
 		background-color: ${(props) => props.theme.bg3};
 	}
-`;
 
-export const YieldsCell = styled.td`
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	width: 100%;
-	text-align: left;
-	display: block;
+	& > th {
+		text-align: center;
+	}
 `;
 
 export const YieldsBody = styled.tbody`
@@ -227,9 +236,9 @@ export const YieldsBody = styled.tbody`
 
 export const RowContainer = styled.tr`
 	display: grid;
-	grid-template-columns: repeat(5, 1fr);
-	border-bottom: 1px solid ${(props) => props.theme.divider};
-	padding: 10px;
+	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+	border-bottom: 1fr solid ${(props) => props.theme.divider};
+	padding: 10px 0px;
 	background-color: ${(props) => props.theme.bg1};
 	color: ${(props) => props.theme.text1};
 	border-radius: 8px;
@@ -242,14 +251,12 @@ export const RowContainer = styled.tr`
 	}
 `;
 
-export const YieldsTable = styled.table`
-	width: 100%;
-	border-collapse: separate;
-	border-spacing: 0 8px;
-`;
-
-export const YieldsHead = styled.thead`
-	display: block;
+export const YieldsCell = styled.td`
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-align: center;
+	min-width: 76px;
 `;
 
 export default Yields;

@@ -1,19 +1,19 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
-import { Box, Flex, Icon, Tooltip, Input, Text, Button } from '@chakra-ui/react';
+import { Box, Flex, Tooltip, Text, Button } from '@chakra-ui/react';
 import ReactSelect from '../MultiSelect';
 import { ColumnHeader, RowContainer, YieldsBody, YieldsCell, YieldsContainer, YieldsWrapper } from '../Yields';
 import NotFound from './NotFound';
 import { formatAmountString } from '~/utils/formatAmount';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
-import { MenuList } from '../Yields/MenuList';
 import Loader from '../Aggregator/Loader';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
 import { LendingInput } from './TokenInput';
 import { SwapInputArrow } from '../Aggregator';
 import { last } from 'lodash';
+import { QuestionIcon } from '@chakra-ui/icons';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -22,7 +22,7 @@ const ChainIcon = styled.img`
 	border-radius: 50%;
 `;
 
-const YieldsRow = ({ data, index, style }) => {
+const YieldsRow = ({ data, index, style, amountsProvided }) => {
 	const row = data[index];
 	const {
 		config: { url, name }
@@ -30,7 +30,7 @@ const YieldsRow = ({ data, index, style }) => {
 
 	return (
 		<RowContainer style={style} onClick={() => (url ? window.open(url, '_blank') : null)}>
-			<YieldsCell style={{ marginLeft: '24px' }}>
+			<YieldsCell style={{ marginLeft: '24px', minWidth: '50px' }}>
 				<Tooltip label={row.chain} aria-label={row.chain} placement="top">
 					<ChainIcon
 						src={`https://icons.llamao.fi/icons/chains/rsz_${row.chain.toLowerCase()}?w=48&h=48`}
@@ -51,10 +51,16 @@ const YieldsRow = ({ data, index, style }) => {
 			</YieldsCell>
 			<YieldsCell
 				style={{
-					color: row.totalApy > 0 ? 'rgba(0, 255, 0, 0.6)' : 'rgba(255, 0, 0, 0.6)'
+					color: amountsProvided ? (row.totalApy > 0 ? 'rgba(0, 255, 0, 0.6)' : 'rgba(255, 0, 0, 0.6)') : undefined
 				}}
 			>
-				{row.totalApy?.toFixed(2)}%
+				{amountsProvided ? (
+					row.totalApy?.toFixed(2) + '%'
+				) : (
+					<Tooltip label="Please provide the amount you'd like to lend and borrow to see the APY.">
+						<QuestionIcon width="16px" height="16px" />
+					</Tooltip>
+				)}
 			</YieldsCell>
 			<YieldsCell>{'$' + formatAmountString(row.borrowPool?.totalAvailableUsd)}</YieldsCell>
 			<YieldsCell>{formatAmountString(row?.ltv * 100)}%</YieldsCell>
@@ -62,12 +68,18 @@ const YieldsRow = ({ data, index, style }) => {
 	);
 };
 
-const stablecoins = {
-	label: 'Stables',
-	value: 'STABLES',
-	logoURI: 'https://icons.llamao.fi/icons/pegged/usd_native?h=48&w=48'
-};
-
+const customTokens = [
+	{
+		label: 'Stables',
+		value: 'STABLES',
+		logoURI: 'https://icons.llamao.fi/icons/pegged/usd_native?h=48&w=48'
+	},
+	{
+		label: 'ETH',
+		value: 'ETH',
+		logoURI: 'https://icons.llamao.fi/icons/pegged/ethereum?h=48&w=48'
+	}
+];
 const useGetPrices = (tokens) => {
 	const res = useQuery(
 		['getPrices', tokens],
@@ -147,7 +159,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 
 	const tokensList = useMemo(() => {
 		return [
-			stablecoins,
+			...customTokens,
 			...props.tokens.map((token) => ({
 				label: token.name,
 				value: token.symbol
@@ -213,6 +225,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 			const matchingBorrowPools = borrowPoolMap.get(key) || [];
 			matchingBorrowPools.forEach((borrowPool) => {
 				if (lendPool.pool !== borrowPool.pool && borrowPool?.borrowable) {
+					if (amountToBorrow?.includes('%') && lendPool?.ltv < +amountToBorrow?.replace('%', '') / 100) return;
 					const lendTokenPrice =
 						selectedLendToken === 'STABLES'
 							? 1
@@ -234,9 +247,10 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 					const parsedBorrowAmount = amountToBorrow.replace(' ', '');
 					let borrowUsdAmount = parsedBorrowAmount
 						? amountToBorrow?.includes('%')
-							? (maxAmountToBorrow * Number(amountToBorrow.replace('%', ''))) / 100
-							: borrowTokenPrice * +amountToBorrow
+							? (lendUsdAmount * Number(amountToBorrow.replace('%', ''))) / 100
+							: borrowTokenPrice * parseFloat(amountToBorrow)
 						: null;
+					const borrowAmountFromPercent = amountToBorrow?.includes('%') ? borrowUsdAmount : null;
 
 					borrowUsdAmount = borrowUsdAmount && maxAmountToBorrow <= borrowUsdAmount ? 0 : borrowUsdAmount;
 					const minAmountToLend = borrowUsdAmount / lendPool.ltv;
@@ -255,7 +269,8 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 						lendTokenPrice,
 						borrowTokenPrice,
 						maxAmountToBorrow,
-						minAmountToLend
+						minAmountToLend,
+						borrowAmountFromPercent
 					});
 				}
 			});
@@ -341,8 +356,8 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 								/>
 							</Flex>
 						</Flex>
-						<Flex pr={4} pl={4}>
-							<Flex mb={2} pr={4} pl={4} pt={4} flexDirection={'column'} gap="4px">
+						<Flex pr={4} pl={4} pt="4">
+							<Flex mb={2} pr={4} pl={4} flexDirection={'column'} gap="4px" position={'relative'}>
 								<LendingInput
 									tokenOptions={tokensList}
 									selectedToken={selectedLendToken}
@@ -360,11 +375,24 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 									onAmountChange={setAmountToLend}
 									tokenPlaceholder="Token to Lend"
 								/>
-								<SwapInputArrow top="13%" mt="0" l="50%" />
+								<SwapInputArrow
+									onClick={() => {
+										router.push(
+											{
+												query: { ...router.query, lendToken: selectedBorrowToken, borrowToken: selectedLendToken }
+											},
+											undefined,
+											{ shallow: true }
+										);
+										setAmountToLend('');
+										setAmountToBorrow('');
+									}}
+								/>
 								<LendingInput
+									percentAllowed
 									tokenOptions={tokensList}
 									selectedToken={selectedBorrowToken}
-									amountUsd={poolPairs?.[0]?.borrowUsdAmount}
+									amountUsd={poolPairs?.[0]?.borrowAmountFromPercent || poolPairs?.[0]?.borrowUsdAmount}
 									onTokenChange={(token) => {
 										router.push(
 											{
@@ -443,6 +471,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 										<YieldsBody style={{ height: `380px` }}>
 											{rowVirtualizer.getVirtualItems().map((virtualRow) => (
 												<YieldsRow
+													amountsProvided={amountToLend && amountToBorrow}
 													key={virtualRow.index}
 													data={poolPairs}
 													index={virtualRow.index}
