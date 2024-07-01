@@ -22,13 +22,13 @@ const YieldsRow = ({ data, index, style }) => (
 		onClick={() => window?.open(`https://defillama.com/yields/pool/${data[index].pool}`, '_blank')}
 	>
 		<YieldsCell>{data[index].symbol}</YieldsCell>
-		<YieldsCell>
+		<YieldsCell style={{ marginLeft: '30px' }}>
 			<ChainIcon
 				src={`https://icons.llamao.fi/icons/protocols/${data[index].project}?w=48&h=48`}
 				alt={data[index].project}
 			/>
 		</YieldsCell>
-		<YieldsCell>
+		<YieldsCell style={{ marginLeft: '10px' }}>
 			<ChainIcon
 				src={`https://icons.llamao.fi/icons/chains/rsz_${data[index].chain.toLowerCase()}?w=48&h=48`}
 				alt={data[index].chain}
@@ -115,8 +115,8 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 						<ColumnHeader>
 							<YieldsCell>Symbol</YieldsCell>
 							<YieldsCell>Project</YieldsCell>
-							<YieldsCell>Chain</YieldsCell>
-							<YieldsCell onClick={() => handleSort('apyMean30d')}>
+							<YieldsCell style={{ marginLeft: '16px' }}>Chain</YieldsCell>
+							<YieldsCell style={{ marginLeft: '20px' }} onClick={() => handleSort('apyMean30d')}>
 								30d APY {sortBy === 'apyMean30d' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
 							</YieldsCell>
 							<YieldsCell onClick={() => handleSort('tvlUsd')}>
