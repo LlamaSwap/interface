@@ -3,6 +3,8 @@ import Head from 'next/head';
 import styled from 'styled-components';
 import ThemeProvider, { GlobalStyle } from '~/Theme';
 import { Phishing } from './Phishing';
+import ConnectButton from '~/components/Aggregator/ConnectButton';
+import Header from '~/components/Aggregator/Header';
 
 const PageWrapper = styled.div`
 	flex: 1;
@@ -25,6 +27,10 @@ const Center = styled.main`
 	min-height: 100%;
 	margin: 0 auto;
 	color: ${({ theme }) => theme.text1};
+
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		gap: 0px;
+	}
 `;
 
 interface ILayoutProps {
@@ -45,7 +51,12 @@ export default function Layout({ title, children, ...props }: ILayoutProps) {
 			<ThemeProvider>
 				<GlobalStyle />
 				<PageWrapper>
-					<Center {...props}>{children}</Center>
+					<Center {...props}>
+						<Header>
+							<ConnectButton {...(props as any)} />
+						</Header>
+						{children}
+					</Center>
 				</PageWrapper>
 			</ThemeProvider>
 		</>
