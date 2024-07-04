@@ -154,7 +154,8 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 };
 
 export const YieldsWrapper = styled.div`
-	width: 480px;
+	width: 95vw;
+	max-width: 550px;
 	height: 520px;
 	border: 1px solid #2f333c;
 	align-self: flex-start;
@@ -196,13 +197,12 @@ export const YieldsHead = styled.thead`
 	display: block;
 `;
 
-export const ColumnHeader = styled.tr`
-	display: grid;
-	grid-template-columns: 1fr 1.5fr 1.5fr 1.2fr 1fr 1fr;
+export const ColumnHeader = styled.div`
+	display: flex;
 	background-color: ${(props) => props.theme.bg2};
 	color: ${(props) => props.theme.text1};
 	font-weight: bold;
-	padding: 10px 0px;
+	padding: 10px 0;
 	position: sticky;
 	top: 0;
 	z-index: 3;
@@ -210,13 +210,23 @@ export const ColumnHeader = styled.tr`
 	border-radius: 16px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	cursor: pointer;
+	overflow-x: auto;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
 
 	&:hover {
 		background-color: ${(props) => props.theme.bg3};
 	}
 
-	& > th {
+	& > * {
+		flex: 1 0 auto;
 		text-align: center;
+		padding: 0 15px;
+		white-space: nowrap;
 	}
 `;
 
