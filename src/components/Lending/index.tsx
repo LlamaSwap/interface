@@ -133,7 +133,6 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 	const [amountToLend, setAmountToLend] = useState('');
 	const [amountToBorrow, setAmountToBorrow] = useState('');
 	const [poolPairs, setPoolPairs] = useState([]);
-
 	const tokens = useMemo(() => {
 		return [
 			...new Set(
@@ -224,12 +223,15 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 		lendingPools.forEach((lendPool) => {
 			const key = `${lendPool.project}:${lendPool.chain}`;
 			const matchingBorrowPools = borrowPoolMap.get(key) || [];
-			if (lendPool.category === 'CDP' && lendPool.mintedCoin === selectedBorrowToken) {
+			if (
+				(lendPool.category === 'CDP' && lendPool.mintedCoin === selectedBorrowToken) ||
+				(selectedBorrowToken === 'STABLES' && lendPool.category === 'CDP')
+			) {
 				matchingBorrowPools.push({
 					...lendPool,
 					pool: '',
 					borrowable: true,
-					symbol: selectedBorrowToken,
+					symbol: lendPool.mintedCoin,
 					totalAvailableUsd: lendPool.totalAvailableUsd,
 					ltv: lendPool.ltv,
 					apyBorrow: lendPool.apyBorrow,
@@ -288,7 +290,6 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 				}
 			});
 		});
-
 		setPoolPairs(
 			pairs.sort((a, b) => {
 				const fieldA = sortBy === 'totalAvailableUsd' ? a.borrowPool[sortBy] : a[sortBy];
@@ -327,8 +328,8 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 	};
 
 	return (
-		<div style={{ display: 'flex', gap: '16px' }}>
-			<YieldsWrapper style={{ paddingBottom: '10px' }}>
+		<Container style={{ display: 'flex', gap: '16px' }}>
+			<Wrapper style={{ paddingBottom: '10px' }}>
 				{isLoading ? (
 					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
 				) : (
@@ -438,8 +439,8 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 						</Button>
 					</>
 				)}
-			</YieldsWrapper>
-			<YieldsWrapper style={{ overflow: 'hidden', paddingBottom: '10px', width: '600px' }}>
+			</Wrapper>
+			<Wrapper style={{ overflow: 'hidden', paddingBottom: '10px' }}>
 				<Box>
 					<Flex mb={4}>
 						<TabsContainer>
@@ -504,8 +505,8 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 						</TabsContainer>
 					</Flex>
 				</Box>
-			</YieldsWrapper>
-		</div>
+			</Wrapper>
+		</Container>
 	);
 };
 
@@ -558,6 +559,8 @@ const TabContent = styled(Box)`
 	background: ${(props) => props.theme.bg1};
 	color: ${(props) => props.theme.text1};
 	padding: 20px;
+	padding-left: 8px;
+	padding-right: 8px;
 	padding-top: 8px;
 	width: 100%;
 	border-bottom-left-radius: 8px;
@@ -570,4 +573,17 @@ const ActiveTabIndicator = styled.div`
 	height: 3px;
 	background: ${(props) => props.theme.primary1};
 	transition: all 0.3s ease;
+`;
+
+const Container = styled.div`
+	display: flex;
+
+	@media (max-width: 1000px) {
+		flex-direction: column;
+	}
+`;
+
+const Wrapper = styled(YieldsWrapper)`
+	width: 95vw;
+	max-width: 550px;
 `;

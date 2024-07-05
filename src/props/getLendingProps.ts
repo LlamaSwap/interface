@@ -1,8 +1,40 @@
+export async function getLSDPageData(pools) {
+	const [{ protocols }] = await Promise.all(
+		['https://api.llama.fi/lite/protocols2?b=2'].map((url) => fetch(url).then((r) => r.json()))
+	);
+
+	// filter for LSDs
+	const lsdProtocols = protocols
+		.filter((p) => p.category === 'Liquid Staking' && p.chains.includes('Ethereum'))
+		.map((p) => p.name)
+		.filter((p) => !['StakeHound', 'Genius', 'SharedStake'].includes(p))
+		.concat('Crypto.com Staked ETH');
+
+	// get historical data
+	const lsdProtocolsSlug = lsdProtocols.map((p) => p.replace(/\s+/g, '-').toLowerCase());
+
+	let lsdApy = pools
+		.filter((p) => lsdProtocolsSlug.includes(p.project) && p.chain === 'Ethereum' && p.symbol.includes('ETH'))
+		.concat(pools.find((i) => i.project === 'crypto.com-staked-eth'))
+		.map((p) => ({
+			...p,
+			name: p.project
+				.split('-')
+				.map((i) =>
+					i === 'stakewise' ? 'StakeWise' : i === 'eth' ? i.toUpperCase() : i.charAt(0).toUpperCase() + i.slice(1)
+				)
+				.join(' ')
+		}));
+
+	return lsdApy;
+}
+
 async function getLendBorrowData(pools = []) {
 	const yieldsConfig = await fetch('https://api.llama.fi/config/yields')
 		.then((res) => res.json())
 		.then((c) => c.protocols);
 
+	const lsdData = await getLSDPageData(pools);
 	pools.forEach((pool) => {
 		pool.config = yieldsConfig[pool.project];
 		pool.category = pool?.config?.category || '';
@@ -39,7 +71,10 @@ async function getLendBorrowData(pools = []) {
 			const apyBaseBorrow = x.apyBaseBorrow !== null ? -x.apyBaseBorrow : null;
 			const apyRewardBorrow = x.apyRewardBorrow;
 			const apyBorrow = apyBaseBorrow === null && apyRewardBorrow === null ? null : apyBaseBorrow + apyRewardBorrow;
-
+			const isBorrowable = x.borrowable || x.totalBorrowUsd > 0;
+			const lsdApy =
+				lsdData.find((i) => p?.symbol?.toLowerCase().includes(i.symbol?.toLowerCase()) && !p.symbol?.includes('-'))
+					?.apy || 0;
 			let totalAvailableUsd;
 			if (p.project === 'morpho-compound') {
 				const compoundData = compoundPools.find(
@@ -66,15 +101,17 @@ async function getLendBorrowData(pools = []) {
 
 			return {
 				...p,
+				apy: p.apy + lsdApy,
+				lsdApy,
+				apu: p.apy,
 				apyBaseBorrow,
 				apyRewardBorrow,
 				totalSupplyUsd: x.totalSupplyUsd,
 				totalBorrowUsd: x.totalBorrowUsd,
 				ltv: x.ltv,
-				borrowable: x.borrowable,
+				borrowable: isBorrowable,
 				mintedCoin: x.mintedCoin,
 				borrowFactor: x.borrowFactor,
-
 				totalAvailableUsd,
 				apyBorrow,
 				rewardTokens: p.apyRewards > 0 || x.apyRewardBorrow > 0 ? x.rewardTokens : p.rewardTokens
@@ -88,6 +125,7 @@ async function getLendBorrowData(pools = []) {
 		chainList: [...new Set(pools.map((p) => p.chain))],
 		categoryList: categoriesToKeep,
 		allPools: pools,
+		lsdData,
 		tokens: [...tokenSymbols].map((s) => ({ name: s, symbol: s }))
 	};
 }
