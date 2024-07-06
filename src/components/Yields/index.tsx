@@ -28,7 +28,7 @@ const YieldsRow = ({ data, index, style }) => (
 				alt={data[index].project}
 			/>
 		</YieldsCell>
-		<YieldsCell style={{ marginLeft: '10px' }}>
+		<YieldsCell style={{ marginLeft: '30px' }}>
 			<ChainIcon
 				src={`https://icons.llamao.fi/icons/chains/rsz_${data[index].chain.toLowerCase()}?w=48&h=48`}
 				alt={data[index].chain}
@@ -246,7 +246,7 @@ export const YieldsBody = styled.tbody`
 
 export const RowContainer = styled.tr`
 	display: grid;
-	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+	grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 	border-bottom: 1fr solid ${(props) => props.theme.divider};
 	padding: 10px 0px;
 	background-color: ${(props) => props.theme.bg1};
