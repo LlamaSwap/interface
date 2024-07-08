@@ -616,10 +616,17 @@ const Container = styled.div`
 
 	@media (max-width: 1000px) {
 		flex-direction: column;
+		align-items: center;
+		jusitfy-content: center;
 	}
 `;
 
 const Wrapper = styled(YieldsWrapper)`
 	width: 45vw;
 	max-width: 650px;
+
+	@media (max-width: 1000px) {
+		width: 90vw;
+		margin: 0 auto;
+	}
 `;
