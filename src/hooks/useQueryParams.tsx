@@ -26,7 +26,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: chain.value, from: ethers.constants.AddressZero }
+						query: { ...query, chain: chain.value, from: ethers.constants.AddressZero, tabId: 'swap' }
 					},
 					undefined,
 					{ shallow: true }
@@ -36,7 +36,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: 'ethereum', from: ethers.constants.AddressZero }
+						query: { ...query, chain: 'ethereum', from: ethers.constants.AddressZero, tabId: 'swap' }
 					},
 					undefined,
 					{ shallow: true }

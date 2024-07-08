@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
-import { Box, Flex, Tooltip, Text, Button, Badge } from '@chakra-ui/react';
+import { Box, Flex, Tooltip, Text, Button, Badge, Link } from '@chakra-ui/react';
 import ReactSelect from '../MultiSelect';
 import { ColumnHeader, RowContainer, YieldsBody, YieldsCell, YieldsContainer, YieldsWrapper } from '../Yields';
 import NotFound from './NotFound';
@@ -14,6 +14,7 @@ import { LendingInput } from './TokenInput';
 import { SwapInputArrow } from '../Aggregator';
 import { last } from 'lodash';
 import { Percent } from 'react-feather';
+import { ExternalLinkIcon } from '@chakra-ui/icons';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -349,8 +350,18 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 					<>
 						<Flex pr={4} pl={4}>
 							<Flex pr={4} pl={4} pt={2} w="100%" flexDirection={'column'}>
-								<Text fontSize={'16px'} pb="2" fontWeight={'bold'}>
-									Chain
+								<Text fontSize={'16px'} pb="2" fontWeight={'bold'} display={'flex'} justifyContent={'space-between'}>
+									<span>Chain</span>{' '}
+									<Link
+										href="https://defillama.com/borrow/advanced"
+										isExternal
+										fontSize={'14px'}
+										color="#2172E5"
+										fontWeight={'normal'}
+										textDecoration={'underline'}
+									>
+										Advanced calculator <ExternalLinkIcon />
+									</Link>
 								</Text>
 								<ReactSelect
 									isMulti
