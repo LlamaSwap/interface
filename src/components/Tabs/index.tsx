@@ -122,7 +122,7 @@ const Tabs = ({ tabs = [] }) => {
 	const handleTabChange = (index) => {
 		const tabId = tabs[index].id;
 		setActiveTab(tabId);
-		router.push({ query: { tabId } }, undefined, { shallow: true });
+		router.push({ query: { tab: tabId } }, undefined, { shallow: true });
 	};
 
 	const getActiveTabStyles = () => {

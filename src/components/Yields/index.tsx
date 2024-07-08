@@ -102,7 +102,7 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 	};
 
 	return (
-		<YieldsWrapper>
+		<YieldsWrapper style={{ paddingRight: '16px', paddingLeft: '16px' }}>
 			<YieldsContainer ref={containerRef}>
 				{isLoading ? (
 					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
