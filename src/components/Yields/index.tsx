@@ -165,7 +165,7 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 export const YieldsWrapper = styled.div`
 	width: 95vw;
 	max-width: 550px;
-	height: 520px;
+	height: 560px;
 	border: 1px solid #2f333c;
 	align-self: flex-start;
 	z-index: 1;

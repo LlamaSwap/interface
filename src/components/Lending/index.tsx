@@ -514,9 +514,11 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 											<th onClick={() => handleSort('totalAvailableUsd')}>
 												Available {sortBy === 'totalAvailableUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
 											</th>
-											<th>LTV</th>
+											<th onClick={() => handleSort('ltv')}>
+												LTV {sortBy === 'ltv' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+											</th>
 										</ColumnHeader>
-										<YieldsBody style={{ height: `380px` }}>
+										<YieldsBody style={{ height: `420px` }}>
 											{rowVirtualizer.getVirtualItems().map((virtualRow) => (
 												<YieldsRow
 													amountsProvided={amountToLend && amountToBorrow}

@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
 	Box,
 	Flex,

@@ -71,11 +71,6 @@ const PanelBody = styled.div<{ isVisible: boolean }>`
 	box-shadow: ${({ isVisible }) => (isVisible ? '-8px 0 8px rgba(0, 0, 0, 0.15)' : 'none')};
 
 	overflow-y: auto;
-	-ms-overflow-style: none;
-	scrollbar-width: none;
-	&::-webkit-scrollbar {
-		display: none;
-	}
 `;
 
 const PanelContent = styled.div<{ isVisible: boolean }>`
