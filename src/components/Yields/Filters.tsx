@@ -10,7 +10,8 @@ import {
 	RangeSliderFilledTrack,
 	RangeSliderThumb,
 	Button,
-	useColorModeValue
+	useColorModeValue,
+	Switch
 } from '@chakra-ui/react';
 import MultiSelect from '../MultiSelect';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
@@ -39,8 +40,17 @@ const useAdvancedFilter = (initialData, config = {}) => {
 
 	return useCallback(
 		(query) => {
-			const { chains, projects, search = '', apyFrom = 0, apyTo = 200, tvlFrom = '', tvlTo = '', category } = query;
-
+			const {
+				chains,
+				projects,
+				search = '',
+				apyFrom = 0,
+				apyTo = 200,
+				tvlFrom = '',
+				tvlTo = '',
+				category,
+				includeRewardApy
+			} = query;
 			let filteredData = initialData;
 
 			if (search.length === 0) {
@@ -65,6 +75,15 @@ const useAdvancedFilter = (initialData, config = {}) => {
 				filteredData = filteredData.filter((item) => item.symbol.toLowerCase().includes(searchLower));
 			}
 
+			if (includeRewardApy === 'false') {
+				filteredData = filteredData.map((item) => {
+					return {
+						...item,
+						apy: item.apy - (item.apyReward || 0)
+					};
+				});
+			}
+
 			filteredData = filteredData.filter((item) => item.apyMean30d >= +apyFrom && item.apyMean30d <= +apyTo);
 
 			if (tvlFrom || tvlTo) {
@@ -82,7 +101,17 @@ const useAdvancedFilter = (initialData, config = {}) => {
 const Filters = ({ setData, initialData, config }) => {
 	const router = useRouter();
 
-	let { chains, projects, search = '', apyFrom = 0, apyTo = 200, tvlFrom = '', tvlTo = '', category } = router.query;
+	let {
+		chains,
+		projects,
+		search = '',
+		apyFrom = 0,
+		apyTo = 200,
+		tvlFrom = '',
+		tvlTo = '',
+		category,
+		includeRewardApy
+	} = router.query;
 	const advancedFilter = useAdvancedFilter(initialData, config);
 
 	projects = useMemo(() => arrayFromString(projects), [projects]);
@@ -135,8 +164,8 @@ const Filters = ({ setData, initialData, config }) => {
 		[advancedFilter, setData]
 	);
 	useEffect(() => {
-		handleFilterChanges({ chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, category });
-	}, [chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, handleFilterChanges, category]);
+		handleFilterChanges({ chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, category, includeRewardApy });
+	}, [chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, handleFilterChanges, category, includeRewardApy]);
 
 	const handleQueryChange = useCallback(
 		(value, key) => {
@@ -374,6 +403,18 @@ const Filters = ({ setData, initialData, config }) => {
 							</RangeSliderThumb>
 						</RangeSlider>
 					</Box>
+				</Flex>
+			</Box>
+			<Box>
+				<Text fontWeight={'medium'} mb={2}>
+					Include Reward APY
+				</Text>
+				<Flex>
+					<Switch
+						size="md"
+						checked={router.query.includeRewardApy === 'true'}
+						onChange={(e) => handleQueryChange(e.target.checked, 'includeRewardApy')}
+					/>
 				</Flex>
 			</Box>
 			<Flex justify="flex-end">

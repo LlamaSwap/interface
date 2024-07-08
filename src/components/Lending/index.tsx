@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
-import { Box, Flex, Tooltip, Text, Button } from '@chakra-ui/react';
+import { Box, Flex, Tooltip, Text, Button, Badge } from '@chakra-ui/react';
 import ReactSelect from '../MultiSelect';
 import { ColumnHeader, RowContainer, YieldsBody, YieldsCell, YieldsContainer, YieldsWrapper } from '../Yields';
 import NotFound from './NotFound';
@@ -13,7 +13,7 @@ import { chainIconUrl } from '../Aggregator/nativeTokens';
 import { LendingInput } from './TokenInput';
 import { SwapInputArrow } from '../Aggregator';
 import { last } from 'lodash';
-import { QuestionIcon } from '@chakra-ui/icons';
+import { Percent } from 'react-feather';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -39,7 +39,11 @@ const YieldsRow = ({ data, index, style, amountsProvided }) => {
 				</Tooltip>
 			</YieldsCell>
 			<YieldsCell style={{ overflow: 'hidden', display: 'block', textAlign: 'center' }}>
-				{row.symbol} ➞ {row.borrowPool?.symbol}
+				<Tooltip label={`${row.symbol} ➞ ${row.borrowPool?.symbol}`} aria-label={row.symbol} placement="top">
+					<span>
+						{row.symbol} ➞ {row.borrowPool?.symbol}
+					</span>
+				</Tooltip>
 			</YieldsCell>
 			<YieldsCell>
 				<ChainIcon
@@ -58,7 +62,7 @@ const YieldsRow = ({ data, index, style, amountsProvided }) => {
 					row.totalApy?.toFixed(2) + '%'
 				) : (
 					<Tooltip label="Please provide the amount you'd like to lend and borrow to see the APY.">
-						<QuestionIcon width="16px" height="16px" />
+						<Percent width="16px" height="16px" style={{ margin: '0 auto' }} />
 					</Tooltip>
 				)}
 			</YieldsCell>
@@ -149,8 +153,12 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 
 	const { data: prices } = useGetPrices(tokens);
 
+	const filteredPoolPairs = useMemo(() => {
+		return poolPairs.filter((p) => (activeTab === 0 ? p.isSafePool : true));
+	}, [poolPairs, activeTab]);
+
 	const rowVirtualizer = useVirtualizer({
-		count: poolPairs.length,
+		count: filteredPoolPairs.length,
 		getScrollElement: () => document.scrollingElement || document.documentElement,
 		estimateSize: () => 50,
 		overscan: 1000
@@ -195,9 +203,9 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 
 			return pools.filter((p) => {
 				const symbolMatch = isStables ? p?.stablecoin : p.symbol?.toLowerCase()?.includes(token?.toLowerCase());
-				const safePoolMacth = activeTab === 0 ? safeProjects.includes(p.config.name) : true;
+
 				const isNotBorrowCDP = p?.category === 'CDP' && !isLending;
-				return symbolMatch && chainFilter(p) && safePoolMacth && !isNotBorrowCDP;
+				return symbolMatch && chainFilter(p) && !isNotBorrowCDP;
 			});
 		};
 
@@ -273,6 +281,10 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 					const pairNetApy = lendPool.apy + borrowPool.apyBorrow * lendPool.ltv * lendBorrowRatio;
 					const pairRewardApy = lendPool.apyReward + borrowPool.apyRewardBorrow * lendPool.ltv * lendBorrowRatio;
 					const totalApy = pairNetApy + pairRewardApy;
+					const isSafePool =
+						safeProjects.includes(lendPool.config.name) ||
+						(lendPool?.category === 'CDP' &&
+							(selectedBorrowToken as string)?.toLowerCase() === lendPool?.mintedCoin?.toLowerCase());
 					pairs.push({
 						...lendPool,
 						totalApy,
@@ -285,7 +297,8 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 						borrowTokenPrice,
 						maxAmountToBorrow,
 						minAmountToLend,
-						borrowAmountFromPercent
+						borrowAmountFromPercent,
+						isSafePool
 					});
 				}
 			});
@@ -329,7 +342,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 
 	return (
 		<Container style={{ display: 'flex', gap: '16px' }}>
-			<Wrapper style={{ paddingBottom: '10px' }}>
+			<Wrapper style={{ paddingBottom: '10px', maxWidth: '450px' }}>
 				{isLoading ? (
 					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
 				) : (
@@ -452,7 +465,12 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 										</ActiveTabButton>
 									) : (
 										<TabButton key={index} onClick={() => setActiveTab(index)}>
-											{tab.label}
+											{tab.label}{' '}
+											{tab.label === 'Degen' && filteredPoolPairs?.length ? (
+												<Badge size="xs" color="messenger.400">
+													+{poolPairs?.length} paths available
+												</Badge>
+											) : null}
 										</TabButton>
 									)
 								)}
@@ -465,17 +483,22 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 								/>
 							</TabButtonsContainer>
 							<TabContent>
-								{poolPairs.length === 0 ? (
+								{filteredPoolPairs.length === 0 ? (
 									<NotFound text={'Select a lending and borrowing token to see the available pairs.'} size="200px" />
 								) : (
 									<YieldsContainer ref={containerRef} style={{ paddingTop: 0 }}>
-										<ColumnHeader>
+										<ColumnHeader
+											style={{
+												display: 'grid',
+												gridTemplateColumns: '1fr 2fr 1.5fr 1.2fr 1fr 1fr'
+											}}
+										>
 											<th>Chain</th>
 											<th>Symbol</th>
 											<th>Project</th>
 
 											<th onClick={() => handleSort('pairNetApy')}>
-												Net APY {sortBy === 'pairNetApy' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+												Interest {sortBy === 'pairNetApy' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
 											</th>
 											<th onClick={() => handleSort('totalAvailableUsd')}>
 												Available {sortBy === 'totalAvailableUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
@@ -487,7 +510,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 												<YieldsRow
 													amountsProvided={amountToLend && amountToBorrow}
 													key={virtualRow.index}
-													data={poolPairs}
+													data={filteredPoolPairs}
 													index={virtualRow.index}
 													style={{
 														gridTemplateColumns: '1fr 2fr 1.5fr 1fr 1fr 1fr',
@@ -584,6 +607,6 @@ const Container = styled.div`
 `;
 
 const Wrapper = styled(YieldsWrapper)`
-	width: 95vw;
-	max-width: 550px;
+	width: 45vw;
+	max-width: 650px;
 `;

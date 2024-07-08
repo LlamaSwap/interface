@@ -25,7 +25,16 @@ export const InfiniteList = ({ items, setToken, search, setIsSearch, isSearch })
 	const parentRef = useRef(null);
 
 	const filteredItems = useMemo(() => {
-		return items ? items.filter((item) => item.label.toLowerCase().includes(searchTerm.toLowerCase())) : [];
+		if (!searchTerm) return items;
+		const filtered = items
+			? items.filter((item) => item.value.toLowerCase().includes(searchTerm?.trim().toLowerCase()))
+			: [];
+		const exactMatch = items
+			? items.find((item) => item.value.toLowerCase() === searchTerm?.trim().toLowerCase())
+			: null;
+
+		const result = exactMatch ? [exactMatch, ...filtered.filter((item) => item.value !== exactMatch.value)] : filtered;
+		return result;
 	}, [searchTerm, items]);
 
 	const rowVirtualizer = useVirtualizer({
