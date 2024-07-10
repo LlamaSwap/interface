@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
-import { Box, Flex, Tooltip, Text, Button, Badge, Link } from '@chakra-ui/react';
+import { Box, Flex, Tooltip, Text, Button, Badge, Link, Switch } from '@chakra-ui/react';
 import ReactSelect from '../MultiSelect';
 import { ColumnHeader, RowContainer, YieldsBody, YieldsCell, YieldsContainer, YieldsWrapper } from '../Yields';
 import NotFound from './NotFound';
@@ -13,8 +13,7 @@ import { chainIconUrl } from '../Aggregator/nativeTokens';
 import { LendingInput } from './TokenInput';
 import { SwapInputArrow } from '../Aggregator';
 import { last } from 'lodash';
-import { Percent } from 'react-feather';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { ExternalLinkIcon, QuestionIcon } from '@chakra-ui/icons';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -63,7 +62,7 @@ const YieldsRow = ({ data, index, style, amountsProvided }) => {
 					row.totalApy?.toFixed(2) + '%'
 				) : (
 					<Tooltip label="Please provide the amount you'd like to lend and borrow to see the APY.">
-						<Percent width="16px" height="16px" style={{ margin: '0 auto' }} />
+						<QuestionIcon width="16px" height="16px" />
 					</Tooltip>
 				)}
 			</YieldsCell>
@@ -126,7 +125,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 	const [activeTab, setActiveTab] = useState(0);
 	const tabs = [{ label: 'Safe' }, { label: 'Degen' }];
 	const router = useRouter();
-	let { lendToken, borrowToken, poolChain: selectedChain = 'All Chains' } = router.query;
+	let { lendToken, borrowToken, poolChain: selectedChain = 'All Chains', includeRewardApy } = router.query;
 	selectedChain = useMemo(() => arrayFromString(selectedChain), [selectedChain]);
 	const [lendingPools, setLendingPools] = useState([]);
 	const [borrowPools, setBorrowPools] = useState([]);
@@ -138,25 +137,22 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 	const [amountToLend, setAmountToLend] = useState('');
 	const [amountToBorrow, setAmountToBorrow] = useState('');
 	const [poolPairs, setPoolPairs] = useState([]);
+
 	const tokens = useMemo(() => {
 		return [
 			...new Set(
-				poolPairs
-					.map((p) =>
-						[p, p.borrowPool].map(
-							(p) => `${mapChainName(p?.chain?.toLowerCase())}:${p?.underlyingTokens?.[0]?.toLowerCase()}`
-						)
-					)
+				[...lendingPools, ...borrowPools]
+					.map((p) => `${mapChainName(p?.chain?.toLowerCase())}:${p?.underlyingTokens?.[0]?.toLowerCase()}`)
 					.flat()
 			)
 		];
-	}, [poolPairs]);
-
-	const { data: prices } = useGetPrices(tokens);
+	}, [lendingPools, borrowPools]);
 
 	const filteredPoolPairs = useMemo(() => {
 		return poolPairs.filter((p) => (activeTab === 0 ? p.isSafePool : true));
 	}, [poolPairs, activeTab]);
+
+	const { data: prices } = useGetPrices(tokens);
 
 	const rowVirtualizer = useVirtualizer({
 		count: filteredPoolPairs.length,
@@ -258,34 +254,38 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 							  ]?.price;
 
 					const borrowTokenPrice =
-						selectedBorrowToken === 'STABLES'
+						selectedBorrowToken === 'STABLES' || borrowPool?.category === 'CDP'
 							? 1
 							: prices?.[
 									`${mapChainName(
 										borrowPool?.chain?.toLowerCase()
 									)}:${borrowPool?.underlyingTokens?.[0]?.toLowerCase()}`
 							  ]?.price;
-					const parsedLendAmount = amountToLend.replace(' ', '');
+
+					const parsedLendAmount = amountToLend.replace(/\s/g, '');
 					const lendUsdAmount = parsedLendAmount ? lendTokenPrice * parseFloat(parsedLendAmount) : null;
 					const maxAmountToBorrow = lendUsdAmount * lendPool.ltv;
-					const parsedBorrowAmount = amountToBorrow.replace(' ', '');
+					const parsedBorrowAmount = amountToBorrow.replace(/\s/g, '');
+
 					let borrowUsdAmount = parsedBorrowAmount
 						? amountToBorrow?.includes('%')
-							? (lendUsdAmount * Number(amountToBorrow.replace('%', ''))) / 100
-							: borrowTokenPrice * parseFloat(amountToBorrow)
+							? (lendUsdAmount * Number(parsedBorrowAmount.replace('%', ''))) / 100
+							: borrowTokenPrice * parseFloat(parsedBorrowAmount)
 						: null;
+
+					if (borrowUsdAmount && borrowUsdAmount >= maxAmountToBorrow) return;
 					const borrowAmountFromPercent = amountToBorrow?.includes('%') ? borrowUsdAmount : null;
 
-					borrowUsdAmount = borrowUsdAmount && maxAmountToBorrow <= borrowUsdAmount ? 0 : borrowUsdAmount;
 					const minAmountToLend = borrowUsdAmount / lendPool.ltv;
 					const lendBorrowRatio = borrowUsdAmount / lendUsdAmount || 0;
-					const pairNetApy = lendPool.apy + borrowPool.apyBorrow * lendPool.ltv * lendBorrowRatio;
 					const pairRewardApy = lendPool.apyReward + borrowPool.apyRewardBorrow * lendPool.ltv * lendBorrowRatio;
-					const totalApy = pairNetApy + pairRewardApy;
+					const pairNetApy = lendPool.apyBase + borrowPool.apyBaseBorrow * lendPool.ltv * lendBorrowRatio;
+					const totalApy = pairNetApy + (includeRewardApy === 'true' ? pairRewardApy : 0);
 					const isSafePool =
 						safeProjects.includes(lendPool.config.name) ||
 						(lendPool?.category === 'CDP' &&
 							(selectedBorrowToken as string)?.toLowerCase() === lendPool?.mintedCoin?.toLowerCase());
+
 					pairs.push({
 						...lendPool,
 						totalApy,
@@ -322,8 +322,10 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 		amountToLend,
 		amountToBorrow,
 		sortBy,
-		sortDirection
+		sortDirection,
+		includeRewardApy
 	]);
+
 	const handleSort = (field) => {
 		setSortDirection((sortDirection) => (sortDirection === 'asc' ? 'desc' : 'asc'));
 		setSortBy(field);
@@ -399,7 +401,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 								<LendingInput
 									tokenOptions={tokensList}
 									selectedToken={selectedLendToken}
-									amountUsd={poolPairs?.[0]?.lendUsdAmount}
+									amountUsd={filteredPoolPairs?.[0]?.lendUsdAmount}
 									onTokenChange={(token) => {
 										router.push(
 											{
@@ -430,7 +432,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 									percentAllowed
 									tokenOptions={tokensList}
 									selectedToken={selectedBorrowToken}
-									amountUsd={poolPairs?.[0]?.borrowAmountFromPercent || poolPairs?.[0]?.borrowUsdAmount}
+									amountUsd={filteredPoolPairs?.[0]?.borrowAmountFromPercent || filteredPoolPairs?.[0]?.borrowUsdAmount}
 									onTokenChange={(token) => {
 										router.push(
 											{
@@ -447,6 +449,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 								/>
 							</Flex>
 						</Flex>
+
 						<Button
 							onClick={resetFilters}
 							colorScheme="gray"

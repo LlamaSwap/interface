@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { InfiniteList } from './List';
 import Loader from '../Aggregator/Loader';
 import NotFound from '../Lending/NotFound';
+import { Tooltip } from '@chakra-ui/react';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -21,7 +22,11 @@ const YieldsRow = ({ data, index, style }) => (
 		style={style}
 		onClick={() => window?.open(`https://defillama.com/yields/pool/${data[index].pool}`, '_blank')}
 	>
-		<YieldsCell>{data[index].symbol}</YieldsCell>
+		<YieldsCell>
+			<Tooltip label={data[index].symbol} placement={'top'}>
+				{data[index].symbol}
+			</Tooltip>
+		</YieldsCell>
 		<YieldsCell style={{ marginLeft: '30px' }}>
 			<ChainIcon
 				src={`https://icons.llamao.fi/icons/protocols/${data[index].project}?w=48&h=48`}
