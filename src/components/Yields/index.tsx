@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { InfiniteList } from './List';
 import Loader from '../Aggregator/Loader';
 import NotFound from '../Lending/NotFound';
+import { Tooltip } from '@chakra-ui/react';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -21,7 +22,11 @@ const YieldsRow = ({ data, index, style }) => (
 		style={style}
 		onClick={() => window?.open(`https://defillama.com/yields/pool/${data[index].pool}`, '_blank')}
 	>
-		<YieldsCell>{data[index].symbol}</YieldsCell>
+		<YieldsCell>
+			<Tooltip label={data[index].symbol} placement={'top'}>
+				{data[index].symbol}
+			</Tooltip>
+		</YieldsCell>
 		<YieldsCell style={{ marginLeft: '30px' }}>
 			<ChainIcon
 				src={`https://icons.llamao.fi/icons/protocols/${data[index].project}?w=48&h=48`}
@@ -34,7 +39,7 @@ const YieldsRow = ({ data, index, style }) => (
 				alt={data[index].chain}
 			/>
 		</YieldsCell>
-		<YieldsCell>{data[index].apyMean30d.toFixed(2)}%</YieldsCell>
+		<YieldsCell>{data[index].apy.toFixed(2)}%</YieldsCell>
 		<YieldsCell>{'$' + formatAmountString(data[index].tvlUsd)}</YieldsCell>
 	</RowContainer>
 );
@@ -58,11 +63,20 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 
 	const tokensList = React.useMemo(() => {
 		const allTokens = Object.values(tokens).flat();
-		return allTokens.map((token: Record<string, string>) => ({
-			value: token.symbol,
-			label: token.name,
-			icon: token.logoURI
-		}));
+		const addedTokens = new Set();
+		return allTokens
+			.filter((token: Record<string, string>) => {
+				if (addedTokens.has(token.symbol)) {
+					return false;
+				}
+				addedTokens.add(token.symbol);
+				return true;
+			})
+			.map((token: Record<string, string>) => ({
+				value: token.symbol,
+				label: token.name,
+				icon: token.logoURI
+			}));
 	}, []);
 
 	const rowVirtualizer = useVirtualizer({
@@ -93,7 +107,7 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 	};
 
 	return (
-		<YieldsWrapper>
+		<YieldsWrapper style={{ paddingRight: '16px', paddingLeft: '16px' }}>
 			<YieldsContainer ref={containerRef}>
 				{isLoading ? (
 					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
@@ -156,7 +170,7 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 export const YieldsWrapper = styled.div`
 	width: 95vw;
 	max-width: 550px;
-	height: 520px;
+	height: 560px;
 	border: 1px solid #2f333c;
 	align-self: flex-start;
 	z-index: 1;
@@ -180,12 +194,7 @@ export const YieldsContainer = styled.div`
 	width: 100%;
 	height: 100%;
 	overflow-y: hidden;
-	-ms-overflow-style: none;
-	scrollbar-width: none;
 	padding: 16px;
-	&::-webkit-scrollbar {
-		display: none;
-	}
 `;
 export const YieldsTable = styled.table`
 	width: 100%;
@@ -236,12 +245,7 @@ export const YieldsBody = styled.tbody`
 	z-index: 2;
 	height: 460px;
 	overflow-y: auto;
-	-ms-overflow-style: none;
-	scrollbar-width: none;
 	margin-top: 8px;
-	&::-webkit-scrollbar {
-		display: none;
-	}
 `;
 
 export const RowContainer = styled.tr`

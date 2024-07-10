@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flex, Box, Button, Text } from '@chakra-ui/react';
+import { Flex, Box, Button, Text, Switch } from '@chakra-ui/react';
 import {
 	AmountUsd,
 	Container as TokenContainer,
@@ -9,6 +9,7 @@ import {
 import ReactSelect from '../MultiSelect';
 import { MenuList } from '../Yields/MenuList';
 import { formattedNum } from '~/utils';
+import { useRouter } from 'next/router';
 
 const customSelectStyles = {
 	control: (provided, state) => ({
@@ -80,11 +81,30 @@ export function LendingInput({
 	amountUsd = 0,
 	percentAllowed = false
 }) {
+	const router = useRouter();
+	const { includeRewardApy } = router.query;
 	return (
 		<TokenContainer h="144px">
 			<TokenLabel>{isBorrow ? 'You Borrow' : 'Collateral'}</TokenLabel>
-
-			<Flex flexDir={{ md: 'row' }} gap={{ base: '12px', md: '8px' }}>
+			{!isBorrow ? (
+				<Flex justifyContent={'flex-end'} pr="8" gap="2" position={'absolute'} right={'0'} fontSize={'12px'}>
+					Include Reward APY{' '}
+					<Switch
+						checked={includeRewardApy === 'true'}
+						size={'sm'}
+						onChange={(e) => {
+							router.push(
+								{
+									query: { ...router.query, includeRewardApy: e.target.checked }
+								},
+								undefined,
+								{ shallow: true }
+							);
+						}}
+					></Switch>
+				</Flex>
+			) : null}
+			<Flex flexDir={{ md: 'row' }} gap={{ base: '12px', md: '8px' }} position={'relative'}>
 				<Box pos="relative" display={'flex'} justifyContent={'space-between'}>
 					<TokenInput
 						width="50%"
