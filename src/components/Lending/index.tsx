@@ -509,7 +509,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 											<th>Project</th>
 											<th
 												onClick={() => handleSort('pairNetApy')}
-												style={{ color: sortBy === 'pairNetApy' ? 'white' : 'inherit' }}
+												style={{ color: sortBy === 'pairNetApy' ? 'white' : 'inherit', cursor: 'pointer' }}
 											>
 												Interest{' '}
 												{sortBy === 'pairNetApy' ? (
@@ -522,7 +522,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 											</th>
 											<th
 												onClick={() => handleSort('totalAvailableUsd')}
-												style={{ color: sortBy === 'totalAvailableUsd' ? 'white' : 'inherit' }}
+												style={{ color: sortBy === 'totalAvailableUsd' ? 'white' : 'inherit', cursor: 'pointer' }}
 											>
 												Available
 												{sortBy === 'totalAvailableUsd' ? (
@@ -533,7 +533,10 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 													)
 												) : null}
 											</th>
-											<th onClick={() => handleSort('ltv')} style={{ color: sortBy === 'ltv' ? 'white' : 'inherit' }}>
+											<th
+												onClick={() => handleSort('ltv')}
+												style={{ color: sortBy === 'ltv' ? 'white' : 'inherit', cursor: 'pointer' }}
+											>
 												LTV{' '}
 												{sortBy === 'ltv' ? (
 													sortDirection === 'asc' ? (

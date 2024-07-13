@@ -108,7 +108,6 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 			});
 		});
 	};
-
 	return (
 		<YieldsWrapper style={{ paddingRight: '16px', paddingLeft: '16px' }}>
 			<YieldsContainer ref={containerRef}>
@@ -163,7 +162,16 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 									<YieldsCell>Symbol</YieldsCell>
 									<YieldsCell>Project</YieldsCell>
 									<YieldsCell style={{ marginLeft: '16px' }}>Chain</YieldsCell>
-									<YieldsCell style={{ marginLeft: '20px' }} onClick={() => handleSort('apyMean30d')}>
+									<YieldsCell
+										style={{
+											marginLeft: '20px',
+											minWidth: '90px',
+											color: sortBy === 'apyMean30d' ? 'white' : 'inherit',
+											textOverflow: 'inherit',
+											cursor: 'pointer'
+										}}
+										onClick={() => handleSort('apyMean30d')}
+									>
 										30d APY{' '}
 										{sortBy === 'apyMean30d' ? (
 											sortDirection === 'asc' ? (
@@ -173,7 +181,10 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 											)
 										) : null}
 									</YieldsCell>
-									<YieldsCell onClick={() => handleSort('tvlUsd')}>
+									<YieldsCell
+										onClick={() => handleSort('tvlUsd')}
+										style={{ color: sortBy === 'tvlUsd' ? 'white' : 'inherit', cursor: 'pointer' }}
+									>
 										TVL{' '}
 										{sortBy === 'tvlUsd' ? (
 											sortDirection === 'asc' ? (
