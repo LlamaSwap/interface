@@ -19,6 +19,8 @@ import { useRouter } from 'next/router';
 import { createFilter } from 'react-select';
 import { MenuList } from './MenuList';
 import { arrayFromString } from '../Lending';
+import { CloseIcon, DeleteIcon } from '@chakra-ui/icons';
+import styled from 'styled-components';
 
 const createIndex = (data, key) => {
 	return data.reduce((acc, item) => {
@@ -98,7 +100,7 @@ const useAdvancedFilter = (initialData, config = {}) => {
 	);
 };
 
-const Filters = ({ setData, initialData, config }) => {
+const Filters = ({ setData, initialData, config, closeFilters }) => {
 	const router = useRouter();
 
 	let {
@@ -244,14 +246,11 @@ const Filters = ({ setData, initialData, config }) => {
 	const thumbColor = useColorModeValue('gray.300', 'gray.600');
 
 	return (
-		<Flex direction="column" gap={3} minWidth={'260px'} padding={'20px'}>
+		<FiltersBody>
 			<Box>
-				<Text fontWeight="bold" mb={4} fontSize={16}>
-					Filters
-				</Text>
 				<Box mb={2}>
-					<Text fontWeight="medium" mb={2}>
-						Symbol
+					<Text fontWeight="medium" mb={2} fontSize={'16px'} display={'flex'} justifyContent={'space-between'}>
+						Symbol <CloseIcon onClick={() => closeFilters()} cursor={'pointer'} />
 					</Text>
 					<MultiSelect
 						itemCount={allTokens.length}
@@ -274,7 +273,7 @@ const Filters = ({ setData, initialData, config }) => {
 					/>
 				</Box>
 				<Box>
-					<Text fontWeight="medium" mb={2}>
+					<Text fontWeight="medium" mb={2} fontSize={'16px'}>
 						Chain
 					</Text>
 					<MultiSelect
@@ -290,7 +289,7 @@ const Filters = ({ setData, initialData, config }) => {
 			</Box>
 
 			<Box>
-				<Text fontWeight="medium" mb={2}>
+				<Text fontWeight="medium" mb={2} fontSize={'16px'}>
 					Project
 				</Text>
 				<MultiSelect
@@ -312,7 +311,7 @@ const Filters = ({ setData, initialData, config }) => {
 				/>
 			</Box>
 			<Box>
-				<Text fontWeight="medium" mb={2}>
+				<Text fontWeight="medium" mb={2} fontSize={'16px'}>
 					Category
 				</Text>
 				<MultiSelect
@@ -336,7 +335,7 @@ const Filters = ({ setData, initialData, config }) => {
 			</Box>
 
 			<Box>
-				<Text fontWeight="medium" mb={2}>
+				<Text fontWeight="medium" mb={2} fontSize={'16px'}>
 					TVL USD
 				</Text>
 				<Flex gap={2}>
@@ -361,12 +360,12 @@ const Filters = ({ setData, initialData, config }) => {
 				</Flex>
 			</Box>
 
-			<Box>
-				<Text fontWeight="medium" mb={6}>
+			<Box mb="2">
+				<Text fontWeight="medium" mb={6} fontSize={'16px'}>
 					APY
 				</Text>
 				<Flex justify="center">
-					<Box width="240px">
+					<Box width="320px">
 						<RangeSlider
 							// eslint-disable-next-line jsx-a11y/aria-proptypes
 							aria-label={['min', 'max']}
@@ -406,9 +405,7 @@ const Filters = ({ setData, initialData, config }) => {
 				</Flex>
 			</Box>
 			<Box>
-				<Text fontWeight={'medium'} mb={2}>
-					Include Reward APY
-				</Text>
+				<Text fontWeight={'medium'}>Include Reward APY</Text>
 				<Flex>
 					<Switch
 						size="md"
@@ -417,13 +414,29 @@ const Filters = ({ setData, initialData, config }) => {
 					/>
 				</Flex>
 			</Box>
-			<Flex justify="flex-end">
-				<Button size={'sm'} onClick={handleResetFilters}>
-					Reset Filters
+			<Box
+				position={'sticky'}
+				height={'40px'}
+				bottom={0}
+				bgColor="rgb(34, 36, 42)"
+				display={'flex'}
+				justifyContent={'center'}
+			>
+				<Button color="#2172E5" variant={'link'} gap="4px" fontWeight={'normal'} onClick={() => handleResetFilters()}>
+					Reset Filters <DeleteIcon />
 				</Button>
-			</Flex>
-		</Flex>
+			</Box>
+		</FiltersBody>
 	);
 };
 
+const FiltersBody = styled.div`
+	max-width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 20px;
+	padding-bottom: 0;
+`;
 export default Filters;

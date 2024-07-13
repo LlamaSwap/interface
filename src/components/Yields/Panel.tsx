@@ -28,11 +28,6 @@ const Panel = ({ isVisible, children, setVisible }) => {
 
 	return (
 		<>
-			{router?.query?.search ? (
-				<PanelButton onClick={() => setVisible(!isVisible)} isVisible={isVisible} ref={buttonRef}>
-					Filters
-				</PanelButton>
-			) : null}
 			<PanelBody isVisible={isVisible} ref={panelRef}>
 				<div style={{ display: isVisible ? 'block' : 'none' }}>
 					<PanelContent isVisible={isVisible}>{children}</PanelContent>
@@ -61,7 +56,7 @@ const PanelBody = styled.div<{ isVisible: boolean }>`
 	top: 0;
 	right: 8px;
 	border-radius: 16px;
-	width: ${({ isVisible }) => (isVisible ? '300px' : '0')};
+	max-width: ${({ isVisible }) => (isVisible ? '400px' : '0')};
 	height: 100%;
 	background-color: ${(props) => props.theme.bg2};
 	padding: ${({ isVisible }) => (isVisible ? '0px 8px 0px 16px' : '0')};
@@ -71,6 +66,11 @@ const PanelBody = styled.div<{ isVisible: boolean }>`
 	box-shadow: ${({ isVisible }) => (isVisible ? '-8px 0 8px rgba(0, 0, 0, 0.15)' : 'none')};
 
 	overflow-y: auto;
+	::-webkit-scrollbar {
+		display: none;
+	}
+	-ms-overflow-style: none;
+	scrollbar-width: none;
 `;
 
 const PanelContent = styled.div<{ isVisible: boolean }>`

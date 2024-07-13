@@ -8,7 +8,10 @@ import { useRouter } from 'next/router';
 import { InfiniteList } from './List';
 import Loader from '../Aggregator/Loader';
 import NotFound from '../Lending/NotFound';
-import { Tooltip } from '@chakra-ui/react';
+
+import { Box, Divider, IconButton, Text, Tooltip } from '@chakra-ui/react';
+import { Filter } from 'react-feather';
+import { ArrowBackIcon, ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -39,7 +42,7 @@ const YieldsRow = ({ data, index, style }) => (
 				alt={data[index].chain}
 			/>
 		</YieldsCell>
-		<YieldsCell>{data[index].apy.toFixed(2)}%</YieldsCell>
+		<YieldsCell>{data[index].apyMean30d.toFixed(2)}%</YieldsCell>
 		<YieldsCell>{'$' + formatAmountString(data[index].tvlUsd)}</YieldsCell>
 	</RowContainer>
 );
@@ -105,7 +108,6 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 			});
 		});
 	};
-
 	return (
 		<YieldsWrapper style={{ paddingRight: '16px', paddingLeft: '16px' }}>
 			<YieldsContainer ref={containerRef}>
@@ -113,89 +115,156 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
 				) : (
 					<>
-						<InfiniteList
-							items={tokensList}
-							search={search}
-							isSearch={isSearch}
-							setIsSearch={setIsSearch}
-							setToken={(token) => {
-								setData(initialData.filter((item) => item.symbol?.toLowerCase()?.includes(token?.toLowerCase())));
+						{isSearch ? (
+							<InfiniteList
+								items={tokensList}
+								search={search}
+								isSearch={isSearch}
+								setIsSearch={setIsSearch}
+								setToken={(token) => {
+									setData(initialData.filter((item) => item.symbol?.toLowerCase()?.includes(token?.toLowerCase())));
 
-								router?.push({ query: { ...router.query, tab: 'earn', search: token } }, undefined, {
-									shallow: true
-								});
-							}}
-						/>
-						<ColumnHeader>
-							<YieldsCell>Symbol</YieldsCell>
-							<YieldsCell>Project</YieldsCell>
-							<YieldsCell style={{ marginLeft: '16px' }}>Chain</YieldsCell>
-							<YieldsCell style={{ marginLeft: '20px' }} onClick={() => handleSort('apyMean30d')}>
-								30d APY {sortBy === 'apyMean30d' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-							</YieldsCell>
-							<YieldsCell onClick={() => handleSort('tvlUsd')}>
-								TVL {sortBy === 'tvlUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
-							</YieldsCell>
-						</ColumnHeader>
-						{data?.length ? (
-							<YieldsBody style={{ height: `${bodyHeight}px`, minHeight: '480px' }}>
-								{rowVirtualizer.getVirtualItems().map((virtualRow) => (
-									<YieldsRow
-										key={virtualRow.index}
-										data={data}
-										index={virtualRow.index}
-										style={{
-											position: 'absolute',
-											top: `${virtualRow.start}px`,
-											height: `${virtualRow.size}px`,
-											width: '100%'
-										}}
+									router?.push({ query: { ...router.query, tab: 'earn', search: token } }, undefined, {
+										shallow: true
+									});
+								}}
+							/>
+						) : (
+							<div>
+								<ArrowBackIcon
+									width={'24px'}
+									height={'24px'}
+									ml="-4px"
+									mb="1"
+									cursor={'pointer'}
+									onClick={() => {
+										setIsSearch(true);
+										router?.push({ query: { ...router.query, tab: 'earn', search: '' } }, undefined, { shallow: true });
+									}}
+								/>
+								<Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} mb="6">
+									<Text display={'flex'} fontSize={'20px'} gap="4px">
+										Earn with{' '}
+										<Text fontWeight={'500'} color={'gray.500'}>
+											{search}
+										</Text>
+									</Text>
+
+									<IconButton
+										aria-label="Filters"
+										icon={<Filter />}
+										bgColor={'rgb(20, 22, 25)'}
+										onClick={() => setShowFilters(true)}
 									/>
-								))}
-							</YieldsBody>
-						) : isSearch ? null : (
-							<NotFound hasSelectedFilters text={'No pools found, please change filters.'} />
+								</Box>
+								<Divider width="100%" position="absolute" top="108px" left="0" borderColor={'#2C2F36'} />
+								<ColumnHeader>
+									<YieldsCell>Symbol</YieldsCell>
+									<YieldsCell>Project</YieldsCell>
+									<YieldsCell style={{ marginLeft: '16px' }}>Chain</YieldsCell>
+									<YieldsCell
+										style={{
+											marginLeft: '20px',
+											minWidth: '90px',
+											color: sortBy === 'apyMean30d' ? 'white' : 'inherit',
+											textOverflow: 'inherit',
+											cursor: 'pointer'
+										}}
+										onClick={() => handleSort('apyMean30d')}
+									>
+										30d APY{' '}
+										{sortBy === 'apyMean30d' ? (
+											sortDirection === 'asc' ? (
+												<ArrowUpIcon mb="1" />
+											) : (
+												<ArrowDownIcon mb="1" />
+											)
+										) : null}
+									</YieldsCell>
+									<YieldsCell
+										onClick={() => handleSort('tvlUsd')}
+										style={{ color: sortBy === 'tvlUsd' ? 'white' : 'inherit', cursor: 'pointer' }}
+									>
+										TVL{' '}
+										{sortBy === 'tvlUsd' ? (
+											sortDirection === 'asc' ? (
+												<ArrowUpIcon mb="1" />
+											) : (
+												<ArrowDownIcon mb="1" />
+											)
+										) : null}
+									</YieldsCell>
+								</ColumnHeader>
+								{data?.length ? (
+									<YieldsBody style={{ height: `${bodyHeight}px`, minHeight: '480px' }}>
+										{rowVirtualizer.getVirtualItems().map((virtualRow) => (
+											<YieldsRow
+												key={virtualRow.index}
+												data={data}
+												index={virtualRow.index}
+												style={{
+													position: 'absolute',
+													top: `${virtualRow.start}px`,
+													height: `${virtualRow.size}px`,
+													width: '100%'
+												}}
+											/>
+										))}
+									</YieldsBody>
+								) : isSearch ? null : (
+									<NotFound hasSelectedFilters text={'No pools found, please change filters.'} />
+								)}
+							</div>
 						)}
 					</>
 				)}
 			</YieldsContainer>
 
 			<Panel isVisible={showFilters} setVisible={setShowFilters}>
-				<Filters setData={setData} initialData={initialData} config={config} />
+				<Filters
+					setData={setData}
+					initialData={initialData}
+					config={config}
+					closeFilters={() => setShowFilters(false)}
+				/>
 			</Panel>
 		</YieldsWrapper>
 	);
 };
 
 export const YieldsWrapper = styled.div`
-	width: 95vw;
+	width: 100%;
 	max-width: 550px;
-	height: 560px;
+	height: auto;
+	min-height: 560px;
 	border: 1px solid #2f333c;
-	align-self: flex-start;
+	align-self: center;
 	z-index: 1;
 	position: relative;
-	padding-bottom: 16px;
-	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
-		position: sticky;
-		top: 24px;
-	}
-
-	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.9);
+	padding: 16px;
+	margin: 0 auto;
+	box-shadow: 0px 0px 20px rgba(26, 26, 26, 0.5);
 	border-radius: 16px;
 	text-align: left;
 
+	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
+		position: sticky;
+		top: 24px;
+		align-self: flex-start;
+	}
+
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
 		box-shadow: none;
+		max-width: 100%;
 	}
 `;
 
 export const YieldsContainer = styled.div`
 	width: 100%;
 	height: 100%;
-	overflow-y: hidden;
-	padding: 16px;
+	overflow-y: auto;
 `;
+
 export const YieldsTable = styled.table`
 	width: 100%;
 	border-collapse: separate;
@@ -203,65 +272,62 @@ export const YieldsTable = styled.table`
 `;
 
 export const YieldsHead = styled.thead`
-	display: block;
-`;
-
-export const ColumnHeader = styled.div`
-	display: flex;
-	background-color: ${(props) => props.theme.bg2};
-	color: ${(props) => props.theme.text1};
-	font-weight: bold;
-	padding: 10px 0;
 	position: sticky;
 	top: 0;
+	background-color: ${(props) => props.theme.bg1};
 	z-index: 3;
-	align-items: center;
-	border-radius: 16px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-	cursor: pointer;
-	overflow-x: auto;
-	scrollbar-width: none;
-	-ms-overflow-style: none;
+`;
 
-	&::-webkit-scrollbar {
-		display: none;
+export const ColumnHeader = styled.tr`
+	display: grid;
+	grid-template-columns: 1.5fr 1fr 1fr 1fr 1.5fr;
+	color: ${(props) => props.theme.text3};
+	font-weight: bold;
+	padding: 10px 0;
+	border-bottom: 1px solid ${(props) => props.theme.bg2};
+	font-size: 14px;
+	text-align: center;
+	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
+		font-size: 16px;
 	}
+`;
 
-	&:hover {
-		background-color: ${(props) => props.theme.bg3};
-	}
-
-	& > * {
-		flex: 1 0 auto;
-		text-align: center;
-		padding: 0 15px;
-		white-space: nowrap;
-	}
+export const HeaderCell = styled.th`
+	text-align: center;
+	padding: 0 5px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 `;
 
 export const YieldsBody = styled.tbody`
 	display: block;
 	position: relative;
 	z-index: 2;
-	height: 460px;
+	max-height: 460px;
 	overflow-y: auto;
-	margin-top: 8px;
 `;
 
 export const RowContainer = styled.tr`
 	display: grid;
-	grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-	border-bottom: 1fr solid ${(props) => props.theme.divider};
-	padding: 10px 0px;
+	grid-template-columns: 1.5fr 1fr 1fr 1fr 1.5fr;
+	border-bottom: 1px solid ${(props) => props.theme.bg2};
+	padding: 10px 0;
+	font-size: 14px;
+	font-weight: 400;
 	background-color: ${(props) => props.theme.bg1};
 	color: ${(props) => props.theme.text1};
-	border-radius: 8px;
 	margin-bottom: 8px;
 	align-items: center;
+
 	&:hover {
 		background-color: ${(props) => props.theme.bg2};
 		cursor: pointer;
 		transition: background-color 0.3s ease;
+	}
+
+	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
+		font-size: 16px;
 	}
 `;
 
@@ -270,7 +336,11 @@ export const YieldsCell = styled.td`
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	text-align: center;
-	min-width: 76px;
-`;
+	padding: 0 5px;
+	min-width: 50px;
 
+	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
+		min-width: 76px;
+	}
+`;
 export default Yields;
