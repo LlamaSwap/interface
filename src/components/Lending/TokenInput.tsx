@@ -14,13 +14,15 @@ import { useRouter } from 'next/router';
 const customSelectStyles = {
 	control: (provided, state) => ({
 		...provided,
-		backgroundColor: '#222429',
+		backgroundColor: state.hasValue ? '#222429' : '#2172E5',
 		borderColor: state.isFocused ? '#4A5568' : '#222429',
 		boxShadow: state.isFocused ? '0 0 0 1px #4A5568' : 'none',
 		'&:hover': {
 			borderColor: '#4A5568'
 		},
-		width: '164px'
+		width: '164px',
+		color: 'white',
+		borderRadius: '12px'
 	}),
 	menu: (provided) => ({
 		...provided,
@@ -51,11 +53,11 @@ const customSelectStyles = {
 	}),
 	placeholder: (provided) => ({
 		...provided,
-		color: '#A0AEC0'
+		color: 'white'
 	}),
 	dropdownIndicator: (provided) => ({
 		...provided,
-		color: '#A0AEC0',
+		color: 'white',
 		'&:hover': {
 			color: 'white'
 		}
@@ -108,6 +110,7 @@ export function LendingInput({
 				<Box pos="relative" display={'flex'} justifyContent={'space-between'}>
 					<TokenInput
 						width="50%"
+						placeholder="0"
 						value={amount}
 						onChange={(e) => {
 							if (percentAllowed && e.target.value[e.target.value.length - 1] === '%') {

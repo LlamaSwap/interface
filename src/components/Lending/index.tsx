@@ -13,7 +13,7 @@ import { chainIconUrl } from '../Aggregator/nativeTokens';
 import { LendingInput } from './TokenInput';
 import { SwapInputArrow } from '../Aggregator';
 import { last } from 'lodash';
-import { ExternalLinkIcon, QuestionIcon } from '@chakra-ui/icons';
+import { ArrowDownIcon, ArrowUpIcon, ExternalLinkIcon, QuestionIcon } from '@chakra-ui/icons';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -344,60 +344,58 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 	};
 
 	return (
-		<Container style={{ display: 'flex', gap: '16px' }}>
-			<Wrapper style={{ paddingBottom: '10px', maxWidth: '450px' }}>
+		<Container>
+			<LeftWrapper style={{ paddingTop: '8px' }}>
 				{isLoading ? (
 					<Loader spinnerStyles={{ margin: '0 auto' }} style={{ marginTop: '128px' }} />
 				) : (
 					<>
-						<Flex pr={4} pl={4}>
-							<Flex pr={4} pl={4} pt={2} w="100%" flexDirection={'column'}>
-								<Text fontSize={'16px'} pb="2" fontWeight={'bold'} display={'flex'} justifyContent={'space-between'}>
-									<span>Chain</span>{' '}
-									<Link
-										href="https://defillama.com/borrow/advanced"
-										isExternal
-										fontSize={'14px'}
-										color="#2172E5"
-										fontWeight={'normal'}
-										textDecoration={'underline'}
-									>
-										Advanced calculator <ExternalLinkIcon />
-									</Link>
-								</Text>
-								<ReactSelect
-									isMulti
-									value={
-										selectedChain
-											? selectedChain.map((chain) => ({
-													label: chain,
-													value: chain,
-													logoURI: chain.includes('All Chains') ? false : chainIconUrl(chain)
-											  }))
-											: null
-									}
-									onChange={(selectedChain: Array<Record<string, string>>) => {
-										let chains = selectedChain.map((c) => c?.value);
-										if (chains?.length === 2 && chains.includes('All Chains'))
-											chains = chains.filter((c) => c !== 'All Chains');
-										else if (last(chains) === 'All Chains') chains = ['All Chains'];
-										router.push(
-											{
-												query: { ...router.query, poolChain: chains }
-											},
-											undefined,
-											{ shallow: true }
-										);
-									}}
-									options={chainList}
-									placeholder="Select chain..."
-									isClearable
-									style={{ width: '100%' }}
-								/>
-							</Flex>
+						<Flex pr={4} pl={4} flexDirection="column">
+							<Text fontSize={'16px'} pb="2" fontWeight={'bold'} display={'flex'} justifyContent={'space-between'}>
+								<span>Chain</span>{' '}
+								<Link
+									href="https://defillama.com/borrow/advanced"
+									isExternal
+									fontSize={'14px'}
+									color="#2172E5"
+									fontWeight={'normal'}
+									textDecoration={'underline'}
+								>
+									Advanced calculator <ExternalLinkIcon />
+								</Link>
+							</Text>
+							<ReactSelect
+								isMulti
+								value={
+									selectedChain
+										? selectedChain.map((chain) => ({
+												label: chain,
+												value: chain,
+												logoURI: chain.includes('All Chains') ? false : chainIconUrl(chain)
+										  }))
+										: null
+								}
+								onChange={(selectedChain: Array<Record<string, string>>) => {
+									let chains = selectedChain.map((c) => c?.value);
+									if (chains?.length === 2 && chains.includes('All Chains'))
+										chains = chains.filter((c) => c !== 'All Chains');
+									else if (last(chains) === 'All Chains') chains = ['All Chains'];
+									router.push(
+										{
+											query: { ...router.query, poolChain: chains }
+										},
+										undefined,
+										{ shallow: true }
+									);
+								}}
+								options={chainList}
+								placeholder="Select chain..."
+								isClearable
+								style={{ width: '100%' }}
+							/>
 						</Flex>
-						<Flex pr={4} pl={4} pt="4">
-							<Flex mb={2} pr={4} pl={4} flexDirection={'column'} gap="4px" position={'relative'}>
+						<Flex pr={4} pl={4} pt="4" flexDirection="column">
+							<Flex mb={2} flexDirection={'column'} gap="4px" position={'relative'}>
 								<LendingInput
 									tokenOptions={tokensList}
 									selectedToken={selectedLendToken}
@@ -466,8 +464,8 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 						</Button>
 					</>
 				)}
-			</Wrapper>
-			<Wrapper style={{ overflow: 'hidden', paddingBottom: '10px' }}>
+			</LeftWrapper>
+			<RightWrapper style={{ overflow: 'hidden', paddingBottom: '10px' }}>
 				<Box>
 					<Flex mb={4}>
 						<TabsContainer>
@@ -503,22 +501,47 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 									<YieldsContainer ref={containerRef} style={{ paddingTop: 0 }}>
 										<ColumnHeader
 											style={{
-												display: 'grid',
-												gridTemplateColumns: '1fr 2fr 1.5fr 1.2fr 1fr 1fr'
+												gridTemplateColumns: '0.7fr 1.3fr 1.2fr 1fr 1fr 0.8fr'
 											}}
 										>
 											<th>Chain</th>
 											<th>Symbol</th>
 											<th>Project</th>
-
-											<th onClick={() => handleSort('pairNetApy')}>
-												Interest {sortBy === 'pairNetApy' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+											<th
+												onClick={() => handleSort('pairNetApy')}
+												style={{ color: sortBy === 'pairNetApy' ? 'white' : 'inherit' }}
+											>
+												Interest{' '}
+												{sortBy === 'pairNetApy' ? (
+													sortDirection === 'asc' ? (
+														<ArrowUpIcon mb="1" />
+													) : (
+														<ArrowDownIcon mb="1" />
+													)
+												) : null}
 											</th>
-											<th onClick={() => handleSort('totalAvailableUsd')}>
-												Available {sortBy === 'totalAvailableUsd' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+											<th
+												onClick={() => handleSort('totalAvailableUsd')}
+												style={{ color: sortBy === 'totalAvailableUsd' ? 'white' : 'inherit' }}
+											>
+												Available
+												{sortBy === 'totalAvailableUsd' ? (
+													sortDirection === 'asc' ? (
+														<ArrowUpIcon mb="1" />
+													) : (
+														<ArrowDownIcon mb="1" />
+													)
+												) : null}
 											</th>
-											<th onClick={() => handleSort('ltv')}>
-												LTV {sortBy === 'ltv' ? (sortDirection === 'asc' ? '↑' : '↓') : '↕'}
+											<th onClick={() => handleSort('ltv')} style={{ color: sortBy === 'ltv' ? 'white' : 'inherit' }}>
+												LTV{' '}
+												{sortBy === 'ltv' ? (
+													sortDirection === 'asc' ? (
+														<ArrowUpIcon mb="1" />
+													) : (
+														<ArrowDownIcon mb="1" />
+													)
+												) : null}
 											</th>
 										</ColumnHeader>
 										<YieldsBody style={{ height: `420px` }}>
@@ -529,7 +552,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 													data={filteredPoolPairs}
 													index={virtualRow.index}
 													style={{
-														gridTemplateColumns: '1fr 2fr 1.5fr 1fr 1fr 1fr',
+														gridTemplateColumns: '0.7fr 1.3fr 1.2fr 1fr 1fr 0.8fr',
 														position: 'absolute',
 														top: `${virtualRow.start}px`,
 														height: `${virtualRow.size}px`,
@@ -544,7 +567,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 						</TabsContainer>
 					</Flex>
 				</Box>
-			</Wrapper>
+			</RightWrapper>
 		</Container>
 	);
 };
@@ -556,6 +579,10 @@ const TabsContainer = styled(Box)`
 	background: ${(props) => props.theme.bg2};
 	border-radius: 8px;
 	overflow: hidden;
+
+	@media screen and (max-width: 550px) {
+		border-radius: 0;
+	}
 `;
 
 const TabButtonsContainer = styled.div`
@@ -583,6 +610,11 @@ const TabButton = styled.button`
 	&:hover {
 		background: ${(props) => props.theme.bg3};
 	}
+
+	@media screen and (max-width: 550px) {
+		font-size: 14px;
+		padding: 10px 12px;
+	}
 `;
 
 const ActiveTabButton = styled(TabButton)`
@@ -604,6 +636,11 @@ const TabContent = styled(Box)`
 	width: 100%;
 	border-bottom-left-radius: 8px;
 	border-bottom-right-radius: 8px;
+
+	@media screen and (max-width: 550px) {
+		padding: 12px 4px;
+		border-radius: 0;
+	}
 `;
 
 const ActiveTabIndicator = styled.div`
@@ -616,20 +653,62 @@ const ActiveTabIndicator = styled.div`
 
 const Container = styled.div`
 	display: flex;
+	gap: 16px;
+	max-width: 1216px;
+	margin: 0 auto;
+
+	@media (max-width: 1216px) {
+		max-width: 100%;
+	}
 
 	@media (max-width: 1000px) {
 		flex-direction: column;
 		align-items: center;
-		jusitfy-content: center;
+		justify-content: center;
 	}
 `;
 
-const Wrapper = styled(YieldsWrapper)`
-	width: 45vw;
-	max-width: 650px;
+const LeftWrapper = styled(YieldsWrapper)`
+	width: 550px;
+	max-width: 550px;
+	min-width: 300px;
+	height: 560px;
+	padding: 0;
+	flex-shrink: 1;
+
+	@media (max-width: 1216px) {
+		width: calc(100% - 666px);
+	}
 
 	@media (max-width: 1000px) {
-		width: 90vw;
+		max-width: 650px;
 		margin: 0 auto;
+		width: 100%;
+	}
+
+	@media screen and (max-width: 550px) {
+		border-radius: 0;
+		border-left: none;
+		border-right: none;
+	}
+`;
+
+const RightWrapper = styled(YieldsWrapper)`
+	width: 650px;
+	max-width: 650px;
+	height: 560px;
+	padding: 0;
+	overflow: hidden;
+	flex-shrink: 0;
+
+	@media (max-width: 1000px) {
+		width: 100%;
+		margin: 0 auto;
+	}
+
+	@media screen and (max-width: 650px) {
+		border-radius: 0;
+		border-left: none;
+		border-right: none;
 	}
 `;
