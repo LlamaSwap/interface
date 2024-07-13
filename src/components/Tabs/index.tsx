@@ -17,8 +17,8 @@ const TabButtonsWrapper = styled.div`
 	background-color: ${({ theme }) => theme.background};
 	display: flex;
 	justify-content: center;
-	border-radius: 25px;
-	padding: 12.5px 7.5px;
+	border-radius: 12px;
+	padding: 4px;
 	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.6);
 	position: relative;
 	overflow: hidden;
@@ -31,6 +31,7 @@ const TabList = styled.ul`
 	padding: 0;
 	position: relative;
 	z-index: 1000;
+	gap: 8px;
 `;
 
 const ActiveTabBackground = styled.div`
@@ -39,15 +40,14 @@ const ActiveTabBackground = styled.div`
 	left: 0;
 	height: 100%;
 	background-color: ${({ theme }) => theme.primary1};
-	border-radius: 25px;
+	border-radius: 12px;
 	transition: transform 0.3s ease, width 0.3s ease;
 	will-change: transform, width;
 `;
 
 const Tab = styled.li<{ active: boolean }>`
-	border-radius: 25px;
+	border-radius: 12px;
 	padding: 0.625rem 1.25rem;
-	margin: 0 0.75rem;
 	cursor: pointer;
 	color: ${({ active, theme }) => (active ? theme.white : theme.text1)};
 	transition: color 0.3s ease, background-color 0.3s ease;

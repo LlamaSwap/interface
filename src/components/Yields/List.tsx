@@ -1,12 +1,11 @@
-import { Box, Input, VStack, Image, IconButton, Flex } from '@chakra-ui/react';
+import { Input, VStack, Image, Flex, InputLeftElement, InputGroup, Divider, Text } from '@chakra-ui/react';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
-import { CloseIcon } from '@chakra-ui/icons';
+import { SearchIcon } from '@chakra-ui/icons';
 
 const StyledRow = styled.div`
 	padding: 10px 20px;
-	border-bottom: 1px solid ${({ theme }) => theme.divider};
 	background-color: ${({ theme }) => theme.bg1};
 	transition: background-color 0.3s, transform 0.3s;
 	border-radius: 15px;
@@ -18,6 +17,19 @@ const StyledRow = styled.div`
 		transform: scale(1.02);
 		cursor: pointer;
 	}
+`;
+
+const StyledRows = styled.div`
+	margin-top: 24px;
+	height: 440px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	width: 100%;
+	::-webkit-scrollbar {
+		display: none;
+	}
+	ms-overflow-style: none;
+	scrollbar-width: none;
 `;
 
 export const InfiniteList = ({ items, setToken, search, setIsSearch, isSearch }) => {
@@ -44,29 +56,40 @@ export const InfiniteList = ({ items, setToken, search, setIsSearch, isSearch })
 		overscan: 5
 	});
 	return (
-		<VStack align="stretch" w="100%" mt="1" mb={isSearch ? '10' : '2'}>
-			<Flex>
-				<Input
-					placeholder="Search by token name..."
-					onChange={(e) => setSearchTerm(e.target.value)}
-					onClick={() => {
-						setIsSearch(true);
-					}}
-					value={!isSearch ? search : searchTerm}
-				/>
+		<VStack align="stretch" w="100%" mt="1" gap="4">
+			<Flex flexDirection={'column'}>
 				{isSearch ? (
-					<IconButton
-						aria-label="Close search"
-						ml="2"
-						icon={<CloseIcon />}
-						onClick={() => {
-							setIsSearch(false);
-						}}
-					/>
+					<Text fontSize={'18px'} fontWeight={'bold'} mb="3">
+						Select a Token
+					</Text>
 				) : null}
+				<InputGroup>
+					<InputLeftElement pointerEvents="none">
+						<SearchIcon color="gray.300" />
+					</InputLeftElement>
+					<Input
+						_focus={{
+							outline: 'none',
+							boxShadow: 'none'
+						}}
+						bgColor={'rgb(20, 22, 25)'}
+						placeholder="Search by token name..."
+						onChange={(e) => setSearchTerm(e.target.value)}
+						onClick={() => {
+							setIsSearch(true);
+						}}
+						value={!isSearch ? search : searchTerm}
+						border="none"
+					/>
+				</InputGroup>
 			</Flex>
+
 			{isSearch ? (
-				<Box ref={parentRef} height="440px" overflowY="auto" overflowX="hidden" width="100%">
+				<Divider position={'absolute'} width={'100%'} top="108px" right={'0px'} borderColor={'gray.600'} />
+			) : null}
+
+			{isSearch ? (
+				<StyledRows ref={parentRef}>
 					<div
 						style={{
 							height: `${rowVirtualizer.getTotalSize()}px`,
@@ -93,16 +116,23 @@ export const InfiniteList = ({ items, setToken, search, setIsSearch, isSearch })
 											setIsSearch(false);
 											setSearchTerm('');
 										}}
-										style={{ display: 'flex', gap: '8px' }}
+										style={{
+											display: 'flex',
+											gap: '8px',
+											fontWeight: '400',
+											fontSize: '16px',
+											textOverflow: 'ellipsis',
+											whiteSpace: 'nowrap'
+										}}
 									>
 										<Image src={item.icon} width={'24px'} borderRadius="50%" />
-										{item.label} ({item.value})
+										{item.label} <Text color="gray.500">{item.value}</Text>
 									</StyledRow>
 								</div>
 							);
 						})}
 					</div>
-				</Box>
+				</StyledRows>
 			) : null}
 		</VStack>
 	);
