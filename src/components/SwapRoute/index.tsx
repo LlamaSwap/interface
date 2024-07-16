@@ -143,7 +143,7 @@ const Route = ({
 						fontWeight={500}
 						flexWrap={'wrap'}
 					>
-						{afterFees ? <Text whiteSpace={'nowrap'}>{`≈ ${afterFees} after fees`}</Text> : null}
+						{afterFees ? <Text whiteSpace={'nowrap'}>{`≈ ${afterFees} after gas fees`}</Text> : null}
 						{isGasNotKnown && !isFetchingGasPrice && !isGasless ? (
 							<Text
 								display="flex"
