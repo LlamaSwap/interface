@@ -67,6 +67,7 @@ async function getLendBorrowData(pools = []) {
 			if (x === undefined) return null;
 
 			tokenSymbols.add(p.symbol);
+			if (x?.mintedCoin) tokenSymbols.add(x.mintedCoin);
 
 			const apyBaseBorrow = x.apyBaseBorrow !== null ? -x.apyBaseBorrow : null;
 			const apyRewardBorrow = x.apyRewardBorrow;
