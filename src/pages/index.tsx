@@ -1,4 +1,5 @@
 import { Suspense, lazy } from 'react';
+import Loader from '~/components/Aggregator/Loader';
 import Tabs from '~/components/Tabs';
 import Layout from '~/layout';
 import { getSandwichList } from '~/props/getSandwichList';
@@ -36,7 +37,7 @@ export default function Aggregator(props) {
 			id: 'swap',
 			name: 'Swap',
 			content: () => (
-				<Suspense fallback={<div>Loading...</div>}>
+				<Suspense fallback={<Loader />}>
 					<AggregatorContainer {...props} />
 				</Suspense>
 			)
@@ -45,7 +46,7 @@ export default function Aggregator(props) {
 			id: 'earn',
 			name: 'Earn',
 			content: () => (
-				<Suspense fallback={<div>Loading...</div>}>
+				<Suspense fallback={<Loader />}>
 					<Yields tokens={props?.tokenList} {...yieldProps} />
 				</Suspense>
 			)
@@ -54,7 +55,7 @@ export default function Aggregator(props) {
 			id: 'borrow',
 			name: 'Borrow',
 			content: () => (
-				<Suspense fallback={<div>Loading...</div>}>
+				<Suspense fallback={<Loader />}>
 					<Lending {...lendingProps} />
 				</Suspense>
 			)
