@@ -1,9 +1,9 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
-import { Box, Flex, Tooltip, Text, Button, Badge, Link, Switch } from '@chakra-ui/react';
+import { Box, Flex, Tooltip, Text, Button, Badge, Link } from '@chakra-ui/react';
 import ReactSelect from '../MultiSelect';
-import { ColumnHeader, RowContainer, YieldsBody, YieldsCell, YieldsContainer, YieldsWrapper } from '../Yields';
+import { ColumnHeader, RowContainer, YieldsBody, YieldsCell, YieldsContainer } from '../Yields';
 import NotFound from './NotFound';
 import { formatAmountString } from '~/utils/formatAmount';
 import { useQuery } from '@tanstack/react-query';
@@ -668,6 +668,30 @@ const Container = styled.div`
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+	}
+`;
+
+const YieldsWrapper = styled.div`
+	min-height: 560px;
+	border: 1px solid #2f333c;
+	align-self: center;
+	z-index: 1;
+	position: relative;
+	padding: 16px;
+	margin: 0 auto;
+	box-shadow: 0px 0px 20px rgba(26, 26, 26, 0.5);
+	border-radius: 16px;
+	text-align: left;
+
+	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
+		position: sticky;
+		top: 24px;
+		align-self: flex-start;
+	}
+
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		box-shadow: none;
+		max-width: 100%;
 	}
 `;
 

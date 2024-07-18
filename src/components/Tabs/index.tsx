@@ -159,7 +159,7 @@ const Tabs = ({ tabs = [] }) => {
 						<ActiveTabBackground style={getActiveTabStyles()} />
 					</TabList>
 				</TabButtonsWrapper>
-				<TabPanels>{tabs.find((tab) => tab.id === activeTab)?.content}</TabPanels>
+				<TabPanels>{tabs.find((tab) => tab.id === activeTab)?.content()}</TabPanels>
 			</TabsContainer>
 		</Wrapper>
 	);
