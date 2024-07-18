@@ -1,14 +1,17 @@
-import * as React from 'react';
-import { AggregatorContainer } from '~/components/Aggregator';
-import Lending from '~/components/Lending';
+import { Suspense, lazy } from 'react';
 import Tabs from '~/components/Tabs';
-import Yields from '~/components/Yields';
 import Layout from '~/layout';
 import { getSandwichList } from '~/props/getSandwichList';
 import { getTokenList } from '~/props/getTokenList';
 import { getTokensMaps } from '~/props/getTokensMaps';
 import { useLendingProps } from '~/queries/useLendingProps';
 import { useYieldProps } from '~/queries/useYieldProps';
+
+const AggregatorContainer = lazy(() =>
+	import('~/components/Aggregator').then((module) => ({ default: module.AggregatorContainer }))
+);
+const Lending = lazy(() => import('~/components/Lending'));
+const Yields = lazy(() => import('~/components/Yields'));
 
 export async function getStaticProps() {
 	const tokenList = await getTokenList();
@@ -26,12 +29,36 @@ export async function getStaticProps() {
 }
 
 export default function Aggregator(props) {
-	const yeildProps = useYieldProps();
+	const yieldProps = useYieldProps();
 	const lendingProps = useLendingProps();
 	const tabData = [
-		{ id: 'swap', name: 'Swap', content: <AggregatorContainer {...props} /> },
-		{ id: 'earn', name: 'Earn', content: <Yields tokens={props?.tokenList} {...yeildProps} /> },
-		{ id: 'borrow', name: 'Borrow', content: <Lending {...lendingProps} /> }
+		{
+			id: 'swap',
+			name: 'Swap',
+			content: () => (
+				<Suspense fallback={<div>Loading...</div>}>
+					<AggregatorContainer {...props} />
+				</Suspense>
+			)
+		},
+		{
+			id: 'earn',
+			name: 'Earn',
+			content: () => (
+				<Suspense fallback={<div>Loading...</div>}>
+					<Yields tokens={props?.tokenList} {...yieldProps} />
+				</Suspense>
+			)
+		},
+		{
+			id: 'borrow',
+			name: 'Borrow',
+			content: () => (
+				<Suspense fallback={<div>Loading...</div>}>
+					<Lending {...lendingProps} />
+				</Suspense>
+			)
+		}
 	];
 	return (
 		<Layout title={`Meta-dex aggregator - DefiLlama`} defaultSEO>
