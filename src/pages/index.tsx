@@ -7,10 +7,8 @@ import { getTokenList } from '~/props/getTokenList';
 import { getTokensMaps } from '~/props/getTokensMaps';
 import { useLendingProps } from '~/queries/useLendingProps';
 import { useYieldProps } from '~/queries/useYieldProps';
+import { AggregatorContainer } from '~/components/Aggregator';
 
-const AggregatorContainer = lazy(() =>
-	import('~/components/Aggregator').then((module) => ({ default: module.AggregatorContainer }))
-);
 const Lending = lazy(() => import('~/components/Lending'));
 const Yields = lazy(() => import('~/components/Yields'));
 
@@ -36,11 +34,7 @@ export default function Aggregator(props) {
 		{
 			id: 'swap',
 			name: 'Swap',
-			content: () => (
-				<Suspense fallback={<Loader />}>
-					<AggregatorContainer {...props} />
-				</Suspense>
-			)
+			content: () => <AggregatorContainer {...props} />
 		},
 		{
 			id: 'earn',
