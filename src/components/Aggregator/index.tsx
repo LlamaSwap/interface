@@ -970,9 +970,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			}
 
 			if (
-				selectedRoute.isSignatureNeededForSwap
+				selectedRoute.price.isSignatureNeededForSwap
 					? (selectedRoute.price.rawQuote as any).permit2
-						? !signatureForSwapMutation.data
+						? signatureForSwapMutation.data
+							? false
+							: true
 						: false
 					: false
 			) {
@@ -1239,7 +1241,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 											{selectedRoute &&
 											isApproved &&
 											!isGaslessApproval &&
-											selectedRoute.isSignatureNeededForSwap &&
+											selectedRoute.price.isSignatureNeededForSwap &&
 											(selectedRoute.price.rawQuote as any).permit2 ? (
 												<Button
 													isLoading={signatureForSwapMutation.isLoading}
@@ -1308,9 +1310,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														!isAmountSynced ||
 														isApproveInfiniteLoading ||
 														signatureForSwapMutation.isLoading ||
-														(selectedRoute.isSignatureNeededForSwap
+														(selectedRoute.price.isSignatureNeededForSwap
 															? (selectedRoute.price.rawQuote as any).permit2
-																? !signatureForSwapMutation.data
+																? isApproved
+																	? signatureForSwapMutation.data
+																		? false
+																		: true
+																	: false
 																: false
 															: false)
 													}
@@ -1526,7 +1532,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														{selectedRoute &&
 														isApproved &&
 														!isGaslessApproval &&
-														selectedRoute.isSignatureNeededForSwap &&
+														selectedRoute.price.isSignatureNeededForSwap &&
 														(selectedRoute.price.rawQuote as any).permit2 ? (
 															<Button
 																isLoading={signatureForSwapMutation.isLoading}
@@ -1590,9 +1596,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	slippageIsWorng ||
 																	!isAmountSynced ||
 																	signatureForSwapMutation.isLoading ||
-																	(selectedRoute.isSignatureNeededForSwap
+																	(selectedRoute.price.isSignatureNeededForSwap
 																		? (selectedRoute.price.rawQuote as any).permit2
-																			? !signatureForSwapMutation.data
+																			? isApproved
+																				? signatureForSwapMutation.data
+																					? false
+																					: true
+																				: false
 																			: false
 																		: false)
 																}
