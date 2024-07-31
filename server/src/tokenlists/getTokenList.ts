@@ -87,7 +87,7 @@ export async function getTokenList() {
 
 	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
 	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
-	const [sushiList, geckoList, logos, ownList, zksyncList, quickSwapList, lineaList] = await Promise.all([
+	const [sushiList, geckoList, logos, zksyncList, polZkevmList, lineaList, scrollList] = await Promise.all([
 		fetch('https://tokens.sushi.com/v0')
 			.then((r) => r.json())
 			.then((r) =>
@@ -98,18 +98,11 @@ export async function getTokenList() {
 			),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
-		fetch('https://raw.githubusercontent.com/0xngmi/tokenlists/master/canto.json')
-			.then((res) => res.json())
-			.then((r) => r.filter((t) => t.chainId === 7700)),
-		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=324')
-			.then((r) => r.json())
-			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 324)),
-		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=1101')
-			.then((r) => r.json())
-			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 1101)),
-		fetch('https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=59144')
-			.then((r) => r.json())
-			.then((r) => r?.data?.tokens.filter((t) => t.chainId === 59144))
+		...[324, 1101, 59144, 534352].map((chainId) =>
+			fetch(`https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=${chainId}`)
+				.then((r) => r.json())
+				.then((r) => r?.data?.tokens.filter((t) => t.chainId === chainId))
+		)
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -129,9 +122,9 @@ export async function getTokenList() {
 				...oneInchList,
 				...sushiList,
 				...zksyncList,
-				...quickSwapList,
-				...ownList,
-				...lineaList
+				...polZkevmList,
+				...lineaList,
+				...scrollList
 			].filter((t) => t.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
 			'chainId'
 		),
@@ -236,7 +229,7 @@ export async function getTokenList() {
 
 	// format and store final tokens list
 	let tokenlist = {};
-	for (const chain in tokensFiltered) {
+	for (const chain in { ...tokensFiltered, ...cgList }) {
 		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])];
 	}
 

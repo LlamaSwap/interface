@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { chainGasToken, llamaToGeckoChainsMap } from '~/components/Aggregator/constants';
 import { providers } from '~/components/Aggregator/rpcs';
 import { ethers } from 'ethers';
 

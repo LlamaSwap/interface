@@ -65,6 +65,16 @@ const linea = {
 	decimals: 18
 };
 
+const scroll = {
+	mcap: Number.MAX_SAFE_INTEGER,
+	address: ethers.constants.AddressZero,
+	chainId: 534352,
+	name: 'Ethereum',
+	symbol: 'ETH',
+	logoURI: chainIconUrl('ethereum'),
+	decimals: 18
+};
+
 const okx = {
 	mcap: Number.MAX_SAFE_INTEGER,
 	address: ethers.constants.AddressZero,
@@ -350,5 +360,6 @@ export const nativeTokens = [
 	ontology,
 	pulse,
 	base,
-	linea
+	linea,
+	scroll
 ];

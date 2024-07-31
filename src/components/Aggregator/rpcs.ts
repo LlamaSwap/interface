@@ -255,6 +255,10 @@ export const rpcUrls = {
 	59144: {
 		default: 'https://rpc.linea.build',
 		second: 'https://linea.blockpi.network/v1/rpc/public'
+	},
+	534352: {
+		default: 'https://rpc.scroll.io',
+		second: 'https://rpc.ankr.com/scroll'
 	}
 };
 
@@ -339,5 +343,6 @@ export const providers = {
 	kava: createProvider('kava', getUrls(2222), 2222),
 	pulse: createProvider('pulse', getUrls(369), 369),
 	base: createProvider('pulse', getUrls(8453), 8453),
-	linea: createProvider('linea', getUrls(59144), 59144)
+	linea: createProvider('linea', getUrls(59144), 59144),
+	scroll: createProvider('scroll', getUrls(534352), 534352)
 };

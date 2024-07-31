@@ -656,6 +656,26 @@ const linea = {
 	testnet: false
 };
 
+const scroll = {
+	id: 534352,
+	name: 'Scroll',
+	network: 'scroll',
+	iconUrl: chainIconUrl('Scroll'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Ethereum',
+		symbol: 'ETH'
+	},
+	rpcUrls: {
+		default: 'https://rpc.scroll.io'
+	},
+	blockExplorers: {
+		default: { name: 'ScrollScan', url: 'https://scrollscan.com/' }
+	},
+	testnet: false
+};
+
 interface IChain extends Chain {
 	iconUrl: string;
 }
@@ -692,5 +712,6 @@ export const allChains: Array<IChain> = [
 	metis,
 	pulse,
 	velas,
-	harmony
+	harmony,
+	scroll
 ].map((chain) => ({ ...chain, rpcUrls: { ...chain.rpcUrls, ...(rpcsUrlsMap[chain.id] || {}) } }));

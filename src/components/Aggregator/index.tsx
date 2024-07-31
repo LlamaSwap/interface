@@ -160,9 +160,8 @@ const Wrapper = styled.div`
 	display: flex;
 	flex-direction: column;
 	grid-row-gap: 36px;
-	margin: 10px auto 40px;
+	margin: 0px auto 40px;
 	position: relative;
-	top: 36px;
 
 	h1 {
 		font-weight: 500;
@@ -225,11 +224,6 @@ const BodyWrapper = styled.div`
 	width: 100%;
 	z-index: 1;
 	position: relative;
-
-	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-		margin-top: 8px;
-		height: fi;
-	}
 
 	& > * {
 		margin: 0 auto;
@@ -301,6 +295,30 @@ const ConnectButtonWrapper = styled.div`
 		width: 100%;
 	}
 `;
+
+export const SwapInputArrow = (props) => (
+	<IconButton
+		icon={<ArrowDown size={14} />}
+		aria-label="Switch Tokens"
+		marginTop="auto"
+		w="2.25rem"
+		h="2.25rem"
+		minW={0}
+		p="0"
+		pos="absolute"
+		top="0"
+		bottom="0"
+		right="0"
+		left="0"
+		m="auto"
+		borderRadius="8px"
+		bg="#222429"
+		_hover={{ bg: '#2d3037' }}
+		color="white"
+		zIndex={1}
+		{...props}
+	/>
+);
 
 const chains = getAllChains();
 
@@ -1063,18 +1081,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				/>
 			) : null}
 
-			<Text fontSize="1rem" fontWeight="500" display={{ base: 'none', md: 'block', lg: 'block' }}>
-				This product is still in beta. If you run into any issue please let us know in our{' '}
-				<a
-					style={{ textDecoration: 'underline' }}
-					target={'_blank'}
-					rel="noreferrer noopener"
-					href="https://discord.swap.defillama.com/"
-				>
-					discord server
-				</a>
-			</Text>
-
 			<BodyWrapper>
 				<Body>
 					<div>
@@ -1125,7 +1131,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 							tokenPrice={fromTokenPrice}
 						/>
 
-						<IconButton
+						<SwapInputArrow
 							onClick={() =>
 								router.push(
 									{
@@ -1136,24 +1142,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 									{ shallow: true }
 								)
 							}
-							icon={<ArrowDown size={14} />}
-							aria-label="Switch Tokens"
-							marginTop="auto"
-							w="2.25rem"
-							h="2.25rem"
-							minW={0}
-							p="0"
-							pos="absolute"
-							top="0"
-							bottom="0"
-							right="0"
-							left="0"
-							m="auto"
-							borderRadius="8px"
-							bg="#222429"
-							_hover={{ bg: '#2d3037' }}
-							color="white"
-							zIndex={1}
 						/>
 
 						<InputAmountAndTokenSelect
@@ -1707,7 +1695,17 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			</BodyWrapper>
 
 			{window === parent ? <FAQs /> : null}
-
+			<Text fontSize="1rem" fontWeight="500" display={{ base: 'none', md: 'block', lg: 'block' }}>
+				This product is still in beta. If you run into any issue please let us know in our{' '}
+				<a
+					style={{ textDecoration: 'underline' }}
+					target={'_blank'}
+					rel="noreferrer noopener"
+					href="https://discord.swap.defillama.com/"
+				>
+					discord server
+				</a>
+			</Text>
 			<TransactionModal open={txModalOpen} setOpen={setTxModalOpen} link={txUrl} />
 		</Wrapper>
 	);

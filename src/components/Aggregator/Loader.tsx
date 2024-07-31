@@ -41,7 +41,7 @@ const LoaderBody = styled.img`
 const Loader = (props) => {
 	return (
 		<LoaderWrapper {...props}>
-			<LoaderBody src={loaderImg.src} />
+			<LoaderBody src={loaderImg.src} style={props?.spinnerStyles || {}} />
 			<LoaderText>Loading...</LoaderText>
 		</LoaderWrapper>
 	);
