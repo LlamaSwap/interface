@@ -87,7 +87,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	// check for traditional swap approval address allowance
 	// if it's already approved then swap via allowance-holder api
-	const isApprovedForTraditionalSwap = allowanceHolderApiQuote.issues?.allowance.spender
+	const isApprovedForTraditionalSwap = allowanceHolderApiQuote.issues?.allowance?.spender
 		? await isTokenApproved({
 				token: tokenFrom,
 				chain,
