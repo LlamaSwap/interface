@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 import { sendTx } from '../utils/sendTx';
-import { getAllowance, oldErc } from '../hooks/useTokenApprove';
+import { getAllowance, oldErc } from '../utils/getAllowance';
 
 export const name = 'Argon';
 export const token = 'ZRX';
@@ -8,11 +8,11 @@ export const isOutputAvailable = false;
 
 export const chainToId = {
 	ethereum: '1',
-	// bsc: '56',
-	// polygon: '137',
-	// optimism: '10',
-	// arbitrum: '42161',
-	// avax: '43114',
+	bsc: '56',
+	polygon: '137',
+	optimism: '10',
+	arbitrum: '42161',
+	avax: '43114',
 	// fantom: '250',
 	// celo: '42220',
 	base: '8453'
