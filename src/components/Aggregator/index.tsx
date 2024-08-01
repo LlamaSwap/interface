@@ -37,7 +37,7 @@ import {
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
-import { adaptersNames, getAllChains, swap, gaslessApprove } from './router';
+import { adaptersNames, getAllChains, swap, gaslessApprove, signatureForSwap } from './router';
 import { inifiniteApprovalAllowed } from './list';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
@@ -755,10 +755,26 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					: false
 				: isTokenApproved
 			: true
+		: selectedRoute?.price?.tokenApprovalAddress === null
+		? true
 		: isTokenApproved;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
+
+	const signatureForSwapMutation = useMutation({
+		mutationFn: (params: { adapter: string; signTypedDataAsync: typeof signTypedDataAsync; rawQuote: any }) =>
+			signatureForSwap(params)
+	});
+
+	const handleSignatureForMutation = () => {
+		signatureForSwapMutation.mutate({
+			signTypedDataAsync,
+			adapter: selectedRoute.name,
+			rawQuote: selectedRoute.price.rawQuote
+		});
+	};
+
 	const swapMutation = useMutation({
 		mutationFn: (params: {
 			chain: string;
@@ -775,6 +791,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			index: number;
 			route: any;
 			approvalData: any;
+			signature: any;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -914,6 +931,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						})
 					);
 				});
+
+			signatureForSwapMutation.reset();
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
@@ -949,6 +968,24 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				});
 				return;
 			}
+
+			if (
+				selectedRoute.price.isSignatureNeededForSwap
+					? (selectedRoute.price.rawQuote as any).permit2
+						? signatureForSwapMutation.data
+							? false
+							: true
+						: false
+					: false
+			) {
+				toast({
+					title: 'Signature needed for swap',
+					description: 'Swap is blocked, please try another route.',
+					status: 'error'
+				});
+				return;
+			}
+
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -963,10 +1000,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				route: selectedRoute,
 				amount: selectedRoute.amount,
 				amountIn: selectedRoute.amountIn,
-				approvalData: gaslessApprovalMutation?.data ?? {}
+				approvalData: gaslessApprovalMutation?.data ?? {},
+				signature: signatureForSwapMutation?.data
 			});
 		}
 	};
+
 	const handleGaslessApproval = ({ isInfiniteApproval }: { isInfiniteApproval: boolean }) => {
 		gaslessApprovalMutation.mutate({
 			signTypedDataAsync,
@@ -1199,6 +1238,24 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 												</Flex>
 											)}
 
+											{selectedRoute &&
+											isApproved &&
+											!isGaslessApproval &&
+											selectedRoute.price.isSignatureNeededForSwap &&
+											(selectedRoute.price.rawQuote as any).permit2 ? (
+												<Button
+													isLoading={signatureForSwapMutation.isLoading}
+													loadingText={'Confirming'}
+													colorScheme={'messenger'}
+													onClick={() => {
+														handleSignatureForMutation();
+													}}
+													disabled={signatureForSwapMutation.isLoading || signatureForSwapMutation.data}
+												>
+													Sign
+												</Button>
+											) : null}
+
 											{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
 												<SwapConfirmation
 													isUnknownPrice={isUnknownPrice}
@@ -1251,7 +1308,17 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														!selectedRoute ||
 														slippageIsWorng ||
 														!isAmountSynced ||
-														isApproveInfiniteLoading
+														isApproveInfiniteLoading ||
+														signatureForSwapMutation.isLoading ||
+														(selectedRoute.price.isSignatureNeededForSwap
+															? (selectedRoute.price.rawQuote as any).permit2
+																? isApproved
+																	? signatureForSwapMutation.data
+																		? false
+																		: true
+																	: false
+																: false
+															: false)
 													}
 												>
 													{!selectedRoute
@@ -1462,6 +1529,24 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 															</Flex>
 														)}
 
+														{selectedRoute &&
+														isApproved &&
+														!isGaslessApproval &&
+														selectedRoute.price.isSignatureNeededForSwap &&
+														(selectedRoute.price.rawQuote as any).permit2 ? (
+															<Button
+																isLoading={signatureForSwapMutation.isLoading}
+																loadingText={'Confirming'}
+																colorScheme={'messenger'}
+																onClick={() => {
+																	handleSignatureForMutation();
+																}}
+																disabled={signatureForSwapMutation.isLoading || signatureForSwapMutation.data}
+															>
+																Sign
+															</Button>
+														) : null}
+
 														{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
 															<SwapConfirmation
 																isUnknownPrice={isUnknownPrice}
@@ -1509,7 +1594,17 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	isApproveResetLoading ||
 																	!selectedRoute ||
 																	slippageIsWorng ||
-																	!isAmountSynced
+																	!isAmountSynced ||
+																	signatureForSwapMutation.isLoading ||
+																	(selectedRoute.price.isSignatureNeededForSwap
+																		? (selectedRoute.price.rawQuote as any).permit2
+																			? isApproved
+																				? signatureForSwapMutation.data
+																					? false
+																					: true
+																				: false
+																			: false
+																		: false)
 																}
 															>
 																{!selectedRoute
