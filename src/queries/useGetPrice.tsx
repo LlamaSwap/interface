@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { chainGasToken, llamaToGeckoChainsMap } from '~/components/Aggregator/constants';
 import { providers } from '~/components/Aggregator/rpcs';
+import { ethers } from 'ethers';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -18,8 +18,20 @@ interface IPrice {
 	gasPriceData?: {};
 }
 
+type DexScreenerTokenPair = {
+	priceUsd: string;
+	chainId: string;
+	baseToken: {
+		address: string;
+	};
+	liquidity: {
+		usd: number;
+	};
+};
+
 function convertChain(chain: string) {
 	if (chain === 'gnosis') return 'xdai';
+	if (chain === 'zksync') return 'era';
 	return chain;
 }
 
@@ -34,53 +46,16 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 	let gasTokenPrice, fromTokenPrice, toTokenPrice;
 
 	try {
-		const cgPrices = await Promise.allSettled([
-			fetchTimeout(
-				`https://api.coingecko.com/api/v3/simple/price?ids=${chainGasToken[rawChain]}&vs_currencies=usd`,
-				600
-			).then((res) => res.json()),
-			fetchTimeout(
-				`https://api.coingecko.com/api/v3/simple/token_price/${llamaToGeckoChainsMap[rawChain]}?contract_addresses=${fromToken}%2C${toToken}&vs_currencies=usd`,
-				600
-			).then((res) => res.json())
-		]);
-
-		if (cgPrices[0].status === 'fulfilled') {
-			gasTokenPrice = cgPrices[0].value?.[chainGasToken[rawChain]]?.['usd'];
-
-			fromTokenPrice = fromToken === ZERO_ADDRESS ? gasTokenPrice : undefined;
-			toTokenPrice = toToken === ZERO_ADDRESS ? gasTokenPrice : undefined;
-		}
-
-		if (cgPrices[1].status === 'fulfilled') {
-			fromTokenPrice = fromTokenPrice || cgPrices[1].value[fromToken]?.['usd'];
-			toTokenPrice = toTokenPrice || cgPrices[1].value[toToken]?.['usd'];
-		}
-
-		let llamaApi = [];
 		const llamaChain = convertChain(rawChain);
+		let llamaApi = [`${llamaChain}:${ZERO_ADDRESS}`, `${llamaChain}:${fromToken}`, `${llamaChain}:${toToken}`];
 
-		if (!gasTokenPrice) {
-			llamaApi.push(`${llamaChain}:${ZERO_ADDRESS}`);
-		}
+		const { coins } = await fetch(`https://coins.llama.fi/prices/current/${llamaApi.join(',')}`).then((r) => r.json());
 
-		if (!fromTokenPrice) {
-			llamaApi.push(`${llamaChain}:${fromToken}`);
-		}
-
-		if (!toTokenPrice) {
-			llamaApi.push(`${llamaChain}:${toToken}`);
-		}
-
-		if (llamaApi.length > 0) {
-			const { coins } = await fetch(`https://coins.llama.fi/prices/current/${llamaApi.join(',')}`).then((r) =>
-				r.json()
-			);
-
-			gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
-			fromTokenPrice = fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price;
-			toTokenPrice = toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price;
-		}
+		gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
+		[fromTokenPrice, toTokenPrice] = await Promise.all([
+			fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain, fromToken),
+			toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || getExperimentalPrice(rawChain, toToken)
+		]);
 
 		return {
 			gasTokenPrice,
@@ -96,6 +71,38 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 		};
 	}
 }
+
+const getExperimentalPrice = async (chain: string, token: string): Promise<number | undefined> => {
+	if (chain === 'gnosis') chain = 'gnosischain';
+	try {
+		const experimentalPrices = await fetchTimeout(`https://api.dexscreener.com/latest/dex/tokens/${token}`, 1.5e3).then(
+			(res) => res.json()
+		);
+
+		let weightedPrice = 0;
+		let totalLiquidity = 0;
+
+		experimentalPrices.pairs.forEach((pair: DexScreenerTokenPair) => {
+			const { priceUsd, liquidity, chainId, baseToken } = pair;
+			if (baseToken.address === ethers.utils.getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
+				if (totalLiquidity !== 0) {
+					const avgPrice = weightedPrice / totalLiquidity;
+					const priceDiff = Math.abs(Number(priceUsd) - avgPrice) / avgPrice;
+					if (0.9 > priceDiff || priceDiff > 1.1) {
+						throw new Error('Large price deviation');
+					}
+				}
+				weightedPrice += Number(priceUsd) * liquidity.usd;
+				totalLiquidity += liquidity.usd;
+			}
+		});
+
+		return totalLiquidity > 0 ? weightedPrice / totalLiquidity : undefined;
+	} catch (error) {
+		console.log(error);
+		return undefined;
+	}
+};
 
 export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPriceProps) {
 	try {
@@ -125,11 +132,7 @@ export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPric
 	return useQuery<IPrice>(['gasPrice', chain, fromToken, toToken], () => getPrice({ chain, fromToken, toToken }), {
 		...(skipRefetch
 			? {
-					refetchOnMount: false,
-					refetchInterval: 5 * 60 * 1000, // 5 minutes
-					refetchOnWindowFocus: false,
-					refetchOnReconnect: false,
-					refetchIntervalInBackground: false
+					staleTime: 5 * 60 * 1000
 			  }
 			: { refetchInterval: 20_000 })
 	});

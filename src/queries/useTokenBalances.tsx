@@ -1,22 +1,41 @@
 import { useQuery } from '@tanstack/react-query';
 import type { IToken } from '~/types';
 
-type ChainId = number | string;
-type Balances = Record<ChainId, Array<IToken>>;
+type Balances = Record<string, any>;
 
-const getBalances = async (address) => {
-	if (!address) return {};
+function scramble(str: string) {
+	return str.split('').reduce((a, b) => {
+		return a + String.fromCharCode(b.charCodeAt(0) + 2);
+	}, '');
+}
 
-	const balances = await fetch(`https://api.llamafolio.com/balances/${address}/tokens`).then((r) => r.json());
+const getBalances = async (address, chain) => {
+	if (!address || !chain) return [];
 
-	return balances.chains.reduce((acc, chain) => {
-		acc = { ...acc, [chain.chainId]: chain.balances };
-		return acc;
-	}, {});
+	const balances: any = await fetch(
+		`https://covalent-api.blastapi.io/${scramble(
+			'd51c17d5+3065+23a4+6c._+_1.6.`0a3137'
+		)}/v1/${chain}/address/${address}/balances_v2/`
+	).then((r) => r.json());
+
+	return balances.data.items.reduce((all: Balances, t: any) => {
+		const address =
+			t.contract_address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+				? '0x0000000000000000000000000000000000000000'
+				: t.contract_address;
+		all[address.toLowerCase()] = {
+			decimals: t.contract_decimals,
+			symbol: t.contract_ticker_symbol ?? 'UNKNOWN',
+			price: t.quote_rate,
+			amount: t.balance,
+			balanceUSD: t.quote ?? 0
+		};
+		return all;
+	}, {} as Balances);
 };
 
-export const useTokenBalances = (address) => {
-	return useQuery<Balances>(['balances', address], () => getBalances(address), {
-		refetchInterval: 20_000
+export const useTokenBalances = (address, chain) => {
+	return useQuery<Balances>(['balances', address, chain], () => getBalances(address, chain), {
+		staleTime: 60 * 1000
 	});
 };
