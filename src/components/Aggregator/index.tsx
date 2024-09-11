@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useFeeData, useQueryClient, useSignTypedData, useSwitchNetwork, useToken } from 'wagmi';
+import { useAccount, useFeeData, useSignTypedData, useSwitchChain, useToken } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
@@ -317,9 +317,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	// wallet stuff
 	const { address, isConnected, chain: chainOnWallet } = useAccount();
 	const { openConnectModal } = useConnectModal();
-	const { switchNetwork } = useSwitchNetwork();
+	const { switchChain } = useSwitchChain();
 	const addRecentTransaction = useAddRecentTransaction();
-	const wagmiClient = useQueryClient();
 	const { signTypedDataAsync } = useSignTypedData();
 
 	// swap input fields and selected aggregator states
@@ -613,7 +612,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				{ shallow: true }
 			)
 			.then(() => {
-				if (switchNetwork) switchNetwork(newChain.chainId);
+				if (switchChain) switchChain(newChain.chainId);
 			});
 	};
 	const onFromTokenChange = (token) => {
@@ -687,8 +686,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
-			balance?.refetch() ||
-				wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
+			balance?.refetch();
 			toTokenBalance?.refetch();
 		}
 	};
@@ -1138,7 +1136,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								Connect Wallet
 							</Button>
 						) : !isValidSelectedChain ? (
-							<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
+							<Button colorScheme={'messenger'} onClick={() => switchChain(selectedChain.id)}>
 								Switch Network
 							</Button>
 						) : insufficientBalance ? (
@@ -1413,7 +1411,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 											<ConnectButton />
 										</ConnectButtonWrapper>
 									) : !isValidSelectedChain ? (
-										<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
+										<Button colorScheme={'messenger'} onClick={() => switchChain(selectedChain.id)}>
 											Switch Network
 										</Button>
 									) : (
