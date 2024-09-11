@@ -1,6 +1,5 @@
-import { Chain } from 'wagmi';
+import { Chain } from 'viem';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
-import { rpcsMap as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
 
 const okx = {
 	id: 66,
@@ -668,7 +667,7 @@ const scroll = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://rpc.scroll.io'
+		default: { http: ['https://rpc.scroll.io'] }
 	},
 	blockExplorers: {
 		default: { name: 'ScrollScan', url: 'https://scrollscan.com/' }
@@ -677,7 +676,9 @@ const scroll = {
 };
 
 interface IChain extends Chain {
+	network: string;
 	iconUrl: string;
+	iconBackground: string;
 }
 
 export const allChains: Array<IChain> = [
@@ -702,8 +703,8 @@ export const allChains: Array<IChain> = [
 	heco,
 	boba,
 	okx,
-	bttc,
-	dogechain,
+	// bttc,
+	// dogechain,
 	moonbeam,
 	fuse,
 	oasis,
@@ -714,4 +715,4 @@ export const allChains: Array<IChain> = [
 	velas,
 	harmony,
 	scroll
-].map((chain) => ({ ...chain, rpcUrls: { ...chain.rpcUrls, ...(rpcsUrlsMap[chain.id] || {}) } }));
+];

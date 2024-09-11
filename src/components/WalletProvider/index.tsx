@@ -4,8 +4,8 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { WagmiProvider } from 'wagmi';
 
 import styled from 'styled-components';
-import { allChains } from './chains';
 import { rpcsTransports } from '../Aggregator/rpcs';
+import { allChains } from './chains';
 
 const Provider = styled.div`
 	width: 100%;

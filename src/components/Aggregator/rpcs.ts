@@ -28,7 +28,7 @@ function createProvider(name: string, defaultRpc: string, chainId: number, rando
 	}
 }
 
-export const rpcUrls = {
+export const rpcUrls: Record<number, Record<string, string>> = {
 	1: {
 		default: 'https://rpc.ankr.com/eth',
 		ankr: 'https://rpc.ankr.com/eth',
@@ -140,7 +140,7 @@ export const rpcUrls = {
 		blockscout: 'https://blockscout.com/etc/mainnet/api/eth-rpc'
 	},
 	200: {
-		default: '200'
+		default: 'https://arbitrum.xdaichain.com'
 	},
 	24: {
 		default: 'https://rpc.kardiachain.io'

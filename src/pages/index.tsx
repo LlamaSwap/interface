@@ -35,9 +35,7 @@ export default function Aggregator(props) {
 	];
 	return (
 		<Layout title={`Meta-dex aggregator - DefiLlama`} defaultSEO>
-			<div style={{ display: 'flex', justifyContent: 'center' }}>
-				<Tabs tabs={tabData} />
-			</div>
+			<div style={{ display: 'flex', justifyContent: 'center' }}>{/* <Tabs tabs={tabData} /> */}</div>
 		</Layout>
 	);
 }
