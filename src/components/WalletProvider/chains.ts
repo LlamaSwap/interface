@@ -1,5 +1,6 @@
 import { Chain } from 'wagmi';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
+import { rpcsMap as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
 
 const okx = {
 	id: 66,
