@@ -63,17 +63,17 @@ const useGetAllowance = ({
 		refetch,
 		isLoading,
 		error: errorFetchingAllowance
-	} = useQuery(
-		['token-allowance', address, token, chain, spender],
-		() =>
+	} = useQuery({
+		queryKey: ['token-allowance', address, token, chain, spender],
+		queryFn: () =>
 			getAllowance({
 				token,
 				chain,
 				address,
 				spender
 			}),
-		{ retry: 2 }
-	);
+		retry: 2
+	});
 
 	const shouldRemoveApproval =
 		isOld &&

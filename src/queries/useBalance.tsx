@@ -78,14 +78,12 @@ export const useBalance = ({
 		staleTime: 10 * 1000
 	});
 
-	const queryData = useQuery(
-		['balance', address, chainId, token, wagmiData.isLoading || wagmiData.data ? false : true],
-		() => getBalance({ address, chainId, token }),
-		{
-			refetchInterval: 10_000,
-			enabled: isEnabled && !wagmiData.isLoading && !wagmiData.data
-		}
-	);
+	const queryData = useQuery({
+		queryKey: ['balance', address, chainId, token, wagmiData.isLoading || wagmiData.data ? false : true],
+		queryFn: () => getBalance({ address, chainId, token }),
+		refetchInterval: 10_000,
+		enabled: isEnabled && !wagmiData.isLoading && !wagmiData.data
+	});
 
 	// when token is undefined/null, wagmi tries fetch users chain token (for ex :ETH) balance, even though is isEnabled is false
 	// so hardcode data to null

@@ -171,9 +171,17 @@ export const useGetInitialTokenLiquidity = ({
 	toTokenPrice,
 	gasPriceData
 }: IGetInitialTokenLiquidity) => {
-	return useQuery(
-		['initialLiquidity', chain, fromToken?.address, toToken?.address, gasTokenPrice, fromTokenPrice, toTokenPrice],
-		() =>
+	return useQuery({
+		queryKey: [
+			'initialLiquidity',
+			chain,
+			fromToken?.address,
+			toToken?.address,
+			gasTokenPrice,
+			fromTokenPrice,
+			toTokenPrice
+		],
+		queryFn: () =>
 			getInitialLiquidityRoutes({
 				chain: chain,
 				fromToken,
@@ -183,14 +191,12 @@ export const useGetInitialTokenLiquidity = ({
 				toTokenPrice,
 				gasPriceData
 			}),
-		{
-			refetchOnMount: false,
-			refetchInterval: 5 * 60 * 1000, // 5 minutes
-			refetchOnWindowFocus: false,
-			refetchOnReconnect: false,
-			refetchIntervalInBackground: false
-		}
-	);
+		refetchOnMount: false,
+		refetchInterval: 5 * 60 * 1000, // 5 minutes
+		refetchOnWindowFocus: false,
+		refetchOnReconnect: false,
+		refetchIntervalInBackground: false
+	});
 };
 
 interface ITokensLiquidity extends IGetInitialTokenLiquidity {

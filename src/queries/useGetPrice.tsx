@@ -129,11 +129,13 @@ export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPric
 }
 
 export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPriceProps) {
-	return useQuery<IPrice>(['gasPrice', chain, fromToken, toToken], () => getPrice({ chain, fromToken, toToken }), {
+	return useQuery<IPrice>({
+		queryKey: ['gasPrice', chain, fromToken, toToken],
+		queryFn: () => getPrice({ chain, fromToken, toToken }),
 		...(skipRefetch
 			? {
 					staleTime: 5 * 60 * 1000
-			  }
+				}
 			: { refetchInterval: 20_000 })
 	});
 }

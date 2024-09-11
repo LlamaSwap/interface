@@ -17,7 +17,9 @@ export async function getMcap({ id }: IGetMcap) {
 }
 
 export function useGetMcap({ id }: IGetMcap) {
-	return useQuery(['mcap', id], () => getMcap({ id }), {
+	return useQuery({
+		queryKey: ['mcap', id],
+		queryFn: () => getMcap({ id }),
 		staleTime: 5 * 60 * 1000
 	});
 }

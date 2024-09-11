@@ -35,7 +35,7 @@ export const estimateGas = async ({ route, token, userAddress, chain, balance })
 							'0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 						)),
 						from: userAddress
-				  };
+					};
 			const resetApproveTx = isNative
 				? null
 				: await tokenContract.populateTransaction.approve(route.price.tokenApprovalAddress, ethers.constants.HashZero);
@@ -102,7 +102,7 @@ export const useEstimateGas = ({
 			?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
 			.reduce((acc, r) => ({ ...acc, [r.data.name]: r.data }), {} as Record<string, EstimationRes>) ?? {};
 	return {
-		isLoading: res.some((r) => r.status === 'loading') || traceRpcs[chain] === undefined,
+		isLoading: res.some((r) => r.status === 'pending') || traceRpcs[chain] === undefined,
 		data
 	};
 };

@@ -153,7 +153,7 @@ export function useGetRoutes({
 	const loadingRoutes =
 		res
 			?.map((r, i) => [adapters[i].name, r])
-			?.filter((r: [string, UseQueryResult<IRoute>]) => r[1].status === 'loading') ?? [];
+			?.filter((r: [string, UseQueryResult<IRoute>]) => r[1].status === 'pending') ?? [];
 
 	return {
 		isLoaded: loadingRoutes.length === 0,

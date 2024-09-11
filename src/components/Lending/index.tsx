@@ -85,16 +85,14 @@ const customTokens = [
 	}
 ];
 const useGetPrices = (tokens) => {
-	const res = useQuery(
-		['getPrices', tokens],
-		async () => {
+	const res = useQuery({
+		queryKey: ['getPrices', tokens],
+		queryFn: async () => {
 			const prices = await fetch(`https://coins.llama.fi/prices/current/${tokens.join(',')}`).then((res) => res.json());
 			return prices;
 		},
-		{
-			enabled: tokens?.length > 0
-		}
-	);
+		enabled: tokens?.length > 0
+	});
 	return { ...res, data: res?.data?.coins };
 };
 
@@ -251,7 +249,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 							? 1
 							: prices?.[
 									`${mapChainName(lendPool?.chain?.toLowerCase())}:${lendPool?.underlyingTokens?.[0]?.toLowerCase()}`
-							  ]?.price;
+								]?.price;
 
 					const borrowTokenPrice =
 						selectedBorrowToken === 'STABLES' || borrowPool?.category === 'CDP'
@@ -260,7 +258,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 									`${mapChainName(
 										borrowPool?.chain?.toLowerCase()
 									)}:${borrowPool?.underlyingTokens?.[0]?.toLowerCase()}`
-							  ]?.price;
+								]?.price;
 
 					const parsedLendAmount = amountToLend.replace(/\s/g, '');
 					const lendUsdAmount = parsedLendAmount ? lendTokenPrice * parseFloat(parsedLendAmount) : null;
@@ -372,7 +370,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 												label: chain,
 												value: chain,
 												logoURI: chain.includes('All Chains') ? false : chainIconUrl(chain)
-										  }))
+											}))
 										: null
 								}
 								onChange={(selectedChain: Array<Record<string, string>>) => {
