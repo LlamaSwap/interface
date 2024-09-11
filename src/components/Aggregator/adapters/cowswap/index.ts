@@ -1,13 +1,14 @@
 // Source: https://docs.cow.fi/off-chain-services/api
 
 import { ExtraData } from '../../types';
-import { domain, SigningScheme, signOrder, OrderKind } from '@gnosis.pm/gp-v2-contracts';
+import { domain, SigningScheme, signOrder } from '@gnosis.pm/gp-v2-contracts';
 import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainnet/GPv2Settlement.json';
 
 import { ethers } from 'ethers';
 import { ABI } from './abi';
 import BigNumber from 'bignumber.js';
 import { chainsMap } from '../../constants';
+import { zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
@@ -51,8 +52,8 @@ const waitForOrder = (uid, provider, trader) => async (onSuccess) => {
 
 // https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/2.-query-the-fee-endpoint
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
-	const isEthflowOrder = from === ethers.constants.AddressZero;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const isEthflowOrder = from === zeroAddress;
+	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const tokenFrom = isEthflowOrder ? wrappedTokens[chain] : from;
 	const isBuyOrder = extra.amountOut && extra.amountOut !== '0';
 
@@ -114,10 +115,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ chain, signer, rawQuote, from, to }) {
-	const fromAddress = await signer.getAddress();
-
-	if (from === ethers.constants.AddressZero) {
+export async function swap({ chain, fromAddress, rawQuote, from, to }) {
+	if (from === zeroAddress) {
 		const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer);
 
 		if (rawQuote.slippage < 2) {

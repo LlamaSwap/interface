@@ -1,6 +1,6 @@
 import * as matcha from './adapters/0x';
 import * as inch from './adapters/1inch';
-import * as cowswap from './adapters/cowswap';
+// import * as cowswap from './adapters/cowswap';
 //import * as firebird from './adapters/firebird';
 import * as kyberswap from './adapters/kyberswap';
 //import * as hashflow from './adapters/hashflow';
@@ -12,14 +12,16 @@ import * as paraswap from './adapters/paraswap';
 // import * as unidex from "./adapters/unidex" - disabled, their api is broken
 // import * as airswap from './adapters/airswap' cors
 import * as odos from './adapters/odos';
-import * as yieldyak from './adapters/yieldyak';
+// import * as yieldyak from './adapters/yieldyak';
 import * as llamazip from './adapters/llamazip';
 // import * as krystal from './adapters/krystal'
 import * as matchaGasless from './adapters/0xGasless';
 
-export const adapters = [matcha, inch, cowswap, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless];
+// TODO fix cowswap, yieldyak
+export const adapters = [matcha, inch, paraswap, llamazip, kyberswap, odos, matchaGasless];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name, matchaGasless.name];
+// cowswap.name
+export const inifiniteApprovalAllowed = [matcha.name, inch.name, paraswap.name, matchaGasless.name];
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,

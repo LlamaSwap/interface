@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
+import { zeroAddress } from 'viem';
 
 export const chainToId = {
 	//ethereum: 1,
@@ -63,7 +63,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}/swap?inTokenAddress=${from}&outTokenAddress=${to}&amount=${amount}&gasPrice=${
 			gasPrice.fast?.maxFeePerGas ?? gasPrice.fast
 		}&slippage=${+slippage * 100}&account=${
-			userAddress || ethers.constants.AddressZero
+			userAddress || zeroAddress
 		}&referrer=0x5521c3dfd563d48ca64e132324024470f3498526`
 	).then((r) => r.json());
 
@@ -81,8 +81,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ signer, rawQuote, chain }) {
-	const tx = await sendTx(signer, chain, {
+export async function swap({ rawQuote, chain }) {
+	const tx = await sendTx({
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,

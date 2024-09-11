@@ -1,10 +1,11 @@
 import { chainsMap } from './constants';
 import { getAllChains } from './router';
 import { adapters } from './list';
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber } from 'ethers';
 import { redirectQuoteReq } from './adapters/utils';
 import { nativeTokens } from './nativeTokens';
 import { getTokenList } from '~/props/getTokenList';
+import { zeroAddress } from 'viem';
 
 /*
 Test matrix
@@ -54,7 +55,7 @@ export async function testAdapters(addTest: (test: any) => void) {
 			await Promise.all(
 				tokenCombinations.map(async (tokens) => {
 					const fromAddresses = [
-						ethers.constants.AddressZero,
+						zeroAddress,
 						'0x000000000000000000000000000000000000dEaD' // Just used as a random address that has tokens (so we dont get balance errors)
 					];
 					await Promise.all(
@@ -83,7 +84,7 @@ export async function testAdapters(addTest: (test: any) => void) {
 												chain,
 												from: fromToken.symbol,
 												to: toToken.symbol,
-												userAddress: userAddress === ethers.constants.AddressZero,
+												userAddress: userAddress === zeroAddress,
 												privacy: extra.isPrivacyEnabled,
 												adapter: adapter.name
 											};

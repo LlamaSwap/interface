@@ -20,7 +20,8 @@ export const config = getDefaultConfig({
 	appName: 'LlamaSwap',
 	projectId,
 	chains: allChains as any,
-	transports: rpcsTransports
+	transports: rpcsTransports,
+	ssr: false
 });
 
 export const WalletWrapper = ({ children }: { children: React.ReactNode }) => {

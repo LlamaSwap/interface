@@ -6,7 +6,7 @@ import type { IToken } from '~/types';
 import { getAdapterRoutes } from './useGetRoutes';
 import { getTopRoute } from '~/utils/getTopRoute';
 import { useMemo } from 'react';
-import { ethers } from 'ethers';
+import { zeroAddress } from 'viem';
 
 async function getInitialLiquidityRoutes({
 	chain,
@@ -136,7 +136,7 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, fro
 							amount: amount.toString(),
 							fromToken,
 							toToken,
-							userAddress: ethers.constants.AddressZero
+							userAddress: zeroAddress
 						}
 					})
 				)

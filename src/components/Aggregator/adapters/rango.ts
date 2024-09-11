@@ -1,8 +1,8 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import { providers } from '../rpcs';
+import { zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 'ETH',
@@ -30,19 +30,19 @@ export async function getQuote(
 	// amount should include decimals
 
 	const tokenFrom =
-		fromToken.address === ethers.constants.AddressZero
+		fromToken.address === zeroAddress
 			? `${chainToId[chain]}.${fromToken.symbol}`
 			: `${chainToId[chain]}.${fromToken.symbol}--${fromToken.address}`;
 	const tokenTo =
-		toToken.address === ethers.constants.AddressZero
+		toToken.address === zeroAddress
 			? `${chainToId[chain]}.${toToken.symbol}`
 			: `${chainToId[chain]}.${toToken.symbol}--${toToken.address}`;
 	const params = new URLSearchParams({
 		from: tokenFrom,
 		to: tokenTo,
 		amount: amount,
-		fromAddress: userAddress || ethers.constants.AddressZero,
-		toAddress: userAddress || ethers.constants.AddressZero,
+		fromAddress: userAddress || zeroAddress,
+		toAddress: userAddress || zeroAddress,
 		disableEstimate: 'true',
 		apiKey: 'c0ed54c0-e85c-4547-8e11-7ff88775b90c',
 		slippage: slippage || '1'

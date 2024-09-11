@@ -1,17 +1,7 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import {
-	useAccount,
-	useFeeData,
-	useNetwork,
-	useQueryClient,
-	useSigner,
-	useSignTypedData,
-	useSwitchNetwork,
-	useToken
-} from 'wagmi';
+import { useAccount, useFeeData, useQueryClient, useSignTypedData, useSwitchNetwork, useToken } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
-import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
 import styled from 'styled-components';
@@ -70,6 +60,7 @@ import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chak
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
+import { zeroAddress } from 'viem';
 
 /*
 Integrated:
@@ -324,9 +315,7 @@ const chains = getAllChains();
 
 export function AggregatorContainer({ tokenList, sandwichList }) {
 	// wallet stuff
-	const { data: signer } = useSigner();
-	const { address, isConnected } = useAccount();
-	const { chain: chainOnWallet } = useNetwork();
+	const { address, isConnected, chain: chainOnWallet } = useAccount();
 	const { openConnectModal } = useConnectModal();
 	const { switchNetwork } = useSwitchNetwork();
 	const addRecentTransaction = useAddRecentTransaction();
@@ -404,7 +393,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						}?h=20&w=20`,
 						chainId: selectedChain.id || 1,
 						geckoId: null
-				  }
+					}
 				: selectedFromToken;
 
 		const finalSelectedToToken: IToken =
@@ -421,7 +410,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 						}?h=20&w=20`,
 						chainId: selectedChain.id || 1,
 						geckoId: null
-				  }
+					}
 				: selectedToToken;
 
 		return { finalSelectedFromToken, finalSelectedToToken };
@@ -487,7 +476,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		disabledAdapters,
 		extra: {
 			gasPriceData,
-			userAddress: address || ethers.constants.AddressZero,
+			userAddress: address || zeroAddress,
 			amount: debouncedAmount,
 			fromToken: finalSelectedFromToken,
 			toToken: finalSelectedToToken,
@@ -513,7 +502,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
 
 	// format routes
-	const fillRoute = (route: typeof routes[0]) => {
+	const fillRoute = (route: (typeof routes)[0]) => {
 		if (!route?.price) return null;
 		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
 			? gasData?.[route.name]?.gas
@@ -522,7 +511,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 		// CowSwap native token swap
 		gasUsd =
-			route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
+			route.price.feeAmount && finalSelectedFromToken.address === zeroAddress
 				? (route.price.feeAmount / 1e18) * gasTokenPrice + gasUsd
 				: gasUsd;
 
@@ -569,9 +558,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			}
 			return isOutputTrade
 				? typeof a.amountInUsd === 'number' &&
-				  typeof a.gasUsd === 'number' &&
-				  typeof b.amountInUsd === 'number' &&
-				  typeof b.gasUsd === 'number'
+					typeof a.gasUsd === 'number' &&
+					typeof b.amountInUsd === 'number' &&
+					typeof b.gasUsd === 'number'
 					? a.amountInUsd + a.gasUsd - (b.amountInUsd + b.gasUsd)
 					: Number(a.amountIn) - Number(b.amountIn)
 				: b.netOut - a.netOut;
@@ -599,7 +588,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				selectedRoute &&
 				selectedRoute.price.estimatedGas &&
 				gasPriceData?.formatted?.gasPrice &&
-				finalSelectedFromToken?.address === ethers.constants.AddressZero
+				finalSelectedFromToken?.address === zeroAddress
 			) {
 				const gas = (+selectedRoute.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
 
@@ -618,7 +607,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			.push(
 				{
 					pathname: '/',
-					query: { ...router.query, chain: newChain.value, from: ethers.constants.AddressZero, to: undefined }
+					query: { ...router.query, chain: newChain.value, from: zeroAddress, to: undefined }
 				},
 				undefined,
 				{ shallow: true }
@@ -767,7 +756,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			amount: string | number;
 			amountIn: string;
 			adapter: string;
-			signer: ethers.Signer;
+			fromAddress: string;
 			signTypedDataAsync: typeof signTypedDataAsync;
 			slippage: string;
 			rawQuote: any;
@@ -953,7 +942,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
 				to: finalSelectedToToken.value,
-				signer,
+				fromAddress: address,
 				signTypedDataAsync,
 				slippage,
 				adapter: selectedRoute.name,
@@ -979,12 +968,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const pairSandwichData =
 		sandwichList?.[selectedChain?.value]?.[
 			normalizeTokens(
-				finalSelectedFromToken?.address === ethers.constants.AddressZero
-					? WETH[selectedChain?.value]
-					: finalSelectedFromToken?.address,
-				finalSelectedToToken?.address === ethers.constants.AddressZero
-					? WETH[selectedChain?.value]
-					: finalSelectedToToken?.address
+				finalSelectedFromToken?.address === zeroAddress ? WETH[selectedChain?.value] : finalSelectedFromToken?.address,
+				finalSelectedToToken?.address === zeroAddress ? WETH[selectedChain?.value] : finalSelectedToToken?.address
 			).join('')
 		];
 
@@ -995,7 +980,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const warnings = [
 		aggregator === 'CowSwap' ? (
 			<>
-				{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 2 ? (
+				{finalSelectedFromToken.value === zeroAddress && Number(slippage) < 2 ? (
 					<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow1">
 						<AlertIcon />
 						Swaps from {finalSelectedFromToken.symbol} on CowSwap need to have slippage higher than 2%.
@@ -1004,7 +989,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow2">
 					<AlertIcon />
 					CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
-					{finalSelectedFromToken.value === ethers.constants.AddressZero ? (
+					{finalSelectedFromToken.value === zeroAddress ? (
 						<>
 							<br /> For ETH orders, if it doesn't get executed the ETH will be returned to your wallet in 30 minutes.
 						</>
@@ -1257,10 +1242,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													{!selectedRoute
 														? 'Select Aggregator'
 														: isApproved
-														? `Swap via ${selectedRoute.name}`
-														: slippageIsWorng
-														? 'Set Slippage'
-														: 'Approve'}
+															? `Swap via ${selectedRoute.name}`
+															: slippageIsWorng
+																? 'Set Slippage'
+																: 'Approve'}
 												</Button>
 											)}
 
@@ -1515,10 +1500,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																{!selectedRoute
 																	? 'Select Aggregator'
 																	: isApproved
-																	? `Swap via ${selectedRoute?.name}`
-																	: slippageIsWorng
-																	? 'Set Slippage'
-																	: 'Approve'}
+																		? `Swap via ${selectedRoute?.name}`
+																		: slippageIsWorng
+																			? 'Set Slippage'
+																			: 'Approve'}
 															</Button>
 														)}
 
@@ -1604,7 +1589,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								>
 									<LoadingRoute name={r[0] as string} />
 								</Fragment>
-						  ))
+							))
 						: null}
 				</Routes>
 			</BodyWrapper>

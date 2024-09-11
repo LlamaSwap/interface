@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { zeroAddress } from 'viem';
 
 export function getTopRoute({ routes, gasPriceData, gasTokenPrice, fromToken, toToken, toTokenPrice }) {
 	const sortedRoutes = routes
@@ -11,7 +11,7 @@ export function getTopRoute({ routes, gasPriceData, gasTokenPrice, fromToken, to
 
 				// CowSwap native token swap
 				gasUsd =
-					route.price.feeAmount && fromToken.address === ethers.constants.AddressZero
+					route.price.feeAmount && fromToken.address === zeroAddress
 						? (Number(route.price.feeAmount) / 1e18) * gasTokenPrice
 						: gasUsd;
 				const amount = +route.price.amountReturned / 10 ** +toToken?.decimals;

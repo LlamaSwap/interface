@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { ExtraData } from '../types';
 import { sendTx } from '../utils/sendTx';
+import { zeroAddress } from 'viem';
 
 // https://docs.kyberswap.com/Aggregator/aggregator-api#tag/swap/operation/get-route-encode
 export const chainToId = {
@@ -36,8 +36,8 @@ export function approvalAddress() {
 const nativeToken = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenFrom = from === zeroAddress ? nativeToken : from;
+	const tokenTo = to === zeroAddress ? nativeToken : to;
 
 	const data = await fetch(
 		`https://aggregator-api.kyberswap.com/${
@@ -66,12 +66,10 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ signer, from, rawQuote, chain }) {
+export async function swap({ fromAddress, from, rawQuote, chain }) {
 	if (rawQuote.slippage < 0.01) {
 		throw { reason: "Kyberswap doesn't support slippage below 0.01%" };
 	}
-
-	const fromAddress = await signer.getAddress();
 
 	const transactionOption: Record<string, string> = {
 		from: fromAddress,
@@ -80,9 +78,9 @@ export async function swap({ signer, from, rawQuote, chain }) {
 		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
 	};
 
-	if (from === ethers.constants.AddressZero) transactionOption.value = rawQuote.inputAmount;
+	if (from === zeroAddress) transactionOption.value = rawQuote.inputAmount;
 
-	const tx = await sendTx(signer, chain, transactionOption);
+	const tx = await sendTx(transactionOption);
 
 	return tx;
 }

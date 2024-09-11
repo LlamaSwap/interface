@@ -1,6 +1,6 @@
-import { ethers } from 'ethers';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import { zeroAddress } from 'viem';
 import { useAccount } from 'wagmi';
 import { getAllChains } from '~/components/Aggregator/router';
 
@@ -25,7 +25,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: chain.value, from: ethers.constants.AddressZero, tab: 'swap' }
+						query: { ...query, chain: chain.value, from: zeroAddress, tab: 'swap' }
 					},
 					undefined,
 					{ shallow: true }
@@ -35,7 +35,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: 'ethereum', from: ethers.constants.AddressZero, tab: 'swap' }
+						query: { ...query, chain: 'ethereum', from: zeroAddress, tab: 'swap' }
 					},
 					undefined,
 					{ shallow: true }

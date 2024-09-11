@@ -1,9 +1,11 @@
 import { BigNumber, ethers } from 'ethers';
 import { useState } from 'react';
-import { erc20ABI, useAccount, useContractWrite, useNetwork, usePrepareContractWrite } from 'wagmi';
+import { useAccount, useContractWrite, usePrepareContractWrite } from 'wagmi';
 import { nativeAddress } from '../constants';
 import { providers } from '../rpcs';
 import { useQuery } from '@tanstack/react-query';
+import { zeroAddress, erc20Abi } from 'viem';
+import { arbitrum, fantom } from 'viem/chains';
 
 // To change the approve amount you first have to reduce the addresses`
 //  allowance to zero by calling `approve(_spender, 0)` if it is not
@@ -14,9 +16,9 @@ const oldErc = [
 	'0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32'.toLowerCase() // LDO
 ];
 
-const chainsWithDefaltGasLimit = {
-	fantom: true,
-	arbitrum: true
+const chainsWithDefaultGasLimit = {
+	[fantom.id]: true,
+	[arbitrum.id]: true
 };
 
 async function getAllowance({
@@ -30,12 +32,12 @@ async function getAllowance({
 	address?: `0x${string}`;
 	spender?: `0x${string}`;
 }) {
-	if (!spender || !token || !address || token === ethers.constants.AddressZero) {
+	if (!spender || !token || !address || token === zeroAddress) {
 		return null;
 	}
 	try {
 		const provider = providers[chain];
-		const tokenContract = new ethers.Contract(token, erc20ABI, provider);
+		const tokenContract = new ethers.Contract(token, erc20Abi, provider);
 		const allowance = await tokenContract.allowance(address, spender);
 		return allowance;
 	} catch (error) {
@@ -106,9 +108,8 @@ export const useTokenApprove = ({
 	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
 	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
 	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);
-	const network = useNetwork();
 
-	const { address, isConnected } = useAccount();
+	const { address, isConnected, chain: chainOnWallet } = useAccount();
 
 	const {
 		allowance,
@@ -127,20 +128,20 @@ export const useTokenApprove = ({
 
 	const { config, data } = usePrepareContractWrite({
 		address: token,
-		abi: erc20ABI,
+		abi: erc20Abi,
 		functionName: 'approve',
 		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token && normalizedAmount !== '0'
 	});
 
 	const customGasLimit =
-		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaltGasLimit[network.chain.network]
+		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaultGasLimit[chainOnWallet.id]
 			? null
 			: { gasLimit: data?.request?.gasLimit.mul(140).div(100) };
 
 	const { config: configInfinite } = usePrepareContractWrite({
 		address: token,
-		abi: erc20ABI,
+		abi: erc20Abi,
 		functionName: 'approve',
 		args: [spender, ethers.constants.MaxUint256],
 		enabled: isConnected && !!spender && !!token
@@ -148,7 +149,7 @@ export const useTokenApprove = ({
 
 	const { config: configReset } = usePrepareContractWrite({
 		address: token,
-		abi: erc20ABI,
+		abi: erc20Abi,
 		functionName: 'approve',
 		args: [spender, BigNumber.from('0')],
 		enabled: isConnected && !!spender && !!token && shouldRemoveApproval
@@ -205,8 +206,7 @@ export const useTokenApprove = ({
 		}
 	});
 
-	if (token === ethers.constants.AddressZero || token?.toLowerCase() === nativeAddress.toLowerCase())
-		return { isApproved: true };
+	if (token === zeroAddress || token?.toLowerCase() === nativeAddress.toLowerCase()) return { isApproved: true };
 
 	if (!address || !allowance) return { isApproved: false, errorFetchingAllowance };
 

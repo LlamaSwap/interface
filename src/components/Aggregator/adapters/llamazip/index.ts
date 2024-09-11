@@ -3,6 +3,7 @@ import { providers } from '../../rpcs';
 import { sendTx } from '../../utils/sendTx';
 import { encode } from './encode';
 import { normalizeTokens, pairs } from './pairs';
+import { zeroAddress } from 'viem';
 
 export const name = 'LlamaZip';
 export const token = 'none';
@@ -24,7 +25,7 @@ const weth = {
 };
 
 function normalize(token: string, weth: string) {
-	return (token === ethers.constants.AddressZero ? weth : token).toLowerCase();
+	return (token === zeroAddress ? weth : token).toLowerCase();
 }
 
 // https://docs.uniswap.org/sdk/v3/guides/quoting
@@ -74,7 +75,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const pair = bestPair.pair;
 	const quotedAmountOut = bestPair.output;
 
-	const inputIsETH = from === ethers.constants.AddressZero;
+	const inputIsETH = from === zeroAddress;
 	const calldata = encode(pair.pairId, token0isTokenIn, quotedAmountOut, extra.slippage, inputIsETH, false, amount);
 	if (calldata.length > 256 / 4 + 2) {
 		return {}; // LlamaZip doesn't support calldata that's bigger than one EVM word
@@ -95,10 +96,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ signer, rawQuote, chain }) {
-	const fromAddress = await signer.getAddress();
-
-	const tx = await sendTx(signer, chain, {
+export async function swap({ fromAddress, rawQuote }) {
+	const tx = await sendTx({
 		from: fromAddress,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,

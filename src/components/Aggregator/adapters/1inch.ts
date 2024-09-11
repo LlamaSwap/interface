@@ -1,9 +1,11 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
-import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { altReferralAddress } from '../constants';
 import { sendTx } from '../utils/sendTx';
+import { estimateGas } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
+import { zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 1,
@@ -49,8 +51,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
 
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenFrom = from === zeroAddress ? nativeToken : from;
+	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const authHeader = process.env.INCH_API_KEY ? { 'auth-key': process.env.INCH_API_KEY } : {};
 	const tokenApprovalAddress = spenders[chain];
 
@@ -59,11 +61,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			`https://api-defillama.1inch.io/v5.2/${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
 			{ headers: authHeader }
 		).then((r) => r.json()),
-		extra.userAddress !== ethers.constants.AddressZero
+		extra.userAddress !== zeroAddress
 			? fetch(
 					`https://api-defillama.1inch.io/v5.2/${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
 					{ headers: authHeader }
-			  ).then((r) => r.json())
+				).then((r) => r.json())
 			: null
 	]);
 
@@ -83,17 +85,18 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ signer, rawQuote, chain }) {
+export async function swap({ rawQuote }) {
 	const txObject = {
 		from: rawQuote.tx.from,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value
 	};
-	const gasPrediction = await signer.estimateGas(txObject);
-	const tx = await sendTx(signer, chain, {
+	const gasPrediction = await estimateGas(config, txObject);
+	console.log({ gasPrediction });
+	const tx = await sendTx({
 		...txObject,
-		gasLimit: gasPrediction.mul(12).div(10).add(86000) // Increase gas +20% + 2 erc20 txs
+		gasLimit: (gasPrediction * 12n) / 10n + 86000n // Increase gas +20% + 2 erc20 txs
 	});
 	return tx;
 }

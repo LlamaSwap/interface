@@ -1,5 +1,6 @@
 import { BigNumber, ethers } from 'ethers';
 import { defillamaReferrerAddress } from '../constants';
+import { zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: '1',
@@ -30,8 +31,8 @@ const routers = {
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// amount should include decimals
 
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenFrom = from === zeroAddress ? nativeToken : from;
+	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const amountParam =
 		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
 
@@ -104,19 +105,19 @@ export async function gaslessApprove({ signTypedDataAsync, rawQuote, isInfiniteA
 		const value = isInfiniteApproval
 			? rawQuote.approval.eip712.message
 			: rawQuote.approval.eip712.primaryType === 'Permit'
-			? {
-					...rawQuote.approval.eip712.message,
-					value: rawQuote.sellAmount
-			  }
-			: rawQuote.approval.eip712.primaryType === 'MetaTransaction'
-			? {
-					...rawQuote.approval.eip712.message,
-					functionSignature: new ethers.utils.Interface(['function approve(address, uint)']).encodeFunctionData(
-						'approve',
-						[ethers.utils.getAddress(rawQuote.allowanceTarget), BigNumber.from(rawQuote.sellAmount)]
-					)
-			  }
-			: null;
+				? {
+						...rawQuote.approval.eip712.message,
+						value: rawQuote.sellAmount
+					}
+				: rawQuote.approval.eip712.primaryType === 'MetaTransaction'
+					? {
+							...rawQuote.approval.eip712.message,
+							functionSignature: new ethers.utils.Interface(['function approve(address, uint)']).encodeFunctionData(
+								'approve',
+								[ethers.utils.getAddress(rawQuote.allowanceTarget), BigNumber.from(rawQuote.sellAmount)]
+							)
+						}
+					: null;
 
 		const approvalSignature = await signTypedDataAsync({
 			domain: rawQuote.approval.eip712.domain,

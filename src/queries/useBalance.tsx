@@ -2,7 +2,7 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { ethers } from 'ethers';
 import { getAddress } from 'ethers/lib/utils';
 import { useAccount, useBalance as useWagmiBalance } from 'wagmi';
-import { erc20Abi } from 'viem';
+import { erc20Abi, zeroAddress } from 'viem';
 import { nativeAddress } from '~/components/Aggregator/constants';
 import { rpcUrls } from '~/components/Aggregator/rpcs';
 
@@ -64,7 +64,7 @@ export const useBalance = ({
 }> => {
 	const { isConnected } = useAccount();
 
-	const tokenAddress = [ethers.constants.AddressZero, nativeAddress.toLowerCase()].includes(token?.toLowerCase())
+	const tokenAddress = [zeroAddress, nativeAddress.toLowerCase()].includes(token?.toLowerCase())
 		? null
 		: (token as `0x${string}`);
 

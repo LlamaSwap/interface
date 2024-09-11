@@ -1,9 +1,10 @@
 import BigNumber from 'bignumber.js';
-import { Contract, ethers } from 'ethers';
+import { Contract } from 'ethers';
 import { providers } from '../../rpcs';
 import { applyArbitrumFees } from '../../utils/arbitrumFees';
 import { sendTx } from '../../utils/sendTx';
 import { ABI } from './abi';
+import { zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 1
@@ -88,14 +89,14 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		rawQuote: {
 			...data,
 			gasLimit: estimatedGas,
-			tx: { ...txData, ...(from === ethers.constants.AddressZero ? { value: data.quoteData.baseTokenAmount } : {}) }
+			tx: { ...txData, ...(from === zeroAddress ? { value: data.quoteData.baseTokenAmount } : {}) }
 		},
 		isMEVSafe: true
 	};
 }
 
-export async function swap({ signer, rawQuote, chain }) {
-	const tx = await sendTx(signer, chain, {
+export async function swap({ rawQuote, chain }) {
+	const tx = await sendTx({
 		...rawQuote.tx,
 
 		...(chain === 'optimism' && { gasLimit: rawQuote.tx.gasLimit })
