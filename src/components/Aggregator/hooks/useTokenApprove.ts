@@ -1,11 +1,10 @@
-import { BigNumber, ethers } from 'ethers';
-import { useState } from 'react';
-import { useAccount, useContractWrite, usePrepareContractWrite } from 'wagmi';
-import { nativeAddress } from '../constants';
-import { providers } from '../rpcs';
-import { useQuery } from '@tanstack/react-query';
-import { zeroAddress, erc20Abi } from 'viem';
+import { useAccount, useSimulateContract } from 'wagmi';
+import { chainsMap, nativeAddress } from '../constants';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { zeroAddress, erc20Abi, maxInt256 } from 'viem';
 import { arbitrum, fantom } from 'viem/chains';
+import { readContract, waitForTransactionReceipt, writeContract } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
 
 // To change the approve amount you first have to reduce the addresses`
 //  allowance to zero by calling `approve(_spender, 0)` if it is not
@@ -19,6 +18,52 @@ const oldErc = [
 const chainsWithDefaultGasLimit = {
 	[fantom.id]: true,
 	[arbitrum.id]: true
+};
+
+async function approveTokenSpend({
+	address,
+	chain,
+	spender,
+	amount
+}: {
+	address: `0x${string}`;
+	chain: string;
+	spender: `0x${string}`;
+	amount: bigint;
+}) {
+	try {
+		// @ts-ignore
+		const hash = await writeContract(config, {
+			address,
+			abi: [
+				{
+					constant: false,
+					inputs: [
+						{ name: '_spender', type: 'address' },
+						{ name: '_value', type: 'uint256' }
+					],
+					name: 'approve',
+					outputs: [],
+					payable: false,
+					stateMutability: 'nonpayable',
+					type: 'function'
+				}
+			],
+			functionName: 'approve',
+			args: [spender, amount],
+			chainId: chainsMap[chain]
+		});
+
+		const receipt = await waitForTransactionReceipt(config, { hash });
+
+		return receipt;
+	} catch (error) {
+		throw new Error(`[TOKEN-APPROVAL]: ${error instanceof Error ? error.message : 'Failed to approve token'}`);
+	}
+}
+
+const useApproveTokenSpend = () => {
+	return useMutation({ mutationFn: approveTokenSpend });
 };
 
 async function getAllowance({
@@ -36,9 +81,14 @@ async function getAllowance({
 		return null;
 	}
 	try {
-		const provider = providers[chain];
-		const tokenContract = new ethers.Contract(token, erc20Abi, provider);
-		const allowance = await tokenContract.allowance(address, spender);
+		const allowance = await readContract(config, {
+			address: token as `0x${string}`,
+			abi: erc20Abi,
+			functionName: 'allowance',
+			args: [address, spender],
+			chainId: chainsMap[chain]
+		});
+
 		return allowance;
 	} catch (error) {
 		throw new Error(error instanceof Error ? `[Allowance]:${error.message}` : '[Allowance]: Failed to fetch allowance');
@@ -78,12 +128,7 @@ const useGetAllowance = ({
 	});
 
 	const shouldRemoveApproval =
-		isOld &&
-		allowance &&
-		amount &&
-		!Number.isNaN(Number(amount)) &&
-		allowance.lt(BigNumber.from(amount)) &&
-		!allowance.eq(0);
+		isOld && allowance && amount && !Number.isNaN(Number(amount)) && allowance < BigInt(amount) && allowance !== 0n;
 
 	return { allowance, shouldRemoveApproval, refetch, isLoading, errorFetchingAllowance };
 };
@@ -105,11 +150,7 @@ export const useTokenApprove = ({
 	amount?: string;
 	chain: string;
 }) => {
-	const [isConfirmingApproval, setIsConfirmingApproval] = useState(false);
-	const [isConfirmingInfiniteApproval, setIsConfirmingInfiniteApproval] = useState(false);
-	const [isConfirmingResetApproval, setIsConfirmingResetApproval] = useState(false);
-
-	const { address, isConnected, chain: chainOnWallet } = useAccount();
+	const { address, isConnected } = useAccount();
 
 	const {
 		allowance,
@@ -126,105 +167,80 @@ export const useTokenApprove = ({
 
 	const normalizedAmount = !Number.isNaN(Number(amount)) ? amount : '0';
 
-	const { config, data } = usePrepareContractWrite({
+	const { data } = useSimulateContract({
 		address: token,
 		abi: erc20Abi,
 		functionName: 'approve',
-		args: [spender, normalizedAmount ? BigNumber.from(normalizedAmount) : ethers.constants.MaxUint256],
+		args: [spender, normalizedAmount ? BigInt(normalizedAmount) : maxInt256],
 		enabled: isConnected && !!spender && !!token && normalizedAmount !== '0'
 	});
 
 	const customGasLimit =
-		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaultGasLimit[chainOnWallet.id]
+		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaultGasLimit[chainsMap[chain]]
 			? null
 			: { gasLimit: data?.request?.gasLimit.mul(140).div(100) };
 
-	const { config: configInfinite } = usePrepareContractWrite({
-		address: token,
-		abi: erc20Abi,
-		functionName: 'approve',
-		args: [spender, ethers.constants.MaxUint256],
-		enabled: isConnected && !!spender && !!token
-	});
+	const { mutateAsync: approveWriteContract, isPending: isLoading } = useApproveTokenSpend();
+	const approve = () => {
+		approveWriteContract({
+			address: token,
+			spender,
+			amount: normalizedAmount ? BigInt(normalizedAmount) : maxInt256,
+			chain
+		})
+			.then(() => {
+				refetch();
+			})
+			.catch((err) => console.log(err));
+	};
 
-	const { config: configReset } = usePrepareContractWrite({
-		address: token,
-		abi: erc20Abi,
-		functionName: 'approve',
-		args: [spender, BigNumber.from('0')],
-		enabled: isConnected && !!spender && !!token && shouldRemoveApproval
-	});
+	const { mutateAsync: approveInfiniteWriteContract, isPending: isInfiniteLoading } = useApproveTokenSpend();
+	const approveInfinite = () => {
+		approveInfiniteWriteContract({
+			address: token,
+			spender,
+			amount: maxInt256,
+			chain
+		})
+			.then(() => {
+				refetch();
+			})
+			.catch((err) => console.log(err));
+	};
 
-	const { write: approve, isLoading } = useContractWrite({
-		...config,
-		onSuccess: (data) => {
-			setIsConfirmingApproval(true);
-
-			data
-				.wait()
-				.then(() => {
-					refetch();
-				})
-				.catch((err) => console.log(err))
-				.finally(() => {
-					setIsConfirmingApproval(false);
-				});
-		}
-	});
-
-	const { write: approveInfinite, isLoading: isInfiniteLoading } = useContractWrite({
-		...configInfinite,
-		onSuccess: (data) => {
-			setIsConfirmingInfiniteApproval(true);
-
-			data
-				.wait()
-				.then(() => {
-					refetch();
-				})
-				.catch((err) => console.log(err))
-				.finally(() => {
-					setIsConfirmingInfiniteApproval(false);
-				});
-		}
-	});
-
-	const { write: approveReset, isLoading: isResetLoading } = useContractWrite({
-		...configReset,
-		onSuccess: (data) => {
-			setIsConfirmingResetApproval(true);
-
-			data
-				.wait()
-				.then(() => {
-					refetch();
-				})
-				.catch((err) => console.log(err))
-				.finally(() => {
-					setIsConfirmingResetApproval(false);
-				});
-		}
-	});
+	const { mutateAsync: approveResetWriteContract, isPending: isResetLoading } = useApproveTokenSpend();
+	const approveReset = () => {
+		approveResetWriteContract({
+			address: token,
+			spender,
+			amount: 0n,
+			chain
+		})
+			.then(() => {
+				refetch();
+			})
+			.catch((err) => console.log(err));
+	};
 
 	if (token === zeroAddress || token?.toLowerCase() === nativeAddress.toLowerCase()) return { isApproved: true };
 
 	if (!address || !allowance) return { isApproved: false, errorFetchingAllowance };
 
-	if (allowance.toString() === ethers.constants.MaxUint256.toString()) return { isApproved: true, allowance };
+	if (allowance === maxInt256) return { isApproved: true, allowance };
 
-	if (normalizedAmount && allowance.gte(BigNumber.from(normalizedAmount))) return { isApproved: true, allowance };
+	if (normalizedAmount && allowance >= BigInt(normalizedAmount)) return { isApproved: true, allowance };
 
 	return {
 		isApproved: false,
 		approve: setOverrides(approve, customGasLimit),
 		approveInfinite: setOverrides(approveInfinite, customGasLimit),
 		approveReset: setOverrides(approveReset, customGasLimit),
-		isLoading: isFetchingAllowance || isLoading || isConfirmingApproval,
-		isConfirmingApproval,
-		isInfiniteLoading: isInfiniteLoading || isConfirmingInfiniteApproval,
-		isConfirmingInfiniteApproval,
-		isResetLoading: isResetLoading || isConfirmingResetApproval,
-		isConfirmingResetApproval,
+		isLoading: isFetchingAllowance || isLoading,
+		isConfirmingApproval: isLoading,
+		isInfiniteLoading: isInfiniteLoading,
+		isConfirmingInfiniteApproval: isInfiniteLoading,
+		isResetLoading: isResetLoading,
+		isConfirmingResetApproval: isResetLoading,
 		allowance,
 		shouldRemoveApproval,
 		refetch

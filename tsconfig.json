@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "ES2022",
-		"lib": ["dom", "dom.iterable", "esnext"],
+		"lib": ["DOM", "DOM.Iterable", "ES2022"],
 		"allowJs": true,
 		"baseUrl": ".",
 		"paths": {
@@ -13,7 +13,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"noEmit": true,
 		"esModuleInterop": true,
-		"module": "esnext",
+		"module": "ESNext",
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
@@ -23,6 +23,6 @@
 		"allowSyntheticDefaultImports": true,
 		"noFallthroughCasesInSwitch": true
 	},
-	"exclude": ["node_modules", "cypress", "server"],
+	"exclude": ["node_modules", "server"],
 	"include": ["**/*.js", "**/*.ts", "**/*.tsx"]
 }

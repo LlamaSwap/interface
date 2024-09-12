@@ -35,3 +35,9 @@ export const WalletWrapper = ({ children }: { children: React.ReactNode }) => {
 		</WagmiProvider>
 	);
 };
+
+declare module 'wagmi' {
+	interface Register {
+		config: typeof config;
+	}
+}
