@@ -27,6 +27,7 @@ interface IPriceImpact {
 	amountReturnedInSelectedRoute?: string;
 	slippage?: string;
 	isPriceImpactNotKnown?: boolean;
+	hasLinearPriceImpact?: boolean;
 }
 
 const NoPriceImpactAlert = ({ tokens }) => {
@@ -36,6 +37,18 @@ const NoPriceImpactAlert = ({ tokens }) => {
 			{`Couldn't fetch price for ${tokens.join(
 				', '
 			)}, we aren't able to check price impact so please exercise caution. `}
+			<Text display={['none', 'none', 'contents', 'contents']}>
+				Please be very careful when checking the swap cause you could lose money
+			</Text>
+		</Alert>
+	);
+};
+
+const LinearPriceImpact = () => {
+	return (
+		<Alert status="warning" borderRadius="0.375rem" py="8px">
+			<AlertIcon />
+			Price impact is high.
 			<Text display={['none', 'none', 'contents', 'contents']}>
 				Please be very careful when checking the swap cause you could lose money
 			</Text>
@@ -53,7 +66,8 @@ export function PriceImpact({
 	amountReturnedInSelectedRoute,
 	selectedRoutesPriceImpact,
 	slippage,
-	isPriceImpactNotKnown = false
+	isPriceImpactNotKnown = false,
+	hasLinearPriceImpact = false
 }: IPriceImpact) {
 	const breakpoint = useBreakpoint();
 	const [priceOrder, setPriceOrder] = useState(1);
@@ -65,6 +79,8 @@ export function PriceImpact({
 		!fromTokenPrice || Number.isNaN(Number(fromTokenPrice)) ? fromToken.symbol : null,
 		!toTokenPrice || Number.isNaN(Number(toTokenPrice)) ? toToken.symbol : null
 	].filter(Boolean);
+
+	if (isPriceImpactNotKnown && hasLinearPriceImpact) return <LinearPriceImpact />;
 
 	if (tokensWithoutPrice.length > 0) return <NoPriceImpactAlert tokens={tokensWithoutPrice} />;
 
