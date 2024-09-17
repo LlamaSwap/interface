@@ -1,5 +1,6 @@
 import { useQueries, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
-import { partial, first, omit } from 'lodash';
+import { partial, omit } from 'lodash';
+import { useMemo } from 'react';
 
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { chainsWithOpFees, getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
@@ -165,18 +166,20 @@ export function useGetRoutes({
 		res?.map((r, i) => [adapters[i].name, r])?.filter((r) => (r[1] as UseQueryResult<IRoute>).status === 'pending') ??
 		[];
 
+	const lastFetched = useMemo(() => {
+		return (
+			data
+				.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
+				.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)?.[0]?.dataUpdatedAt ?? Date.now()
+		);
+	}, [data]);
+
 	return {
 		isLoaded: loadingRoutes.length === 0,
 		isLoading: data.length >= 1 ? false : true,
 		data: resData?.map((r) => r.data as IRoute) ?? [],
 		refetch: () => res?.forEach((r) => r.refetch()),
-		lastFetched:
-			first(
-				data
-					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
-					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)
-					.map((d) => d.dataUpdatedAt)
-			) || null,
+		lastFetched,
 		loadingRoutes
 	};
 }
