@@ -350,7 +350,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [debouncedAmount, debouncedAmountOut] = debouncedAmountInAndOut.split('&&');
 
 	// get selected chain and tokens from URL query params
-	const routesRef = useRef(null);
+	const routesRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 	const { fromTokenAddress, toTokenAddress } = useQueryParams();
 
@@ -777,6 +777,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			approvalData: any;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
+			// TODO fix onSuccess
 			let txUrl;
 			if (data.gaslessTxReceipt) {
 				gaslessApprovalMutation.reset();
@@ -1226,19 +1227,22 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													colorScheme={'messenger'}
 													onClick={() => {
 														//scroll Routes into view
-														!selectedRoute && routesRef.current.scrollIntoView({ behavior: 'smooth' });
+														!selectedRoute && routesRef.current?.scrollIntoView({ behavior: 'smooth' });
 
 														if (!isApproved && isGaslessApproval) {
 															handleGaslessApproval({ isInfiniteApproval: false });
 															return;
 														}
 
+														console.log({ isApproved, isGaslessApproval, approve });
+
 														if (approve) approve();
 
 														if (
 															balance.data &&
 															!Number.isNaN(Number(balance.data.value)) &&
-															+selectedRoute?.fromAmount > +balance?.data?.value?.toString()
+															selectedRoute?.fromAmount &&
+															+selectedRoute.fromAmount > +balance?.data?.value?.toString()
 														)
 															return;
 

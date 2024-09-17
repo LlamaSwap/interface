@@ -111,7 +111,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 		return res;
 	} catch (e) {
-		console.error(e);
+		console.log(e);
 		return {
 			price: null,
 			l1Gas: 0,

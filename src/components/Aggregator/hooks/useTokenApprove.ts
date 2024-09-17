@@ -24,12 +24,14 @@ async function approveTokenSpend({
 	address,
 	chain,
 	spender,
-	amount
+	amount,
+	customGasLimit
 }: {
 	address?: `0x${string}`;
 	chain?: string;
 	spender?: `0x${string}`;
 	amount: bigint;
+	customGasLimit?: { gas: bigint } | null;
 }) {
 	try {
 		if (!address || !spender || !chain) {
@@ -54,7 +56,8 @@ async function approveTokenSpend({
 			],
 			functionName: 'approve',
 			args: [spender, amount],
-			chainId: chainsMap[chain]
+			chainId: chainsMap[chain],
+			...(customGasLimit ?? {})
 		});
 
 		const receipt = await waitForTransactionReceipt(config, { hash });
@@ -136,12 +139,6 @@ const useGetAllowance = ({
 	return { allowance, shouldRemoveApproval, refetch, isLoading, errorFetchingAllowance };
 };
 
-const setOverrides = (func, overrides) => {
-	if (!overrides) return func;
-
-	return () => func({ recklesslySetUnpreparedOverrides: overrides });
-};
-
 export const useTokenApprove = ({
 	token,
 	spender,
@@ -180,12 +177,10 @@ export const useTokenApprove = ({
 		}
 	});
 
-	console.log({ gasLimit: data?.request?.gas });
-
 	const customGasLimit =
 		shouldRemoveApproval || !data?.request?.gas || !chain || chainsWithDefaultGasLimit[chainsMap[chain]]
 			? null
-			: { gasLimit: (data.request.gas * 140n) / 100n };
+			: { gas: (data.request.gas * 140n) / 100n };
 
 	const { mutateAsync: approveWriteContract, isPending: isLoading } = useApproveTokenSpend();
 	const approve = () => {
@@ -193,7 +188,8 @@ export const useTokenApprove = ({
 			address: token,
 			spender,
 			amount: normalizedAmount ? BigInt(normalizedAmount) : maxInt256,
-			chain
+			chain,
+			customGasLimit
 		})
 			.then(() => {
 				refetch();
@@ -207,7 +203,8 @@ export const useTokenApprove = ({
 			address: token,
 			spender,
 			amount: maxInt256,
-			chain
+			chain,
+			customGasLimit
 		})
 			.then(() => {
 				refetch();
@@ -221,7 +218,8 @@ export const useTokenApprove = ({
 			address: token,
 			spender,
 			amount: 0n,
-			chain
+			chain,
+			customGasLimit
 		})
 			.then(() => {
 				refetch();
@@ -231,7 +229,7 @@ export const useTokenApprove = ({
 
 	if (token === zeroAddress || token?.toLowerCase() === nativeAddress.toLowerCase()) return { isApproved: true };
 
-	if (!address || !allowance) return { isApproved: false, errorFetchingAllowance };
+	if (!address || (!allowance && allowance !== 0n)) return { isApproved: false, errorFetchingAllowance };
 
 	if (allowance === maxInt256) return { isApproved: true, allowance };
 
@@ -239,9 +237,9 @@ export const useTokenApprove = ({
 
 	return {
 		isApproved: false,
-		approve: setOverrides(approve, customGasLimit),
-		approveInfinite: setOverrides(approveInfinite, customGasLimit),
-		approveReset: setOverrides(approveReset, customGasLimit),
+		approve,
+		approveInfinite,
+		approveReset,
 		isLoading: isFetchingAllowance || isLoading,
 		isConfirmingApproval: isLoading,
 		isInfiniteLoading: isInfiniteLoading,
