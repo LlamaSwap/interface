@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { providers } from '~/components/Aggregator/rpcs';
-import { ethers } from 'ethers';
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+import { getAddress, zeroAddress } from 'viem';
 
 interface IGetPriceProps {
-	chain: string;
-	fromToken: string;
-	toToken: string;
+	chain?: string;
+	fromToken?: string;
+	toToken?: string;
 	skipRefetch?: boolean;
 }
 
@@ -46,15 +44,15 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 	let gasTokenPrice, fromTokenPrice, toTokenPrice;
 
 	try {
-		const llamaChain = convertChain(rawChain);
-		let llamaApi = [`${llamaChain}:${ZERO_ADDRESS}`, `${llamaChain}:${fromToken}`, `${llamaChain}:${toToken}`];
+		const llamaChain = convertChain(rawChain!);
+		let llamaApi = [`${llamaChain}:${zeroAddress}`, `${llamaChain}:${fromToken}`, `${llamaChain}:${toToken}`];
 
 		const { coins } = await fetch(`https://coins.llama.fi/prices/current/${llamaApi.join(',')}`).then((r) => r.json());
 
-		gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
+		gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${zeroAddress}`]?.price;
 		[fromTokenPrice, toTokenPrice] = await Promise.all([
-			fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain, fromToken),
-			toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || getExperimentalPrice(rawChain, toToken)
+			fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain!, fromToken!),
+			toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || getExperimentalPrice(rawChain!, toToken!)
 		]);
 
 		return {
@@ -84,7 +82,7 @@ const getExperimentalPrice = async (chain: string, token: string): Promise<numbe
 
 		experimentalPrices.pairs.forEach((pair: DexScreenerTokenPair) => {
 			const { priceUsd, liquidity, chainId, baseToken } = pair;
-			if (baseToken.address === ethers.utils.getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
+			if (baseToken.address === getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
 				if (totalLiquidity !== 0) {
 					const avgPrice = weightedPrice / totalLiquidity;
 					const priceDiff = Math.abs(Number(priceUsd) - avgPrice) / avgPrice;

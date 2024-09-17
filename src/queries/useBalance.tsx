@@ -1,10 +1,9 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { ethers } from 'ethers';
-import { getAddress } from 'ethers/lib/utils';
-import { useAccount, useBalance as useWagmiBalance } from 'wagmi';
-import { erc20Abi, zeroAddress } from 'viem';
+import { useQuery } from '@tanstack/react-query';
+import { erc20Abi, formatUnits, zeroAddress } from 'viem';
+import { getBalance, readContracts } from 'wagmi/actions';
 import { nativeAddress } from '~/components/Aggregator/constants';
-import { rpcUrls } from '~/components/Aggregator/rpcs';
+
+import { config } from '~/components/WalletProvider';
 
 interface IGetBalance {
 	address?: string;
@@ -12,90 +11,53 @@ interface IGetBalance {
 	token?: string;
 }
 
-const createProviderAndGetBalance = async ({ rpcUrl, address, token }) => {
+export const getTokenBalance = async ({ address, chainId, token }: IGetBalance) => {
 	try {
-		const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-
-		if (!token) {
-			const balance = await provider.getBalance(address);
-
-			return { value: balance, formatted: ethers.utils.formatEther(balance) };
-		}
-
-		const contract = new ethers.Contract(getAddress(token), erc20Abi, provider);
-
-		const [balance, decimals] = await Promise.all([contract.balanceOf(getAddress(address)), contract.decimals()]);
-
-		return { value: balance, formatted: ethers.utils.formatUnits(balance, decimals), decimals };
-	} catch (error) {
-		return null;
-	}
-};
-
-export const getBalance = async ({ address, chainId, token }: IGetBalance) => {
-	try {
-		if (!address || !chainId) {
+		if (!address || !chainId || !token) {
 			return null;
 		}
 
-		const urls = Object.values(rpcUrls[chainId] || {});
+		if ([zeroAddress, nativeAddress.toLowerCase()].includes(token.toLowerCase())) {
+			const data = await getBalance(config, {
+				address: address as `0x${string}`,
+				chainId
+			});
 
-		if (urls.length === 0) {
-			return null;
+			return data;
 		}
 
-		const data = await Promise.any(urls.map((rpcUrl) => createProviderAndGetBalance({ rpcUrl, address, token })));
+		const result = await readContracts(config, {
+			allowFailure: false,
+			contracts: [
+				{
+					address: token as `0x${string}`,
+					abi: erc20Abi,
+					functionName: 'balanceOf',
+					args: [address as `0x${string}`],
+					chainId
+				},
+				{
+					address: token as `0x${string}`,
+					abi: erc20Abi,
+					functionName: 'decimals',
+					chainId
+				}
+			]
+		});
 
-		return data;
+		return { value: result[0], formatted: formatUnits(result[0], result[1]), decimals: result[1] };
 	} catch (error) {
 		console.log(error);
 		return null;
 	}
 };
 
-export const useBalance = ({
-	address,
-	chainId,
-	token
-}): UseQueryResult<{
-	value: ethers.BigNumber;
-	formatted: string;
-	decimals?: undefined;
-}> => {
-	const { isConnected } = useAccount();
-
-	const tokenAddress = [zeroAddress, nativeAddress.toLowerCase()].includes(token?.toLowerCase())
-		? null
-		: (token as `0x${string}`);
-
-	const isEnabled = chainId && isConnected && token ? true : false;
-
-	const wagmiData = useWagmiBalance({
-		address: address,
-		token: tokenAddress,
-		chainId: chainId,
-		enabled: isEnabled,
-		staleTime: 10 * 1000
-	});
-
+export const useBalance = ({ address, chainId, token }) => {
 	const queryData = useQuery({
-		queryKey: ['balance', address, chainId, token, wagmiData.isLoading || wagmiData.data ? false : true],
-		queryFn: () => getBalance({ address, chainId, token }),
-		refetchInterval: 10_000,
-		enabled: isEnabled && !wagmiData.isLoading && !wagmiData.data
+		queryKey: ['balance', address, chainId, token],
+		queryFn: () => getTokenBalance({ address, chainId, token }),
+		refetchInterval: 10_000
 	});
 
-	// when token is undefined/null, wagmi tries fetch users chain token (for ex :ETH) balance, even though is isEnabled is false
-	// so hardcode data to null
-	return (
-		!isEnabled
-			? { isLoading: false, isSuccess: false, data: null }
-			: wagmiData.isLoading || wagmiData.data
-				? wagmiData
-				: queryData
-	) as UseQueryResult<{
-		value: ethers.BigNumber;
-		formatted: string;
-		decimals?: undefined;
-	}>;
+	return queryData;
 };

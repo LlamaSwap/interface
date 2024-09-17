@@ -26,13 +26,16 @@ async function approveTokenSpend({
 	spender,
 	amount
 }: {
-	address: `0x${string}`;
-	chain: string;
-	spender: `0x${string}`;
+	address?: `0x${string}`;
+	chain?: string;
+	spender?: `0x${string}`;
 	amount: bigint;
 }) {
 	try {
-		// @ts-ignore
+		if (!address || !spender || !chain) {
+			throw new Error('Invalid arguments');
+		}
+
 		const hash = await writeContract(config, {
 			address,
 			abi: [
@@ -73,11 +76,11 @@ async function getAllowance({
 	spender
 }: {
 	token?: string;
-	chain: string;
+	chain?: string;
 	address?: `0x${string}`;
 	spender?: `0x${string}`;
 }) {
-	if (!spender || !token || !address || token === zeroAddress) {
+	if (!spender || !token || !address || token === zeroAddress || !chain) {
 		return null;
 	}
 	try {
@@ -104,11 +107,11 @@ const useGetAllowance = ({
 	token?: `0x${string}`;
 	spender?: `0x${string}`;
 	amount?: string;
-	chain: string;
+	chain?: string;
 }) => {
 	const { address } = useAccount();
 
-	const isOld = token ? oldErc.includes(token?.toLowerCase()) : false;
+	const isOld = token ? oldErc.includes(token.toLowerCase()) : false;
 
 	const {
 		data: allowance,
@@ -148,7 +151,7 @@ export const useTokenApprove = ({
 	token?: `0x${string}`;
 	spender?: `0x${string}`;
 	amount?: string;
-	chain: string;
+	chain?: string;
 }) => {
 	const { address, isConnected } = useAccount();
 
@@ -171,14 +174,18 @@ export const useTokenApprove = ({
 		address: token,
 		abi: erc20Abi,
 		functionName: 'approve',
-		args: [spender, normalizedAmount ? BigInt(normalizedAmount) : maxInt256],
-		enabled: isConnected && !!spender && !!token && normalizedAmount !== '0'
+		args: spender && [spender, normalizedAmount ? BigInt(normalizedAmount) : maxInt256],
+		query: {
+			enabled: isConnected && !!spender && !!token && normalizedAmount !== '0' ? true : false
+		}
 	});
 
+	console.log({ gasLimit: data?.request?.gas });
+
 	const customGasLimit =
-		shouldRemoveApproval || !data?.request?.gasLimit || chainsWithDefaultGasLimit[chainsMap[chain]]
+		shouldRemoveApproval || !data?.request?.gas || !chain || chainsWithDefaultGasLimit[chainsMap[chain]]
 			? null
-			: { gasLimit: data?.request?.gasLimit.mul(140).div(100) };
+			: { gasLimit: (data.request.gas * 140n) / 100n };
 
 	const { mutateAsync: approveWriteContract, isPending: isLoading } = useApproveTokenSpend();
 	const approve = () => {

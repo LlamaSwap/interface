@@ -53,18 +53,18 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === zeroAddress ? nativeToken : from;
 	const tokenTo = to === zeroAddress ? nativeToken : to;
-	const authHeader = process.env.INCH_API_KEY ? { 'auth-key': process.env.INCH_API_KEY } : {};
+	const authHeader = process.env.INCH_API_KEY ? { 'auth-key': process.env.INCH_API_KEY as string } : {};
 	const tokenApprovalAddress = spenders[chain];
 
 	const [data, swapData] = await Promise.all([
 		fetch(
 			`https://api-defillama.1inch.io/v5.2/${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
-			{ headers: authHeader }
+			{ headers: authHeader as any }
 		).then((r) => r.json()),
 		extra.userAddress !== zeroAddress
 			? fetch(
 					`https://api-defillama.1inch.io/v5.2/${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
-					{ headers: authHeader }
+					{ headers: authHeader as any }
 				).then((r) => r.json())
 			: null
 	]);

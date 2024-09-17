@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useFeeData, useSignTypedData, useSwitchChain, useToken } from 'wagmi';
+import { useAccount, useEstimateFeesPerGas, useSignTypedData, useSwitchChain } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
@@ -48,7 +48,7 @@ import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
-import { getBalance, useBalance } from '~/queries/useBalance';
+import { getTokenBalance, useBalance } from '~/queries/useBalance';
 import { useEstimateGas } from './hooks/useEstimateGas';
 import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
@@ -61,6 +61,7 @@ import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
 import { zeroAddress } from 'viem';
+import { useToken } from './hooks/useToken';
 
 /*
 Integrated:
@@ -362,52 +363,54 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	// data of selected token not in chain's tokenlist
 	const { data: fromToken2 } = useToken({
 		address: fromTokenAddress as `0x${string}`,
-		chainId: selectedChain.id,
+		chainId: selectedChain?.id,
 		enabled:
 			typeof fromTokenAddress === 'string' && fromTokenAddress.length === 42 && selectedChain && !selectedFromToken
 				? true
 				: false
 	});
+
 	const { data: toToken2 } = useToken({
 		address: toTokenAddress as `0x${string}`,
-		chainId: selectedChain.id,
+		chainId: selectedChain?.id,
 		enabled:
 			typeof toTokenAddress === 'string' && toTokenAddress.length === 42 && selectedChain && !selectedToToken
 				? true
 				: false
 	});
+
 	// final tokens data
 	const { finalSelectedFromToken, finalSelectedToToken } = useMemo(() => {
-		const finalSelectedFromToken: IToken =
+		const finalSelectedFromToken: IToken | null =
 			!selectedFromToken && fromToken2
 				? {
-						name: fromToken2.name || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-						label: fromToken2.symbol || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-						symbol: fromToken2.symbol || '',
+						name: fromToken2.name ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
+						label: fromToken2.symbol ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
+						symbol: fromToken2.symbol ?? '',
 						address: fromToken2.address,
 						value: fromToken2.address,
 						decimals: fromToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${
 							fromToken2.address
 						}?h=20&w=20`,
-						chainId: selectedChain.id || 1,
+						chainId: selectedChain?.id ?? 1,
 						geckoId: null
 					}
 				: selectedFromToken;
 
-		const finalSelectedToToken: IToken =
+		const finalSelectedToToken: IToken | null =
 			!selectedToToken && toToken2
 				? {
-						name: toToken2.name || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-						label: toToken2.symbol || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-						symbol: toToken2.symbol || '',
+						name: toToken2.name ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
+						label: toToken2.symbol ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
+						symbol: toToken2.symbol ?? '',
 						address: toToken2.address,
 						value: toToken2.address,
 						decimals: toToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${
 							toToken2.address
 						}?h=20&w=20`,
-						chainId: selectedChain.id || 1,
+						chainId: selectedChain?.id ?? 1,
 						geckoId: null
 					}
 				: selectedToToken;
@@ -427,13 +430,19 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const savedTokens = useGetSavedTokens(selectedChain?.id);
 
 	// selected from token's balances
-	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
+	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain?.id });
+
 	// selected from token's balances
-	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain.id });
-	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain.id : null);
-	const { data: gasPriceData } = useFeeData({
+	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain?.id });
+
+	// balances of all token's in wallet
+	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain?.id : null);
+
+	const { data: gasPriceData } = useEstimateFeesPerGas({
 		chainId: selectedChain?.id,
-		enabled: selectedChain ? true : false
+		query: {
+			enabled: selectedChain ? true : false
+		}
 	});
 
 	const tokensInChain = useMemo(() => {
@@ -489,10 +498,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		routes,
 		token: finalSelectedFromToken?.address,
 		userAddress: address,
-		chain: selectedChain.value,
-		balance: +balance?.data?.value,
-		isOutput: amountOut && amountOut !== ''
+		chain: selectedChain?.value,
+		balance: balance?.data?.value ? Number(balance.data.value) : null,
+		isOutput: amountOut && amountOut !== '' ? true : false
 	});
+
 	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
 		toToken: finalSelectedToToken?.address,
@@ -502,11 +512,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	// format routes
 	const fillRoute = (route: (typeof routes)[0]) => {
-		if (!route?.price) return null;
+		if (!route?.price || !finalSelectedFromToken || !finalSelectedToToken) return null;
 		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
 			? gasData?.[route.name]?.gas
 			: route.price.estimatedGas);
-		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+		let gasUsd: number | string = gasPriceData?.formatted?.gasPrice
+			? (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0
+			: 0;
 
 		// CowSwap native token swap
 		gasUsd =
@@ -576,7 +588,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		selecteRouteIndex >= 0 ? { ...normalizedRoutes[selecteRouteIndex], index: selecteRouteIndex } : null;
 
 	const diffBetweenSelectedRouteAndTopRoute =
-		selectedRoute && normalizedRoutes
+		selectedRoute?.amount && normalizedRoutes?.[0]?.amount
 			? Number((100 - (selectedRoute.amount / normalizedRoutes[0].amount) * 100).toFixed(2))
 			: 0;
 
@@ -584,12 +596,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const onMaxClick = () => {
 		if (balance.data && balance.data.formatted && !Number.isNaN(Number(balance.data.formatted))) {
 			if (
-				selectedRoute &&
-				selectedRoute.price.estimatedGas &&
+				selectedRoute?.price?.estimatedGas &&
 				gasPriceData?.formatted?.gasPrice &&
 				finalSelectedFromToken?.address === zeroAddress
 			) {
-				const gas = (+selectedRoute.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
+				const gas = (+selectedRoute.price!.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
 
 				const amountWithoutGas = +balance.data.formatted - gas;
 
@@ -633,6 +644,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			selectedToToken === null &&
 			finalSelectedToToken !== null &&
 			savedTokens &&
+			toTokenAddress &&
 			!savedTokens.find(({ address }) => address.toLowerCase() === toTokenAddress.toLowerCase());
 
 		if (isUnknown && toTokenAddress && savedTokens?.length > 1) {
@@ -641,7 +653,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	}, [router?.query, savedTokens]);
 
 	useEffect(() => {
-		if (selectedRoute) {
+		if (selectedRoute?.amount) {
 			if (
 				lastOutputValue !== null &&
 				aggregator === lastOutputValue.aggregator &&
@@ -693,8 +705,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	// approve/swap tokens
 	const amountToApprove =
-		amountOut && amountOut !== ''
-			? BigNumber(selectedRoute?.fromAmount)
+		amountOut && amountOut !== '' && selectedRoute
+			? BigNumber(selectedRoute.fromAmount)
 					.times(100 + Number(slippage) * 2)
 					.div(100)
 					.toFixed(0)
@@ -722,7 +734,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		spender:
 			selectedRoute && selectedRoute.price && !isGaslessApproval ? selectedRoute.price.tokenApprovalAddress : null,
 		amount: amountToApprove,
-		chain: selectedChain.value
+		chain: selectedChain?.value
 	});
 
 	const gaslessApprovalMutation = useMutation({
@@ -734,15 +746,16 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		}) => gaslessApprove(params)
 	});
 
-	const isApproved = selectedRoute?.isGasless
-		? (selectedRoute.price.rawQuote as any).approval.isRequired
-			? (selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
-				? gaslessApprovalMutation.data
-					? true
-					: false
-				: isTokenApproved
-			: true
-		: isTokenApproved;
+	const isApproved =
+		selectedRoute && selectedRoute.isGasless
+			? (selectedRoute.price.rawQuote as any).approval.isRequired
+				? (selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
+					? gaslessApprovalMutation.data
+						? true
+						: false
+					: isTokenApproved
+				: true
+			: isTokenApproved;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
@@ -791,22 +804,25 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					toast(formatErrorToast({ reason: data.gaslessTxReceipt.reason }, false));
 				}
 				forceRefreshTokenBalance();
-				sendSwapEvent({
-					chain: selectedChain.value,
-					user: address,
-					from: variables.from,
-					to: variables.to,
-					aggregator: variables.adapter,
-					isError: isSuccess || data.gaslessTxReceipt.status === 'pending',
-					quote: variables.rawQuote,
-					txUrl,
-					amount: String(variables.amountIn),
-					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
-					errorData: data,
-					slippage,
-					routePlace: String(variables?.index),
-					route: variables.route
-				});
+
+				if (selectedChain && address) {
+					sendSwapEvent({
+						chain: selectedChain.value,
+						user: address,
+						from: variables.from,
+						to: variables.to,
+						aggregator: variables.adapter,
+						isError: isSuccess || data.gaslessTxReceipt.status === 'pending',
+						quote: variables.rawQuote,
+						txUrl,
+						amount: String(variables.amountIn),
+						amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+						errorData: data,
+						slippage,
+						routePlace: String(variables?.index),
+						route: variables.route
+					});
+				}
 
 				return;
 			}
@@ -829,22 +845,24 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 					toast(formatSuccessToast(variables));
 
-					sendSwapEvent({
-						chain: selectedChain.value,
-						user: address,
-						from: variables.from,
-						to: variables.to,
-						aggregator: variables.adapter,
-						isError,
-						quote: variables.rawQuote,
-						txUrl,
-						amount: String(variables.amountIn),
-						amountUsd: +fromTokenPrice * +variables.amountIn || 0,
-						errorData: {},
-						slippage,
-						routePlace: String(variables?.index),
-						route: variables.route
-					});
+					if (selectedChain && address) {
+						sendSwapEvent({
+							chain: selectedChain.value,
+							user: address,
+							from: variables.from,
+							to: variables.to,
+							aggregator: variables.adapter,
+							isError,
+							quote: variables.rawQuote,
+							txUrl,
+							amount: String(variables.amountIn),
+							amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+							errorData: {},
+							slippage,
+							routePlace: String(variables?.index),
+							route: variables.route
+						});
+					}
 				});
 			}
 
@@ -880,26 +898,29 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					toast(formatErrorToast({}, true));
 				})
 				?.finally(() => {
-					getBalance({ address, chainId: selectedChain.id, token: finalSelectedToToken.address }).then((balanceAfter) =>
-						sendSwapEvent({
-							chain: selectedChain.value,
-							user: address,
-							from: variables.from,
-							to: variables.to,
-							aggregator: variables.adapter,
-							isError,
-							quote: variables.rawQuote,
-							txUrl,
-							amount: String(variables.amountIn),
-							amountUsd: +fromTokenPrice * +variables.amountIn || 0,
-							errorData: {},
-							slippage,
-							routePlace: String(variables?.index),
-							route: variables.route,
-							reportedOutput: Number(variables.amount) || 0,
-							realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
-						})
-					);
+					if (selectedChain && finalSelectedToToken && address) {
+						getTokenBalance({ address, chainId: selectedChain.id, token: finalSelectedToToken.address }).then(
+							(balanceAfter) =>
+								sendSwapEvent({
+									chain: selectedChain.value,
+									user: address,
+									from: variables.from,
+									to: variables.to,
+									aggregator: variables.adapter,
+									isError,
+									quote: variables.rawQuote,
+									txUrl,
+									amount: String(variables.amountIn),
+									amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+									errorData: {},
+									slippage,
+									routePlace: String(variables?.index),
+									route: variables.route,
+									reportedOutput: Number(variables.amount) || 0,
+									realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
+								})
+						);
+					}
 				});
 		},
 		onError: (err: { reason: string; code: string }, variables) => {

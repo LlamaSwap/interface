@@ -6,7 +6,7 @@ import { chainsWithOpFees, getOptimismFee } from '~/components/Aggregator/hooks/
 import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/list';
 
 interface IGetListRoutesProps {
-	chain: string;
+	chain?: string;
 	from?: string;
 	to?: string;
 	amount?: string;
@@ -137,10 +137,20 @@ export function useGetRoutes({
 }: IGetListRoutesProps) {
 	const res = useQueries({
 		queries: adapters
-			.filter((adap) => adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name))
+			.filter((adap) =>
+				chain && adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name) ? true : false
+			) // @ts-ignore
 			.map<UseQueryOptions<IRoute>>((adapter) => {
 				return {
-					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
+					queryKey: [
+						'routes',
+						adapter.name,
+						chain,
+						from,
+						to,
+						amount,
+						JSON.stringify(omit(extra, 'amount', 'gasPriceData'))
+					],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
 					refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
 					refetchOnWindowFocus: false,
@@ -150,15 +160,15 @@ export function useGetRoutes({
 	});
 	const data = res?.filter((r) => r.status === 'success') ?? [];
 	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
+
 	const loadingRoutes =
-		res
-			?.map((r, i) => [adapters[i].name, r])
-			?.filter((r: [string, UseQueryResult<IRoute>]) => r[1].status === 'pending') ?? [];
+		res?.map((r, i) => [adapters[i].name, r])?.filter((r) => (r[1] as UseQueryResult<IRoute>).status === 'pending') ??
+		[];
 
 	return {
 		isLoaded: loadingRoutes.length === 0,
 		isLoading: data.length >= 1 ? false : true,
-		data: resData?.map((r) => r.data) ?? [],
+		data: resData?.map((r) => r.data as IRoute) ?? [],
 		refetch: () => res?.forEach((r) => r.refetch()),
 		lastFetched:
 			first(

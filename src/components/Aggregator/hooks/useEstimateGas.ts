@@ -18,14 +18,38 @@ const traceRpcs = {
 	arbitrum: 'https://arbitrum-one.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1'
 };
 
-export const estimateGas = async ({ route, token, userAddress, chain, balance }) => {
-	if (!Number.isFinite(balance) || balance < +route.fromAmount) return null;
+// TODO compare gas b/w main branch and this code
+export const estimateGas = async ({
+	route,
+	token,
+	userAddress,
+	chain,
+	balance
+}: {
+	route: IRoute;
+	token?: string;
+	userAddress?: string;
+	chain?: string;
+	balance?: number | null;
+}) => {
+	if (
+		!token ||
+		!userAddress ||
+		!chain ||
+		!balance ||
+		!Number.isFinite(balance) ||
+		balance < +route.fromAmount ||
+		!route.price
+	) {
+		return null;
+	}
 
 	try {
 		const provider = new ethers.providers.StaticJsonRpcProvider(traceRpcs[chain], providers[chain]._network);
 		const tokenContract = new ethers.Contract(token, erc20Abi, provider);
 		const tx = route?.tx;
 		const isNative = token === zeroAddress;
+
 		try {
 			const approveTx = isNative
 				? null
@@ -36,23 +60,28 @@ export const estimateGas = async ({ route, token, userAddress, chain, balance })
 						)),
 						from: userAddress
 					};
+
 			const resetApproveTx = isNative
 				? null
 				: await tokenContract.populateTransaction.approve(route.price.tokenApprovalAddress, ethers.constants.HashZero);
+
 			const callParams = [
 				[resetApproveTx, approveTx, tx].filter(Boolean).map((txData) => [
 					{
 						from: userAddress,
-						to: txData.to,
-						data: txData.data,
+						to: txData!.to,
+						data: txData!.data,
 						...(isNative ? { value: '0x' + BigNumber(route.fromAmount).toString(16) } : {})
 					},
 					['trace']
 				]),
 				'latest'
 			];
+
 			const res = await provider.send(chain === 'arbitrum' ? 'arbtrace_callMany' : 'trace_callMany', callParams);
 			const swapTx = last<{ trace: Array<{ result: { gasUsed: string }; error: string }> }>(res);
+			if (!swapTx) return null;
+
 			return {
 				gas: (Number(swapTx.trace[0].result.gasUsed) + 21e3).toString(), // ignores calldata and accesslist costs
 				isFailed: swapTx.trace[0]?.error === 'Reverted',
@@ -79,10 +108,10 @@ export const useEstimateGas = ({
 	isOutput
 }: {
 	routes: Array<IRoute>;
-	token: string;
-	userAddress: string;
-	chain: string;
-	balance: number;
+	token?: string;
+	userAddress?: string;
+	chain?: string;
+	balance?: number | null;
 	isOutput: boolean;
 }) => {
 	const res = useQueries({
@@ -92,7 +121,10 @@ export const useEstimateGas = ({
 				return {
 					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance],
 					queryFn: () => estimateGas({ route, token, userAddress, chain, balance }),
-					enabled: traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) && !!userAddress // TODO: figure out why it doesn't work
+					enabled:
+						chain && traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) && !!userAddress
+							? true
+							: false // TODO: figure out why it doesn't work
 				};
 			})
 	});
@@ -100,9 +132,23 @@ export const useEstimateGas = ({
 	const data =
 		res
 			?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
-			.reduce((acc, r) => ({ ...acc, [r.data.name]: r.data }), {} as Record<string, EstimationRes>) ?? {};
+			.reduce(
+				(acc, r) => ({
+					...acc,
+					[(
+						r.data as {
+							gas: string;
+							isFailed: boolean;
+							aggGas: any;
+							name: any;
+						}
+					).name]: r.data
+				}),
+				{} as Record<string, EstimationRes>
+			) ?? {};
+
 	return {
-		isLoading: res.some((r) => r.status === 'pending') || traceRpcs[chain] === undefined,
+		isLoading: res.some((r) => r.status === 'pending') || (chain && traceRpcs[chain] === undefined),
 		data
 	};
 };

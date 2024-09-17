@@ -48,7 +48,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}),
 		headers: {
 			'Content-Type': 'application/json',
-			Authorization: process.env.HASHFLOW_API_KEY
+			Authorization: process.env.HASHFLOW_API_KEY as string
 		}
 	}).then((r) => r.json());
 	const gas = chain === 'optimism' ? BigNumber(3.5).times(data.gasEstimate).toFixed(0, 1) : data.gasEstimate;
@@ -58,7 +58,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	// https://docs.hashflow.com/hashflow/taker/getting-started#5.-execute-quote-on-chain
 	const txData = await router.populateTransaction.tradeSingleHop([
 		data.quoteData.pool,
-		data.quoteData.eoa ?? '0x0000000000000000000000000000000000000000',
+		data.quoteData.eoa ?? zeroAddress,
 		data.quoteData.trader,
 		data.quoteData.effectiveTrader ?? data.quoteData.trader,
 		data.quoteData.baseToken,

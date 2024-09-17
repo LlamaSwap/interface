@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { IToken } from '~/types';
+import { zeroAddress } from 'viem';
 
 type Balances = Record<string, any>;
 
@@ -20,9 +20,7 @@ const getBalances = async (address, chain) => {
 
 	return balances.data.items.reduce((all: Balances, t: any) => {
 		const address =
-			t.contract_address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-				? '0x0000000000000000000000000000000000000000'
-				: t.contract_address;
+			t.contract_address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' ? zeroAddress : t.contract_address;
 		all[address.toLowerCase()] = {
 			decimals: t.contract_decimals,
 			symbol: t.contract_ticker_symbol ?? 'UNKNOWN',

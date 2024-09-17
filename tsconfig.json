@@ -9,7 +9,7 @@
 			"~/public/*": ["./public/*"]
 		},
 		"skipLibCheck": true,
-		"strict": false,
+		"strict": true,
 		"forceConsistentCasingInFileNames": true,
 		"noEmit": true,
 		"esModuleInterop": true,
@@ -21,7 +21,12 @@
 		"incremental": true,
 		"downlevelIteration": true,
 		"allowSyntheticDefaultImports": true,
-		"noFallthroughCasesInSwitch": true
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": false,
+		"strictNullChecks": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": true,
 	},
 	"exclude": ["node_modules", "server"],
 	"include": ["**/*.js", "**/*.ts", "**/*.tsx"]
