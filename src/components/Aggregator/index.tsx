@@ -690,8 +690,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		balance.data &&
 		!Number.isNaN(Number(balance.data.formatted)) &&
 		balance.data.value &&
-		selectedRoute
-			? +selectedRoute?.fromAmount > +balance.data.value
+		selectedRoute?.fromAmount
+			? +selectedRoute.fromAmount > Number(balance.data.value)
 			: false;
 
 	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '';
@@ -705,7 +705,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	// approve/swap tokens
 	const amountToApprove =
-		amountOut && amountOut !== '' && selectedRoute
+		amountOut && amountOut !== '' && selectedRoute?.fromAmount
 			? BigNumber(selectedRoute.fromAmount)
 					.times(100 + Number(slippage) * 2)
 					.div(100)
