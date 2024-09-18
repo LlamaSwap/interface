@@ -331,7 +331,7 @@ const avax = {
 		default: { http: ['https://avalanche-evm.publicnode.com'] }
 	},
 	blockExplorers: {
-		default: { name: 'SnowTrace', url: 'https://snowtrace.io' }
+		default: { name: 'SnowScan', url: 'https://snowscan.xyz' }
 	},
 	testnet: false
 };

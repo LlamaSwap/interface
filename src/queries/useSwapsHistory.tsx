@@ -14,13 +14,13 @@ const getSwapsHistory = async ({ userId, chain: chainId, tokensUrlMap, tokensSym
 		r.json()
 	);
 
-	const tokens = uniq(history.map((tx) => [tx.from?.toLowerCase(), tx.to?.toLowerCase()]).flat());
-	const unknownSymbolsAddresses = [];
-	tokens.forEach((tokenAddress: string) => {
+	const tokens = uniq(history.map((tx) => [tx.from?.toLowerCase(), tx.to?.toLowerCase()]).flat()) as Array<string>;
+	const unknownSymbolsAddresses: Array<string> = [];
+	tokens.forEach((tokenAddress) => {
 		if (!chainTokensSymbols[tokenAddress]) unknownSymbolsAddresses.push(tokenAddress);
 	});
 
-	let onChainSymbols = null;
+	let onChainSymbols: Record<string, any> = {};
 	if (unknownSymbolsAddresses.length) {
 		const { output: symbols } = await multiCall({
 			abi: 'erc20:symbol',

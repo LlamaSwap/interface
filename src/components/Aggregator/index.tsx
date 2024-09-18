@@ -633,7 +633,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				{ shallow: true }
 			)
 			.then(() => {
-				if (switchChain) switchChain(newChain.chainId);
+				if (switchChain) switchChain({ chainId: newChain.chainId });
 			});
 	};
 	const onFromTokenChange = (token) => {
@@ -1181,7 +1181,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								colorScheme={'messenger'}
 								onClick={() => {
 									if (selectedChain) {
-										switchChain(selectedChain.id);
+										switchChain({ chainId: selectedChain.id });
 									}
 								}}
 								disabled={!selectedChain}
@@ -1464,7 +1464,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 											colorScheme={'messenger'}
 											onClick={() => {
 												if (selectedChain) {
-													switchChain(selectedChain.id);
+													switchChain({ chainId: selectedChain.id });
 												}
 											}}
 											disabled={!selectedChain}

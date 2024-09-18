@@ -1,9 +1,10 @@
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
-import { providers } from '../../rpcs';
 import { sendTx } from '../../utils/sendTx';
 import { ABI } from './abi';
-import { zeroAddress } from 'viem';
+import { encodeFunctionData, zeroAddress } from 'viem';
+import { readContract } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
+import { chainsMap } from '../../constants';
 
 // Source https://github.com/yieldyak/yak-aggregator
 export const chainToId = {
@@ -24,20 +25,31 @@ const nativeToken = {
 };
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: any) {
-	const provider = providers[chain];
-	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, provider);
 	const tokenFrom = from === zeroAddress ? nativeToken[chain] : from;
 	const tokenTo = to === zeroAddress ? nativeToken[chain] : to;
 
-	const gasPrice = ethers.BigNumber.from(extra.gasPriceData?.gasPrice ?? '1062500000000');
+	const gasPrice = extra.gasPriceData?.gasPrice ?? '1062500000000';
 
-	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
-	const expectedAmount = data[0][data[0].length - 1];
+	const data = (await readContract(config, {
+		address: chainToId[chain],
+		abi: ABI.yieldYakRouter,
+		functionName: 'findBestPathWithGas',
+		args: [amount, tokenFrom, tokenTo, 3, gasPrice],
+		chainId: chainsMap[chain]
+	})) as {
+		amounts: Array<bigint>;
+		adapters: Array<`0x${string}`>;
+		gasEstimate: bigint;
+		path: Array<`0x${string}`>;
+	};
+
+	const expectedAmount = data.amounts[data.amounts.length - 1];
+
 	const minAmountOut = BigNumber(expectedAmount.toString())
 		.times(1 - Number(extra.slippage) / 100)
 		.toFixed(0);
 
-	const gas = data.gasEstimate.add(21000);
+	const gas = data.gasEstimate + 21000n;
 
 	return {
 		amountReturned: expectedAmount.toString(),
@@ -52,20 +64,22 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ chain, fromAddress, rawQuote, from, to }) {
-	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, signer).populateTransaction;
+	const data = encodeFunctionData({
+		abi: ABI.yieldYakRouter,
+		functionName:
+			from === zeroAddress ? 'swapNoSplitFromAVAX' : to === zeroAddress ? 'swapNoSplitToAVAX' : 'swapNoSplit',
+		args: [
+			[rawQuote.offer.amounts[0], rawQuote.minAmountOut, rawQuote.offer.path, rawQuote.offer.adapters],
+			fromAddress,
+			0
+		]
+	});
 
-	const swapFunc = (() => {
-		if (from === zeroAddress) return routerContract.swapNoSplitFromAVAX;
-		if (to === zeroAddress) return routerContract.swapNoSplitToAVAX;
-		return routerContract.swapNoSplit;
-	})();
-
-	const tx = await swapFunc(
-		[rawQuote.offer[0][0], rawQuote.minAmountOut, rawQuote.offer[2], rawQuote.offer[1]],
-		fromAddress,
-		0,
-		from === zeroAddress ? { value: rawQuote.offer[0][0] } : {}
-	);
+	const tx = {
+		to: chainToId[chain],
+		data,
+		...(from === zeroAddress ? { value: rawQuote.offer[0][0] } : {})
+	};
 
 	const res = await sendTx(tx);
 

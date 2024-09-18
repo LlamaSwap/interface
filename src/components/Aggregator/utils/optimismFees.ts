@@ -1,11 +1,14 @@
 import { readContract } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
+import { chainsMap } from '../constants';
 
 const FEE_ADDRESS = '0x420000000000000000000000000000000000000F';
 
 export const chainsWithOpFees = ['optimism', 'base'];
 
-export const getOptimismFee = async (txData) => {
+export const getOptimismFee = async (txData, chain) => {
+	if (!chain || chainsMap[chain]) return 'Unknown';
+
 	try {
 		const gas = await readContract(config, {
 			address: FEE_ADDRESS,
@@ -19,7 +22,8 @@ export const getOptimismFee = async (txData) => {
 				}
 			],
 			functionName: 'getL1Fee',
-			args: [txData]
+			args: [txData],
+			chainId: chainsMap[chain]
 		});
 
 		return Number(gas) / 1e18;
