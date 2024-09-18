@@ -156,7 +156,7 @@ interface IGetInitialTokenLiquidity {
 	chain: string | null;
 	fromToken: IToken | null;
 	toToken: IToken | null;
-	gasPriceData?: {};
+	gasPriceData?: { gasPrice: number } | null;
 	gasTokenPrice?: number | null;
 	fromTokenPrice?: number | null;
 	toTokenPrice?: number | null;

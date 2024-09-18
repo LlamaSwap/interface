@@ -21,8 +21,8 @@ interface IPriceImpact {
 	fromToken?: { symbol: string; decimals: number; name: string } | null;
 	toToken?: { symbol: string; decimals: number; name: string } | null;
 	amount?: string | number;
-	fromTokenPrice?: number;
-	toTokenPrice?: number;
+	fromTokenPrice?: number | null;
+	toTokenPrice?: number | null;
 	selectedRoutesPriceImpact?: number | null;
 	amountReturnedInSelectedRoute?: string;
 	slippage?: string;

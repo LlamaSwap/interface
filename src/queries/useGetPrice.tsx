@@ -12,10 +12,10 @@ interface IGetPriceProps {
 }
 
 interface IPrice {
-	gasTokenPrice?: number;
-	fromTokenPrice?: number;
-	toTokenPrice?: number;
-	gasPriceData?: { gasPrice?: number | null };
+	gasTokenPrice?: number | null;
+	fromTokenPrice?: number | null;
+	toTokenPrice?: number | null;
+	gasPriceData?: { gasPrice: number } | null;
 }
 
 type DexScreenerTokenPair = {
@@ -111,17 +111,16 @@ export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPric
 		}
 		const chain = convertChain(rawChain);
 
-		// TODO use wagmi to fetch fee data
-		const [{ gasTokenPrice, fromTokenPrice, toTokenPrice }, gasPrice] = await Promise.all([
+		const [coinsPrice, gasPrice] = await Promise.allSettled([
 			getCoinsPrice({ chain: rawChain, fromToken, toToken }),
 			getGasPrice(config, { chainId: chainsMap[chain] })
 		]);
 
 		return {
-			gasTokenPrice,
-			fromTokenPrice,
-			toTokenPrice,
-			gasPriceData: { gasPrice: gasPrice ? Number(gasPrice) : null }
+			gasTokenPrice: coinsPrice.status === 'fulfilled' ? coinsPrice.value.gasTokenPrice : null,
+			fromTokenPrice: coinsPrice.status === 'fulfilled' ? coinsPrice.value.fromTokenPrice : null,
+			toTokenPrice: coinsPrice.status === 'fulfilled' ? coinsPrice.value.toTokenPrice : null,
+			gasPriceData: gasPrice.status === 'fulfilled' ? { gasPrice: Number(gasPrice.value) } : null
 		};
 	} catch (error) {
 		console.log(error);

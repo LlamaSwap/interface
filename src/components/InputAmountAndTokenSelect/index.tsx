@@ -103,7 +103,7 @@ export function InputAmountAndTokenSelect({
 	} | null;
 	balance?: string;
 	onMaxClick?: () => void;
-	tokenPrice?: number;
+	tokenPrice?: number | null;
 	priceImpact?: number | null;
 	placeholder?: string | number;
 	customSelect?: React.ReactElement;

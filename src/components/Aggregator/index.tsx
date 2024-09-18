@@ -481,7 +481,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		fromToken: finalSelectedFromToken?.address
 	});
 
-	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice, gasPriceData } = tokenPrices || {};
+	const { gasTokenPrice, toTokenPrice, fromTokenPrice, gasPriceData } = tokenPrices || {};
 
 	const {
 		data: routes = [],
@@ -524,17 +524,18 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
 			? gasData?.[route.name]?.gas
 			: route.price.estimatedGas);
+
 		let gasUsd: number | string = gasPriceData?.gasPrice
-			? (gasTokenPrice * gasEstimation * gasPriceData.gasPrice) / 1e18 || 0
+			? ((gasTokenPrice ?? 0) * gasEstimation * gasPriceData.gasPrice) / 1e18 || 0
 			: 0;
 
 		// CowSwap native token swap
 		gasUsd =
 			route.price.feeAmount && finalSelectedFromToken.address === zeroAddress
-				? (route.price.feeAmount / 1e18) * gasTokenPrice + gasUsd
+				? (route.price.feeAmount / 1e18) * (gasTokenPrice ?? 0) + gasUsd
 				: gasUsd;
 
-		gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
+		gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * (gasTokenPrice ?? 0) + gasUsd : gasUsd;
 
 		gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
 
