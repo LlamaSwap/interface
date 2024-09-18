@@ -1,7 +1,7 @@
-import { useAccount, useSimulateContract } from 'wagmi';
+import { useAccount, useEstimateGas } from 'wagmi';
 import { chainsMap, nativeAddress } from '../constants';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { zeroAddress, erc20Abi, maxInt256 } from 'viem';
+import { zeroAddress, erc20Abi, maxInt256, encodeFunctionData } from 'viem';
 import { arbitrum, fantom } from 'viem/chains';
 import { readContract, waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
@@ -167,20 +167,27 @@ export const useTokenApprove = ({
 
 	const normalizedAmount = !Number.isNaN(Number(amount)) ? amount : '0';
 
-	const { data } = useSimulateContract({
-		address: token,
-		abi: erc20Abi,
-		functionName: 'approve',
-		args: spender && [spender, normalizedAmount ? BigInt(normalizedAmount) : maxInt256],
+	const encodedFunctionData =
+		isConnected && !!spender && !!token && normalizedAmount !== '0'
+			? encodeFunctionData({
+					abi: erc20Abi,
+					functionName: 'approve',
+					args: spender && [spender, normalizedAmount ? BigInt(normalizedAmount) : maxInt256]
+				})
+			: null;
+
+	const { data: gasLimit } = useEstimateGas({
+		to: token,
+		data: encodedFunctionData!,
 		query: {
-			enabled: isConnected && !!spender && !!token && normalizedAmount !== '0' ? true : false
+			enabled: encodedFunctionData ? true : false
 		}
 	});
 
 	const customGasLimit =
-		shouldRemoveApproval || !data?.request?.gas || !chain || chainsWithDefaultGasLimit[chainsMap[chain]]
+		shouldRemoveApproval || gasLimit === undefined || !chain || chainsWithDefaultGasLimit[chainsMap[chain]]
 			? null
-			: { gas: (data.request.gas * 140n) / 100n };
+			: { gas: (gasLimit * 140n) / 100n };
 
 	const { mutateAsync: approveWriteContract, isPending: isLoading } = useApproveTokenSpend();
 	const approve = () => {
