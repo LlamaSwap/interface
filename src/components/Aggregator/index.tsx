@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useEstimateFeesPerGas, useSignTypedData, useSwitchChain } from 'wagmi';
+import { useAccount, useSignTypedData, useSwitchChain } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
@@ -451,13 +451,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	// balances of all token's in wallet
 	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain?.id : null);
 
-	const { data: gasPriceData } = useEstimateFeesPerGas({
-		chainId: selectedChain?.id,
-		query: {
-			enabled: selectedChain ? true : false
-		}
-	});
-
 	const tokensInChain = useMemo(() => {
 		return (
 			chainTokenList
@@ -481,6 +474,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			toTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)
 		};
 	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
+
+	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
+		chain: selectedChain?.value,
+		toToken: finalSelectedToToken?.address,
+		fromToken: finalSelectedFromToken?.address
+	});
+
+	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice, gasPriceData } = tokenPrices || {};
 
 	const {
 		data: routes = [],
@@ -516,13 +517,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		isOutput: amountOut && amountOut !== '' ? true : false
 	});
 
-	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
-		chain: selectedChain?.value,
-		toToken: finalSelectedToToken?.address,
-		fromToken: finalSelectedFromToken?.address
-	});
-	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
-
 	// format routes
 	const fillRoute = (route: IRoute) => {
 		if (!route?.price || !finalSelectedFromToken || !finalSelectedToToken) return null;
@@ -530,8 +524,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
 			? gasData?.[route.name]?.gas
 			: route.price.estimatedGas);
-		let gasUsd: number | string = gasPriceData?.formatted?.gasPrice
-			? (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0
+		let gasUsd: number | string = gasPriceData?.gasPrice
+			? (gasTokenPrice * gasEstimation * gasPriceData.gasPrice) / 1e18 || 0
 			: 0;
 
 		// CowSwap native token swap
@@ -612,10 +606,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		if (balance.data && balance.data.formatted && !Number.isNaN(Number(balance.data.formatted))) {
 			if (
 				selectedRoute?.price?.estimatedGas &&
-				gasPriceData?.formatted?.gasPrice &&
+				gasPriceData?.gasPrice &&
 				finalSelectedFromToken?.address === zeroAddress
 			) {
-				const gas = (+selectedRoute.price!.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
+				const gas = (+selectedRoute.price!.estimatedGas * gasPriceData.gasPrice * 2) / 1e18;
 
 				const amountWithoutGas = +balance.data.formatted - gas;
 
@@ -1434,7 +1428,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								finalSelectedFromToken!.label +
 								finalSelectedToToken!.label +
 								amountWithDecimals +
-								gasPriceData?.formatted?.gasPrice +
+								gasPriceData?.gasPrice?.toString() +
 								r?.name
 							}
 						>
@@ -1644,7 +1638,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 										finalSelectedFromToken?.label +
 										finalSelectedToToken?.label +
 										amountWithDecimals +
-										gasPriceData?.formatted?.gasPrice +
+										gasPriceData?.gasPrice?.toString() +
 										r[0]
 									}
 								>

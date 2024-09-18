@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { providers } from '~/components/Aggregator/rpcs';
 import { getAddress, zeroAddress } from 'viem';
+import { getGasPrice } from 'wagmi/actions';
+import { chainsMap } from '~/components/Aggregator/constants';
+import { config } from '~/components/WalletProvider';
 
 interface IGetPriceProps {
 	chain?: string;
@@ -13,7 +15,7 @@ interface IPrice {
 	gasTokenPrice?: number;
 	fromTokenPrice?: number;
 	toTokenPrice?: number;
-	gasPriceData?: {};
+	gasPriceData?: { gasPrice?: number | null };
 }
 
 type DexScreenerTokenPair = {
@@ -109,16 +111,17 @@ export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPric
 		}
 		const chain = convertChain(rawChain);
 
-		const [{ gasTokenPrice, fromTokenPrice, toTokenPrice }, gasPriceData] = await Promise.all([
+		// TODO use wagmi to fetch fee data
+		const [{ gasTokenPrice, fromTokenPrice, toTokenPrice }, gasPrice] = await Promise.all([
 			getCoinsPrice({ chain: rawChain, fromToken, toToken }),
-			providers[chain].getFeeData()
+			getGasPrice(config, { chainId: chainsMap[chain] })
 		]);
 
 		return {
 			gasTokenPrice,
 			fromTokenPrice,
 			toTokenPrice,
-			gasPriceData
+			gasPriceData: { gasPrice: gasPrice ? Number(gasPrice) : null }
 		};
 	} catch (error) {
 		console.log(error);

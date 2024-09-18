@@ -150,15 +150,7 @@ export function useGetRoutes({
 			) // @ts-ignore
 			.map<UseQueryOptions<IAdapterRoute>>((adapter) => {
 				return {
-					queryKey: [
-						'routes',
-						adapter.name,
-						chain,
-						from,
-						to,
-						amount,
-						JSON.stringify(omit(extra, 'amount', 'gasPriceData'))
-					],
+					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
 					refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
 					refetchOnWindowFocus: false,
