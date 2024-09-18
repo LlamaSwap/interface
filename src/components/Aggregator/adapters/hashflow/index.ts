@@ -73,7 +73,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	]);
 
 	let estimatedGas = gas;
-	if (chain === 'arbitrum') estimatedGas = await applyArbitrumFees(router.address, txData.data, gas);
+	if (chain === 'arbitrum') estimatedGas = await applyArbitrumFees(router.address, txData.data!, gas);
 
 	const timeTillExpiry = data.quoteData.quoteExpiry - Date.now() / 1000;
 	if (timeTillExpiry < 40) {

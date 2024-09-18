@@ -1,12 +1,31 @@
-import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
-import { providers } from '../rpcs';
+import { readContract } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
+import { arbitrum } from 'viem/chains';
 
 export async function applyArbitrumFees(to: string, data: string, gas: string) {
-    const nodeInterface = new ethers.Contract("0x00000000000000000000000000000000000000C8",
-        ["function gasEstimateL1Component(address to,bool contractCreation,bytes calldata data) external view returns (uint64 gasEstimateForL1,uint256 baseFee,uint256 l1BaseFeeEstimate)"],
-        providers.arbitrum);
-    const gasData = await nodeInterface.gasEstimateL1Component(to, false, data);
-    gas = BigNumber(gas).plus(gasData.gasEstimateForL1.toNumber()).toFixed(0, 1);
-    return gas
+	const gasData2 = await readContract(config, {
+		address: '0x00000000000000000000000000000000000000C8',
+		abi: [
+			{
+				inputs: [
+					{ internalType: 'address', name: 'to', type: 'address' },
+					{ internalType: 'bool', name: 'contractCreation', type: 'bool' },
+					{ internalType: 'bytes', name: 'data', type: 'bytes' }
+				],
+				name: 'gasEstimateL1Component',
+				outputs: [
+					{ internalType: 'uint64', name: 'gasEstimateForL1', type: 'uint64' },
+					{ internalType: 'uint256', name: 'baseFee', type: 'uint256' },
+					{ internalType: 'uint256', name: 'l1BaseFeeEstimate', type: 'uint256' }
+				],
+				stateMutability: 'view',
+				type: 'function'
+			}
+		],
+		chainId: arbitrum.id,
+		functionName: 'gasEstimateL1Component',
+		args: [to as `0x${string}`, false, data as `0x${string}`]
+	});
+
+	return Number(BigInt(gas) + gasData2[0]).toString();
 }
