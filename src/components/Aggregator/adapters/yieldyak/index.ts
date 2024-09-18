@@ -32,7 +32,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const data = (await readContract(config, {
 		address: chainToId[chain],
-		abi: ABI.yieldYakRouter,
+		abi: ABI,
 		functionName: 'findBestPathWithGas',
 		args: [amount, tokenFrom, tokenTo, 3, gasPrice],
 		chainId: chainsMap[chain]
@@ -70,7 +70,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 	const data = encodeFunctionData({
-		abi: ABI.yieldYakRouter,
+		abi: ABI,
 		functionName:
 			from === zeroAddress ? 'swapNoSplitFromAVAX' : to === zeroAddress ? 'swapNoSplitToAVAX' : 'swapNoSplit',
 		args: [
