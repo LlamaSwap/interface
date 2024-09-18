@@ -55,7 +55,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: expectedAmount.toString(),
 		estimatedGas: gas.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic.
 		rawQuote: {
-			offer: data,
+			// convert bigint to string so when we send swap event to our server, app doesn't crash serializing bigint values
+			offer: {
+				...data,
+				amounts: data.amounts.map((amount) => String(amount)),
+				gasEstimate: String(data.gasEstimate)
+			},
 			minAmountOut
 		},
 		tokenApprovalAddress: chainToId[chain],
@@ -78,7 +83,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 	const tx = {
 		to: chainToId[chain],
 		data,
-		...(from === zeroAddress ? { value: rawQuote.offer[0][0] } : {})
+		...(from === zeroAddress ? { value: rawQuote.offer.amounts[0] } : {})
 	};
 
 	const res = await sendTx(tx);
