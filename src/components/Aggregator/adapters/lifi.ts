@@ -60,7 +60,7 @@ export async function swap({ rawQuote, chain }) {
 		to: rawQuote.transactionRequest.to,
 		data: rawQuote.transactionRequest.data,
 		value: rawQuote.transactionRequest.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 
 	return tx;

@@ -5,10 +5,9 @@ export async function sendTx(txObject: any) {
 	if (txObject.data === '0x' || typeof txObject.to !== 'string') {
 		throw new Error('Malformed tx'); // Should never happen
 	}
-	if (txObject.gasLimit === undefined) {
+	if (txObject.gas === undefined) {
 		const gasPrediction = await estimateGas(config, txObject);
-		console.log({ gasPrediction });
-		txObject.gasLimit = (gasPrediction * 14n) / 10n; // Increase gas +40%
+		txObject.gas = (gasPrediction * 14n) / 10n; // Increase gas +40%
 	}
 
 	return sendTransaction(config, txObject);

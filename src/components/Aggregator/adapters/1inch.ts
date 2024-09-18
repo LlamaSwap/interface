@@ -92,11 +92,12 @@ export async function swap({ rawQuote }) {
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value
 	};
+
 	const gasPrediction = await estimateGas(config, txObject);
-	console.log({ gasPrediction });
+
 	const tx = await sendTx({
 		...txObject,
-		gasLimit: (gasPrediction * 12n) / 10n + 86000n // Increase gas +20% + 2 erc20 txs
+		gas: (gasPrediction * 12n) / 10n + 86000n // Increase gas +20% + 2 erc20 txs
 	});
 	return tx;
 }

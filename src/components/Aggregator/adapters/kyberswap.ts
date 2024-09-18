@@ -75,7 +75,7 @@ export async function swap({ fromAddress, from, rawQuote, chain }) {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
 		data: rawQuote.encodedSwapData,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	};
 
 	if (from === zeroAddress) transactionOption.value = rawQuote.inputAmount;

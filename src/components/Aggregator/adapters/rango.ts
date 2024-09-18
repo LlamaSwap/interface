@@ -81,7 +81,7 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote?.tx?.txTo,
 		data: rawQuote?.tx?.txData,
 		value: rawQuote?.tx?.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 
 	return tx;

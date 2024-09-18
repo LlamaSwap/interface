@@ -98,7 +98,7 @@ export async function swap({ rawQuote }) {
 		to: rawQuote.transaction.to,
 		data: rawQuote.transaction.data,
 		value: rawQuote.transaction.value
-		//gasLimit: rawQuote.transaction.gas
+		//gas: rawQuote.transaction.gas
 	});
 
 	return tx;

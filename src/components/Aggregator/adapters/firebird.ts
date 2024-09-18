@@ -108,7 +108,7 @@ export async function swap({ rawQuote, chain }) {
 		to: rawQuote.tx.router,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 
 	return tx;
