@@ -1,4 +1,3 @@
-import { FEE_ABI } from './abi';
 import { readContract } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
 
@@ -10,7 +9,15 @@ export const getOptimismFee = async (txData) => {
 	try {
 		const gas = await readContract(config, {
 			address: FEE_ADDRESS,
-			abi: FEE_ABI,
+			abi: [
+				{
+					inputs: [{ internalType: 'bytes', name: '_data', type: 'bytes' }],
+					name: 'getL1Fee',
+					outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+					stateMutability: 'view',
+					type: 'function'
+				}
+			],
 			functionName: 'getL1Fee',
 			args: [txData]
 		});

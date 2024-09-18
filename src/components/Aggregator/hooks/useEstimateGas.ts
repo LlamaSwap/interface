@@ -98,7 +98,7 @@ export const estimateGas = async ({
 						})
 					};
 
-			const callParams2 = [resetApproveTx, approveTx, tx].filter(Boolean).map((txData) => [
+			const callParams = [resetApproveTx, approveTx, tx].filter(Boolean).map((txData) => [
 				{
 					from: userAddress,
 					to: txData!.to,
@@ -115,7 +115,7 @@ export const estimateGas = async ({
 					id: chainsMap[chain],
 					jsonrpc: '2.0',
 					method: chain === 'arbitrum' ? 'arbtrace_callMany' : 'trace_callMany',
-					params: [callParams2, 'latest']
+					params: [callParams, 'latest']
 				})
 			}).then((res) => res.json());
 
