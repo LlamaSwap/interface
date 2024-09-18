@@ -1,10 +1,8 @@
 import { useQueries, UseQueryOptions } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
-import { last } from 'lodash';
-import { erc20Abi, zeroAddress } from 'viem';
+import { encodeFunctionData, maxInt256, zeroAddress } from 'viem';
 import { IRoute } from '~/queries/useGetRoutes';
-import { providers } from '../rpcs';
+import { chainsMap } from '../constants';
 
 const traceRpcs = {
 	// https://docs.blastapi.io/blast-documentation/trace-api
@@ -18,19 +16,20 @@ const traceRpcs = {
 	arbitrum: 'https://arbitrum-one.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1'
 };
 
-// TODO compare gas b/w main branch and this code
 export const estimateGas = async ({
 	route,
 	token,
 	userAddress,
 	chain,
-	balance
+	balance,
+	isOutput
 }: {
 	route: IRoute;
 	token?: string;
 	userAddress?: string;
 	chain?: string;
 	balance?: number | null;
+	isOutput: boolean;
 }) => {
 	if (
 		!token ||
@@ -39,14 +38,14 @@ export const estimateGas = async ({
 		!balance ||
 		!Number.isFinite(balance) ||
 		balance < +route.fromAmount ||
-		!route.price
+		!route.price ||
+		!traceRpcs[chain] ||
+		(chain === 'polygon' && isOutput)
 	) {
 		return null;
 	}
 
 	try {
-		const provider = new ethers.providers.StaticJsonRpcProvider(traceRpcs[chain], providers[chain]._network);
-		const tokenContract = new ethers.Contract(token, erc20Abi, provider);
 		const tx = route?.tx;
 		const isNative = token === zeroAddress;
 
@@ -54,37 +53,84 @@ export const estimateGas = async ({
 			const approveTx = isNative
 				? null
 				: {
-						...(await tokenContract.populateTransaction.approve(
-							route.price.tokenApprovalAddress,
-							'0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
-						)),
-						from: userAddress
+						to: route.price.tokenApprovalAddress,
+						data: encodeFunctionData({
+							abi: [
+								{
+									constant: false,
+									inputs: [
+										{ name: '_spender', type: 'address' },
+										{ name: '_value', type: 'uint256' }
+									],
+									name: 'approve',
+									outputs: [],
+									payable: false,
+									stateMutability: 'nonpayable',
+									type: 'function'
+								}
+							],
+							functionName: 'approve',
+							args: [route.price.tokenApprovalAddress, maxInt256]
+						})
 					};
 
 			const resetApproveTx = isNative
 				? null
-				: await tokenContract.populateTransaction.approve(route.price.tokenApprovalAddress, ethers.constants.HashZero);
+				: {
+						to: route.price.tokenApprovalAddress,
+						data: encodeFunctionData({
+							abi: [
+								{
+									constant: false,
+									inputs: [
+										{ name: '_spender', type: 'address' },
+										{ name: '_value', type: 'uint256' }
+									],
+									name: 'approve',
+									outputs: [],
+									payable: false,
+									stateMutability: 'nonpayable',
+									type: 'function'
+								}
+							],
+							functionName: 'approve',
+							args: [route.price.tokenApprovalAddress, 0n]
+						})
+					};
 
-			const callParams = [
-				[resetApproveTx, approveTx, tx].filter(Boolean).map((txData) => [
-					{
-						from: userAddress,
-						to: txData!.to,
-						data: txData!.data,
-						...(isNative ? { value: '0x' + BigNumber(route.fromAmount).toString(16) } : {})
-					},
-					['trace']
-				]),
-				'latest'
-			];
+			const callParams2 = [resetApproveTx, approveTx, tx].filter(Boolean).map((txData) => [
+				{
+					from: userAddress,
+					to: txData!.to,
+					data: txData!.data,
+					...(isNative ? { value: '0x' + BigNumber(route.fromAmount).toString(16) } : {})
+				},
+				['trace']
+			]);
 
-			const res = await provider.send(chain === 'arbitrum' ? 'arbtrace_callMany' : 'trace_callMany', callParams);
-			const swapTx = last<{ trace: Array<{ result: { gasUsed: string }; error: string }> }>(res);
+			const response = await fetch(traceRpcs[chain], {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					id: chainsMap[chain],
+					jsonrpc: '2.0',
+					method: chain === 'arbitrum' ? 'arbtrace_callMany' : 'trace_callMany',
+					params: [callParams2, 'latest']
+				})
+			}).then((res) => res.json());
+
+			if (response.error) {
+				console.log(response.error);
+				return null;
+			}
+
+			const swapTx = response.result[2];
+
 			if (!swapTx) return null;
 
 			return {
-				gas: (Number(swapTx.trace[0].result.gasUsed) + 21e3).toString(), // ignores calldata and accesslist costs
-				isFailed: swapTx.trace[0]?.error === 'Reverted',
+				gas: (Number(swapTx.trace[0].result?.gasUsed ?? '0x0') + 21e3).toString(), // ignores calldata and accesslist costs
+				isFailed: swapTx.trace[0]?.error === 'Revert',
 				aggGas: route.price?.estimatedGas,
 				name: route.name
 			};
@@ -119,12 +165,8 @@ export const useEstimateGas = ({
 			.filter((route) => !!route?.tx?.to)
 			.map<UseQueryOptions<Awaited<ReturnType<typeof estimateGas>>>>((route) => {
 				return {
-					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance],
-					queryFn: () => estimateGas({ route, token, userAddress, chain, balance }),
-					enabled:
-						chain && traceRpcs[chain] !== undefined && (chain === 'polygon' && isOutput ? false : true) && !!userAddress
-							? true
-							: false // TODO: figure out why it doesn't work
+					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance, isOutput],
+					queryFn: () => estimateGas({ route, token, userAddress, chain, balance, isOutput })
 				};
 			})
 	});
