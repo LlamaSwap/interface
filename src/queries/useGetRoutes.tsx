@@ -16,16 +16,18 @@ interface IGetListRoutesProps {
 	customRefetchInterval?: number;
 }
 
-export interface IRoute {
-	price: {
-		amountReturned: any;
-		estimatedGas: any;
-		tokenApprovalAddress: any;
-		logo: string;
-		isGaslessApproval?: boolean;
-		feeAmount?: number;
-		rawQuote?: {};
-	} | null;
+interface IPrice {
+	amountReturned: any;
+	estimatedGas: any;
+	tokenApprovalAddress: any;
+	logo: string;
+	isGaslessApproval?: boolean;
+	feeAmount?: number;
+	rawQuote?: {};
+}
+
+interface IAdapterRoute {
+	price: IPrice | null;
 	name: string;
 	airdrop: boolean;
 	fromAmount: string;
@@ -38,6 +40,10 @@ export interface IRoute {
 	};
 	isOutputAvailable: boolean;
 	isGasless: boolean;
+}
+
+export interface IRoute extends Omit<IAdapterRoute, 'price'> {
+	price: IPrice;
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
@@ -141,7 +147,7 @@ export function useGetRoutes({
 			.filter((adap) =>
 				chain && adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name) ? true : false
 			) // @ts-ignore
-			.map<UseQueryOptions<IRoute>>((adapter) => {
+			.map<UseQueryOptions<IAdapterRoute>>((adapter) => {
 				return {
 					queryKey: [
 						'routes',
@@ -163,8 +169,9 @@ export function useGetRoutes({
 	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
 
 	const loadingRoutes =
-		res?.map((r, i) => [adapters[i].name, r])?.filter((r) => (r[1] as UseQueryResult<IRoute>).status === 'pending') ??
-		[];
+		res
+			?.map((r, i) => [adapters[i].name, r])
+			?.filter((r) => (r[1] as UseQueryResult<IAdapterRoute>).status === 'pending') ?? [];
 
 	const lastFetched = useMemo(() => {
 		return (

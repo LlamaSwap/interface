@@ -12,6 +12,7 @@ import { allChains } from '../WalletProvider/chains';
 import { ChevronDown } from 'react-feather';
 import { useToken } from '../Aggregator/hooks/useToken';
 import { isAddress } from 'viem';
+import { IToken } from '~/types';
 
 const Row = ({ chain, token, onClick }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
@@ -156,7 +157,7 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 						: address.slice(0, 4) + '...' + address.slice(-4)}
 			</Text>
 
-			<Button height={38} marginLeft="auto" onClick={onTokenClick} disabled={isError}>
+			<Button height={38} marginLeft="auto" onClick={onTokenClick} disabled={error ? true : false}>
 				Add token
 			</Button>
 
@@ -281,7 +282,23 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 	);
 };
 
-export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
+export const TokenSelect = ({
+	tokens,
+	onClick,
+	token,
+	selectedChain
+}: {
+	tokens: Array<IToken>;
+	token?: IToken | null;
+	onClick: (token: IToken) => void;
+	selectedChain?: {
+		id: any;
+		value: string;
+		label: any;
+		chainId: any;
+		logoURI: string;
+	} | null;
+}) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const onTokenClick = (token) => {
@@ -304,12 +321,12 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 				p="12px"
 				onClick={() => onOpen()}
 			>
-				{token && (
+				{token ? (
 					<IconImage
 						src={token.logoURI}
 						onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
 					/>
-				)}
+				) : null}
 
 				<Tooltip
 					label="This token could have been affected by the multichain hack."

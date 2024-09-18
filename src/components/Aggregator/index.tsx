@@ -334,7 +334,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const { signTypedDataAsync } = useSignTypedData();
 
 	// swap input fields and selected aggregator states
-	const [aggregator, setAggregator] = useState(null);
+	const [aggregator, setAggregator] = useState<string | null>(null);
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
 
@@ -1451,10 +1451,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 									if (isSmallScreen) toggleUi();
 									setAggregator(r.name);
 								}}
-								toToken={finalSelectedToToken}
+								toToken={finalSelectedToToken!}
 								amountFrom={r?.fromAmount}
-								fromToken={finalSelectedFromToken}
-								selectedChain={selectedChain.value}
+								fromToken={finalSelectedFromToken!}
+								selectedChain={selectedChain!.value}
 								gasTokenPrice={gasTokenPrice}
 								toTokenPrice={toTokenPrice}
 								isFetchingGasPrice={fetchingTokenPrices}

@@ -23,7 +23,7 @@ interface IPriceImpact {
 	amount?: string | number;
 	fromTokenPrice?: number;
 	toTokenPrice?: number;
-	selectedRoutesPriceImpact?: number;
+	selectedRoutesPriceImpact?: number | null;
 	amountReturnedInSelectedRoute?: string;
 	slippage?: string;
 	isPriceImpactNotKnown?: boolean;
@@ -129,10 +129,10 @@ export function PriceImpact({
 								isPriceImpactNotKnown
 									? 'red.500'
 									: selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD
-									? 'orange.500'
-									: selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD
-									? 'yellow.500'
-									: 'white'
+										? 'orange.500'
+										: selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD
+											? 'yellow.500'
+											: 'white'
 							}
 						>
 							<span>Price impact according to CoinGecko</span>
@@ -148,7 +148,7 @@ export function PriceImpact({
 											selectedRoutesPriceImpact < 0
 												? '+' + (selectedRoutesPriceImpact * -1).toFixed(2)
 												: selectedRoutesPriceImpact.toFixed(2)
-									  }%`}
+										}%`}
 							</span>
 						</Text>
 						<Text

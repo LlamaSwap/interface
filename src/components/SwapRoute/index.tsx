@@ -33,7 +33,7 @@ interface IRoute {
 	selected: boolean;
 	index: number;
 	gasUsd: number | string;
-	amountUsd: string;
+	amountUsd: string | null;
 	airdrop: boolean;
 	amountFrom: string;
 	lossPercent: number;
@@ -42,7 +42,7 @@ interface IRoute {
 	netOut: number;
 	isFetchingGasPrice: boolean;
 	amountOut: string;
-	toTokenPrice: number;
+	toTokenPrice?: number;
 	amountIn: string;
 	isGasless: boolean;
 }
