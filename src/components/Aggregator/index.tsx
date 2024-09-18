@@ -62,6 +62,8 @@ import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
 import { zeroAddress } from 'viem';
 import { useToken } from './hooks/useToken';
+import { waitForTransactionReceipt } from 'wagmi/actions';
+import { config } from '../WalletProvider';
 
 /*
 Integrated:
@@ -790,9 +792,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			approvalData: any;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
-			// TODO fix onSuccess
 			let txUrl;
-			if (data.gaslessTxReceipt) {
+			if (typeof data !== 'string' && data.gaslessTxReceipt) {
 				gaslessApprovalMutation.reset();
 				const isSuccess =
 					data.gaslessTxReceipt.status === 'confirmed' ||
@@ -819,37 +820,93 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				}
 				forceRefreshTokenBalance();
 
-				if (selectedChain && address) {
-					sendSwapEvent({
-						chain: selectedChain.value,
-						user: address,
-						from: variables.from,
-						to: variables.to,
-						aggregator: variables.adapter,
-						isError: isSuccess || data.gaslessTxReceipt.status === 'pending',
-						quote: variables.rawQuote,
-						txUrl,
-						amount: String(variables.amountIn),
-						amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
-						errorData: data,
-						slippage,
-						routePlace: String(variables?.index),
-						route: variables.route
-					});
-				}
+				sendSwapEvent({
+					chain: selectedChain?.value ?? 'unknown',
+					user: address ?? 'unknown',
+					from: variables.from,
+					to: variables.to,
+					aggregator: variables.adapter,
+					isError: isSuccess || data.gaslessTxReceipt.status === 'pending',
+					quote: variables.rawQuote,
+					txUrl,
+					amount: String(variables.amountIn),
+					amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+					errorData: data,
+					slippage,
+					routePlace: String(variables?.index),
+					route: variables.route
+				});
 
 				return;
 			}
 
-			if (data.hash) {
+			if (typeof data === 'string') {
 				addRecentTransaction({
-					hash: data.hash,
+					hash: data,
 					description: `Swap transaction using ${variables.adapter} is sent.`
 				});
 				const explorerUrl = chainOnWallet.blockExplorers.default.url;
 				setTxModalOpen(true);
-				txUrl = `${explorerUrl}/tx/${data.hash}`;
+				txUrl = `${explorerUrl}/tx/${data}`;
 				setTxUrl(txUrl);
+
+				confirmingTxToastRef.current = toast({
+					title: 'Confirming Transaction',
+					description: '',
+					status: 'loading',
+					isClosable: true,
+					position: 'top-right'
+				});
+
+				let isError = false;
+				const balanceBefore = toTokenBalance?.data?.formatted;
+
+				waitForTransactionReceipt(config, {
+					hash: data as `0x${string}`
+				})
+					.then((final) => {
+						if (final.status === 'success') {
+							forceRefreshTokenBalance();
+
+							if (confirmingTxToastRef.current) {
+								toast.close(confirmingTxToastRef.current);
+							}
+
+							toast(formatSuccessToast(variables));
+						} else {
+							isError = true;
+							toast(formatErrorToast({}, true));
+						}
+					})
+					.catch(() => {
+						isError = true;
+						toast(formatErrorToast({}, true));
+					})
+					?.finally(() => {
+						if (selectedChain && finalSelectedToToken && address) {
+							getTokenBalance({ address, chainId: selectedChain.id, token: finalSelectedToToken.address }).then(
+								(balanceAfter) =>
+									sendSwapEvent({
+										chain: selectedChain.value,
+										user: address,
+										from: variables.from,
+										to: variables.to,
+										aggregator: variables.adapter,
+										isError,
+										quote: variables.rawQuote,
+										txUrl,
+										amount: String(variables.amountIn),
+										amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+										errorData: {},
+										slippage,
+										routePlace: String(variables?.index),
+										route: variables.route,
+										reportedOutput: Number(variables.amount) || 0,
+										realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
+									})
+							);
+						}
+					});
 			} else {
 				setTxModalOpen(true);
 				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
@@ -859,106 +916,45 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 					toast(formatSuccessToast(variables));
 
-					if (selectedChain && address) {
-						sendSwapEvent({
-							chain: selectedChain.value,
-							user: address,
-							from: variables.from,
-							to: variables.to,
-							aggregator: variables.adapter,
-							isError,
-							quote: variables.rawQuote,
-							txUrl,
-							amount: String(variables.amountIn),
-							amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
-							errorData: {},
-							slippage,
-							routePlace: String(variables?.index),
-							route: variables.route
-						});
-					}
+					sendSwapEvent({
+						chain: selectedChain?.value ?? 'unknown',
+						user: address ?? 'unknown',
+						from: variables.from,
+						to: variables.to,
+						aggregator: variables.adapter,
+						isError: false,
+						quote: variables.rawQuote,
+						txUrl,
+						amount: String(variables.amountIn),
+						amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+						errorData: {},
+						slippage,
+						routePlace: String(variables?.index),
+						route: variables.route
+					});
 				});
 			}
-
-			confirmingTxToastRef.current = toast({
-				title: 'Confirming Transaction',
-				description: '',
-				status: 'loading',
-				isClosable: true,
-				position: 'top-right'
-			});
-
-			let isError = false;
-			const balanceBefore = toTokenBalance?.data?.formatted;
-
-			data
-				.wait?.()
-				?.then((final) => {
-					if (final.status === 1) {
-						forceRefreshTokenBalance();
-
-						if (confirmingTxToastRef.current) {
-							toast.close(confirmingTxToastRef.current);
-						}
-
-						toast(formatSuccessToast(variables));
-					} else {
-						isError = true;
-						toast(formatErrorToast({}, true));
-					}
-				})
-				.catch(() => {
-					isError = true;
-					toast(formatErrorToast({}, true));
-				})
-				?.finally(() => {
-					if (selectedChain && finalSelectedToToken && address) {
-						getTokenBalance({ address, chainId: selectedChain.id, token: finalSelectedToToken.address }).then(
-							(balanceAfter) =>
-								sendSwapEvent({
-									chain: selectedChain.value,
-									user: address,
-									from: variables.from,
-									to: variables.to,
-									aggregator: variables.adapter,
-									isError,
-									quote: variables.rawQuote,
-									txUrl,
-									amount: String(variables.amountIn),
-									amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
-									errorData: {},
-									slippage,
-									routePlace: String(variables?.index),
-									route: variables.route,
-									reportedOutput: Number(variables.amount) || 0,
-									realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
-								})
-						);
-					}
-				});
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
 				toast(formatErrorToast(err, false));
 
-				if (selectedChain && address) {
-					sendSwapEvent({
-						chain: selectedChain.value,
-						user: address,
-						from: variables.from,
-						to: variables.to,
-						aggregator: variables.adapter,
-						isError: true,
-						quote: variables.rawQuote,
-						txUrl: '',
-						amount: String(variables.amountIn),
-						amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
-						errorData: err,
-						slippage,
-						routePlace: String(variables?.index),
-						route: variables.route
-					});
-				}
+				sendSwapEvent({
+					chain: selectedChain?.value ?? 'unknown',
+					user: address ?? 'unknown',
+					from: variables.from,
+					to: variables.to,
+					aggregator: variables.adapter,
+					isError: true,
+					quote: variables.rawQuote,
+					txUrl: '',
+					amount: String(variables.amountIn),
+					amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+					errorData: err,
+					slippage,
+					routePlace: String(variables?.index),
+					route: variables.route
+				});
 			}
 		}
 	});
@@ -1399,8 +1395,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					  amount === debouncedAmount &&
 					  finalSelectedFromToken &&
 					  finalSelectedToToken &&
-					  routes &&
-					  routes.length ? (
+					  routes.length === 0 ? (
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
 

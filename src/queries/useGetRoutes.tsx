@@ -118,7 +118,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 		return res;
 	} catch (e) {
-		console.log(e);
+		console.error(`Error fetching ${adapter.name} quote`);
+		console.error(e);
 		return {
 			price: null,
 			l1Gas: 0,

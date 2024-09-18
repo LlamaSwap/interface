@@ -10,5 +10,6 @@ export async function sendTx(txObject: any) {
 		console.log({ gasPrediction });
 		txObject.gasLimit = (gasPrediction * 14n) / 10n; // Increase gas +40%
 	}
+
 	return sendTransaction(config, txObject);
 }
