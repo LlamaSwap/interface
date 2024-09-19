@@ -18,7 +18,7 @@ import * as llamazip from './adapters/llamazip';
 import * as matchaGasless from './adapters/0xGasless';
 
 // TODO fix cowswap
-export const adapters = [llamazip];
+export const adapters = [matcha, inch, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless];
 
 // cowswap.name
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, paraswap.name, matchaGasless.name];
