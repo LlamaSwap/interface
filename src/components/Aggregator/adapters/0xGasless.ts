@@ -1,6 +1,8 @@
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber } from 'ethers';
 import { defillamaReferrerAddress } from '../constants';
-import { zeroAddress } from 'viem';
+import { decodeFunctionData, encodeFunctionData, getAddress, hexToNumber, parseSignature, zeroAddress } from 'viem';
+import { signTypedData } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
 
 export const chainToId = {
 	ethereum: '1',
@@ -66,10 +68,23 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 
 		if (data.approval.eip712.primaryType === 'MetaTransaction') {
-			spender = new ethers.utils.Interface(['function approve(address, uint)']).decodeFunctionData(
-				'approve',
-				data.approval.eip712.message.functionSignature
-			)[0];
+			spender = decodeFunctionData({
+				abi: [
+					{
+						constant: false,
+						inputs: [
+							{ name: '_spender', type: 'address' },
+							{ name: '_value', type: 'uint256' }
+						],
+						name: 'approve',
+						outputs: [],
+						payable: false,
+						stateMutability: 'nonpayable',
+						type: 'function'
+					}
+				],
+				data: data.approval.eip712.message.functionSignature
+			}).args[0];
 		}
 
 		if (!spender || spender.toLowerCase() !== routers[chain].toLowerCase()) {
@@ -98,11 +113,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function gaslessApprove({ signTypedDataAsync, rawQuote, isInfiniteApproval }) {
+export async function gaslessApprove({ rawQuote, isInfiniteApproval }) {
 	const body: any = {};
 
 	if (rawQuote.approval.isRequired && rawQuote.approval.isGaslessAvailable) {
-		const value = isInfiniteApproval
+		const message = isInfiniteApproval
 			? rawQuote.approval.eip712.message
 			: rawQuote.approval.eip712.primaryType === 'Permit'
 				? {
@@ -112,56 +127,93 @@ export async function gaslessApprove({ signTypedDataAsync, rawQuote, isInfiniteA
 				: rawQuote.approval.eip712.primaryType === 'MetaTransaction'
 					? {
 							...rawQuote.approval.eip712.message,
-							functionSignature: new ethers.utils.Interface(['function approve(address, uint)']).encodeFunctionData(
-								'approve',
-								[ethers.utils.getAddress(rawQuote.allowanceTarget), BigNumber.from(rawQuote.sellAmount)]
-							)
+							functionSignature: encodeFunctionData({
+								abi: ['function approve(address, uint)'],
+								functionName: 'approve',
+								args: [getAddress(rawQuote.allowanceTarget), BigNumber.from(rawQuote.sellAmount)]
+							})
 						}
 					: null;
 
-		const approvalSignature = await signTypedDataAsync({
+		const approvalSignature = await signTypedData(config, {
 			domain: rawQuote.approval.eip712.domain,
 			types: rawQuote.approval.eip712.types,
 			primaryType: rawQuote.approval.eip712.primaryType,
-			value
-		}).then((hash) => ethers.utils.splitSignature(hash));
+			message
+		}).then((hash) => {
+			const { r, s } = parseSignature(hash);
+			return { v: hexToNumber(`0x${hash.slice(130)}`), r, s };
+		});
 
 		body.approval = {
 			type: rawQuote.approval.type,
-			eip712: { ...rawQuote.approval.eip712, message: value },
-			signature: {
+			eip712: { ...rawQuote.approval.eip712, message },
+			signature: padSignature({
 				v: approvalSignature.v,
 				r: approvalSignature.r,
 				s: approvalSignature.s,
-				recoveryParam: approvalSignature.recoveryParam,
+				recoveryParam: 1 - (approvalSignature.v % 2),
 				signatureType: 2
-			}
+			})
 		};
 	}
 
 	return body;
 }
 
-export async function swap({ signTypedDataAsync, rawQuote, chain, approvalData }) {
+// https://github.com/0xProject/0x-examples/blob/main/gasless-v2-headless-example/utils/signature.ts
+/**
+ * Sometimes signatures are split without leading bytes on the `r` and/or `s` fields.
+ *
+ * Add them if they don't exist.
+ */
+function padSignature(signature) {
+	const hexLength = 64;
+
+	const result = { ...signature };
+
+	const hexExtractor = /^0(x|X)(?<hex>\w+)$/;
+	const rMatch = signature.r.match(hexExtractor);
+	const rHex = rMatch?.groups?.hex;
+	if (rHex) {
+		if (rHex.length !== hexLength) {
+			result.r = `0x${rHex.padStart(hexLength, '0')}`;
+		}
+	}
+
+	const sMatch = signature.s.match(hexExtractor);
+	const sHex = sMatch?.groups?.hex;
+	if (sHex) {
+		if (sHex.length !== hexLength) {
+			result.s = `0x${sHex.padStart(hexLength, '0')}`;
+		}
+	}
+	return result;
+}
+
+export async function swap({ rawQuote, chain, approvalData }) {
 	const body = { ...(rawQuote.approval.isRequired && rawQuote.approval.isGaslessAvailable ? approvalData ?? {} : {}) };
 
-	const tradeSignature = await signTypedDataAsync({
+	const tradeSignature = await signTypedData(config, {
 		domain: rawQuote.trade.eip712.domain,
 		types: rawQuote.trade.eip712.types,
 		primaryType: rawQuote.trade.eip712.primaryType,
-		value: rawQuote.trade.eip712.message
-	}).then((hash) => ethers.utils.splitSignature(hash));
+		message: rawQuote.trade.eip712.message
+	}).then((hash) => {
+		const { r, s } = parseSignature(hash);
+		return { v: hexToNumber(`0x${hash.slice(130)}`), r, s };
+	});
 
 	body.trade = {
 		type: rawQuote.trade.type,
 		eip712: rawQuote.trade.eip712,
-		signature: {
+		signature: padSignature({
 			v: tradeSignature.v,
 			r: tradeSignature.r,
 			s: tradeSignature.s,
-			recoveryParam: tradeSignature.recoveryParam,
+			recoveryParam: 1 - (tradeSignature.v % 2),
 			signatureType: 2
-		}
+		})
 	};
 
 	const res = await fetch(

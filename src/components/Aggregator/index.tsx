@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useSignTypedData, useSwitchChain } from 'wagmi';
+import { useAccount, useSwitchChain } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
@@ -333,7 +333,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const { openConnectModal } = useConnectModal();
 	const { switchChain } = useSwitchChain();
 	const addRecentTransaction = useAddRecentTransaction();
-	const { signTypedDataAsync } = useSignTypedData();
 
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState<string | null>(null);
@@ -748,12 +747,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	});
 
 	const gaslessApprovalMutation = useMutation({
-		mutationFn: (params: {
-			adapter: string;
-			signTypedDataAsync: typeof signTypedDataAsync;
-			rawQuote: any;
-			isInfiniteApproval: boolean;
-		}) => gaslessApprove(params)
+		mutationFn: (params: { adapter: string; rawQuote: any; isInfiniteApproval: boolean }) => gaslessApprove(params)
 	});
 
 	const isApproved =
@@ -778,7 +772,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			amountIn: string;
 			adapter: string;
 			fromAddress: string;
-			signTypedDataAsync: typeof signTypedDataAsync;
 			slippage: string;
 			rawQuote: any;
 			tokens: { toToken: IToken; fromToken: IToken };
@@ -978,7 +971,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				from: finalSelectedFromToken.value,
 				to: finalSelectedToToken.value,
 				fromAddress: address,
-				signTypedDataAsync,
 				slippage,
 				adapter: selectedRoute.name,
 				rawQuote: selectedRoute.price.rawQuote,
@@ -994,7 +986,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const handleGaslessApproval = ({ isInfiniteApproval }: { isInfiniteApproval: boolean }) => {
 		if (selectedRoute?.price) {
 			gaslessApprovalMutation.mutate({
-				signTypedDataAsync,
 				adapter: selectedRoute.name,
 				rawQuote: selectedRoute.price.rawQuote,
 				isInfiniteApproval

@@ -38,7 +38,6 @@ export async function swap({
 	to,
 	amount,
 	fromAddress,
-	signTypedDataAsync,
 	slippage = '1',
 	adapter,
 	rawQuote,
@@ -54,7 +53,6 @@ export async function swap({
 			to,
 			amount,
 			fromAddress,
-			signTypedDataAsync,
 			slippage,
 			rawQuote,
 			tokens,
@@ -65,14 +63,13 @@ export async function swap({
 		throw e;
 	}
 }
-export async function gaslessApprove({ signTypedDataAsync, adapter, rawQuote, isInfiniteApproval }) {
+export async function gaslessApprove({ adapter, rawQuote, isInfiniteApproval }) {
 	const aggregator = adaptersMap[adapter];
 
 	if (!aggregator.gaslessApprove) return;
 
 	try {
 		const res = await aggregator.gaslessApprove({
-			signTypedDataAsync,
 			rawQuote,
 			isInfiniteApproval
 		});
