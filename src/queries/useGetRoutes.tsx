@@ -95,12 +95,26 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			price = await quouteFunc(chain, from, to, amount, extra);
 		}
 
+		if (!price) {
+			return {
+				price: null,
+				name: adapter.name,
+				airdrop: !adapter.token,
+				fromAmount: amount,
+				txData: '',
+				l1Gas: 0,
+				tx: {},
+				isOutputAvailable: false,
+				isGasless: adapter.isGasless ?? false
+			};
+		}
+
 		if (!amountIn) throw Error('amountIn is not defined');
 
 		const txData = adapter?.getTxData?.(price) ?? '';
 		let l1Gas: number | 'Unknown' = 0;
 
-		if (chainsWithOpFees.includes(chain) && adapter.isGasless !== true) {
+		if (txData !== '' && chainsWithOpFees.includes(chain) && adapter.isGasless !== true) {
 			l1Gas = await getOptimismFee(txData, chain);
 		}
 
@@ -152,9 +166,8 @@ export function useGetRoutes({
 				return {
 					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
-					refetchOnWindowFocus: false,
-					refetchIntervalInBackground: false
+					staleTime: customRefetchInterval || REFETCH_INTERVAL,
+					refetchInterval: customRefetchInterval || REFETCH_INTERVAL
 				};
 			})
 	});
@@ -163,8 +176,8 @@ export function useGetRoutes({
 
 	const loadingRoutes =
 		res
-			?.map((r, i) => [adapters[i].name, r])
-			?.filter((r) => (r[1] as UseQueryResult<IAdapterRoute>).status === 'pending') ?? [];
+			?.map((r, i) => [adapters[i].name, r] as [string, UseQueryResult<IAdapterRoute>])
+			?.filter((r) => r[1].isLoading || r[1].isRefetching) ?? [];
 
 	const lastFetched = useMemo(() => {
 		return (

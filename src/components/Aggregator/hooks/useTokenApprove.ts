@@ -60,7 +60,7 @@ async function approveTokenSpend({
 			...(customGasLimit ?? {})
 		});
 
-		const receipt = await waitForTransactionReceipt(config, { hash });
+		const receipt = await waitForTransactionReceipt(config, { hash, chainId: chainsMap[chain] });
 
 		return receipt;
 	} catch (error) {

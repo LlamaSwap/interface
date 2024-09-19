@@ -519,11 +519,15 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 
 	// format routes
 	const fillRoute = (route: IRoute) => {
-		if (!route?.price || !finalSelectedFromToken || !finalSelectedToToken) return null;
+		if (!route.price || !finalSelectedFromToken || !finalSelectedToToken) return null;
 
 		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
-			? gasData?.[route.name]?.gas
+			? gasData[route.name]!.gas
 			: route.price.estimatedGas);
+
+		if (route.name === 'LlamaZip') {
+			console.log(gasData[route.name]?.gas, route, 'hello');
+		}
 
 		let gasUsd: number | string = gasPriceData?.gasPrice
 			? ((gasTokenPrice ?? 0) * gasEstimation * gasPriceData.gasPrice) / 1e18 || 0

@@ -7,7 +7,7 @@ const FEE_ADDRESS = '0x420000000000000000000000000000000000000F';
 export const chainsWithOpFees = ['optimism', 'base'];
 
 export const getOptimismFee = async (txData, chain) => {
-	if (!chain || chainsMap[chain]) return 'Unknown';
+	if (!chain || !chainsMap[chain]) return 'Unknown';
 
 	try {
 		const gas = await readContract(config, {

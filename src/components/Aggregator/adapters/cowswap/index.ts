@@ -115,7 +115,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ chain, fromAddress, rawQuote, from, to }) {
+export async function swap({ chain, fromAddress, rawQuote, from, to, signer }) {
 	if (from === zeroAddress) {
 		const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer);
 

@@ -136,6 +136,6 @@ export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPric
 			? {
 					staleTime: 5 * 60 * 1000
 				}
-			: { refetchInterval: 20_000 })
+			: { staleTime: 20_000, refetchInterval: 20_000 })
 	});
 }
