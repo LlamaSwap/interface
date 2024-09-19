@@ -81,7 +81,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			await estimateGas(config, {
 				to: encodedData.router,
 				data: encodedData.data,
-				value
+				value,
+				chainId: chainsMap[chain]
 			})
 		).toString();
 	} catch (e) {

@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js';
 import { zeroAddress } from 'viem';
 import { estimateGas } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
+import { chainsMap } from '../constants';
 
 export const chainToId = {
 	ethereum: 'ETH',
@@ -57,7 +58,8 @@ export async function getQuote(
 			await estimateGas(config, {
 				to: data?.tx?.txTo,
 				data: data?.tx?.txData,
-				value: data?.tx?.value
+				value: data?.tx?.value,
+				chainId: chainsMap[chain]
 			})
 		).toString();
 	} catch (e) {

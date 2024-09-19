@@ -179,6 +179,7 @@ export const useTokenApprove = ({
 	const { data: gasLimit } = useEstimateGas({
 		to: token,
 		data: encodedFunctionData!,
+		chainId: chain && chainsMap[chain],
 		query: {
 			enabled: encodedFunctionData ? true : false
 		}

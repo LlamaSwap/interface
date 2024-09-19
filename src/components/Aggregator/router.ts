@@ -24,7 +24,12 @@ export function getAllChains() {
 			};
 		})
 		.filter(Boolean);
-	return chainsOptions;
+	return chainsOptions as Array<{
+		value: string;
+		label: string;
+		chainId: number;
+		logoURI?: string | null;
+	}>;
 }
 
 export async function swap({

@@ -1,5 +1,6 @@
 import { readContract } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
+import { chainsMap } from '../constants';
 
 // https://about.airswap.io/technology/protocols
 
@@ -41,7 +42,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 					}
 				],
 				functionName: 'getURLsForToken',
-				args: [t as `0x${string}`]
+				args: [t as `0x${string}`],
+				chainId: chainsMap[chain]
 			})
 		)
 	);
