@@ -9,6 +9,8 @@ import { ABI } from './abi';
 import BigNumber from 'bignumber.js';
 import { chainsMap } from '../../constants';
 import { zeroAddress } from 'viem';
+import { writeContract } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
@@ -117,33 +119,36 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 export async function swap({ chain, fromAddress, rawQuote, from, to, signer }) {
 	if (from === zeroAddress) {
-		const nativeSwap = new ethers.Contract(nativeSwapAddress[chain], ABI.natviveSwap, signer);
-
 		if (rawQuote.slippage < 2) {
 			throw { reason: 'Slippage for ETH orders on CowSwap needs to be higher than 2%' };
 		}
 
-		const tx = await nativeSwap.createOrder(
-			[
-				to,
-				fromAddress,
-				BigNumber(rawQuote.quote.sellAmount).plus(rawQuote.quote.feeAmount).toFixed(0),
-				rawQuote.quote.buyAmount,
-				rawQuote.quote.appData,
-				0,
-				rawQuote.quote.validTo,
-				rawQuote.quote.partiallyFillable,
-				rawQuote.id
+		const tx = await writeContract(config, {
+			address: nativeSwapAddress[chain],
+			abi: ABI.nativeSwap,
+			functionName: 'createOrder',
+			args: [
+				{
+					buyToken: to as `0x${string}`,
+					receiver: fromAddress as `0x${string}`,
+					sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
+					buyAmount: BigInt(rawQuote.quote.buyAmount),
+					appData: rawQuote.quote.appData as `0x${string}`,
+					feeAmount: 0n,
+					validTo: rawQuote.quote.validTo,
+					partiallyFillable: rawQuote.quote.partiallyFillable,
+					quoteId: rawQuote.id
+				}
 			],
-			{ value: BigNumber(rawQuote.quote.sellAmount).plus(rawQuote.quote.feeAmount).toFixed(0) }
-		);
+			value: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount)
+		});
 
 		return tx;
 	} else {
 		const order = {
 			sellToken: rawQuote.quote.sellToken,
 			buyToken: rawQuote.quote.buyToken,
-			sellAmount: BigNumber(rawQuote.quote.sellAmount).plus(rawQuote.quote.feeAmount).toFixed(0),
+			sellAmount: String(BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount)),
 			buyAmount: rawQuote.quote.buyAmount,
 			validTo: rawQuote.quote.validTo,
 			appData: rawQuote.quote.appData,

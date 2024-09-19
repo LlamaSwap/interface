@@ -179,7 +179,7 @@ export function useGetRoutes({
 	const loadingRoutes =
 		res
 			?.map((r, i) => [adapters[i].name, r] as [string, UseQueryResult<IAdapterRoute>])
-			?.filter((r) => r[1].isLoading || r[1].isRefetching) ?? [];
+			?.filter((r) => r[1].isLoading) ?? [];
 
 	const lastFetched = useMemo(() => {
 		return (
