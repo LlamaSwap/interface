@@ -1,9 +1,11 @@
-import { BigNumber, ethers } from 'ethers';
-import { providers } from '../../rpcs';
+import { BigNumber } from 'ethers';
 import { sendTx } from '../../utils/sendTx';
 import { encode } from './encode';
 import { normalizeTokens, pairs } from './pairs';
 import { zeroAddress } from 'viem';
+import { simulateContract } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
+import { chainsMap } from '../../constants';
 
 export const name = 'LlamaZip';
 export const token = 'none';
@@ -33,14 +35,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	if (to.toLowerCase() === weth[chain].toLowerCase()) {
 		return null; // We don't support swaps to WETH
 	}
-	const provider = providers[chain];
-	const quoterContract = new ethers.Contract(
-		quoter[chain],
-		[
-			'function quoteExactInputSingle(address tokenIn,address tokenOut,uint24 fee,uint256 amountIn,uint160 sqrtPriceLimitX96) external returns (uint256 amountOut)'
-		],
-		provider
-	);
 
 	const tokenFrom = normalize(from, weth[chain]);
 	const tokenTo = normalize(to, weth[chain]);
@@ -59,11 +53,35 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		await Promise.all(
 			possiblePairs.map(async (pair) => {
 				try {
+					// const callData = encodeFunctionData({})
 					return {
-						output: await quoterContract.callStatic.quoteExactInputSingle(tokenFrom, tokenTo, pair.fee, amount, 0),
+						output: (
+							await simulateContract(config, {
+								address: quoter[chain],
+								abi: [
+									{
+										inputs: [
+											{ internalType: 'address', name: 'tokenIn', type: 'address' },
+											{ internalType: 'address', name: 'tokenOut', type: 'address' },
+											{ internalType: 'uint24', name: 'fee', type: 'uint24' },
+											{ internalType: 'uint256', name: 'amountIn', type: 'uint256' },
+											{ internalType: 'uint160', name: 'sqrtPriceLimitX96', type: 'uint160' }
+										],
+										name: 'quoteExactInputSingle',
+										outputs: [{ internalType: 'uint256', name: 'amountOut', type: 'uint256' }],
+										stateMutability: 'nonpayable',
+										type: 'function'
+									}
+								],
+								functionName: 'quoteExactInputSingle',
+								args: [tokenFrom as `0x${string}`, tokenTo as `0x${string}`, Number(pair.fee), BigInt(amount), 0n],
+								chainId: chainsMap[chain]
+							})
+						).result,
 						pair
 					};
 				} catch (e) {
+					console.log({ e });
 					if (pair.mayFail === true) return null;
 					throw e;
 				}
@@ -71,9 +89,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		)
 	).filter((t) => t !== null);
 
-	const bestPair = quotedAmountOuts.sort((a, b) => (b.output.gt(a.output) ? 1 : -1))[0];
+	const bestPair = quotedAmountOuts.sort((a, b) => (b.output > a.output ? 1 : -1))[0];
 	const pair = bestPair.pair;
-	const quotedAmountOut = bestPair.output;
+	const quotedAmountOut = bestPair.output.toString();
 
 	const inputIsETH = from === zeroAddress;
 	const calldata = encode(pair.pairId, token0isTokenIn, quotedAmountOut, extra.slippage, inputIsETH, false, amount);
