@@ -75,7 +75,9 @@ const customStyles = {
 	menu: (provided) => ({
 		...provided,
 		background: 'var(--menu-background)',
-		zIndex: 10
+		zIndex: 10,
+		width: '120px',
+		right: '3px'
 	}),
 	menuList: (provided) => ({
 		...provided,
@@ -105,7 +107,19 @@ const customStyles = {
 	}),
 	singleValue: (provided, state) => ({
 		...provided,
-		color: 'var(--color)'
+		color: 'var(--color)',
+		fontWeight: 700,
+		fontSize: '0.9rem',
+		paddingTop: '1px'
+	}),
+	indicatorSeparator: () => ({ display: 'none' }),
+	dropdownIndicator: (provided, state) => ({
+		...provided,
+		paddingLeft: '0px'
+	}),
+	valueContainer: (styles) => ({
+		...styles,
+		paddingRight: '3px'
 	})
 };
 
