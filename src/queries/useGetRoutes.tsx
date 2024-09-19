@@ -78,7 +78,9 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 				: adapter.getQuote;
 		if (adapter.isOutputAvailable) {
 			price = await quouteFunc(chain, from, to, amount, extra);
-			amountIn = price.amountIn;
+			if (price) {
+				amountIn = price.amountIn;
+			}
 		} else if (isOutputDefined && !adapter.isOutputAvailable) {
 			return {
 				price: null,

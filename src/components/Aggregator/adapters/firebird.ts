@@ -1,10 +1,11 @@
 import BigNumber from 'bignumber.js';
 import { chainsMap, defillamaReferrerAddress } from '../constants';
 import { ExtraData } from '../types';
-import { providers } from '../rpcs';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 import { zeroAddress } from 'viem';
+import { estimateGas } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
 
 export const chainToId = {
 	ethereum: chainsMap.ethereum,
@@ -74,15 +75,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	}).then((r) => r.json());
 
 	let estimatedGas;
-	let value = isFromNative ? amount : undefined;
+	let value = isFromNative ? BigInt(amount) : undefined;
 	try {
 		estimatedGas = (
-			await providers[chain].estimateGas({
+			await estimateGas(config, {
 				to: encodedData.router,
 				data: encodedData.data,
 				value
 			})
-		).toFixed(0, 1);
+		).toString();
 	} catch (e) {
 		estimatedGas = data.maxReturn.totalGas;
 	}

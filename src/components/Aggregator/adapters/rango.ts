@@ -1,8 +1,9 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
 import BigNumber from 'bignumber.js';
-import { providers } from '../rpcs';
 import { zeroAddress } from 'viem';
+import { estimateGas } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
 
 export const chainToId = {
 	ethereum: 'ETH',
@@ -52,11 +53,13 @@ export async function getQuote(
 
 	let estimatedGas;
 	try {
-		estimatedGas = await providers[chain].estimateGas({
-			to: data?.tx?.txTo,
-			data: data?.tx?.txData,
-			value: data?.tx?.value
-		});
+		estimatedGas = (
+			await estimateGas(config, {
+				to: data?.tx?.txTo,
+				data: data?.tx?.txData,
+				value: data?.tx?.value
+			})
+		).toString();
 	} catch (e) {
 		estimatedGas = BigNumber(data?.tx?.gasLimit).toString();
 	}

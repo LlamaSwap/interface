@@ -525,10 +525,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			? gasData[route.name]!.gas
 			: route.price.estimatedGas);
 
-		if (route.name === 'LlamaZip') {
-			console.log(gasData[route.name]?.gas, route, 'hello');
-		}
-
 		let gasUsd: number | string = gasPriceData?.gasPrice
 			? ((gasTokenPrice ?? 0) * gasEstimation * gasPriceData.gasPrice) / 1e18 || 0
 			: 0;

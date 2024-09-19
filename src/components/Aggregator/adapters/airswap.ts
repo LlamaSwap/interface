@@ -1,5 +1,5 @@
-import { ethers } from 'ethers';
-import { providers } from '../rpcs';
+import { readContract } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
 
 // https://about.airswap.io/technology/protocols
 
@@ -27,12 +27,25 @@ export function approvalAddress(chain: string) {
 }
 
 export async function getQuote(chain: string, from: string, to: string, amount: string) {
-	const discoveryContract = new ethers.Contract(
-		chainToId[chain],
-		['function getURLsForToken(address token) external view returns (string[] memory urls)'],
-		providers[chain]
+	const [fromServers, toServers] = await Promise.all(
+		[from, to].map((t) =>
+			readContract(config, {
+				address: chainToId[chain],
+				abi: [
+					{
+						inputs: [{ internalType: 'address', name: 'token', type: 'address' }],
+						name: 'getURLsForToken',
+						outputs: [{ internalType: 'string[]', name: 'urls', type: 'string[]' }],
+						stateMutability: 'view',
+						type: 'function'
+					}
+				],
+				functionName: 'getURLsForToken',
+				args: [t as `0x${string}`]
+			})
+		)
 	);
-	const [fromServers, toServers] = await Promise.all([from, to].map((t) => discoveryContract.getURLsForToken(t)));
+
 	const overlappingServers = fromServers.filter((s) => toServers.includes(s));
 
 	const controller = new AbortController();

@@ -1,10 +1,8 @@
 import BigNumber from 'bignumber.js';
-import { Contract } from 'ethers';
-import { providers } from '../../rpcs';
 import { applyArbitrumFees } from '../../utils/arbitrumFees';
 import { sendTx } from '../../utils/sendTx';
 import { ABI } from './abi';
-import { zeroAddress } from 'viem';
+import { encodeFunctionData, zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 1
@@ -53,27 +51,35 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	}).then((r) => r.json());
 	const gas = chain === 'optimism' ? BigNumber(3.5).times(data.gasEstimate).toFixed(0, 1) : data.gasEstimate;
 
-	const router = new Contract(routerAddress[chainToId[chain]], ABI, providers[chain]);
-
 	// https://docs.hashflow.com/hashflow/taker/getting-started#5.-execute-quote-on-chain
-	const txData = await router.populateTransaction.tradeSingleHop([
-		data.quoteData.pool,
-		data.quoteData.eoa ?? zeroAddress,
-		data.quoteData.trader,
-		data.quoteData.effectiveTrader ?? data.quoteData.trader,
-		data.quoteData.baseToken,
-		data.quoteData.quoteToken,
-		data.quoteData.baseTokenAmount,
-		data.quoteData.baseTokenAmount,
-		data.quoteData.quoteTokenAmount,
-		data.quoteData.quoteExpiry,
-		data.quoteData.nonce,
-		data.quoteData.txid,
-		data.signature
-	]);
+	const encodedData = encodeFunctionData({
+		abi: ABI,
+		args: [
+			{
+				pool: data.quoteData.pool as `0x${string}`,
+				externalAccount: data.quoteData.eoa ?? (zeroAddress as `0x${string}`),
+				trader: data.quoteData.trader as `0x${string}`,
+				effectiveTrader: data.quoteData.effectiveTrader ?? (data.quoteData.trader as `0x${string}`),
+				baseToken: data.quoteData.baseToken as `0x${string}`,
+				quoteToken: data.quoteData.quoteToken as `0x${string}`,
+				effectiveBaseTokenAmount: data.quoteData.baseTokenAmount as any,
+				maxBaseTokenAmount: data.quoteData.baseTokenAmount as any,
+				maxQuoteTokenAmount: data.quoteData.quoteTokenAmount as any,
+				quoteExpiry: data.quoteData.quoteExpiry as any,
+				nonce: data.quoteData.nonce as any,
+				txid: data.quoteData.txid as `0x${string}`,
+				signature: data.signature as `0x${string}`
+			}
+		]
+	});
+
+	const txData = {
+		to: routerAddress[chainToId[chain]],
+		data: encodedData
+	};
 
 	let estimatedGas = gas;
-	if (chain === 'arbitrum') estimatedGas = await applyArbitrumFees(router.address, txData.data!, gas);
+	if (chain === 'arbitrum') estimatedGas = await applyArbitrumFees(txData.to, txData.data, gas);
 
 	const timeTillExpiry = data.quoteData.quoteExpiry - Date.now() / 1000;
 	if (timeTillExpiry < 40) {
