@@ -89,9 +89,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		)
 	).filter((t) => t !== null);
 
-	const bestPair = quotedAmountOuts.sort((a, b) => (b.output > a.output ? 1 : -1))[0];
-	const pair = bestPair.pair;
-	const quotedAmountOut = bestPair.output.toString();
+	const bestPair = quotedAmountOuts.sort((a, b) => (b!.output > a!.output ? 1 : -1))[0];
+	const pair = bestPair!.pair;
+	const quotedAmountOut = bestPair!.output.toString();
 
 	const inputIsETH = from === zeroAddress;
 	const calldata = encode(pair.pairId, token0isTokenIn, quotedAmountOut, extra.slippage, inputIsETH, false, amount);

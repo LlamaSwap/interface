@@ -79,11 +79,12 @@ export function PriceImpact({
 	const toTokenValue = BigNumber(1).div(amountReceived);
 
 	const minimumReceived =
-		totalAmountReceived && !Number.isNaN(Number(totalAmountReceived))
+		totalAmountReceived && !Number.isNaN(Number(totalAmountReceived)) && slippage
 			? BigNumber(totalAmountReceived).minus(BigNumber(totalAmountReceived).div(100).multipliedBy(slippage))
 			: null;
 
-	const shouldRevertPriceOrder = fromToken && toTokenPrice && fromTokenPrice / toTokenPrice < 0.0001 ? 1 : 0;
+	const shouldRevertPriceOrder =
+		fromToken && toTokenPrice && fromTokenPrice && fromTokenPrice / toTokenPrice < 0.0001 ? 1 : 0;
 
 	return (
 		<>
@@ -126,7 +127,7 @@ export function PriceImpact({
 							gap="8px"
 							alignItems="center"
 							color={
-								isPriceImpactNotKnown
+								isPriceImpactNotKnown || !selectedRoutesPriceImpact
 									? 'red.500'
 									: selectedRoutesPriceImpact >= PRICE_IMPACT_WARNING_THRESHOLD
 										? 'orange.500'
@@ -137,12 +138,14 @@ export function PriceImpact({
 						>
 							<span>Price impact according to CoinGecko</span>
 
-							{isPriceImpactNotKnown || selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD ? (
+							{isPriceImpactNotKnown ||
+							!selectedRoutesPriceImpact ||
+							selectedRoutesPriceImpact >= PRICE_IMPACT_SMOL_WARNING_THRESHOLD ? (
 								<WarningTwoIcon style={{ marginLeft: 'auto' }} />
 							) : null}
 
 							<span>
-								{isPriceImpactNotKnown
+								{isPriceImpactNotKnown || !selectedRoutesPriceImpact
 									? 'Unknown'
 									: `${
 											selectedRoutesPriceImpact < 0

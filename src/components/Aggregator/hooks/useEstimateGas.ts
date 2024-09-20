@@ -140,6 +140,7 @@ export const estimateGas = async ({
 		}
 	} catch (ee) {
 		console.log('[ESTIMATE GAS]', ee);
+		throw new Error(`Failed to estimate gas of ${route.name}`);
 	}
 };
 

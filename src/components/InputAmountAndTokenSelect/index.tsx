@@ -97,9 +97,9 @@ export function InputAmountAndTokenSelect({
 	selectedChain?: {
 		id: any;
 		value: string;
-		label: any;
-		chainId: any;
-		logoURI: string;
+		label: string;
+		chainId: number;
+		logoURI?: string | null;
 	} | null;
 	balance?: string;
 	onMaxClick?: () => void;

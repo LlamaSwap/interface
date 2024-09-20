@@ -294,9 +294,9 @@ export const TokenSelect = ({
 	selectedChain?: {
 		id: any;
 		value: string;
-		label: any;
-		chainId: any;
-		logoURI: string;
+		label: string;
+		chainId: number;
+		logoURI?: string | null;
 	} | null;
 }) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();

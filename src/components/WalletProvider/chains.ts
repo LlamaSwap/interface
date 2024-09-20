@@ -147,26 +147,6 @@ const oasis = {
 	testnet: false
 };
 
-const bttc = {
-	id: 199,
-	name: 'BitTorrent',
-	network: 'bttc',
-	iconUrl: chainIconUrl('bittorrent'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'BitTorrent',
-		symbol: 'BTT'
-	},
-	rpcUrls: {
-		default: { http: ['https://rpc.bittorrentchain.io'] }
-	},
-	blockExplorers: {
-		default: { name: 'BTTScan', url: 'https://bttcscan.com' }
-	},
-	testnet: false
-};
-
 const moonbeam = {
 	id: 1284,
 	name: 'Moonbeam',
@@ -231,29 +211,6 @@ const moonriver = {
 		default: {
 			name: 'MoonScan',
 			url: 'https://moonriver.moonscan.io'
-		}
-	},
-	testnet: false
-};
-
-const dogechain = {
-	id: 2000,
-	name: 'DogeChain',
-	network: 'doge',
-	iconUrl: chainIconUrl('dogechain'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Doge',
-		symbol: 'DOGE'
-	},
-	rpcUrls: {
-		default: { http: ['https://dogechain.ankr.com'] }
-	},
-	blockExplorers: {
-		default: {
-			name: 'DogeChain Explorer',
-			url: 'https://explorer.dogechain.dog'
 		}
 	},
 	testnet: false

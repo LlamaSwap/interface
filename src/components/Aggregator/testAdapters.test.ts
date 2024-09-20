@@ -110,17 +110,18 @@ export async function testAdapters(addTest: (test: any) => void) {
 											} catch (e) {
 												addTest({ ...testParams, success: 'x' });
 												console.error(`Failed to get data for ${adapter.name} on ${chain}`);
+												return;
 											}
 										})
 								)
 							).filter((p) => p !== undefined);
 							const reportUnder = (property: string) => {
 								if (prices.length < 2) return;
-								const sorted = prices.sort((a, b) => b.price[property] - a.price[property]);
+								const sorted = prices.sort((a, b) => b!.price[property] - a!.price[property]);
 								const mid = Math.round(prices.length / 2);
-								const median = Number(sorted[mid].price[property]);
+								const median = Number(sorted[mid]?.price[property] ?? 0);
 								prices.forEach((p) => {
-									if (property === 'estimatedGas' && p.adapter === 'CowSwap') return;
+									if (!p || (property === 'estimatedGas' && p.adapter === 'CowSwap')) return;
 									const value = Number(p.price[property]);
 									if (value < 0.8 * median) {
 										addTest({
