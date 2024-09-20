@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers';
 import { sendTx } from '../../utils/sendTx';
 import { encode } from './encode';
 import { normalizeTokens, pairs } from './pairs';
@@ -39,7 +38,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenFrom = normalize(from, weth[chain]);
 	const tokenTo = normalize(to, weth[chain]);
 
-	const token0isTokenIn = BigNumber.from(tokenFrom).lt(tokenTo);
+	const token0isTokenIn = BigInt(tokenFrom) < BigInt(tokenTo);
 
 	const possiblePairs = pairs[chain as keyof typeof pairs].filter(
 		({ name }) => name === normalizeTokens(tokenFrom, tokenTo).join('-')
