@@ -1,6 +1,6 @@
 import * as matcha from './adapters/0x';
 import * as inch from './adapters/1inch';
-// import * as cowswap from './adapters/cowswap';
+import * as cowswap from './adapters/cowswap';
 //import * as firebird from './adapters/firebird';
 import * as kyberswap from './adapters/kyberswap';
 //import * as hashflow from './adapters/hashflow';
@@ -17,11 +17,9 @@ import * as llamazip from './adapters/llamazip';
 // import * as krystal from './adapters/krystal'
 import * as matchaGasless from './adapters/0xGasless';
 
-// TODO fix cowswap
-export const adapters = [matcha, inch, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless];
+export const adapters = [matcha, inch, cowswap, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless];
 
-// cowswap.name
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, paraswap.name, matchaGasless.name];
+export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name, matchaGasless.name];
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,

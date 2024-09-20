@@ -1,7 +1,6 @@
 import { chainsMap } from './constants';
 import { getAllChains } from './router';
 import { adapters } from './list';
-import { BigNumber } from 'ethers';
 import { redirectQuoteReq } from './adapters/utils';
 import { nativeTokens } from './nativeTokens';
 import { getTokenList } from '~/props/getTokenList';
@@ -66,7 +65,7 @@ export async function testAdapters(addTest: (test: any) => void) {
 							const toToken = tokens[1];
 							const extra = {
 								gasPriceData: {
-									gasPrice: BigNumber.from('0x05d21dba00') // for yield yak, hardcoded to 25 nAVAX which was avax's gas price when I write this
+									gasPrice: Number('0x05d21dba00') // for yield yak, hardcoded to 25000000000n AVAX which was avax's gas price when I write this
 								},
 								userAddress,
 								amount, // idk why this is here lol

@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers';
 import { defillamaReferrerAddress } from '../constants';
 import { decodeFunctionData, encodeFunctionData, getAddress, hexToNumber, parseSignature, zeroAddress } from 'viem';
 import { signTypedData } from 'wagmi/actions';
@@ -130,7 +129,7 @@ export async function gaslessApprove({ rawQuote, isInfiniteApproval }) {
 							functionSignature: encodeFunctionData({
 								abi: ['function approve(address, uint)'],
 								functionName: 'approve',
-								args: [getAddress(rawQuote.allowanceTarget), BigNumber.from(rawQuote.sellAmount)]
+								args: [getAddress(rawQuote.allowanceTarget), rawQuote.sellAmount]
 							})
 						}
 					: null;

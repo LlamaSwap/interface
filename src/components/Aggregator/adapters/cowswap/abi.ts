@@ -24,5 +24,27 @@ export const ABI = {
 			stateMutability: 'payable',
 			type: 'function'
 		}
+	],
+	settlement: [
+		{
+			anonymous: false,
+			inputs: [{ indexed: true, internalType: 'address', name: 'solver', type: 'address' }],
+			name: 'Settlement',
+			type: 'event'
+		},
+		{
+			anonymous: false,
+			inputs: [
+				{ indexed: true, internalType: 'address', name: 'owner', type: 'address' },
+				{ indexed: false, internalType: 'contract IERC20', name: 'sellToken', type: 'address' },
+				{ indexed: false, internalType: 'contract IERC20', name: 'buyToken', type: 'address' },
+				{ indexed: false, internalType: 'uint256', name: 'sellAmount', type: 'uint256' },
+				{ indexed: false, internalType: 'uint256', name: 'buyAmount', type: 'uint256' },
+				{ indexed: false, internalType: 'uint256', name: 'feeAmount', type: 'uint256' },
+				{ indexed: false, internalType: 'bytes', name: 'orderUid', type: 'bytes' }
+			],
+			name: 'Trade',
+			type: 'event'
+		}
 	]
 };

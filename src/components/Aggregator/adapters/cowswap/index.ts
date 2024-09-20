@@ -1,15 +1,11 @@
 // Source: https://docs.cow.fi/off-chain-services/api
 
 import { ExtraData } from '../../types';
-import { domain, SigningScheme, signOrder } from '@gnosis.pm/gp-v2-contracts';
-import GPv2SettlementArtefact from '@gnosis.pm/gp-v2-contracts/deployments/mainnet/GPv2Settlement.json';
-
-import { ethers } from 'ethers';
 import { ABI } from './abi';
 import BigNumber from 'bignumber.js';
 import { chainsMap } from '../../constants';
 import { zeroAddress } from 'viem';
-import { writeContract } from 'wagmi/actions';
+import { signTypedData, watchContractEvent, writeContract } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
 
 export const chainToId = {
@@ -37,20 +33,28 @@ export function approvalAddress() {
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
-const waitForOrder = (uid, provider, trader) => async (onSuccess) => {
-	let n = 0;
-	const settlement = new ethers.Contract(
-		'0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
-		GPv2SettlementArtefact.abi,
-		provider
-	);
-	provider.on(settlement.filters.Trade(trader), (log) => {
-		if (log.data.includes(uid.substring(2)) && n === 0) {
-			onSuccess();
-			n++;
-		}
-	});
-};
+const waitForOrder =
+	({ uid, trader, chain }) =>
+	(onSuccess) => {
+		const unwatch = watchContractEvent(config, {
+			address: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+			abi: ABI.settlement,
+			eventName: 'Trade',
+			args: { owner: trader },
+			chainId: chainsMap[chain],
+			onLogs(logs) {
+				const trade = logs.find((log) => log.data.includes(uid.substring(2)));
+				if (trade) {
+					onSuccess();
+					unwatch();
+				}
+			},
+			onError(error) {
+				console.log('Error confirming order status', error);
+				unwatch();
+			}
+		});
+	};
 
 // https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/2.-query-the-fee-endpoint
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
@@ -117,7 +121,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ chain, fromAddress, rawQuote, from, to, signer }) {
+export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 	if (from === zeroAddress) {
 		if (rawQuote.slippage < 2) {
 			throw { reason: 'Slippage for ETH orders on CowSwap needs to be higher than 2%' };
@@ -145,33 +149,54 @@ export async function swap({ chain, fromAddress, rawQuote, from, to, signer }) {
 
 		return tx;
 	} else {
+		// https://docs.cow.fi/cow-protocol/reference/core/signing-schemes#javascript-example
 		const order = {
-			sellToken: rawQuote.quote.sellToken,
-			buyToken: rawQuote.quote.buyToken,
-			sellAmount: String(BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount)),
-			buyAmount: rawQuote.quote.buyAmount,
-			validTo: rawQuote.quote.validTo,
-			appData: rawQuote.quote.appData,
-			receiver: fromAddress,
-			feeAmount: 0,
-			kind: rawQuote.quote.kind,
-			partiallyFillable: rawQuote.quote.partiallyFillable
+			sellToken: rawQuote.quote.sellToken as `0x${string}`,
+			buyToken: rawQuote.quote.buyToken as `0x${string}`,
+			receiver: fromAddress as `0x${string}`,
+			sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
+			buyAmount: BigInt(rawQuote.quote.buyAmount),
+			validTo: rawQuote.quote.validTo as number,
+			appData: rawQuote.quote.appData as `0x${string}`,
+			feeAmount: 0n,
+			kind: rawQuote.quote.kind as string,
+			partiallyFillable: rawQuote.quote.partiallyFillable as boolean,
+			sellTokenBalance: 'erc20',
+			buyTokenBalance: 'erc20'
 		};
 
-		const rawSignature = await signOrder(
-			domain(chainsMap[chain], '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
-			order,
-			signer,
-			SigningScheme.EIP712
-		);
-
-		const signature = ethers.utils.joinSignature(rawSignature.data);
+		const signature = await signTypedData(config, {
+			primaryType: 'Order',
+			message: order,
+			domain: {
+				name: 'Gnosis Protocol',
+				version: 'v2',
+				chainId: chainsMap[chain],
+				verifyingContract: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'
+			},
+			types: {
+				Order: [
+					{ name: 'sellToken', type: 'address' },
+					{ name: 'buyToken', type: 'address' },
+					{ name: 'receiver', type: 'address' },
+					{ name: 'sellAmount', type: 'uint256' },
+					{ name: 'buyAmount', type: 'uint256' },
+					{ name: 'validTo', type: 'uint32' },
+					{ name: 'appData', type: 'bytes32' },
+					{ name: 'feeAmount', type: 'uint256' },
+					{ name: 'kind', type: 'string' },
+					{ name: 'partiallyFillable', type: 'bool' },
+					{ name: 'sellTokenBalance', type: 'string' },
+					{ name: 'buyTokenBalance', type: 'string' }
+				]
+			}
+		});
 
 		const data = await fetch(`${chainToId[chain]}/api/v1/orders`, {
 			method: 'POST',
 			body: JSON.stringify({
 				...rawQuote.quote,
-				sellAmount: order.sellAmount,
+				sellAmount: String(order.sellAmount),
 				feeAmount: '0',
 				signature,
 				signingScheme: 'eip712'
@@ -183,7 +208,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to, signer }) {
 
 		if (data.errorType) throw { reason: data.description };
 
-		return { id: data, waitForOrder: waitForOrder(data, signer.provider, fromAddress) };
+		return { id: data, waitForOrder: waitForOrder({ uid: data, trader: fromAddress, chain }) };
 	}
 }
 
