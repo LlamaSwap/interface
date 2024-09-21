@@ -1,8 +1,8 @@
 import { IToken } from '~/types';
 
-const mapTokensByKey = (tokens, key: Array<string>) => {
+const mapTokensByKey = (tokens: Record<string, Array<IToken>>, key: Array<string>) => {
 	return Object.fromEntries(
-		Object.entries(tokens).map(([chain, tokens]: [string, Array<IToken>]) => {
+		Object.entries(tokens).map(([chain, tokens]) => {
 			return [
 				chain,
 				Object.fromEntries(
@@ -12,7 +12,7 @@ const mapTokensByKey = (tokens, key: Array<string>) => {
 
 							return value ? [token.address.toLowerCase(), value] : null;
 						})
-						.filter(Boolean)
+						.filter(Boolean) as Array<[string, string]>
 				)
 			];
 		})

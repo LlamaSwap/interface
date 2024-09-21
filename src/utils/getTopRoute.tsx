@@ -1,17 +1,17 @@
-import { ethers } from 'ethers';
+import { zeroAddress } from 'viem';
 
 export function getTopRoute({ routes, gasPriceData, gasTokenPrice, fromToken, toToken, toTokenPrice }) {
 	const sortedRoutes = routes
 		.map((route) => {
 			if (route.price) {
 				let gasUsd =
-					route.price?.estimatedGas && gasPriceData?.formatted?.gasPrice && gasTokenPrice
-						? (gasTokenPrice * +route.price?.estimatedGas * +gasPriceData?.formatted?.gasPrice) / 1e18
+					route.price?.estimatedGas && gasPriceData.gasPrice && gasTokenPrice
+						? (gasTokenPrice * +route.price.estimatedGas * gasPriceData.gasPrice) / 1e18
 						: 0;
 
 				// CowSwap native token swap
 				gasUsd =
-					route.price.feeAmount && fromToken.address === ethers.constants.AddressZero
+					route.price.feeAmount && fromToken.address === zeroAddress
 						? (Number(route.price.feeAmount) / 1e18) * gasTokenPrice
 						: gasUsd;
 				const amount = +route.price.amountReturned / 10 ** +toToken?.decimals;

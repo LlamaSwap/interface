@@ -1,8 +1,19 @@
 import * as React from 'react';
 import { ChakraProvider, DarkMode } from '@chakra-ui/react';
-import { Hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { WagmiProvider } from 'wagmi';
+import styled from 'styled-components';
+import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import '@rainbow-me/rainbowkit/styles.css';
 import '~/Theme/globals.css';
-import { WalletWrapper } from '~/components/WalletProvider';
+import { config } from '~/components/WalletProvider';
+
+const Provider = styled.div`
+	width: 100%;
+	& > div {
+		width: 100%;
+	}
+`;
 
 function App({ Component, pageProps }) {
 	const [queryClient] = React.useState(() => new QueryClient());
@@ -15,17 +26,21 @@ function App({ Component, pageProps }) {
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<Hydrate state={pageProps.dehydratedState}>
+			<HydrationBoundary state={pageProps.dehydratedState}>
 				<ChakraProvider>
 					<DarkMode>
 						{isMounted && (
-							<WalletWrapper>
-								<Component {...pageProps} />
-							</WalletWrapper>
+							<WagmiProvider config={config}>
+								<Provider>
+									<RainbowKitProvider showRecentTransactions={true} theme={darkTheme()}>
+										<Component {...pageProps} />
+									</RainbowKitProvider>
+								</Provider>
+							</WagmiProvider>
 						)}
 					</DarkMode>
 				</ChakraProvider>
-			</Hydrate>
+			</HydrationBoundary>
 		</QueryClientProvider>
 	);
 }

@@ -92,19 +92,19 @@ export function InputAmountAndTokenSelect({
 	setAmount: Dispatch<SetStateAction<[string | number, string | number]>>;
 	type: 'amountIn' | 'amountOut';
 	tokens: Array<IToken>;
-	token: IToken;
+	token?: IToken | null;
 	onSelectTokenChange: (token: any) => void;
-	selectedChain: {
+	selectedChain?: {
 		id: any;
 		value: string;
-		label: any;
-		chainId: any;
-		logoURI: string;
-	};
+		label: string;
+		chainId: number;
+		logoURI?: string | null;
+	} | null;
 	balance?: string;
 	onMaxClick?: () => void;
-	tokenPrice?: number;
-	priceImpact?: number;
+	tokenPrice?: number | null;
+	priceImpact?: number | null;
 	placeholder?: string | number;
 	customSelect?: React.ReactElement;
 	disabled?: boolean;
@@ -151,10 +151,12 @@ export function InputAmountAndTokenSelect({
 							<Text
 								as="span"
 								color={
-									priceImpact >= PRICE_IMPACT_HIGH_THRESHOLD
-										? 'red.500'
-										: priceImpact >= PRICE_IMPACT_MEDIUM_THRESHOLD
-										? 'yellow.500'
+									priceImpact
+										? priceImpact >= PRICE_IMPACT_HIGH_THRESHOLD
+											? 'red.500'
+											: priceImpact >= PRICE_IMPACT_MEDIUM_THRESHOLD
+												? 'yellow.500'
+												: '#a2a2a2'
 										: '#a2a2a2'
 								}
 							>

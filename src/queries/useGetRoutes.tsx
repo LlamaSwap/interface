@@ -1,12 +1,13 @@
 import { useQueries, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
-import { partial, first, omit } from 'lodash';
+import { partial, omit } from 'lodash';
+import { useMemo } from 'react';
 
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
-import { chainsWithOpFees, getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
+import { chainsWithOpFees, getOptimismFee } from '~/components/Aggregator/utils/optimismFees';
 import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/list';
 
 interface IGetListRoutesProps {
-	chain: string;
+	chain?: string;
 	from?: string;
 	to?: string;
 	amount?: string;
@@ -15,16 +16,18 @@ interface IGetListRoutesProps {
 	customRefetchInterval?: number;
 }
 
-export interface IRoute {
-	price: {
-		amountReturned: any;
-		estimatedGas: any;
-		tokenApprovalAddress: any;
-		logo: string;
-		isGaslessApproval?: boolean;
-		feeAmount?: number;
-		rawQuote?: {};
-	} | null;
+interface IPrice {
+	amountReturned: any;
+	estimatedGas: any;
+	tokenApprovalAddress: any;
+	logo: string;
+	isGaslessApproval?: boolean;
+	feeAmount?: number;
+	rawQuote?: {};
+}
+
+interface IAdapterRoute {
+	price: IPrice | null;
 	name: string;
 	airdrop: boolean;
 	fromAmount: string;
@@ -37,6 +40,10 @@ export interface IRoute {
 	};
 	isOutputAvailable: boolean;
 	isGasless: boolean;
+}
+
+export interface IRoute extends Omit<IAdapterRoute, 'price'> {
+	price: IPrice;
 }
 
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
@@ -71,7 +78,9 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 				: adapter.getQuote;
 		if (adapter.isOutputAvailable) {
 			price = await quouteFunc(chain, from, to, amount, extra);
-			amountIn = price.amountIn;
+			if (price) {
+				amountIn = price.amountIn;
+			}
 		} else if (isOutputDefined && !adapter.isOutputAvailable) {
 			return {
 				price: null,
@@ -88,13 +97,27 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			price = await quouteFunc(chain, from, to, amount, extra);
 		}
 
+		if (!price) {
+			return {
+				price: null,
+				name: adapter.name,
+				airdrop: !adapter.token,
+				fromAmount: amount,
+				txData: '',
+				l1Gas: 0,
+				tx: {},
+				isOutputAvailable: false,
+				isGasless: adapter.isGasless ?? false
+			};
+		}
+
 		if (!amountIn) throw Error('amountIn is not defined');
 
 		const txData = adapter?.getTxData?.(price) ?? '';
 		let l1Gas: number | 'Unknown' = 0;
 
-		if (chainsWithOpFees.includes(chain) && adapter.isGasless !== true) {
-			l1Gas = await getOptimismFee(txData);
+		if (txData !== '' && chainsWithOpFees.includes(chain) && adapter.isGasless !== true) {
+			l1Gas = await getOptimismFee(txData, chain);
 		}
 
 		const res = {
@@ -111,6 +134,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 		return res;
 	} catch (e) {
+		console.error(`Error fetching ${adapter.name} quote`);
 		console.error(e);
 		return {
 			price: null,
@@ -137,36 +161,40 @@ export function useGetRoutes({
 }: IGetListRoutesProps) {
 	const res = useQueries({
 		queries: adapters
-			.filter((adap) => adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name))
-			.map<UseQueryOptions<IRoute>>((adapter) => {
+			.filter((adap) =>
+				chain && adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name) ? true : false
+			) // @ts-ignore
+			.map<UseQueryOptions<IAdapterRoute>>((adapter) => {
 				return {
 					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
-					refetchOnWindowFocus: false,
-					refetchIntervalInBackground: false
+					staleTime: customRefetchInterval || REFETCH_INTERVAL,
+					refetchInterval: customRefetchInterval || REFETCH_INTERVAL
 				};
 			})
 	});
 	const data = res?.filter((r) => r.status === 'success') ?? [];
 	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
+
 	const loadingRoutes =
 		res
-			?.map((r, i) => [adapters[i].name, r])
-			?.filter((r: [string, UseQueryResult<IRoute>]) => r[1].status === 'loading') ?? [];
+			?.map((r, i) => [adapters[i].name, r] as [string, UseQueryResult<IAdapterRoute>])
+			?.filter((r) => r[1].isLoading) ?? [];
+
+	const lastFetched = useMemo(() => {
+		return (
+			data
+				.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
+				.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)?.[0]?.dataUpdatedAt ?? Date.now()
+		);
+	}, [data]);
 
 	return {
 		isLoaded: loadingRoutes.length === 0,
 		isLoading: data.length >= 1 ? false : true,
-		data: resData?.map((r) => r.data) ?? [],
+		data: resData?.map((r) => r.data as IRoute) ?? [],
 		refetch: () => res?.forEach((r) => r.refetch()),
-		lastFetched:
-			first(
-				data
-					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
-					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)
-					.map((d) => d.dataUpdatedAt)
-			) || null,
+		lastFetched,
 		loadingRoutes
 	};
 }

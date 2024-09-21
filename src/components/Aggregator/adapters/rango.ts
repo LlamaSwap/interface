@@ -1,8 +1,10 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
-import { providers } from '../rpcs';
+import { zeroAddress } from 'viem';
+import { estimateGas } from 'wagmi/actions';
+import { config } from '../../WalletProvider';
+import { chainsMap } from '../constants';
 
 export const chainToId = {
 	ethereum: 'ETH',
@@ -30,19 +32,19 @@ export async function getQuote(
 	// amount should include decimals
 
 	const tokenFrom =
-		fromToken.address === ethers.constants.AddressZero
+		fromToken.address === zeroAddress
 			? `${chainToId[chain]}.${fromToken.symbol}`
 			: `${chainToId[chain]}.${fromToken.symbol}--${fromToken.address}`;
 	const tokenTo =
-		toToken.address === ethers.constants.AddressZero
+		toToken.address === zeroAddress
 			? `${chainToId[chain]}.${toToken.symbol}`
 			: `${chainToId[chain]}.${toToken.symbol}--${toToken.address}`;
 	const params = new URLSearchParams({
 		from: tokenFrom,
 		to: tokenTo,
 		amount: amount,
-		fromAddress: userAddress || ethers.constants.AddressZero,
-		toAddress: userAddress || ethers.constants.AddressZero,
+		fromAddress: userAddress || zeroAddress,
+		toAddress: userAddress || zeroAddress,
 		disableEstimate: 'true',
 		apiKey: 'c0ed54c0-e85c-4547-8e11-7ff88775b90c',
 		slippage: slippage || '1'
@@ -52,11 +54,14 @@ export async function getQuote(
 
 	let estimatedGas;
 	try {
-		estimatedGas = await providers[chain].estimateGas({
-			to: data?.tx?.txTo,
-			data: data?.tx?.txData,
-			value: data?.tx?.value
-		});
+		estimatedGas = (
+			await estimateGas(config, {
+				to: data?.tx?.txTo,
+				data: data?.tx?.txData,
+				value: data?.tx?.value,
+				chainId: chainsMap[chain]
+			})
+		).toString();
 	} catch (e) {
 		estimatedGas = BigNumber(data?.tx?.gasLimit).toString();
 	}
@@ -81,7 +86,7 @@ export async function swap({ signer, rawQuote, chain }) {
 		to: rawQuote?.tx?.txTo,
 		data: rawQuote?.tx?.txData,
 		value: rawQuote?.tx?.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 
 	return tx;

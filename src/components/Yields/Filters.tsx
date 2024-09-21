@@ -121,7 +121,10 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 	category = useMemo(() => arrayFromString(category), [category]);
 	const [displayedApyRange, setDisplayedApyRange] = useState([+apyFrom, +apyTo]);
 
-	const allChains = useMemo(() => Array.from(new Set(initialData.map((item) => item.chain))), [initialData]);
+	const allChains = useMemo(
+		() => Array.from(new Set(initialData.map((item) => item.chain))) as Array<string>,
+		[initialData]
+	);
 	const chainOptions = allChains.map((chain: string) => ({
 		value: chain,
 		label: chain,
@@ -140,7 +143,10 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 	);
 
 	const allTokens = useMemo(
-		() => Array.from(new Set(initialData.map((item) => item.symbol))).filter((s: string) => s.split('-')?.length === 1),
+		() =>
+			(Array.from(new Set(initialData.map((item) => item.symbol))) as Array<string>).filter(
+				(s: string) => s.split('-')?.length === 1
+			),
 		[initialData]
 	);
 	const tokensOptions = allTokens.map((token) => ({
@@ -149,7 +155,12 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 	}));
 
 	const allCategories = useMemo(
-		() => Array.from(new Set(Object.values(config).map((c: Record<string, string>) => c.category))),
+		() =>
+			Array.from(
+				new Set(
+					Object.values(config as Record<string, Record<string, string>>).map((c: Record<string, string>) => c.category)
+				)
+			),
 		[config]
 	);
 
@@ -260,10 +271,10 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 								? {
 										label: search,
 										value: search
-								  }
+									}
 								: null
 						}
-						onChange={(value: { value: string }) => handleSymbolSearch(value?.value)}
+						onChange={(value) => handleSymbolSearch((value as { value: string } | undefined)?.value)}
 						placeholder="Search symbols..."
 						cacheOptions
 						defaultOptions

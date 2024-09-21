@@ -1,10 +1,11 @@
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import { chainsMap, defillamaReferrerAddress } from '../constants';
 import { ExtraData } from '../types';
-import { providers } from '../rpcs';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
+import { zeroAddress } from 'viem';
+import { estimateGas } from 'wagmi/actions';
+import { config } from '../../WalletProvider';
 
 export const chainToId = {
 	ethereum: chainsMap.ethereum,
@@ -51,9 +52,9 @@ const headers = {
 const nativeToken = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
-	const isFromNative = from === ethers.constants.AddressZero;
+	const isFromNative = from === zeroAddress;
 	const tokenFrom = isFromNative ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const receiver = extra.userAddress || defillamaReferrerAddress;
 
 	// amount should include decimals
@@ -74,15 +75,16 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	}).then((r) => r.json());
 
 	let estimatedGas;
-	let value = isFromNative ? amount : undefined;
+	let value = isFromNative ? BigInt(amount) : undefined;
 	try {
 		estimatedGas = (
-			await providers[chain].estimateGas({
+			await estimateGas(config, {
 				to: encodedData.router,
 				data: encodedData.data,
-				value
+				value,
+				chainId: chainsMap[chain]
 			})
-		).toFixed(0, 1);
+		).toString();
 	} catch (e) {
 		estimatedGas = data.maxReturn.totalGas;
 	}
@@ -102,13 +104,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ signer, rawQuote, chain }) {
-	const tx = await sendTx(signer, chain, {
+export async function swap({ rawQuote, chain }) {
+	const tx = await sendTx({
 		from: rawQuote.tx.from,
 		to: rawQuote.tx.router,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 
 	return tx;

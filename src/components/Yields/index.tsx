@@ -54,7 +54,7 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 	const [data, setData] = useState(initialData);
 	const [sortBy, setSortBy] = useState('');
 	const [sortDirection, setSortDirection] = useState('desc');
-	const containerRef = useRef(null);
+	const containerRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 	const { search } = router.query;
 
@@ -65,17 +65,17 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 	}, [search]);
 
 	const tokensList = React.useMemo(() => {
-		const allTokens = Object.values(tokens).flat();
+		const allTokens = Object.values(tokens).flat() as Array<Record<string, string>>;
 		const addedTokens = new Set();
 		return allTokens
-			.filter((token: Record<string, string>) => {
+			.filter((token) => {
 				if (addedTokens.has(token.symbol)) {
 					return false;
 				}
 				addedTokens.add(token.symbol);
 				return true;
 			})
-			.map((token: Record<string, string>) => ({
+			.map((token) => ({
 				value: token.symbol,
 				label: token.name,
 				icon: token.logoURI
@@ -90,7 +90,7 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 	});
 
 	useLayoutEffect(() => {
-		const containerHeight = containerRef.current.offsetHeight;
+		const containerHeight = containerRef.current!.offsetHeight;
 		const totalSize = rowVirtualizer.getTotalSize();
 		setBodyHeight(Math.min(containerHeight, totalSize));
 	}, [rowVirtualizer.getTotalSize]);

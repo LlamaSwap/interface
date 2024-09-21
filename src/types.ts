@@ -12,4 +12,50 @@ export interface IToken {
 	balanceUSD?: number;
 	geckoId: string | null;
 	isGeckoToken?: boolean;
+	isMultichain?: boolean;
+}
+
+export interface IPool {
+	apu: number;
+	apy: number;
+	apyBase: number | null;
+	apyBase7d: number | null;
+	apyBaseBorrow: number;
+	apyBaseInception: number | null;
+	apyBorrow: number;
+	apyMean30d: number;
+	apyPct1D: number;
+	apyPct7D: number;
+	apyPct30D: number;
+	apyReward: number | null;
+	apyRewardBorrow: number | null;
+	borrowFactor: null;
+	borrowable: true;
+	category: string;
+	chain: string;
+	count: number;
+	exposure: string;
+	il7d: number | null;
+	ilRisk: string;
+	lsdApy: number;
+	ltv: number;
+	mintedCoin: string | null;
+	mu: number;
+	outlier: boolean;
+	pool: string;
+	poolMeta: null;
+	predictions: { predictedClass: string; predictedProbability: number; binnedConfidence: number };
+	project: string;
+	rewardTokens: null;
+	sigma: number;
+	stablecoin: boolean;
+	symbol: string;
+	totalAvailableUsd: number;
+	totalBorrowUsd: number;
+	totalSupplyUsd: number;
+	tvlUsd: number;
+	underlyingTokens: Array<string>;
+	volumeUsd1d: number | null;
+	volumeUsd7d: number | null;
+	config: { name: string; category: string };
 }

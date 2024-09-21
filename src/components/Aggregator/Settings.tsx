@@ -34,7 +34,7 @@ export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onCl
 			isChecked ? adaptersState.filter((adapterName) => adapterName !== name) : adaptersState.concat(name)
 		);
 	};
-	const aggregatorChunks = chunk(adapters, 5);
+	const aggregatorChunks = chunk(adapters as Array<string>, 5);
 	return (
 		<>
 			<Modal isOpen={isOpen} onClose={onCloseClick} size={'lg'}>
@@ -55,7 +55,7 @@ export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onCl
 						<HStack mt={4}>
 							{aggregatorChunks.map((aggs) => (
 								<List key={aggs.join(',')} spacing={1.5}>
-									{aggs.map((name: string) => (
+									{aggs.map((name) => (
 										<ListItem key={name}>
 											<Checkbox mr={2} isChecked={!disabledAdapters.includes(name)} onChange={onClick(name)} />
 											{name}

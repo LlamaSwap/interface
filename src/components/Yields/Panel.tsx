@@ -1,11 +1,9 @@
-import { useRouter } from 'next/router';
 import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 const Panel = ({ isVisible, children, setVisible }) => {
-	const panelRef = useRef(null);
+	const panelRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef(null);
-	const router = useRouter();
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -76,7 +74,9 @@ const PanelBody = styled.div<{ isVisible: boolean }>`
 const PanelContent = styled.div<{ isVisible: boolean }>`
 	opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
 	visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
-	transition: opacity 0.3s ease-in, visibility 0.5s ease-in;
+	transition:
+		opacity 0.3s ease-in,
+		visibility 0.5s ease-in;
 `;
 
 export const PanelButton = styled.button<{ isVisible: boolean }>`
@@ -96,7 +96,9 @@ export const PanelButton = styled.button<{ isVisible: boolean }>`
 	border-right: 1px solid #2f333c;
 	z-index: 100;
 
-	transition: background-color 0.3s ease, right 0.3s ease;
+	transition:
+		background-color 0.3s ease,
+		right 0.3s ease;
 
 	&:hover {
 		background-color: ${(props) => props.theme.bg3};

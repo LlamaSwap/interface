@@ -1,21 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
-import { providers } from '~/components/Aggregator/rpcs';
-import { ethers } from 'ethers';
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+import { getAddress, zeroAddress } from 'viem';
+import { getGasPrice } from 'wagmi/actions';
+import { chainsMap } from '~/components/Aggregator/constants';
+import { config } from '~/components/WalletProvider';
 
 interface IGetPriceProps {
-	chain: string;
-	fromToken: string;
-	toToken: string;
+	chain?: string;
+	fromToken?: string;
+	toToken?: string;
 	skipRefetch?: boolean;
 }
 
 interface IPrice {
-	gasTokenPrice?: number;
-	fromTokenPrice?: number;
-	toTokenPrice?: number;
-	gasPriceData?: {};
+	gasTokenPrice?: number | null;
+	fromTokenPrice?: number | null;
+	toTokenPrice?: number | null;
+	gasPriceData?: { gasPrice: number } | null;
 }
 
 type DexScreenerTokenPair = {
@@ -46,15 +46,15 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 	let gasTokenPrice, fromTokenPrice, toTokenPrice;
 
 	try {
-		const llamaChain = convertChain(rawChain);
-		let llamaApi = [`${llamaChain}:${ZERO_ADDRESS}`, `${llamaChain}:${fromToken}`, `${llamaChain}:${toToken}`];
+		const llamaChain = convertChain(rawChain!);
+		let llamaApi = [`${llamaChain}:${zeroAddress}`, `${llamaChain}:${fromToken}`, `${llamaChain}:${toToken}`];
 
 		const { coins } = await fetch(`https://coins.llama.fi/prices/current/${llamaApi.join(',')}`).then((r) => r.json());
 
-		gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${ZERO_ADDRESS}`]?.price;
+		gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${zeroAddress}`]?.price;
 		[fromTokenPrice, toTokenPrice] = await Promise.all([
-			fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain, fromToken),
-			toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || getExperimentalPrice(rawChain, toToken)
+			fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain!, fromToken!),
+			toTokenPrice || coins[`${llamaChain}:${toToken}`]?.price || getExperimentalPrice(rawChain!, toToken!)
 		]);
 
 		return {
@@ -84,7 +84,7 @@ const getExperimentalPrice = async (chain: string, token: string): Promise<numbe
 
 		experimentalPrices.pairs.forEach((pair: DexScreenerTokenPair) => {
 			const { priceUsd, liquidity, chainId, baseToken } = pair;
-			if (baseToken.address === ethers.utils.getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
+			if (baseToken.address === getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
 				if (totalLiquidity !== 0) {
 					const avgPrice = weightedPrice / totalLiquidity;
 					const priceDiff = Math.abs(Number(priceUsd) - avgPrice) / avgPrice;
@@ -111,16 +111,16 @@ export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPric
 		}
 		const chain = convertChain(rawChain);
 
-		const [{ gasTokenPrice, fromTokenPrice, toTokenPrice }, gasPriceData] = await Promise.all([
+		const [coinsPrice, gasPrice] = await Promise.allSettled([
 			getCoinsPrice({ chain: rawChain, fromToken, toToken }),
-			providers[chain].getFeeData()
+			getGasPrice(config, { chainId: chainsMap[chain] })
 		]);
 
 		return {
-			gasTokenPrice,
-			fromTokenPrice,
-			toTokenPrice,
-			gasPriceData
+			gasTokenPrice: coinsPrice.status === 'fulfilled' ? coinsPrice.value.gasTokenPrice : null,
+			fromTokenPrice: coinsPrice.status === 'fulfilled' ? coinsPrice.value.fromTokenPrice : null,
+			toTokenPrice: coinsPrice.status === 'fulfilled' ? coinsPrice.value.toTokenPrice : null,
+			gasPriceData: gasPrice.status === 'fulfilled' ? { gasPrice: Number(gasPrice.value) } : null
 		};
 	} catch (error) {
 		console.log(error);
@@ -129,11 +129,13 @@ export async function getPrice({ chain: rawChain, fromToken, toToken }: IGetPric
 }
 
 export function useGetPrice({ chain, fromToken, toToken, skipRefetch }: IGetPriceProps) {
-	return useQuery<IPrice>(['gasPrice', chain, fromToken, toToken], () => getPrice({ chain, fromToken, toToken }), {
+	return useQuery<IPrice>({
+		queryKey: ['gasPrice', chain, fromToken, toToken],
+		queryFn: () => getPrice({ chain, fromToken, toToken }),
 		...(skipRefetch
 			? {
 					staleTime: 5 * 60 * 1000
-			  }
-			: { refetchInterval: 20_000 })
+				}
+			: { staleTime: 20_000, refetchInterval: 20_000 })
 	});
 }

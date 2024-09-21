@@ -1,5 +1,4 @@
-import { Chain } from 'wagmi';
-import { rpcsMap as rpcsUrlsMap } from '~/components/Aggregator/rpcs';
+import { Chain } from 'viem';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
 
 const okx = {
@@ -14,7 +13,7 @@ const okx = {
 		symbol: 'OKT'
 	},
 	rpcUrls: {
-		default: 'https://mainnet.boba.network'
+		default: { http: ['https://mainnet.boba.network'] }
 	},
 	blockExplorers: {
 		default: { name: 'OKLink', url: 'https://www.oklink.com/en/okc' }
@@ -34,7 +33,7 @@ const binance = {
 		symbol: 'BNB'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/bsc'
+		default: { http: ['https://rpc.ankr.com/bsc'] }
 	},
 	blockExplorers: {
 		default: { name: 'BSCScan', url: 'https://bscscan.com' }
@@ -54,7 +53,7 @@ const boba = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://mainnet.boba.network'
+		default: { http: ['https://mainnet.boba.network'] }
 	},
 	blockExplorers: {
 		default: { name: 'BobaScan', url: 'https://bobascan.com' }
@@ -74,7 +73,7 @@ const harmony = {
 		symbol: 'ONE'
 	},
 	rpcUrls: {
-		default: 'https://api.s0.t.hmny.io'
+		default: { http: ['https://api.s0.t.hmny.io'] }
 	},
 	blockExplorers: {
 		default: {
@@ -97,7 +96,7 @@ const heco = {
 		symbol: 'HT'
 	},
 	rpcUrls: {
-		default: 'https://http-mainnet.hecochain.com'
+		default: { http: ['https://http-mainnet.hecochain.com'] }
 	},
 	blockExplorers: {
 		default: {
@@ -120,7 +119,7 @@ const velas = {
 		symbol: 'VLX'
 	},
 	rpcUrls: {
-		default: 'https://evmexplorer.velas.com/rpc'
+		default: { http: ['https://evmexplorer.velas.com/rpc'] }
 	},
 	blockExplorers: {
 		default: { name: 'VelaScan', url: 'https://velascan.org' }
@@ -140,30 +139,10 @@ const oasis = {
 		symbol: 'ROSE'
 	},
 	rpcUrls: {
-		default: 'https://emerald.oasis.dev'
+		default: { http: ['https://emerald.oasis.dev'] }
 	},
 	blockExplorers: {
 		default: { name: 'OasisScan', url: 'https://www.oasisscan.com' }
-	},
-	testnet: false
-};
-
-const bttc = {
-	id: 199,
-	name: 'BitTorrent',
-	network: 'bttc',
-	iconUrl: chainIconUrl('bittorrent'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'BitTorrent',
-		symbol: 'BTT'
-	},
-	rpcUrls: {
-		default: 'https://rpc.bittorrentchain.io'
-	},
-	blockExplorers: {
-		default: { name: 'BTTScan', url: 'https://bttcscan.com' }
 	},
 	testnet: false
 };
@@ -180,7 +159,7 @@ const moonbeam = {
 		symbol: 'GLMR'
 	},
 	rpcUrls: {
-		default: 'https://rpc.api.moonbeam.network'
+		default: { http: ['https://rpc.api.moonbeam.network'] }
 	},
 	blockExplorers: {
 		default: {
@@ -203,7 +182,7 @@ const fuse = {
 		symbol: 'FUSE'
 	},
 	rpcUrls: {
-		default: 'https://rpc.fuse.io'
+		default: { http: ['https://rpc.fuse.io'] }
 	},
 	blockExplorers: {
 		default: {
@@ -226,35 +205,12 @@ const moonriver = {
 		symbol: 'MOVR'
 	},
 	rpcUrls: {
-		default: 'https://moonriver.public.blastapi.io'
+		default: { http: ['https://moonriver.public.blastapi.io'] }
 	},
 	blockExplorers: {
 		default: {
 			name: 'MoonScan',
 			url: 'https://moonriver.moonscan.io'
-		}
-	},
-	testnet: false
-};
-
-const dogechain = {
-	id: 2000,
-	name: 'DogeChain',
-	network: 'doge',
-	iconUrl: chainIconUrl('dogechain'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Doge',
-		symbol: 'DOGE'
-	},
-	rpcUrls: {
-		default: 'https://dogechain.ankr.com'
-	},
-	blockExplorers: {
-		default: {
-			name: 'DogeChain Explorer',
-			url: 'https://explorer.dogechain.dog'
 		}
 	},
 	testnet: false
@@ -272,7 +228,7 @@ const cronos = {
 		symbol: 'CRO'
 	},
 	rpcUrls: {
-		default: 'https://evm.cronos.org'
+		default: { http: ['https://evm.cronos.org'] }
 	},
 	blockExplorers: {
 		default: { name: 'CronosScan', url: 'https://cronoscan.com' }
@@ -291,7 +247,7 @@ const celo = {
 		symbol: 'CELO'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/celo'
+		default: { http: ['https://rpc.ankr.com/celo'] }
 	},
 	blockExplorers: {
 		default: { name: 'CeloScan', url: 'https://celoscan.io' }
@@ -310,7 +266,7 @@ const aurora = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://mainnet.aurora.dev'
+		default: { http: ['https://mainnet.aurora.dev'] }
 	},
 	blockExplorers: {
 		default: { name: 'AuroraScan', url: 'https://aurorascan.dev' }
@@ -329,10 +285,10 @@ const avax = {
 		symbol: 'AVAX'
 	},
 	rpcUrls: {
-		default: 'https://avalanche-evm.publicnode.com'
+		default: { http: ['https://avalanche-evm.publicnode.com'] }
 	},
 	blockExplorers: {
-		default: { name: 'SnowTrace', url: 'https://snowtrace.io' }
+		default: { name: 'SnowScan', url: 'https://snowscan.xyz' }
 	},
 	testnet: false
 };
@@ -349,7 +305,7 @@ const klaytn = {
 		symbol: 'KLAY'
 	},
 	rpcUrls: {
-		default: 'https://cypress.fandom.finance/archive'
+		default: { http: ['https://cypress.fandom.finance/archive'] }
 	},
 	blockExplorers: {
 		default: {
@@ -371,7 +327,7 @@ const fantom = {
 		symbol: 'FTM'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ftm.tools'
+		default: { http: ['https://rpc.ftm.tools'] }
 	},
 	blockExplorers: {
 		default: { name: 'FTMScan', url: 'https://ftmscan.com' }
@@ -391,7 +347,7 @@ const gnosis = {
 		symbol: 'xDai'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/gnosis'
+		default: { http: ['https://rpc.ankr.com/gnosis'] }
 	},
 	blockExplorers: {
 		default: { name: 'GnosisScan', url: 'https://gnosisscan.io' }
@@ -410,7 +366,7 @@ const polygon = {
 		symbol: 'MATIC'
 	},
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/polygon'
+		default: { http: ['https://rpc.ankr.com/polygon'] }
 	},
 	blockExplorers: {
 		default: { name: 'PolygonScan', url: 'https://polygonscan.com' }
@@ -430,7 +386,7 @@ const canto = {
 		symbol: 'CANTO'
 	},
 	rpcUrls: {
-		default: 'https://canto.neobase.one'
+		default: { http: ['https://canto.neobase.one'] }
 	},
 	blockExplorers: {
 		default: { name: 'CantoScan', url: 'https://evm.explorer.canto.io' }
@@ -453,7 +409,7 @@ const arbirum = {
 	},
 	testnet: false,
 	rpcUrls: {
-		default: 'https://arbitrum-one.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec'
+		default: { http: ['https://arbitrum-one.blastapi.io/d2f969b0-32e2-49b0-a7dc-6a813f30d1ec'] }
 	},
 	iconUrl: chainIconUrl('arbitrum')
 };
@@ -472,7 +428,7 @@ const ethereum = {
 	},
 	testnet: false,
 	rpcUrls: {
-		default: 'https://rpc.ankr.com/eth'
+		default: { http: ['https://rpc.ankr.com/eth'] }
 	},
 	iconUrl: chainIconUrl('ethereum')
 };
@@ -491,7 +447,7 @@ const optimism = {
 	},
 	testnet: false,
 	rpcUrls: {
-		default: 'https://optimism.blockpi.network/v1/rpc/public'
+		default: { http: ['https://optimism.blockpi.network/v1/rpc/public'] }
 	},
 	iconUrl: chainIconUrl('optimism')
 };
@@ -508,7 +464,7 @@ const zksync = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://mainnet.era.zksync.io'
+		default: { http: ['https://mainnet.era.zksync.io'] }
 	},
 	blockExplorers: {
 		default: { name: 'zkScan', url: 'https://explorer.zksync.io' }
@@ -528,7 +484,7 @@ const ontology = {
 		symbol: 'ONT'
 	},
 	rpcUrls: {
-		default: 'http://dappnode4.ont.io:20339'
+		default: { http: ['http://dappnode4.ont.io:20339'] }
 	},
 	blockExplorers: {
 		default: { name: 'Ontology Explorer', url: 'https://explorer.ont.io' }
@@ -548,7 +504,7 @@ const polygonZKEvm = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://zkevm-rpc.com'
+		default: { http: ['https://zkevm-rpc.com'] }
 	},
 	blockExplorers: {
 		default: { name: 'Polygon zkEVM Scan', url: 'https://zkevm.polygonscan.com' }
@@ -568,7 +524,7 @@ const kava = {
 		symbol: 'KAVA'
 	},
 	rpcUrls: {
-		default: 'https://evm2.kava.io'
+		default: { http: ['https://evm2.kava.io'] }
 	},
 	blockExplorers: {
 		default: { name: 'Kava Explorer', url: 'https://explorer.kava.io' }
@@ -588,7 +544,7 @@ const metis = {
 		symbol: 'METIS'
 	},
 	rpcUrls: {
-		default: 'https://andromeda.metis.io/?owner=1088'
+		default: { http: ['https://andromeda.metis.io/?owner=1088'] }
 	},
 	blockExplorers: {
 		default: { name: 'Metis Explorer', url: 'https://andromeda-explorer.metis.io' }
@@ -608,7 +564,7 @@ const pulse = {
 		symbol: 'PLS'
 	},
 	rpcUrls: {
-		default: 'https://rpc.pulsechain.com'
+		default: { http: ['https://rpc.pulsechain.com'] }
 	},
 	blockExplorers: {
 		default: { name: 'PulseChain Explorer', url: 'https://scan.pulsechain.com' }
@@ -628,7 +584,7 @@ const base = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://mainnet.base.org'
+		default: { http: ['https://mainnet.base.org'] }
 	},
 	blockExplorers: {
 		default: { name: 'BaseScan', url: 'https://basescan.org' }
@@ -648,7 +604,7 @@ const linea = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://rpc.linea.build'
+		default: { http: ['https://rpc.linea.build'] }
 	},
 	blockExplorers: {
 		default: { name: 'LineaScan', url: 'https://lineascan.build' }
@@ -668,7 +624,7 @@ const scroll = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: 'https://rpc.scroll.io'
+		default: { http: ['https://rpc.scroll.io'] }
 	},
 	blockExplorers: {
 		default: { name: 'ScrollScan', url: 'https://scrollscan.com/' }
@@ -677,7 +633,9 @@ const scroll = {
 };
 
 interface IChain extends Chain {
+	network: string;
 	iconUrl: string;
+	iconBackground: string;
 }
 
 export const allChains: Array<IChain> = [
@@ -702,8 +660,8 @@ export const allChains: Array<IChain> = [
 	heco,
 	boba,
 	okx,
-	bttc,
-	dogechain,
+	// bttc,
+	// dogechain,
 	moonbeam,
 	fuse,
 	oasis,
@@ -714,4 +672,4 @@ export const allChains: Array<IChain> = [
 	velas,
 	harmony,
 	scroll
-].map((chain) => ({ ...chain, rpcUrls: { ...chain.rpcUrls, ...(rpcsUrlsMap[chain.id] || {}) } }));
+];

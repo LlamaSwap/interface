@@ -1,10 +1,8 @@
-import { ethers } from 'ethers';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure, Input } from '@chakra-ui/react';
 import { WarningTwoIcon } from '@chakra-ui/icons';
 import { Header, IconImage, PairRow } from '../Aggregator/Search';
-import { useToken } from 'wagmi';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useQueryClient } from '@tanstack/react-query';
@@ -12,6 +10,9 @@ import Image from 'next/image';
 import coingecko from '~/public/coingecko.svg';
 import { allChains } from '../WalletProvider/chains';
 import { ChevronDown } from 'react-feather';
+import { useToken } from '../Aggregator/hooks/useToken';
+import { isAddress } from 'viem';
+import { IToken } from '~/types';
 
 const Row = ({ chain, token, onClick }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
@@ -107,7 +108,7 @@ const saveToken = (token) => {
 };
 
 const AddToken = ({ address, selectedChain, onClick }) => {
-	const { data, isLoading, isError } = useToken({
+	const { data, isLoading, error } = useToken({
 		address: address as `0x${string}`,
 		chainId: selectedChain.id,
 		enabled: typeof address === 'string' && address.length === 42 && selectedChain ? true : false
@@ -116,7 +117,7 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 	const queryClient = useQueryClient();
 
 	const onTokenClick = () => {
-		if (isError) return;
+		if (error) return;
 
 		saveToken({
 			address,
@@ -152,22 +153,22 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 				{isLoading
 					? 'Loading...'
 					: data?.name
-					? `${data.name} (${data.symbol})`
-					: address.slice(0, 4) + '...' + address.slice(-4)}
+						? `${data.name} (${data.symbol})`
+						: address.slice(0, 4) + '...' + address.slice(-4)}
 			</Text>
 
-			<Button height={38} marginLeft="auto" onClick={onTokenClick} disabled={isError}>
+			<Button height={38} marginLeft="auto" onClick={onTokenClick} disabled={error ? true : false}>
 				Add token
 			</Button>
 
-			{isError && (
+			{error ? (
 				<Text
 					fontSize="0.75rem"
 					color="red"
 					w="100%"
 					textAlign="center"
 				>{`This address is not a contract on ${selectedChain.value}`}</Text>
-			)}
+			) : null}
 		</Flex>
 	);
 };
@@ -196,15 +197,15 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 					}
 
 					return false;
-			  })
+				})
 			: data;
 	}, [debouncedInput, data]);
 
-	const parentRef = useRef();
+	const parentRef = useRef<HTMLDivElement>(null);
 
 	const rowVirtualizer = useVirtualizer({
 		count: filteredData.length,
-		getScrollElement: () => parentRef.current,
+		getScrollElement: () => parentRef?.current ?? null,
 		estimateSize: (index) => (filteredData[index].isGeckoToken ? 72 : 40),
 		overscan: 10
 	});
@@ -239,7 +240,7 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 						autoFocus
 					/>
 				</div>
-				{ethers.utils.isAddress(input) && filteredData.length === 0 ? (
+				{isAddress(input) && filteredData.length === 0 ? (
 					<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
 				) : null}
 
@@ -281,7 +282,23 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 	);
 };
 
-export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
+export const TokenSelect = ({
+	tokens,
+	onClick,
+	token,
+	selectedChain
+}: {
+	tokens: Array<IToken>;
+	token?: IToken | null;
+	onClick: (token: IToken) => void;
+	selectedChain?: {
+		id: any;
+		value: string;
+		label: string;
+		chainId: number;
+		logoURI?: string | null;
+	} | null;
+}) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const onTokenClick = (token) => {
@@ -304,12 +321,12 @@ export const TokenSelect = ({ tokens, onClick, token, selectedChain }) => {
 				p="12px"
 				onClick={() => onOpen()}
 			>
-				{token && (
+				{token ? (
 					<IconImage
 						src={token.logoURI}
 						onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
 					/>
-				)}
+				) : null}
 
 				<Tooltip
 					label="This token could have been affected by the multichain hack."

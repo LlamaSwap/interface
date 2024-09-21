@@ -1,3 +1,5 @@
+import { IPool } from '~/types';
+
 export async function getLSDPageData(pools) {
 	const [{ protocols }] = await Promise.all(
 		['https://api.llama.fi/lite/protocols2?b=2'].map((url) => fetch(url).then((r) => r.json()))
@@ -29,7 +31,7 @@ export async function getLSDPageData(pools) {
 	return lsdApy;
 }
 
-async function getLendBorrowData(pools = []) {
+async function getLendBorrowData(pools: Array<IPool> = []) {
 	const yieldsConfig = await fetch('https://api.llama.fi/config/yields')
 		.then((res) => res.json())
 		.then((c) => c.protocols);
@@ -115,11 +117,11 @@ async function getLendBorrowData(pools = []) {
 				borrowFactor: x.borrowFactor,
 				totalAvailableUsd,
 				apyBorrow,
-				rewardTokens: p.apyRewards > 0 || x.apyRewardBorrow > 0 ? x.rewardTokens : p.rewardTokens
+				rewardTokens: (p.apyReward ?? 0) > 0 || x.apyRewardBorrow > 0 ? x.rewardTokens : p.rewardTokens
 			};
 		})
 		.filter(Boolean)
-		.sort((a, b) => b.totalSupplyUsd - a.totalSupplyUsd);
+		.sort((a, b) => b!.totalSupplyUsd - a!.totalSupplyUsd) as Array<IPool>;
 
 	return {
 		yields: pools,

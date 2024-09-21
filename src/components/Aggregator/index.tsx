@@ -1,17 +1,7 @@
 import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import {
-	useAccount,
-	useFeeData,
-	useNetwork,
-	useQueryClient,
-	useSigner,
-	useSignTypedData,
-	useSwitchNetwork,
-	useToken
-} from 'wagmi';
+import { useAccount, useSwitchChain } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
-import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
 import styled from 'styled-components';
@@ -41,7 +31,7 @@ import { adaptersNames, getAllChains, swap, gaslessApprove } from './router';
 import { inifiniteApprovalAllowed } from './list';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
-import { useGetRoutes } from '~/queries/useGetRoutes';
+import { IRoute, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD, WETH } from './constants';
@@ -58,7 +48,7 @@ import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
-import { getBalance, useBalance } from '~/queries/useBalance';
+import { getTokenBalance, useBalance } from '~/queries/useBalance';
 import { useEstimateGas } from './hooks/useEstimateGas';
 import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
@@ -70,6 +60,10 @@ import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chak
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
+import { zeroAddress } from 'viem';
+import { useToken } from './hooks/useToken';
+import { waitForTransactionReceipt } from 'wagmi/actions';
+import { config } from '../WalletProvider';
 
 /*
 Integrated:
@@ -320,26 +314,33 @@ export const SwapInputArrow = (props) => (
 	/>
 );
 
+interface IFinalRoute extends IRoute {
+	isFailed: boolean;
+	route: IRoute;
+	gasUsd: string | number;
+	amountUsd: string | null;
+	amount: number;
+	netOut: number;
+	amountIn: string;
+	amountInUsd: string | null;
+}
+
 const chains = getAllChains();
 
 export function AggregatorContainer({ tokenList, sandwichList }) {
 	// wallet stuff
-	const { data: signer } = useSigner();
-	const { address, isConnected } = useAccount();
-	const { chain: chainOnWallet } = useNetwork();
+	const { address, isConnected, chain: chainOnWallet } = useAccount();
 	const { openConnectModal } = useConnectModal();
-	const { switchNetwork } = useSwitchNetwork();
+	const { switchChain } = useSwitchChain();
 	const addRecentTransaction = useAddRecentTransaction();
-	const wagmiClient = useQueryClient();
-	const { signTypedDataAsync } = useSignTypedData();
 
 	// swap input fields and selected aggregator states
-	const [aggregator, setAggregator] = useState(null);
+	const [aggregator, setAggregator] = useState<string | null>(null);
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
 
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
-	const [lastOutputValue, setLastOutputValue] = useState(null);
+	const [lastOutputValue, setLastOutputValue] = useState<{ aggregator: string; amount: number } | null>(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
@@ -361,7 +362,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const [debouncedAmount, debouncedAmountOut] = debouncedAmountInAndOut.split('&&');
 
 	// get selected chain and tokens from URL query params
-	const routesRef = useRef(null);
+	const routesRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 	const { fromTokenAddress, toTokenAddress } = useQueryParams();
 
@@ -374,54 +375,56 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	// data of selected token not in chain's tokenlist
 	const { data: fromToken2 } = useToken({
 		address: fromTokenAddress as `0x${string}`,
-		chainId: selectedChain.id,
+		chainId: selectedChain?.id,
 		enabled:
 			typeof fromTokenAddress === 'string' && fromTokenAddress.length === 42 && selectedChain && !selectedFromToken
 				? true
 				: false
 	});
+
 	const { data: toToken2 } = useToken({
 		address: toTokenAddress as `0x${string}`,
-		chainId: selectedChain.id,
+		chainId: selectedChain?.id,
 		enabled:
 			typeof toTokenAddress === 'string' && toTokenAddress.length === 42 && selectedChain && !selectedToToken
 				? true
 				: false
 	});
+
 	// final tokens data
 	const { finalSelectedFromToken, finalSelectedToToken } = useMemo(() => {
-		const finalSelectedFromToken: IToken =
+		const finalSelectedFromToken: IToken | null =
 			!selectedFromToken && fromToken2
 				? {
-						name: fromToken2.name || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-						label: fromToken2.symbol || fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-						symbol: fromToken2.symbol || '',
+						name: fromToken2.name ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
+						label: fromToken2.symbol ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
+						symbol: fromToken2.symbol ?? '',
 						address: fromToken2.address,
 						value: fromToken2.address,
 						decimals: fromToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${
 							fromToken2.address
 						}?h=20&w=20`,
-						chainId: selectedChain.id || 1,
+						chainId: selectedChain?.id ?? 1,
 						geckoId: null
-				  }
+					}
 				: selectedFromToken;
 
-		const finalSelectedToToken: IToken =
+		const finalSelectedToToken: IToken | null =
 			!selectedToToken && toToken2
 				? {
-						name: toToken2.name || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-						label: toToken2.symbol || toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-						symbol: toToken2.symbol || '',
+						name: toToken2.name ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
+						label: toToken2.symbol ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
+						symbol: toToken2.symbol ?? '',
 						address: toToken2.address,
 						value: toToken2.address,
 						decimals: toToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain.id || 1}/${
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${
 							toToken2.address
 						}?h=20&w=20`,
-						chainId: selectedChain.id || 1,
+						chainId: selectedChain?.id ?? 1,
 						geckoId: null
-				  }
+					}
 				: selectedToToken;
 
 		return { finalSelectedFromToken, finalSelectedToToken };
@@ -439,14 +442,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const savedTokens = useGetSavedTokens(selectedChain?.id);
 
 	// selected from token's balances
-	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain.id });
+	const balance = useBalance({ address, token: finalSelectedFromToken?.address, chainId: selectedChain?.id });
+
 	// selected from token's balances
-	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain.id });
-	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain.id : null);
-	const { data: gasPriceData } = useFeeData({
-		chainId: selectedChain?.id,
-		enabled: selectedChain ? true : false
-	});
+	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain?.id });
+
+	// balances of all token's in wallet
+	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain?.id : null);
 
 	const tokensInChain = useMemo(() => {
 		return (
@@ -472,6 +474,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		};
 	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
 
+	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
+		chain: selectedChain?.value,
+		toToken: finalSelectedToToken?.address,
+		fromToken: finalSelectedFromToken?.address
+	});
+
+	const { gasTokenPrice, toTokenPrice, fromTokenPrice, gasPriceData } = tokenPrices || {};
+
 	const {
 		data: routes = [],
 		isLoading,
@@ -487,7 +497,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		disabledAdapters,
 		extra: {
 			gasPriceData,
-			userAddress: address || ethers.constants.AddressZero,
+			userAddress: address || zeroAddress,
 			amount: debouncedAmount,
 			fromToken: finalSelectedFromToken,
 			toToken: finalSelectedToToken,
@@ -501,32 +511,30 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		routes,
 		token: finalSelectedFromToken?.address,
 		userAddress: address,
-		chain: selectedChain.value,
-		balance: +balance?.data?.value,
-		isOutput: amountOut && amountOut !== ''
-	});
-	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
-		toToken: finalSelectedToToken?.address,
-		fromToken: finalSelectedFromToken?.address
+		balance: balance?.data?.value ? Number(balance.data.value) : null,
+		isOutput: amountOut && amountOut !== '' ? true : false
 	});
-	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
 
 	// format routes
-	const fillRoute = (route: typeof routes[0]) => {
-		if (!route?.price) return null;
+	const fillRoute = (route: IRoute) => {
+		if (!route.price || !finalSelectedFromToken || !finalSelectedToToken) return null;
+
 		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
-			? gasData?.[route.name]?.gas
+			? gasData[route.name]!.gas
 			: route.price.estimatedGas);
-		let gasUsd: number | string = (gasTokenPrice * gasEstimation * +gasPriceData?.formatted?.gasPrice) / 1e18 || 0;
+
+		let gasUsd: number | string = gasPriceData?.gasPrice
+			? ((gasTokenPrice ?? 0) * gasEstimation * gasPriceData.gasPrice) / 1e18 || 0
+			: 0;
 
 		// CowSwap native token swap
 		gasUsd =
-			route.price.feeAmount && finalSelectedFromToken.address === ethers.constants.AddressZero
-				? (route.price.feeAmount / 1e18) * gasTokenPrice + gasUsd
+			route.price.feeAmount && finalSelectedFromToken.address === zeroAddress
+				? (route.price.feeAmount / 1e18) * (gasTokenPrice ?? 0) + gasUsd
 				: gasUsd;
 
-		gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * gasTokenPrice + gasUsd : gasUsd;
+		gasUsd = route.l1Gas !== 'Unknown' && route.l1Gas ? route.l1Gas * (gasTokenPrice ?? 0) + gasUsd : gasUsd;
 
 		gasUsd = route.l1Gas === 'Unknown' ? 'Unknown' : gasUsd;
 
@@ -550,11 +558,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			netOut,
 			amountIn,
 			amountInUsd
-		};
+		} as IFinalRoute;
 	};
 
-	const allRoutes = [...(routes || [])]?.map(fillRoute);
-	const failedRoutes = allRoutes.filter((r) => r.isFailed === true);
+	const allRoutes = [...(routes || [])].map(fillRoute).filter((r) => (r ? true : false)) as Array<IFinalRoute>;
+	const failedRoutes = allRoutes.filter((r) => r!.isFailed === true);
+
 	let normalizedRoutes = allRoutes
 		.filter(
 			({ fromAmount, amount: toAmount, isFailed }) =>
@@ -569,9 +578,9 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			}
 			return isOutputTrade
 				? typeof a.amountInUsd === 'number' &&
-				  typeof a.gasUsd === 'number' &&
-				  typeof b.amountInUsd === 'number' &&
-				  typeof b.gasUsd === 'number'
+					typeof a.gasUsd === 'number' &&
+					typeof b.amountInUsd === 'number' &&
+					typeof b.gasUsd === 'number'
 					? a.amountInUsd + a.gasUsd - (b.amountInUsd + b.gasUsd)
 					: Number(a.amountIn) - Number(b.amountIn)
 				: b.netOut - a.netOut;
@@ -588,7 +597,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		selecteRouteIndex >= 0 ? { ...normalizedRoutes[selecteRouteIndex], index: selecteRouteIndex } : null;
 
 	const diffBetweenSelectedRouteAndTopRoute =
-		selectedRoute && normalizedRoutes
+		selectedRoute?.amount && normalizedRoutes?.[0]?.amount
 			? Number((100 - (selectedRoute.amount / normalizedRoutes[0].amount) * 100).toFixed(2))
 			: 0;
 
@@ -596,12 +605,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const onMaxClick = () => {
 		if (balance.data && balance.data.formatted && !Number.isNaN(Number(balance.data.formatted))) {
 			if (
-				selectedRoute &&
-				selectedRoute.price.estimatedGas &&
-				gasPriceData?.formatted?.gasPrice &&
-				finalSelectedFromToken?.address === ethers.constants.AddressZero
+				selectedRoute?.price?.estimatedGas &&
+				gasPriceData?.gasPrice &&
+				finalSelectedFromToken?.address === zeroAddress
 			) {
-				const gas = (+selectedRoute.price.estimatedGas * +gasPriceData?.formatted?.gasPrice * 2) / 1e18;
+				const gas = (+selectedRoute.price!.estimatedGas * gasPriceData.gasPrice * 2) / 1e18;
 
 				const amountWithoutGas = +balance.data.formatted - gas;
 
@@ -618,13 +626,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			.push(
 				{
 					pathname: '/',
-					query: { ...router.query, chain: newChain.value, from: ethers.constants.AddressZero, to: undefined }
+					query: { ...router.query, chain: newChain.value, from: zeroAddress, to: undefined }
 				},
 				undefined,
 				{ shallow: true }
 			)
 			.then(() => {
-				if (switchNetwork) switchNetwork(newChain.chainId);
+				if (switchChain) switchChain({ chainId: newChain.chainId });
 			});
 	};
 	const onFromTokenChange = (token) => {
@@ -645,6 +653,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			selectedToToken === null &&
 			finalSelectedToToken !== null &&
 			savedTokens &&
+			toTokenAddress &&
 			!savedTokens.find(({ address }) => address.toLowerCase() === toTokenAddress.toLowerCase());
 
 		if (isUnknown && toTokenAddress && savedTokens?.length > 1) {
@@ -653,7 +662,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	}, [router?.query, savedTokens]);
 
 	useEffect(() => {
-		if (selectedRoute) {
+		if (selectedRoute?.amount && aggregator) {
 			if (
 				lastOutputValue !== null &&
 				aggregator === lastOutputValue.aggregator &&
@@ -690,24 +699,23 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		balance.data &&
 		!Number.isNaN(Number(balance.data.formatted)) &&
 		balance.data.value &&
-		selectedRoute
-			? +selectedRoute?.fromAmount > +balance.data.value
+		selectedRoute?.fromAmount
+			? +selectedRoute.fromAmount > Number(balance.data.value)
 			: false;
 
 	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '';
 
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
-			balance?.refetch() ||
-				wagmiClient.invalidateQueries([{ addressOrName: address, chainId: chainOnWallet.id, entity: 'balance' }]);
+			balance?.refetch();
 			toTokenBalance?.refetch();
 		}
 	};
 
 	// approve/swap tokens
 	const amountToApprove =
-		amountOut && amountOut !== ''
-			? BigNumber(selectedRoute?.fromAmount)
+		amountOut && amountOut !== '' && selectedRoute?.fromAmount
+			? BigNumber(selectedRoute.fromAmount)
 					.times(100 + Number(slippage) * 2)
 					.div(100)
 					.toFixed(0)
@@ -735,27 +743,23 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		spender:
 			selectedRoute && selectedRoute.price && !isGaslessApproval ? selectedRoute.price.tokenApprovalAddress : null,
 		amount: amountToApprove,
-		chain: selectedChain.value
+		chain: selectedChain?.value
 	});
 
 	const gaslessApprovalMutation = useMutation({
-		mutationFn: (params: {
-			adapter: string;
-			signTypedDataAsync: typeof signTypedDataAsync;
-			rawQuote: any;
-			isInfiniteApproval: boolean;
-		}) => gaslessApprove(params)
+		mutationFn: (params: { adapter: string; rawQuote: any; isInfiniteApproval: boolean }) => gaslessApprove(params)
 	});
 
-	const isApproved = selectedRoute?.isGasless
-		? (selectedRoute.price.rawQuote as any).approval.isRequired
-			? (selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
-				? gaslessApprovalMutation.data
-					? true
-					: false
-				: isTokenApproved
-			: true
-		: isTokenApproved;
+	const isApproved =
+		selectedRoute?.price && selectedRoute?.isGasless
+			? (selectedRoute.price.rawQuote as any).approval.isRequired
+				? (selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
+					? gaslessApprovalMutation.data
+						? true
+						: false
+					: isTokenApproved
+				: true
+			: isTokenApproved;
 
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
@@ -767,8 +771,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 			amount: string | number;
 			amountIn: string;
 			adapter: string;
-			signer: ethers.Signer;
-			signTypedDataAsync: typeof signTypedDataAsync;
+			fromAddress: string;
 			slippage: string;
 			rawQuote: any;
 			tokens: { toToken: IToken; fromToken: IToken };
@@ -778,7 +781,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
-			if (data.gaslessTxReceipt) {
+			if (typeof data !== 'string' && data.gaslessTxReceipt) {
 				gaslessApprovalMutation.reset();
 				const isSuccess =
 					data.gaslessTxReceipt.status === 'confirmed' ||
@@ -804,9 +807,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					toast(formatErrorToast({ reason: data.gaslessTxReceipt.reason }, false));
 				}
 				forceRefreshTokenBalance();
+
 				sendSwapEvent({
-					chain: selectedChain.value,
-					user: address,
+					chain: selectedChain?.value ?? 'unknown',
+					user: address ?? 'unknown',
 					from: variables.from,
 					to: variables.to,
 					aggregator: variables.adapter,
@@ -814,7 +818,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					quote: variables.rawQuote,
 					txUrl,
 					amount: String(variables.amountIn),
-					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
+					amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
 					errorData: data,
 					slippage,
 					routePlace: String(variables?.index),
@@ -824,15 +828,73 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				return;
 			}
 
-			if (data.hash) {
+			if (typeof data === 'string') {
 				addRecentTransaction({
-					hash: data.hash,
+					hash: data,
 					description: `Swap transaction using ${variables.adapter} is sent.`
 				});
 				const explorerUrl = chainOnWallet.blockExplorers.default.url;
 				setTxModalOpen(true);
-				txUrl = `${explorerUrl}/tx/${data.hash}`;
+				txUrl = `${explorerUrl}/tx/${data}`;
 				setTxUrl(txUrl);
+
+				confirmingTxToastRef.current = toast({
+					title: 'Confirming Transaction',
+					description: '',
+					status: 'loading',
+					isClosable: true,
+					position: 'top-right'
+				});
+
+				let isError = false;
+				const balanceBefore = toTokenBalance?.data?.formatted;
+
+				waitForTransactionReceipt(config, {
+					hash: data as `0x${string}`
+				})
+					.then((final) => {
+						if (final.status === 'success') {
+							forceRefreshTokenBalance();
+
+							if (confirmingTxToastRef.current) {
+								toast.close(confirmingTxToastRef.current);
+							}
+
+							toast(formatSuccessToast(variables));
+						} else {
+							isError = true;
+							toast(formatErrorToast({}, true));
+						}
+					})
+					.catch(() => {
+						isError = true;
+						toast(formatErrorToast({}, true));
+					})
+					?.finally(() => {
+						if (selectedChain && finalSelectedToToken && address) {
+							getTokenBalance({ address, chainId: selectedChain.id, token: finalSelectedToToken.address }).then(
+								(balanceAfter) =>
+									sendSwapEvent({
+										chain: selectedChain.value,
+										user: address,
+										from: variables.from,
+										to: variables.to,
+										aggregator: variables.adapter,
+										isError,
+										quote: variables.rawQuote,
+										txUrl,
+										amount: String(variables.amountIn),
+										amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+										errorData: {},
+										slippage,
+										routePlace: String(variables?.index),
+										route: variables.route,
+										reportedOutput: Number(variables.amount) || 0,
+										realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
+									})
+							);
+						}
+					});
 			} else {
 				setTxModalOpen(true);
 				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
@@ -843,16 +905,16 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					toast(formatSuccessToast(variables));
 
 					sendSwapEvent({
-						chain: selectedChain.value,
-						user: address,
+						chain: selectedChain?.value ?? 'unknown',
+						user: address ?? 'unknown',
 						from: variables.from,
 						to: variables.to,
 						aggregator: variables.adapter,
-						isError,
+						isError: false,
 						quote: variables.rawQuote,
 						txUrl,
 						amount: String(variables.amountIn),
-						amountUsd: +fromTokenPrice * +variables.amountIn || 0,
+						amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
 						errorData: {},
 						slippage,
 						routePlace: String(variables?.index),
@@ -860,68 +922,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					});
 				});
 			}
-
-			confirmingTxToastRef.current = toast({
-				title: 'Confirming Transaction',
-				description: '',
-				status: 'loading',
-				isClosable: true,
-				position: 'top-right'
-			});
-
-			let isError = false;
-			const balanceBefore = toTokenBalance?.data?.formatted;
-
-			data
-				.wait?.()
-				?.then((final) => {
-					if (final.status === 1) {
-						forceRefreshTokenBalance();
-
-						if (confirmingTxToastRef.current) {
-							toast.close(confirmingTxToastRef.current);
-						}
-
-						toast(formatSuccessToast(variables));
-					} else {
-						isError = true;
-						toast(formatErrorToast({}, true));
-					}
-				})
-				.catch(() => {
-					isError = true;
-					toast(formatErrorToast({}, true));
-				})
-				?.finally(() => {
-					getBalance({ address, chainId: selectedChain.id, token: finalSelectedToToken.address }).then((balanceAfter) =>
-						sendSwapEvent({
-							chain: selectedChain.value,
-							user: address,
-							from: variables.from,
-							to: variables.to,
-							aggregator: variables.adapter,
-							isError,
-							quote: variables.rawQuote,
-							txUrl,
-							amount: String(variables.amountIn),
-							amountUsd: +fromTokenPrice * +variables.amountIn || 0,
-							errorData: {},
-							slippage,
-							routePlace: String(variables?.index),
-							route: variables.route,
-							reportedOutput: Number(variables.amount) || 0,
-							realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
-						})
-					);
-				});
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
 				toast(formatErrorToast(err, false));
 
 				sendSwapEvent({
-					chain: selectedChain.value,
-					user: address,
+					chain: selectedChain?.value ?? 'unknown',
+					user: address ?? 'unknown',
 					from: variables.from,
 					to: variables.to,
 					aggregator: variables.adapter,
@@ -929,7 +937,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					quote: variables.rawQuote,
 					txUrl: '',
 					amount: String(variables.amountIn),
-					amountUsd: +fromTokenPrice * +variables.amountIn || 0,
+					amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
 					errorData: err,
 					slippage,
 					routePlace: String(variables?.index),
@@ -940,7 +948,15 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	});
 
 	const handleSwap = () => {
-		if (selectedRoute && selectedRoute.price && !slippageIsWorng) {
+		if (
+			selectedRoute &&
+			selectedRoute.price &&
+			!slippageIsWorng &&
+			selectedChain &&
+			finalSelectedFromToken &&
+			finalSelectedToToken &&
+			address
+		) {
 			if (hasMaxPriceImpact && !isDegenModeEnabled) {
 				toast({
 					title: 'Price impact is too high!',
@@ -949,12 +965,12 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				});
 				return;
 			}
+
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
 				to: finalSelectedToToken.value,
-				signer,
-				signTypedDataAsync,
+				fromAddress: address,
 				slippage,
 				adapter: selectedRoute.name,
 				rawQuote: selectedRoute.price.rawQuote,
@@ -968,25 +984,24 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		}
 	};
 	const handleGaslessApproval = ({ isInfiniteApproval }: { isInfiniteApproval: boolean }) => {
-		gaslessApprovalMutation.mutate({
-			signTypedDataAsync,
-			adapter: selectedRoute.name,
-			rawQuote: selectedRoute.price.rawQuote,
-			isInfiniteApproval
-		});
+		if (selectedRoute?.price) {
+			gaslessApprovalMutation.mutate({
+				adapter: selectedRoute.name,
+				rawQuote: selectedRoute.price.rawQuote,
+				isInfiniteApproval
+			});
+		}
 	};
 
 	const pairSandwichData =
-		sandwichList?.[selectedChain?.value]?.[
-			normalizeTokens(
-				finalSelectedFromToken?.address === ethers.constants.AddressZero
-					? WETH[selectedChain?.value]
-					: finalSelectedFromToken?.address,
-				finalSelectedToToken?.address === ethers.constants.AddressZero
-					? WETH[selectedChain?.value]
-					: finalSelectedToToken?.address
-			).join('')
-		];
+		sandwichList && selectedChain && finalSelectedFromToken && finalSelectedToToken
+			? sandwichList[selectedChain.value]?.[
+					normalizeTokens(
+						finalSelectedFromToken.address === zeroAddress ? WETH[selectedChain.value] : finalSelectedFromToken.address,
+						finalSelectedToToken.address === zeroAddress ? WETH[selectedChain.value] : finalSelectedToToken.address
+					)!.join('')
+				]
+			: null;
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
 	const isUnknownPrice = !fromTokenPrice || !toTokenPrice;
@@ -995,7 +1010,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 	const warnings = [
 		aggregator === 'CowSwap' ? (
 			<>
-				{finalSelectedFromToken.value === ethers.constants.AddressZero && Number(slippage) < 2 ? (
+				{finalSelectedFromToken?.value === zeroAddress && Number(slippage) < 2 ? (
 					<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow1">
 						<AlertIcon />
 						Swaps from {finalSelectedFromToken.symbol} on CowSwap need to have slippage higher than 2%.
@@ -1004,7 +1019,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow2">
 					<AlertIcon />
 					CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
-					{finalSelectedFromToken.value === ethers.constants.AddressZero ? (
+					{finalSelectedFromToken?.value === zeroAddress ? (
 						<>
 							<br /> For ETH orders, if it doesn't get executed the ETH will be returned to your wallet in 30 minutes.
 						</>
@@ -1153,7 +1168,15 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 								Connect Wallet
 							</Button>
 						) : !isValidSelectedChain ? (
-							<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
+							<Button
+								colorScheme={'messenger'}
+								onClick={() => {
+									if (selectedChain) {
+										switchChain({ chainId: selectedChain.id });
+									}
+								}}
+								disabled={!selectedChain}
+							>
 								Switch Network
 							</Button>
 						) : insufficientBalance ? (
@@ -1209,20 +1232,20 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 											) : (
 												<Button
 													isLoading={
-														swapMutation.isLoading ||
+														swapMutation.isPending ||
 														isApproveLoading ||
-														(gaslessApprovalMutation.isLoading && !gaslessApprovalMutation.variables.isInfiniteApproval)
+														(gaslessApprovalMutation.isPending && !gaslessApprovalMutation.variables.isInfiniteApproval)
 													}
 													loadingText={
 														isConfirmingApproval ||
-														(gaslessApprovalMutation.isLoading && !gaslessApprovalMutation.variables.isInfiniteApproval)
+														(gaslessApprovalMutation.isPending && !gaslessApprovalMutation.variables.isInfiniteApproval)
 															? 'Confirming'
 															: 'Preparing transaction'
 													}
 													colorScheme={'messenger'}
 													onClick={() => {
 														//scroll Routes into view
-														!selectedRoute && routesRef.current.scrollIntoView({ behavior: 'smooth' });
+														!selectedRoute && routesRef.current?.scrollIntoView({ behavior: 'smooth' });
 
 														if (!isApproved && isGaslessApproval) {
 															handleGaslessApproval({ isInfiniteApproval: false });
@@ -1234,7 +1257,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														if (
 															balance.data &&
 															!Number.isNaN(Number(balance.data.value)) &&
-															+selectedRoute?.fromAmount > +balance?.data?.value?.toString()
+															selectedRoute?.fromAmount &&
+															+selectedRoute.fromAmount > +balance?.data?.value?.toString()
 														)
 															return;
 
@@ -1242,8 +1266,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													}}
 													disabled={
 														isUSDTNotApprovedOnEthereum ||
-														swapMutation.isLoading ||
-														gaslessApprovalMutation.isLoading ||
+														swapMutation.isPending ||
+														gaslessApprovalMutation.isPending ||
 														isApproveLoading ||
 														isApproveResetLoading ||
 														!(finalSelectedFromToken && finalSelectedToToken) ||
@@ -1257,10 +1281,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													{!selectedRoute
 														? 'Select Aggregator'
 														: isApproved
-														? `Swap via ${selectedRoute.name}`
-														: slippageIsWorng
-														? 'Set Slippage'
-														: 'Approve'}
+															? `Swap via ${selectedRoute.name}`
+															: slippageIsWorng
+																? 'Set Slippage'
+																: 'Approve'}
 												</Button>
 											)}
 
@@ -1269,13 +1293,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													colorScheme={'messenger'}
 													loadingText={
 														isConfirmingInfiniteApproval ||
-														(gaslessApprovalMutation.isLoading && gaslessApprovalMutation.variables.isInfiniteApproval)
+														(gaslessApprovalMutation.isPending && gaslessApprovalMutation.variables.isInfiniteApproval)
 															? 'Confirming'
 															: 'Preparing transaction'
 													}
 													isLoading={
 														isApproveInfiniteLoading ||
-														(gaslessApprovalMutation.isLoading && gaslessApprovalMutation.variables.isInfiniteApproval)
+														(gaslessApprovalMutation.isPending && gaslessApprovalMutation.variables.isInfiniteApproval)
 													}
 													onClick={() => {
 														if (!isApproved && isGaslessApproval) {
@@ -1287,8 +1311,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 													}}
 													disabled={
 														isUSDTNotApprovedOnEthereum ||
-														swapMutation.isLoading ||
-														gaslessApprovalMutation.isLoading ||
+														swapMutation.isPending ||
+														gaslessApprovalMutation.isPending ||
 														isApproveLoading ||
 														isApproveResetLoading ||
 														isApproveInfiniteLoading ||
@@ -1316,7 +1340,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														colorScheme={'messenger'}
 														width={'24px'}
 														padding={'4px'}
-														onClick={() => refetchTokenAllowance()}
+														onClick={() => refetchTokenAllowance?.()}
 													>
 														<RepeatIcon w="16px	" h="16px" />
 													</Button>
@@ -1357,8 +1381,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					  amount === debouncedAmount &&
 					  finalSelectedFromToken &&
 					  finalSelectedToToken &&
-					  routes &&
-					  routes.length ? (
+					  routes.length === 0 ? (
 						<FormHeader>No available routes found</FormHeader>
 					) : null}
 
@@ -1393,11 +1416,11 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 					{normalizedRoutes.map((r, i) => (
 						<Fragment
 							key={
-								selectedChain.label +
-								finalSelectedFromToken.label +
-								finalSelectedToToken.label +
+								selectedChain!.label +
+								finalSelectedFromToken!.label +
+								finalSelectedToToken!.label +
 								amountWithDecimals +
-								gasPriceData?.formatted?.gasPrice +
+								gasPriceData?.gasPrice?.toString() +
 								r?.name
 							}
 						>
@@ -1409,10 +1432,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 									if (isSmallScreen) toggleUi();
 									setAggregator(r.name);
 								}}
-								toToken={finalSelectedToToken}
+								toToken={finalSelectedToToken!}
 								amountFrom={r?.fromAmount}
-								fromToken={finalSelectedFromToken}
-								selectedChain={selectedChain.value}
+								fromToken={finalSelectedFromToken!}
+								selectedChain={selectedChain!.value}
 								gasTokenPrice={gasTokenPrice}
 								toTokenPrice={toTokenPrice}
 								isFetchingGasPrice={fetchingTokenPrices}
@@ -1428,7 +1451,15 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 											<ConnectButton />
 										</ConnectButtonWrapper>
 									) : !isValidSelectedChain ? (
-										<Button colorScheme={'messenger'} onClick={() => switchNetwork(selectedChain.id)}>
+										<Button
+											colorScheme={'messenger'}
+											onClick={() => {
+												if (selectedChain) {
+													switchChain({ chainId: selectedChain.id });
+												}
+											}}
+											disabled={!selectedChain}
+										>
 											Switch Network
 										</Button>
 									) : (
@@ -1471,14 +1502,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 														) : (
 															<Button
 																isLoading={
-																	swapMutation.isLoading ||
+																	swapMutation.isPending ||
 																	isApproveLoading ||
-																	(gaslessApprovalMutation.isLoading &&
+																	(gaslessApprovalMutation.isPending &&
 																		!gaslessApprovalMutation.variables.isInfiniteApproval)
 																}
 																loadingText={
 																	isConfirmingApproval ||
-																	(gaslessApprovalMutation.isLoading &&
+																	(gaslessApprovalMutation.isPending &&
 																		!gaslessApprovalMutation.variables.isInfiniteApproval)
 																		? 'Confirming'
 																		: 'Preparing transaction'
@@ -1495,6 +1526,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	if (
 																		balance.data &&
 																		!Number.isNaN(Number(balance.data.formatted)) &&
+																		selectedRoute &&
 																		+selectedRoute.amountIn > +balance.data.formatted
 																	)
 																		return;
@@ -1503,8 +1535,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																}}
 																disabled={
 																	isUSDTNotApprovedOnEthereum ||
-																	swapMutation.isLoading ||
-																	gaslessApprovalMutation.isLoading ||
+																	swapMutation.isPending ||
+																	gaslessApprovalMutation.isPending ||
 																	isApproveLoading ||
 																	isApproveResetLoading ||
 																	!selectedRoute ||
@@ -1515,10 +1547,10 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																{!selectedRoute
 																	? 'Select Aggregator'
 																	: isApproved
-																	? `Swap via ${selectedRoute?.name}`
-																	: slippageIsWorng
-																	? 'Set Slippage'
-																	: 'Approve'}
+																		? `Swap via ${selectedRoute?.name}`
+																		: slippageIsWorng
+																			? 'Set Slippage'
+																			: 'Approve'}
 															</Button>
 														)}
 
@@ -1527,14 +1559,14 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																colorScheme={'messenger'}
 																loadingText={
 																	isConfirmingInfiniteApproval ||
-																	(gaslessApprovalMutation.isLoading &&
+																	(gaslessApprovalMutation.isPending &&
 																		gaslessApprovalMutation.variables.isInfiniteApproval)
 																		? 'Confirming'
 																		: 'Preparing transaction'
 																}
 																isLoading={
 																	isApproveInfiniteLoading ||
-																	(gaslessApprovalMutation.isLoading &&
+																	(gaslessApprovalMutation.isPending &&
 																		gaslessApprovalMutation.variables.isInfiniteApproval)
 																}
 																onClick={() => {
@@ -1547,8 +1579,8 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																}}
 																disabled={
 																	isUSDTNotApprovedOnEthereum ||
-																	swapMutation.isLoading ||
-																	gaslessApprovalMutation.isLoading ||
+																	swapMutation.isPending ||
+																	gaslessApprovalMutation.isPending ||
 																	isApproveLoading ||
 																	isApproveResetLoading ||
 																	isApproveInfiniteLoading ||
@@ -1565,7 +1597,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 																	colorScheme={'messenger'}
 																	width={'24px'}
 																	padding={'4px'}
-																	onClick={() => refetchTokenAllowance()}
+																	onClick={() => refetchTokenAllowance?.()}
 																>
 																	<RepeatIcon w="16px	" h="16px" />
 																</Button>
@@ -1598,13 +1630,13 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 										finalSelectedFromToken?.label +
 										finalSelectedToToken?.label +
 										amountWithDecimals +
-										gasPriceData?.formatted?.gasPrice +
+										gasPriceData?.gasPrice?.toString() +
 										r[0]
 									}
 								>
 									<LoadingRoute name={r[0] as string} />
 								</Fragment>
-						  ))
+							))
 						: null}
 				</Routes>
 			</BodyWrapper>

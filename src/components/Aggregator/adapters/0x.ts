@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import { defillamaReferrerAddress } from '../constants';
 import { sendTx } from '../utils/sendTx';
+import { zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 'https://api.0x.org/',
@@ -30,8 +30,8 @@ const feeCollectorAddress = '0x9Ab6164976514F1178E2BB4219DA8700c9D96E9A';
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// amount should include decimals
 
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenFrom = from === zeroAddress ? nativeToken : from;
+	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const amountParam =
 		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
 
@@ -43,7 +43,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}&skipValidation=true&feeRecipientTradeSurplus=${feeCollectorAddress}`,
 		{
 			headers: {
-				'0x-api-key': process.env.OX_API_KEY
+				'0x-api-key': process.env.OX_API_KEY as string
 			}
 		}
 	).then((r) => r.json());
@@ -60,15 +60,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ signer, rawQuote, chain }) {
-	const fromAddress = await signer.getAddress();
-
-	const tx = await sendTx(signer, chain, {
+export async function swap({ fromAddress, rawQuote, chain }) {
+	const tx = await sendTx({
 		from: fromAddress,
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 
 	return tx;

@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { zeroAddress } from 'viem';
 
 const ICONS_CDN = 'https://icons.llamao.fi/icons';
 export function chainIconUrl(chain) {
@@ -7,7 +7,7 @@ export function chainIconUrl(chain) {
 
 const ethereum = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 1,
 	name: 'Ethereum',
 	symbol: 'ETH',
@@ -17,7 +17,7 @@ const ethereum = {
 
 const binance = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 56,
 	name: 'Binance',
 	symbol: 'BNB',
@@ -27,7 +27,7 @@ const binance = {
 
 const arbitrum = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 42161,
 	name: 'Ethereum',
 	symbol: 'ETH',
@@ -37,7 +37,7 @@ const arbitrum = {
 
 const optimism = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 10,
 	name: 'Ethereum',
 	symbol: 'ETH',
@@ -47,7 +47,7 @@ const optimism = {
 
 const base = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 8453,
 	name: 'Ethereum',
 	symbol: 'ETH',
@@ -57,7 +57,7 @@ const base = {
 
 const linea = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 59144,
 	name: 'Ethereum',
 	symbol: 'ETH',
@@ -67,7 +67,7 @@ const linea = {
 
 const scroll = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 534352,
 	name: 'Ethereum',
 	symbol: 'ETH',
@@ -77,7 +77,7 @@ const scroll = {
 
 const okx = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 66,
 	name: 'OKX',
 	symbol: 'OKX',
@@ -87,7 +87,7 @@ const okx = {
 
 const boba = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 288,
 	logoURI: chainIconUrl('ethereum'),
 	name: 'Ethereum',
@@ -97,7 +97,7 @@ const boba = {
 
 const harmony = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 1666600000,
 	logoURI: chainIconUrl('harmony'),
 	decimals: 18,
@@ -107,7 +107,7 @@ const harmony = {
 
 const heco = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 128,
 	logoURI: chainIconUrl('heco'),
 	name: 'Huobi Token',
@@ -116,7 +116,7 @@ const heco = {
 
 const velas = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 106,
 	logoURI: chainIconUrl('velas'),
 	name: 'Velas',
@@ -125,7 +125,7 @@ const velas = {
 
 const oasis = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 24462,
 	name: 'Oasis',
 	symbol: 'ROSE',
@@ -135,7 +135,7 @@ const oasis = {
 
 const bttc = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 199,
 	name: 'BitTorrent',
 	logoURI: chainIconUrl('bittorrent'),
@@ -145,7 +145,7 @@ const bttc = {
 
 const moonriver = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 1285,
 	name: 'MoonRiver',
 	logoURI: chainIconUrl('moonriver'),
@@ -155,7 +155,7 @@ const moonriver = {
 
 const moonbeam = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 1284,
 	name: 'Moonbeam',
 	logoURI: chainIconUrl('moonbeam'),
@@ -165,7 +165,7 @@ const moonbeam = {
 
 const fuse = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 122,
 	name: 'Fuse',
 	logoURI: chainIconUrl('fuse'),
@@ -175,7 +175,7 @@ const fuse = {
 
 const dogechain = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 2000,
 	name: 'Doge',
 	symbol: 'DOGE',
@@ -185,7 +185,7 @@ const dogechain = {
 
 const cronos = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 25,
 	name: 'Cronos',
 	symbol: 'CRO',
@@ -194,7 +194,7 @@ const cronos = {
 };
 const celo = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 42220,
 	name: 'Celo',
 	symbol: 'CELO',
@@ -203,7 +203,7 @@ const celo = {
 };
 const aurora = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 1313161554,
 	name: 'Ethereum',
 	symbol: 'ETH',
@@ -212,7 +212,7 @@ const aurora = {
 };
 const avax = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 43114,
 	logoURI: chainIconUrl('avax'),
 	name: 'Avalanche',
@@ -222,7 +222,7 @@ const avax = {
 
 const klaytn = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 8217,
 	name: 'Klaytn',
 	symbol: 'KLAY',
@@ -231,7 +231,7 @@ const klaytn = {
 };
 const fantom = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 250,
 	logoURI: chainIconUrl('fantom'),
 	name: 'Fantom',
@@ -241,7 +241,7 @@ const fantom = {
 
 const gnosis = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 100,
 	name: 'xDai',
 	symbol: 'xDai',
@@ -250,7 +250,7 @@ const gnosis = {
 };
 const polygon = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 137,
 	name: 'Matic',
 	symbol: 'MATIC',
@@ -260,7 +260,7 @@ const polygon = {
 
 const canto = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 7700,
 	name: 'Canto',
 	symbol: 'CANTO',
@@ -270,7 +270,7 @@ const canto = {
 
 const metis = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 1088,
 	name: 'Metis',
 	symbol: 'METIS',
@@ -280,7 +280,7 @@ const metis = {
 
 const polygonzkevm = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 1101,
 	name: 'Polygon zkEVM',
 	symbol: 'ETH',
@@ -290,7 +290,7 @@ const polygonzkevm = {
 
 const kava = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 2222,
 	name: 'Kava',
 	symbol: 'KAVA',
@@ -300,7 +300,7 @@ const kava = {
 
 const zksync = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 324,
 	name: 'zkSync Era',
 	symbol: 'ETH',
@@ -310,7 +310,7 @@ const zksync = {
 
 const ontology = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 58,
 	name: 'Ontology',
 	symbol: 'ONT',
@@ -320,7 +320,7 @@ const ontology = {
 
 const pulse = {
 	mcap: Number.MAX_SAFE_INTEGER,
-	address: ethers.constants.AddressZero,
+	address: zeroAddress,
 	chainId: 369,
 	name: 'Pulse',
 	symbol: 'PLS',

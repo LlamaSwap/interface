@@ -6,9 +6,9 @@ export function getChartData({ routes, price, fromTokenDecimals, toTokenDecimals
 	// price at $500 liquidity
 	const currentPrice = routes?.find((route) => route[0] === liquidityAt)?.[1]?.price?.amountReturned ?? null;
 
-	const chartData = [];
+	const chartData: Array<[number, number, number, string, number]> = [];
 
-	const newLiquidityValues = [];
+	const newLiquidityValues: Array<number> = [];
 
 	if (currentPrice) {
 		routes?.forEach(([netOutUSD, { name, price, fromAmount }], index) => {

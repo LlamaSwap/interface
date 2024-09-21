@@ -30,7 +30,7 @@ interface SwapEvent {
 	txUrl: string;
 	amount: string;
 	errorData: any;
-	amountUsd: number;
+	amountUsd: number | null;
 	slippage: string;
 	routePlace: string;
 	route: any;
