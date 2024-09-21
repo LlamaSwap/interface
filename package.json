@@ -25,6 +25,7 @@
 		"ariakit": "^2.0.0-next.41",
 		"bignumber.js": "^9.0.2",
 		"echarts": "^5.4.1",
+		"ethers": "5.7.1",
 		"framer-motion": "^6",
 		"lodash": "^4.17.21",
 		"next": "12.3.1",
