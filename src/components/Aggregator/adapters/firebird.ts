@@ -5,7 +5,7 @@ import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 import { zeroAddress } from 'viem';
 import { estimateGas } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../WalletProvider';
 
 export const chainToId = {
 	ethereum: chainsMap.ethereum,

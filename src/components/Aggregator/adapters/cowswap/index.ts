@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js';
 import { chainsMap } from '../../constants';
 import { zeroAddress } from 'viem';
 import { signTypedData, watchContractEvent, writeContract } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../../WalletProvider';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',

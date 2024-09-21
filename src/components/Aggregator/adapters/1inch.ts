@@ -4,7 +4,7 @@ import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { altReferralAddress } from '../constants';
 import { sendTx } from '../utils/sendTx';
 import { estimateGas } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../WalletProvider';
 import { zeroAddress } from 'viem';
 
 export const chainToId = {

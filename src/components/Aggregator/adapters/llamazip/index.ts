@@ -3,7 +3,7 @@ import { encode } from './encode';
 import { normalizeTokens, pairs } from './pairs';
 import { zeroAddress } from 'viem';
 import { simulateContract } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../../WalletProvider';
 import { chainsMap } from '../../constants';
 
 export const name = 'LlamaZip';

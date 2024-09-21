@@ -1,5 +1,5 @@
 import { readContract } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../WalletProvider';
 import { arbitrum } from 'viem/chains';
 
 export async function applyArbitrumFees(to: string, data: string, gas: string) {

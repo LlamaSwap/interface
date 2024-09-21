@@ -3,7 +3,7 @@
 import BigNumber from 'bignumber.js';
 import { zeroAddress } from 'viem';
 import { estimateGas } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../WalletProvider';
 import { chainsMap } from '../constants';
 
 export const chainToId = {

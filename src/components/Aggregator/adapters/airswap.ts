@@ -1,5 +1,5 @@
 import { readContract } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../WalletProvider';
 import { chainsMap } from '../constants';
 
 // https://about.airswap.io/technology/protocols

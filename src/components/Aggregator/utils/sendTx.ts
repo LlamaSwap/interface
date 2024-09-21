@@ -1,5 +1,5 @@
 import { estimateGas, sendTransaction } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../WalletProvider';
 
 export async function sendTx(txObject: any) {
 	if (txObject.data === '0x' || typeof txObject.to !== 'string') {

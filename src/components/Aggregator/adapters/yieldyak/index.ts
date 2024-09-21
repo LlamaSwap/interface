@@ -3,7 +3,7 @@ import { sendTx } from '../../utils/sendTx';
 import { ABI } from './abi';
 import { encodeFunctionData, zeroAddress } from 'viem';
 import { readContract } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../../WalletProvider';
 import { chainsMap } from '../../constants';
 
 // Source https://github.com/yieldyak/yak-aggregator

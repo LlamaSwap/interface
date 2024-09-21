@@ -1,5 +1,5 @@
 import { readContract } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../WalletProvider';
 import { chainsMap } from '../constants';
 
 const FEE_ADDRESS = '0x420000000000000000000000000000000000000F';

@@ -1,7 +1,7 @@
 import { defillamaReferrerAddress } from '../constants';
 import { decodeFunctionData, encodeFunctionData, getAddress, hexToNumber, parseSignature, zeroAddress } from 'viem';
 import { signTypedData } from 'wagmi/actions';
-import { config } from '~/components/WalletProvider';
+import { config } from '../../WalletProvider';
 
 export const chainToId = {
 	ethereum: '1',
