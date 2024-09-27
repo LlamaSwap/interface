@@ -25,8 +25,7 @@ export const inifiniteApprovalAllowed = [
 	inch.name,
 	cowswap.name,
 	paraswap.name,
-	matchaGasless.name,
-	matchaV2.name
+	matchaGasless.name
 ];
 
 export const adaptersWithApiKeys = {
