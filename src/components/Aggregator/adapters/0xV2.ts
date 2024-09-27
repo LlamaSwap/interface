@@ -18,12 +18,9 @@ export const chainToId = {
 	base: '8453'
 };
 
-export function approvalAddress() {
-	return '0x000000000022d473030f116ddee9f6b43ac78ba3';
-}
-
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const feeCollectorAddress = '0x9Ab6164976514F1178E2BB4219DA8700c9D96E9A';
+const permit2Address = '0x000000000022d473030f116ddee9f6b43ac78ba3';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// amount should include decimals
@@ -105,7 +102,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			// check if permit2 contract approval address matches
 			if (
 				permitApiQuote.permit2 !== null &&
-				permitApiQuote.permit2.eip712.domain.verifyingContract.toLowerCase() !== approvalAddress().toLowerCase()
+				permitApiQuote.permit2.eip712.domain.verifyingContract.toLowerCase() !== permit2Address.toLowerCase()
 			) {
 				throw new Error(`Approval address does not match`);
 			}
@@ -116,7 +113,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 				token: tokenFrom,
 				chain,
 				address: taker,
-				spender: approvalAddress() as `0x${string}`,
+				spender: permit2Address,
 				amount
 			});
 
@@ -130,7 +127,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: data?.buyAmount || 0,
 		amountIn: data?.sellAmount || 0,
 		tokenApprovalAddress: isPermitSwap
-			? approvalAddress()
+			? permit2Address
 			: allowanceHolderApiQuote?.issues?.allowance?.spender ?? null,
 		estimatedGas: data.transaction.gas,
 		rawQuote: { ...data, gasLimit: data.transaction.gas },
