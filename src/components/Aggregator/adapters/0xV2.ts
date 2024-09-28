@@ -2,7 +2,7 @@ import { BigNumber, ethers } from 'ethers';
 import { sendTx } from '../utils/sendTx';
 import { getAllowance, oldErc } from '../utils/getAllowance';
 
-export const name = 'Argon';
+export const name = '0x/Matcha';
 export const token = 'ZRX';
 export const isOutputAvailable = false;
 
@@ -13,9 +13,10 @@ export const chainToId = {
 	optimism: '10',
 	arbitrum: '42161',
 	avax: '43114',
-	// fantom: '250',
-	// celo: '42220',
-	base: '8453'
+	base: '8453',
+	linea: '59144',
+	scroll: '534352',
+	blast: '43114'
 };
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
@@ -49,10 +50,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 					`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
 					{
 						headers: {
-							'0x-api-key': process.env.OX_API_KEY
+							'0x-api-key': process.env.OX_API_KEY,
+							'0x-version': 'v2'
 						}
 					}
-			  ).then(async (r) => {
+				).then(async (r) => {
 					if (r.status !== 200) {
 						throw new Error('Failed to fetch');
 					}
@@ -60,13 +62,14 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 					const data = await r.json();
 
 					return data;
-			  })
+				})
 			: null,
 		fetch(
 			`https://api.0x.org/swap/allowance-holder/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
 			{
 				headers: {
-					'0x-api-key': process.env.OX_API_KEY
+					'0x-api-key': process.env.OX_API_KEY,
+					'0x-version': 'v2'
 				}
 			}
 		).then(async (r) => {
@@ -91,7 +94,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 				address: taker,
 				spender: allowanceHolderApiQuote.issues?.allowance.spender,
 				amount
-		  })
+			})
 		: true;
 
 	if (!isApprovedForTraditionalSwap && permitApiQuote) {
@@ -126,9 +129,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	return {
 		amountReturned: data?.buyAmount || 0,
 		amountIn: data?.sellAmount || 0,
-		tokenApprovalAddress: isPermitSwap
-			? permit2Address
-			: allowanceHolderApiQuote?.issues?.allowance?.spender ?? null,
+		tokenApprovalAddress: isPermitSwap ? permit2Address : allowanceHolderApiQuote?.issues?.allowance?.spender ?? null,
 		estimatedGas: data.transaction.gas,
 		rawQuote: { ...data, gasLimit: data.transaction.gas },
 		isSignatureNeededForSwap: isPermitSwap ? true : false,
@@ -159,8 +160,7 @@ export async function swap({ signer, rawQuote, chain, signature }) {
 		data: signature
 			? rawQuote.transaction.data.replace(MAGIC_CALLDATA_STRING, signature.slice(2))
 			: rawQuote.transaction.data,
-		value: rawQuote.transaction.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		value: rawQuote.transaction.value
 	});
 
 	return tx;
