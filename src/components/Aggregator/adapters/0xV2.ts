@@ -98,7 +98,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		: true;
 
 	if (!isApprovedForTraditionalSwap && permitApiQuote) {
-		// if permit2 === null then there's no need for approval and signature, so use permit2 flow
+		// if user has enough allowance for permit2Address then permit2 will be null
+		// no need for approval signature, but user can sign -> swap via permit2 instead of approving spender from allowanceHolderApiQuote -> swap
 		if (permitApiQuote.permit2 === null) {
 			isPermitSwap = true;
 		} else {
