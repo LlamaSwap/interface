@@ -2,7 +2,7 @@ import { BigNumber, ethers } from 'ethers';
 import { sendTx } from '../utils/sendTx';
 import { getAllowance, oldErc } from '../utils/getAllowance';
 
-export const name = 'Matcha/0x V2';
+export const name = 'Argon';
 export const token = 'ZRX';
 export const isOutputAvailable = false;
 
@@ -95,7 +95,7 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 export async function swap({ signer, rawQuote, chain, signature }) {
 	const fromAddress = await signer.getAddress();
 
-	const signatureLengthInHex = ethers.utils.hexValue(ethers.utils.hexDataLength(signature));
+	const signatureLengthInHex = signature ? ethers.utils.hexValue(ethers.utils.hexDataLength(signature)) : null;
 
 	const tx = await sendTx(signer, chain, {
 		from: fromAddress,
