@@ -163,7 +163,7 @@ export async function swap({ signer, rawQuote, chain, signature }) {
 		data: signature
 			? rawQuote.transaction.data.includes(MAGIC_CALLDATA_STRING)
 				? rawQuote.transaction.data.replace(MAGIC_CALLDATA_STRING, signature.slice(2))
-				: [rawQuote.transaction.data, signatureLengthInHex, signature].join('')
+				: ethers.utils.hexConcat([rawQuote.transaction.data, signatureLengthInHex, signature])
 			: rawQuote.transaction.data,
 		value: rawQuote.transaction.value
 	});
