@@ -1,4 +1,4 @@
-// import * as matcha from './adapters/0x';
+import * as matcha from './adapters/0x';
 import * as inch from './adapters/1inch';
 import * as cowswap from './adapters/cowswap';
 //import * as firebird from './adapters/firebird';
@@ -18,18 +18,20 @@ import * as llamazip from './adapters/llamazip';
 import * as matchaGasless from './adapters/0xGasless';
 import * as matchaV2 from './adapters/0xV2';
 
-export const adapters = [matchaV2, inch, cowswap, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless];
+export const adapters = [matcha, inch, cowswap, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless, matchaV2];
 
 export const inifiniteApprovalAllowed = [
-	matchaV2.name,
+	matcha.name,
 	inch.name,
 	cowswap.name,
 	paraswap.name,
-	matchaGasless.name
+	matchaGasless.name,
+	matchaV2.name
 ];
 
 export const adaptersWithApiKeys = {
-	[matchaV2.name]: true,
-	[matchaGasless.name]: true
+	[matcha.name]: true,
+	[matchaGasless.name]: true,
+	[matchaV2.name]: true
 	//[hashflow.name]: true
 };

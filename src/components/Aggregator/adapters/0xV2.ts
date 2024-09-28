@@ -2,7 +2,7 @@ import { BigNumber, ethers } from 'ethers';
 import { sendTx } from '../utils/sendTx';
 import { getAllowance, oldErc } from '../utils/getAllowance';
 
-export const name = '0x/Matcha';
+export const name = 'Matcha/0x V2';
 export const token = 'ZRX';
 export const isOutputAvailable = false;
 
@@ -43,97 +43,38 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	// only expects integer
 	const slippage = (extra.slippage * 100) | 0;
 
-	// only fetch permit api quote if user is connected
-	const [permitApiQuote, allowanceHolderApiQuote] = await Promise.all([
-		extra.userAddress !== '0x0000000000000000000000000000000000000000'
-			? fetch(
-					`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
-					{
-						headers: {
-							'0x-api-key': process.env.OX_API_KEY,
-							'0x-version': 'v2'
-						}
-					}
-				).then(async (r) => {
-					if (r.status !== 200) {
-						throw new Error('Failed to fetch');
-					}
-
-					const data = await r.json();
-
-					return data;
-				})
-			: null,
-		fetch(
-			`https://api.0x.org/swap/allowance-holder/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
-			{
-				headers: {
-					'0x-api-key': process.env.OX_API_KEY,
-					'0x-version': 'v2'
-				}
+	const data = await fetch(
+		`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
+		{
+			headers: {
+				'0x-api-key': process.env.OX_API_KEY,
+				'0x-version': 'v2'
 			}
-		).then(async (r) => {
-			if (r.status !== 200) {
-				throw new Error('Failed to fetch');
-			}
-
-			const data = await r.json();
-
-			return data;
-		})
-	]);
-
-	let isPermitSwap = false;
-
-	// check for traditional swap approval address allowance
-	// if it's already approved then swap via allowance-holder api
-	const isApprovedForTraditionalSwap = allowanceHolderApiQuote.issues?.allowance?.spender
-		? await isTokenApproved({
-				token: tokenFrom,
-				chain,
-				address: taker,
-				spender: allowanceHolderApiQuote.issues?.allowance.spender,
-				amount
-			})
-		: true;
-
-	if (!isApprovedForTraditionalSwap && permitApiQuote) {
-		// if user has enough allowance for permit2Address then permit2 will be null
-		// no need for approval signature, but user can sign -> swap via permit2 instead of approving spender from allowanceHolderApiQuote -> swap
-		if (permitApiQuote.permit2 === null) {
-			isPermitSwap = true;
-		} else {
-			// check if permit2 contract approval address matches
-			if (
-				permitApiQuote.permit2 !== null &&
-				permitApiQuote.permit2.eip712.domain.verifyingContract.toLowerCase() !== permit2Address.toLowerCase()
-			) {
-				throw new Error(`Approval address does not match`);
-			}
-
-			// check for permit2 contract approval address allowance
-			// if already approved -> swap via permit, else swap via traditional swap flow (so we can skip signature part)
-			const isApprovedForPermitSwap = await isTokenApproved({
-				token: tokenFrom,
-				chain,
-				address: taker,
-				spender: permit2Address,
-				amount
-			});
-
-			isPermitSwap = isApprovedForPermitSwap;
 		}
-	}
+	).then(async (r) => {
+		if (r.status !== 200) {
+			throw new Error('Failed to fetch');
+		}
 
-	const data = isPermitSwap ? permitApiQuote : allowanceHolderApiQuote;
+		const data = await r.json();
+
+		return data;
+	});
+
+	if (
+		data.permit2 !== null &&
+		data.permit2.eip712.domain.verifyingContract.toLowerCase() !== permit2Address.toLowerCase()
+	) {
+		throw new Error(`Approval address does not match`);
+	}
 
 	return {
 		amountReturned: data?.buyAmount || 0,
 		amountIn: data?.sellAmount || 0,
-		tokenApprovalAddress: isPermitSwap ? permit2Address : allowanceHolderApiQuote?.issues?.allowance?.spender ?? null,
+		tokenApprovalAddress: permit2Address,
 		estimatedGas: data.transaction.gas,
 		rawQuote: { ...data, gasLimit: data.transaction.gas },
-		isSignatureNeededForSwap: isPermitSwap ? true : false,
+		isSignatureNeededForSwap: true,
 		logo: 'https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F1690203644-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FKX9pG8rH3DbKDOvV7di7%252Ficon%252F1nKfBhLbPxd2KuXchHET%252F0x%2520logo.png%3Falt%3Dmedia%26token%3D25a85a3e-7f72-47ea-a8b2-e28c0d24074b'
 	};
 }
