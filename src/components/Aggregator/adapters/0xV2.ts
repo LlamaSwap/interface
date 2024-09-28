@@ -154,7 +154,7 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 export async function swap({ signer, rawQuote, chain, signature }) {
 	const fromAddress = await signer.getAddress();
 
-	const signatureLengthInHex = ethers.utils.hexlify(ethers.utils.hexDataLength(signature));
+	const signatureLengthInHex = ethers.utils.hexValue(ethers.utils.hexDataLength(signature));
 
 	const tx = await sendTx(signer, chain, {
 		from: fromAddress,
