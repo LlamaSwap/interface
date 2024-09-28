@@ -154,12 +154,16 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 export async function swap({ signer, rawQuote, chain, signature }) {
 	const fromAddress = await signer.getAddress();
 
+	const signatureLengthInHex = ethers.utils.hexlify(signature.length);
+
 	const tx = await sendTx(signer, chain, {
 		from: fromAddress,
 		to: rawQuote.transaction.to,
 		// signature not needed for unwrapping native tokens
 		data: signature
-			? rawQuote.transaction.data.replace(MAGIC_CALLDATA_STRING, signature.slice(2))
+			? rawQuote.transaction.data.includes(MAGIC_CALLDATA_STRING)
+				? rawQuote.transaction.data.replace(MAGIC_CALLDATA_STRING, signature.slice(2))
+				: [rawQuote.transaction.data, signatureLengthInHex, signature].join('')
 			: rawQuote.transaction.data,
 		value: rawQuote.transaction.value
 	});
