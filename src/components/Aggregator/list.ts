@@ -18,7 +18,7 @@ import * as llamazip from './adapters/llamazip';
 import * as matchaGasless from './adapters/0xGasless';
 import * as matchaV2 from './adapters/0xV2';
 
-export const adapters = [matchaV2];
+export const adapters = [matcha, inch, cowswap, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless, matchaV2];
 
 export const inifiniteApprovalAllowed = [
 	matcha.name,
@@ -31,7 +31,7 @@ export const inifiniteApprovalAllowed = [
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
-	[matchaGasless.name]: true
-	// [matchaV2.name]: true
+	[matchaGasless.name]: true,
+	[matchaV2.name]: true
 	//[hashflow.name]: true
 };
