@@ -2,7 +2,7 @@ import { BigNumber, ethers } from 'ethers';
 import { sendTx } from '../utils/sendTx';
 import { getAllowance, oldErc } from '../utils/getAllowance';
 
-export const name = 'Argon';
+export const name = 'Matcha/0x v2';
 export const token = 'ZRX';
 export const isOutputAvailable = false;
 
