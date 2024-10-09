@@ -22,6 +22,7 @@ const TabButtonsWrapper = styled.div`
 	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.6);
 	position: relative;
 	overflow: hidden;
+	z-index: 1;
 `;
 
 const TabList = styled.ul`
