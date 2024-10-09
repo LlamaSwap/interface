@@ -65,7 +65,6 @@ import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
-import { Sandwich } from './Sandwich';
 import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
@@ -322,7 +321,7 @@ export const SwapInputArrow = (props) => (
 
 const chains = getAllChains();
 
-export function AggregatorContainer({ tokenList, sandwichList }) {
+export function AggregatorContainer({ tokenList }) {
 	// wallet stuff
 	const { data: signer } = useSigner();
 	const { address, isConnected } = useAccount();
@@ -976,18 +975,6 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 		});
 	};
 
-	const pairSandwichData =
-		sandwichList?.[selectedChain?.value]?.[
-			normalizeTokens(
-				finalSelectedFromToken?.address === ethers.constants.AddressZero
-					? WETH[selectedChain?.value]
-					: finalSelectedFromToken?.address,
-				finalSelectedToToken?.address === ethers.constants.AddressZero
-					? WETH[selectedChain?.value]
-					: finalSelectedToToken?.address
-			).join('')
-		];
-
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
 	const isUnknownPrice = !fromTokenPrice || !toTokenPrice;
 	const isPriceImpactNotKnown = !selectedRoutesPriceImpact && selectedRoutesPriceImpact !== 0;
@@ -1029,8 +1016,7 @@ export function AggregatorContainer({ tokenList, sandwichList }) {
 				<AlertIcon />
 				Your size is size. Please be mindful of slippage
 			</Alert>
-		) : null,
-		pairSandwichData ? <Sandwich sandiwichData={pairSandwichData} key="sandwich" /> : null
+		) : null
 	].filter(Boolean);
 
 	return (
