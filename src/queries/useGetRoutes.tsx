@@ -24,6 +24,7 @@ export interface IRoute {
 		isGaslessApproval?: boolean;
 		feeAmount?: number;
 		rawQuote?: {};
+		isSignatureNeededForSwap?: boolean;
 	} | null;
 	name: string;
 	airdrop: boolean;
