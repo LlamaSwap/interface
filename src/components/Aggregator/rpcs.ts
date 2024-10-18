@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { uniq } from 'lodash';
+import providerJson from './providers.json';
 
 function createProvider(name: string, defaultRpc: string, chainId: number, random = false) {
 	if (process.env.HISTORICAL) {
@@ -276,73 +277,9 @@ export const rpcsKeys = uniq(
 		.flat()
 );
 
-const getUrls = (chainId: keyof typeof rpcUrls) => Object.values(rpcUrls[chainId]).join(',');
 
-export const providers = {
-	ethereum: createProvider('ethereum', getUrls(1), 1),
-	bsc: createProvider('bsc', getUrls(56), 56),
-	polygon: createProvider('polygon', getUrls(137), 137),
-	heco: createProvider('heco', getUrls(128), 128),
-	fantom: createProvider('fantom', getUrls(250), 250),
-	rsk: createProvider('rsk', getUrls(30), 30),
-	tomochain: createProvider('tomochain', getUrls(88), 88),
-	xdai: createProvider('xdai', getUrls(100), 100),
-	gnosis: createProvider('xdai', getUrls(100), 100),
-	avax: createProvider('avax', getUrls(43114), 43114),
-	wan: createProvider('wan', getUrls(888), 888),
-	harmony: createProvider('harmony', getUrls(1666600000), 1666600000),
-	thundercore: createProvider('thundercore', getUrls(108), 108),
-	okexchain: createProvider('okexchain', getUrls(66), 66),
-	optimism: createProvider('optimism', getUrls(10), 10),
-	arbitrum: createProvider('arbitrum', getUrls(42161), 42161, true),
-	kcc: createProvider('kcc', getUrls(321), 321),
-	celo: createProvider('celo', getUrls(42220), 42220),
-	iotex: createProvider('iotex', getUrls(4689), 4689),
-	moonriver: createProvider('moonriver', getUrls(1285), 1285),
-	shiden: createProvider('shiden', getUrls(336), 336),
-	palm: createProvider('palm', getUrls(11297108109), 11297108109),
-	energyweb: createProvider('energyweb', getUrls(246), 246),
-	energi: createProvider('energi', getUrls(39797), 39797),
-	songbird: createProvider('songbird', getUrls(19), 19),
-	hpb: createProvider('hpb', getUrls(269), 269),
-	gochain: createProvider('gochain', getUrls(60), 60),
-	ethereumclassic: createProvider('ethereumclassic', getUrls(61), 61),
-	xdaiarb: createProvider('xdaiarb', getUrls(200), 200),
-	kardia: createProvider('kardia', getUrls(24), 24),
-	fuse: createProvider('fuse', getUrls(122), 122),
-	smartbch: createProvider('smartbch', getUrls(10000), 10000),
-	elastos: createProvider('elastos', getUrls(20), 20),
-	hoo: createProvider('hoo', getUrls(70), 70),
-	fusion: createProvider('fusion', getUrls(32659), 32659),
-	aurora: createProvider('aurora', getUrls(1313161554), 1313161554),
-	ronin: createProvider('ronin', getUrls(2020), 2020),
-	boba: createProvider('boba', getUrls(288), 288),
-	cronos: createProvider('cronos', getUrls(25), 25),
-	polis: createProvider('polis', getUrls(333999), 333999),
-	zyx: createProvider('zyx', getUrls(55), 55),
-	telos: createProvider('telos', getUrls(40), 40),
-	metis: createProvider('metis', getUrls(1088), 1088),
-	ubiq: createProvider('ubiq', getUrls(8), 8),
-	velas: createProvider('velas', getUrls(106), 106),
-	callisto: createProvider('callisto', getUrls(820), 820),
-	klaytn: createProvider('klaytn', getUrls(8217), 8217),
-	csc: createProvider('csc', getUrls(52), 52),
-	nahmii: createProvider('nahmii', getUrls(5551), 5551),
-	liquidchain: createProvider('xlc', getUrls(5050), 5050),
-	meter: createProvider('meter', getUrls(82), 82),
-	theta: createProvider('theta', getUrls(361), 361),
-	oasis: createProvider('oasis', getUrls(42262), 42262),
-	syscoin: createProvider('syscoin', getUrls(57), 57),
-	moonbeam: createProvider('moonbeam', getUrls(1284), 1284),
-	curio: createProvider('curio', getUrls(836542336838601), 836542336838601),
-	astar: createProvider('astar', getUrls(592), 592),
-	canto: createProvider('canto', getUrls(7700), 7700),
-	zksync: createProvider('zksync', getUrls(324), 324),
-	ontology: createProvider('ontology', getUrls(58), 58),
-	polygonzkevm: createProvider('polygonzkevm', getUrls(1101), 1101),
-	kava: createProvider('kava', getUrls(2222), 2222),
-	pulse: createProvider('pulse', getUrls(369), 369),
-	base: createProvider('pulse', getUrls(8453), 8453),
-	linea: createProvider('linea', getUrls(59144), 59144),
-	scroll: createProvider('scroll', getUrls(534352), 534352)
-};
+export const providers = {};
+Object.keys(providerJson).map((chain) => {
+	const { chainId, rpc } = providerJson[chain]
+	providers[chain] = createProvider(chain, rpc.join(','), chainId)
+});
