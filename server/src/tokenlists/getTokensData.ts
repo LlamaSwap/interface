@@ -1,7 +1,25 @@
-import { multiCall } from '@defillama/sdk/build/abi';
 import { chainIdToName } from './constants';
 import { IToken } from './types';
 import { getS3, storeJSONString } from './s3';
+import { providers } from '../dexAggregators/rpcs';
+import { ethers } from 'ethers';
+
+function makeCalls(chain:string, abiMethod:any, tokens:string[]){
+	return Promise.all(tokens.map(async token=>{
+		const contract = new ethers.Contract(token, [abiMethod], providers[chain])
+		try{
+			const res = await contract[abiMethod.name]()
+			return {
+				output: res,
+				success: true
+			}
+		} catch(e){
+			return {
+				success: false
+			}
+		}
+	}))
+}
 
 // use multicall to fetch tokens name, symbol and decimals
 export const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promise<[string, Array<IToken>]> => {
@@ -28,8 +46,7 @@ export const getTokensData = async ([chainId, tokens]: [string, Array<string>]):
 		(token) => token !== '' && storedTokenMetadata[token.toLowerCase()] === undefined && token.length === 42
 	);
 
-	const { output: names } = await multiCall({
-		abi: {
+	const names  = await makeCalls(chainName, {
 			constant: true,
 			inputs: [],
 			name: 'name',
@@ -42,25 +59,13 @@ export const getTokensData = async ([chainId, tokens]: [string, Array<string>]):
 			payable: false,
 			stateMutability: 'view',
 			type: 'function'
-		},
-		chain: chainName,
-		calls: missingTokens.map((token) => ({ target: token })),
-		permitFailure: true
-	});
+		}, missingTokens);
 
-	const { output: symbols } = await multiCall({
-		abi: 'erc20:symbol',
-		chain: chainName,
-		calls: missingTokens.map((token) => ({ target: token })),
-		permitFailure: true
-	});
+	const symbols = await makeCalls(chainName, {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+		missingTokens);
 
-	const { output: decimals } = await multiCall({
-		abi: 'erc20:decimals',
-		chain: chainName,
-		calls: missingTokens.map((token) => ({ target: token })),
-		permitFailure: true
-	});
+	const decimals = await makeCalls(chainName, {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
+		missingTokens);
 
 	const data = [];
 
