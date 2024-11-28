@@ -34,7 +34,7 @@ import { useTokenApprove } from './hooks';
 import { IRoute, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
 import { useTokenBalances } from '~/queries/useTokenBalances';
-import { PRICE_IMPACT_WARNING_THRESHOLD, WETH } from './constants';
+import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
