@@ -70,6 +70,15 @@ const markMultichain = (tokens) => {
 	return tokens;
 };
 
+const allSettled = ((promises) => Promise.all(promises.map(p => p
+	.then(value => ({
+	  status: 'fulfilled', value
+	}))
+	.catch(reason => ({
+	  status: 'rejected', reason
+	}))
+)))
+
 export async function getTokenList() {
 	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
 	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
@@ -181,11 +190,17 @@ export async function getTokenList() {
 	}
 
 	// fetch name, symbol, decimals fo coingecko tokens
-	const geckoTokensList = await Promise.all(
+	const geckoTokensList = (await allSettled(
 		Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
 			getTokensData([chain, Array.from(tokens || new Set())])
 		)
-	);
+	)).map((t:any)=>t.value);
+	Object.entries(geckoTokensList).map(v=>{
+		if(v[1] === undefined){
+			throw new Error(`Failed getting getTokensData for chain ${Object.entries(geckoListByChain)[v[0]][0]}`)
+		}
+	})
+	
 
 	const formatAndSortTokens = (tokens, chain) => {
 		return tokens

@@ -4,7 +4,6 @@ import Lending from '~/components/Lending';
 import Tabs from '~/components/Tabs';
 import Yields from '~/components/Yields';
 import Layout from '~/layout';
-import { getSandwichList } from '~/props/getSandwichList';
 import { getTokenList } from '~/props/getTokenList';
 import { getTokensMaps } from '~/props/getTokensMaps';
 import { useLendingProps } from '~/queries/useLendingProps';
@@ -12,13 +11,11 @@ import { useYieldProps } from '~/queries/useYieldProps';
 
 export async function getStaticProps() {
 	const tokenList = await getTokenList();
-	const sandwichList = await getSandwichList();
 	const { tokensSymbolsMap, tokensUrlMap } = getTokensMaps(tokenList);
 
 	return {
 		props: {
 			tokenList,
-			sandwichList,
 			tokensSymbolsMap,
 			tokensUrlMap
 		}
