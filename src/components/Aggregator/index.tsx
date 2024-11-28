@@ -34,7 +34,6 @@ import {
 	PopoverTrigger,
 	PopoverContent
 } from '@chakra-ui/react';
-import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
 import { adaptersNames, getAllChains, swap, gaslessApprove } from './router';
@@ -55,7 +54,6 @@ import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast, formatErrorToast, formatSubmittedToast } from '~/utils/formatToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { getBalance, useBalance } from '~/queries/useBalance';
@@ -69,6 +67,7 @@ import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chak
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
+import Connect from './ConnectButton';
 
 /*
 Integrated:
@@ -160,7 +159,6 @@ const Wrapper = styled.div`
 	flex-direction: column;
 	grid-row-gap: 36px;
 	margin: 0px auto 40px;
-	position: relative;
 
 	h1 {
 		font-weight: 500;
@@ -1021,6 +1019,8 @@ export function AggregatorContainer({ tokenList }) {
 
 	return (
 		<Wrapper>
+			<Connect chains={chains} selectedChain={selectedChain} onChainChange={onChainChange} />
+
 			{isSettingsModalOpen ? (
 				<Settings
 					adapters={adaptersNames}
@@ -1035,8 +1035,6 @@ export function AggregatorContainer({ tokenList }) {
 					<div>
 						<FormHeader>
 							<Flex>
-								<Box>Chain</Box>
-								<Spacer />
 								<Tooltip content="Redirect requests through the DefiLlama Server to hide your IP address">
 									<FormControl display="flex" alignItems="baseline" gap="6px" justifyContent={'center'}>
 										<FormLabel htmlFor="privacy-switch" margin={0} fontSize="14px" color="gray.400">
@@ -1049,6 +1047,7 @@ export function AggregatorContainer({ tokenList }) {
 										/>
 									</FormControl>
 								</Tooltip>
+								<Spacer />
 								<SettingsIcon onClick={() => setSettingsModalOpen((open) => !open)} ml={4} mt={1} cursor="pointer" />
 								{isSmallScreen && finalSelectedFromToken && finalSelectedToToken ? (
 									<ArrowForwardIcon
@@ -1061,8 +1060,6 @@ export function AggregatorContainer({ tokenList }) {
 								) : null}
 							</Flex>
 						</FormHeader>
-
-						<ReactSelect options={chains} value={selectedChain} onChange={onChainChange} />
 					</div>
 
 					<Flex flexDir="column" gap="4px" pos="relative">
