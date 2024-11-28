@@ -1,4 +1,4 @@
-import { approvalAddress, chainToId } from './1inch';
+import { approvalAddress, chainToId } from './index';
 import fetch from 'node-fetch';
 
 export async function testApprovalAddresses() {
