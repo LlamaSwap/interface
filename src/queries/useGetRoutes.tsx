@@ -13,6 +13,7 @@ interface IGetListRoutesProps {
 	extra?: any;
 	disabledAdapters?: Array<string>;
 	customRefetchInterval?: number;
+	disabled?: boolean;
 }
 
 export interface IRoute {
@@ -133,20 +134,23 @@ export function useGetRoutes({
 	amount,
 	extra = {},
 	disabledAdapters = [],
-	customRefetchInterval
+	customRefetchInterval,
+	disabled
 }: IGetListRoutesProps) {
 	const res = useQueries({
-		queries: adapters
-			.filter((adap) => adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name))
-			.map<UseQueryOptions<IRoute>>((adapter) => {
-				return {
-					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
-					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
-					refetchOnWindowFocus: false,
-					refetchIntervalInBackground: false
-				};
-			})
+		queries: disabled
+			? []
+			: adapters
+					.filter((adap) => adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name))
+					.map<UseQueryOptions<IRoute>>((adapter) => {
+						return {
+							queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
+							queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
+							refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
+							refetchOnWindowFocus: false,
+							refetchIntervalInBackground: false
+						};
+					})
 	});
 	const data = res?.filter((r) => r.status === 'success') ?? [];
 	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];

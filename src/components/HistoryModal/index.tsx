@@ -98,8 +98,7 @@ function HistoryModal({ tokensUrlMap, tokensSymbolsMap }) {
 			<Button
 				onClick={onOpen}
 				borderRadius="12px"
-				height="36px"
-				mt="2px"
+				height="40px"
 				colorScheme={'twitter'}
 				display={{ base: 'none', sm: 'none', lg: 'block', md: 'block' }}
 			>
