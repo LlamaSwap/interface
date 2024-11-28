@@ -40,7 +40,6 @@ import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
-import { normalizeTokens } from '~/utils';
 import RoutesPreview from './RoutesPreview';
 import { formatSuccessToast, formatErrorToast, formatSubmittedToast } from '~/utils/formatToast';
 import { useDebounce } from '~/hooks/useDebounce';
