@@ -509,6 +509,26 @@ export function AggregatorContainer({ tokenList }) {
 		toToken: finalSelectedToToken?.address,
 		fromToken: finalSelectedFromToken?.address
 	});
+
+	const { data: halfAmountRoutes } = useGetRoutes({
+		chain: selectedChain?.value,
+		from: finalSelectedFromToken?.value,
+		to: finalSelectedToToken?.value,
+		amount: BigNumber(amountWithDecimals).div(2).toFixed(0),
+		disabledAdapters: adaptersNames.filter((name) => name !== aggregator),
+		extra: {
+			gasPriceData,
+			userAddress: address || ethers.constants.AddressZero,
+			amount: debouncedAmount / 2,
+			fromToken: finalSelectedFromToken,
+			toToken: finalSelectedToToken,
+			slippage,
+			isPrivacyEnabled,
+			amountOut: amountOutWithDecimals
+		},
+		enabled: !!aggregator
+	});
+
 	const { gasTokenPrice = 0, toTokenPrice, fromTokenPrice } = tokenPrices || {};
 
 	// format routes
@@ -669,6 +689,13 @@ export function AggregatorContainer({ tokenList }) {
 
 	const priceImpactRoute = selectedRoute ? fillRoute(selectedRoute) : null;
 
+	const hasLinearPriceImpact =
+		selectedRoute && (halfAmountRoutes || []).length
+			? BigNumber(selectedRoute?.price?.amountReturned)
+					.div(BigNumber((halfAmountRoutes || [])[0]?.price?.amountReturned))
+					.lt(1.5)
+			: false;
+
 	const selectedRoutesPriceImpact =
 		fromTokenPrice &&
 		toTokenPrice &&
@@ -681,7 +708,9 @@ export function AggregatorContainer({ tokenList }) {
 			: null;
 
 	const hasPriceImapct =
-		selectedRoutesPriceImpact === null || Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD;
+		selectedRoutesPriceImpact === null ||
+		Number(selectedRoutesPriceImpact) > PRICE_IMPACT_WARNING_THRESHOLD ||
+		hasLinearPriceImpact;
 	const hasMaxPriceImpact = selectedRoutesPriceImpact !== null && Number(selectedRoutesPriceImpact) > 30;
 
 	const insufficientBalance =
@@ -1128,6 +1157,7 @@ export function AggregatorContainer({ tokenList }) {
 						amount={selectedRoute?.amountIn}
 						slippage={slippage}
 						isPriceImpactNotKnown={isPriceImpactNotKnown}
+						hasLinearPriceImpact={hasLinearPriceImpact}
 					/>
 					<Box display={['none', 'none', 'flex', 'flex']} flexDirection="column" gap="4px">
 						{warnings}
