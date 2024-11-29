@@ -344,5 +344,6 @@ export const providers = {
 	pulse: createProvider('pulse', getUrls(369), 369),
 	base: createProvider('pulse', getUrls(8453), 8453),
 	linea: createProvider('linea', getUrls(59144), 59144),
-	scroll: createProvider('scroll', getUrls(534352), 534352)
+	scroll: createProvider('scroll', getUrls(534352), 534352),
+	era: createProvider('era', getUrls(324), 324)
 };
