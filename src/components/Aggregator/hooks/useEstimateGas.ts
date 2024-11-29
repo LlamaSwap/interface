@@ -21,15 +21,13 @@ export const estimateGas = async ({
 	token,
 	userAddress,
 	chain,
-	balance,
-	isOutput
+	balance
 }: {
 	route: IRoute;
 	token?: string;
 	userAddress?: string;
 	chain?: string;
 	balance?: number | null;
-	isOutput: boolean;
 }) => {
 	if (
 		!token ||
@@ -39,8 +37,7 @@ export const estimateGas = async ({
 		!Number.isFinite(balance) ||
 		balance < +route.fromAmount ||
 		!route.price ||
-		!traceRpcs[chain] ||
-		(chain === 'polygon' && isOutput)
+		!traceRpcs[chain]
 	) {
 		return null;
 	}
@@ -72,7 +69,7 @@ export const estimateGas = async ({
 							functionName: 'approve',
 							args: [route.price.tokenApprovalAddress, maxInt256]
 						})
-					};
+				  };
 
 			const resetApproveTx = isNative
 				? null
@@ -96,7 +93,7 @@ export const estimateGas = async ({
 							functionName: 'approve',
 							args: [route.price.tokenApprovalAddress, 0n]
 						})
-					};
+				  };
 
 			const callParams = [resetApproveTx, approveTx, tx].filter(Boolean).map((txData) => [
 				{
