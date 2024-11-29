@@ -51,7 +51,7 @@ export const estimateGas = async ({
 			const approveTx = isNative
 				? null
 				: {
-						to: route.price.tokenApprovalAddress,
+						to: token,
 						data: encodeFunctionData({
 							abi: [
 								{
@@ -75,7 +75,7 @@ export const estimateGas = async ({
 			const resetApproveTx = isNative
 				? null
 				: {
-						to: route.price.tokenApprovalAddress,
+						to: token,
 						data: encodeFunctionData({
 							abi: [
 								{
