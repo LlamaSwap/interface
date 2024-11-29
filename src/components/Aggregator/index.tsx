@@ -483,7 +483,6 @@ export function AggregatorContainer({ tokenList }) {
 	const {
 		data: routes = [],
 		isLoading,
-		isLoaded,
 		refetch,
 		lastFetched,
 		loadingRoutes
@@ -505,7 +504,7 @@ export function AggregatorContainer({ tokenList }) {
 		}
 	});
 
-	const { data: gasData, isLoading: isGasDataLoading } = useEstimateGas({
+	const { data: gasData } = useEstimateGas({
 		routes,
 		token: finalSelectedFromToken?.address,
 		userAddress: address,
@@ -518,9 +517,7 @@ export function AggregatorContainer({ tokenList }) {
 	const fillRoute = (route: IRoute) => {
 		if (!route.price || !finalSelectedFromToken || !finalSelectedToToken) return null;
 
-		const gasEstimation = +(!isGasDataLoading && isLoaded && gasData?.[route.name]?.gas
-			? gasData[route.name]!.gas
-			: route.price.estimatedGas);
+		const gasEstimation = gasData?.[route.name]?.gas ?? route.price.estimatedGas;
 
 		let gasUsd: number | string = gasPriceData?.gasPrice
 			? ((gasTokenPrice ?? 0) * gasEstimation * gasPriceData.gasPrice) / 1e18 || 0
@@ -675,17 +672,15 @@ export function AggregatorContainer({ tokenList }) {
 		}
 	}, [selectedRoute?.amount, aggregator]);
 
-	const priceImpactRoute = selectedRoute ? fillRoute(selectedRoute) : null;
-
 	const selectedRoutesPriceImpact =
 		fromTokenPrice &&
 		toTokenPrice &&
-		priceImpactRoute &&
-		priceImpactRoute.amountUsd &&
-		priceImpactRoute.amountInUsd &&
+		selectedRoute &&
+		selectedRoute.amountUsd &&
+		selectedRoute.amountInUsd &&
 		(debouncedAmount || debouncedAmountOut) &&
-		!Number.isNaN(Number(priceImpactRoute.amountUsd))
-			? 100 - (Number(priceImpactRoute.amountUsd) / Number(priceImpactRoute.amountInUsd)) * 100
+		!Number.isNaN(Number(selectedRoute.amountUsd))
+			? 100 - (Number(selectedRoute.amountUsd) / Number(selectedRoute.amountInUsd)) * 100
 			: null;
 
 	const hasPriceImapct =
@@ -1137,9 +1132,7 @@ export function AggregatorContainer({ tokenList }) {
 						fromToken={finalSelectedFromToken}
 						toTokenPrice={toTokenPrice}
 						toToken={finalSelectedToToken}
-						amountReturnedInSelectedRoute={
-							priceImpactRoute && priceImpactRoute.price && priceImpactRoute.price.amountReturned
-						}
+						amountReturnedInSelectedRoute={selectedRoute && selectedRoute.price && selectedRoute.price.amountReturned}
 						selectedRoutesPriceImpact={selectedRoutesPriceImpact}
 						amount={selectedRoute?.amountIn}
 						slippage={slippage}

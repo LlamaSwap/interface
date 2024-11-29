@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js';
 import { encodeFunctionData, maxInt256, zeroAddress } from 'viem';
 import { IRoute } from '~/queries/useGetRoutes';
 import { chainsMap } from '../constants';
+import { useMemo } from 'react';
 
 const traceRpcs = {
 	// https://docs.blastapi.io/blast-documentation/trace-api
@@ -69,7 +70,7 @@ export const estimateGas = async ({
 							functionName: 'approve',
 							args: [route.price.tokenApprovalAddress, maxInt256]
 						})
-				  };
+					};
 
 			const resetApproveTx = isNative
 				? null
@@ -93,7 +94,7 @@ export const estimateGas = async ({
 							functionName: 'approve',
 							args: [route.price.tokenApprovalAddress, 0n]
 						})
-				  };
+					};
 
 			const callParams = [resetApproveTx, approveTx, tx].filter(Boolean).map((txData) => [
 				{
@@ -163,29 +164,25 @@ export const useEstimateGas = ({
 			.filter((route) => !!route?.tx?.to)
 			.map<UseQueryOptions<Awaited<ReturnType<typeof estimateGas>>>>((route) => {
 				return {
-					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance, isOutput],
-					queryFn: () => estimateGas({ route, token, userAddress, chain, balance, isOutput })
+					queryKey: ['estimateGas', route.name, chain, route?.tx?.data, balance],
+					queryFn: () => estimateGas({ route, token, userAddress, chain, balance })
 				};
 			})
 	});
 
-	const data =
-		res
-			?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
-			.reduce(
-				(acc, r) => ({
-					...acc,
-					[(
-						r.data as {
-							gas: string;
-							isFailed: boolean;
-							aggGas: any;
-							name: any;
-						}
-					).name]: r.data
-				}),
-				{} as Record<string, EstimationRes>
-			) ?? {};
+	const data = useMemo(() => {
+		return (
+			res
+				?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
+				.reduce(
+					(acc, r) => ({
+						...acc,
+						[(r as any).name]: r.data
+					}),
+					{} as Record<string, EstimationRes>
+				) ?? {}
+		);
+	}, [res]);
 
 	return {
 		isLoading: res.some((r) => r.status === 'pending') || (chain && traceRpcs[chain] === undefined),

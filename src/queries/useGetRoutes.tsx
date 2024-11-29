@@ -166,33 +166,44 @@ export function useGetRoutes({
 			) // @ts-ignore
 			.map<UseQueryOptions<IAdapterRoute>>((adapter) => {
 				return {
-					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
+					queryKey: [
+						'routes',
+						adapter.name,
+						chain,
+						from,
+						to,
+						amount,
+						JSON.stringify(omit(extra, 'amount', 'gasPriceData'))
+					],
 					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
 					staleTime: customRefetchInterval || REFETCH_INTERVAL,
 					refetchInterval: customRefetchInterval || REFETCH_INTERVAL
 				};
 			})
 	});
-	const data = res?.filter((r) => r.status === 'success') ?? [];
-	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
+	const { lastFetched, loadingRoutes, data, isLoading } = useMemo(() => {
+		const loadingRoutes =
+			res
+				?.map((r, i) => [adapters[i].name, r] as [string, UseQueryResult<IAdapterRoute>])
+				?.filter((r) => r[1].isLoading) ?? [];
 
-	const loadingRoutes =
-		res
-			?.map((r, i) => [adapters[i].name, r] as [string, UseQueryResult<IAdapterRoute>])
-			?.filter((r) => r[1].isLoading) ?? [];
+		const data =
+			res?.filter((r) => r.status === 'success' && !!r.data && r.data.price).map((r) => r.data as IRoute) ?? [];
 
-	const lastFetched = useMemo(() => {
-		return (
-			data
-				.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
-				.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)?.[0]?.dataUpdatedAt ?? Date.now()
-		);
-	}, [data]);
+		return {
+			lastFetched:
+				res
+					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
+					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)?.[0]?.dataUpdatedAt ?? Date.now(),
+			loadingRoutes,
+			data,
+			isLoading: res.length > 0 && data.length === 0
+		};
+	}, [res]);
 
 	return {
-		isLoaded: loadingRoutes.length === 0,
-		isLoading: data.length >= 1 ? false : true,
-		data: resData?.map((r) => r.data as IRoute) ?? [],
+		isLoading,
+		data,
 		refetch: () => res?.forEach((r) => r.refetch()),
 		lastFetched,
 		loadingRoutes
