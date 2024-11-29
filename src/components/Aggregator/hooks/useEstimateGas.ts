@@ -175,9 +175,9 @@ export const useEstimateGas = ({
 			res
 				?.filter((r) => r.status === 'success' && !!r.data && r.data.gas)
 				.reduce(
-					(acc, r) => ({
+					(acc, r: any) => ({
 						...acc,
-						[(r as any).name]: r.data
+						[r.data.name]: r.data
 					}),
 					{} as Record<string, EstimationRes>
 				) ?? {}
