@@ -1,4 +1,4 @@
-import { adapters } from './dexAggregators/list';
+import { adapters } from './Aggregator/list';
 
 const handler = async (event: AWSLambda.APIGatewayEvent): Promise<any> => {
 	const { protocol, chain, from, to, amount } = event.queryStringParameters!;

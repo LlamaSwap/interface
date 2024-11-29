@@ -1,7 +1,7 @@
 import { chainIdToName } from './constants';
 import { IToken } from './types';
 import { getS3, storeJSONString } from './s3';
-import { providers } from '../dexAggregators/rpcs';
+import { providers } from '../Aggregator/rpcs';
 import { ethers } from 'ethers';
 
 function makeCalls(chain:string, abiMethod:any, tokens:string[]){
