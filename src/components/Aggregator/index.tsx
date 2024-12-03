@@ -854,6 +854,8 @@ export function AggregatorContainer({ tokenList }) {
 							}
 
 							toast(formatSuccessToast(variables));
+
+							setAmount(['', ''])
 						} else {
 							isError = true;
 							toast(formatErrorToast({}, true));
