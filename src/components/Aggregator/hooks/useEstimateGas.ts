@@ -128,7 +128,7 @@ export const estimateGas = async ({
 
 			return {
 				gas: (Number(swapTx.trace[0].result?.gasUsed ?? '0x0') + 21e3).toString(), // ignores calldata and accesslist costs
-				isFailed: swapTx.trace[0]?.error.includes('Revert'),
+				isFailed: swapTx.trace[0]?.error?.includes('Revert') ?? false,
 				aggGas: route.price?.estimatedGas,
 				name: route.name
 			};

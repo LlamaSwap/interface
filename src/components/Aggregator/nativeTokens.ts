@@ -252,8 +252,8 @@ const polygon = {
 	mcap: Number.MAX_SAFE_INTEGER,
 	address: zeroAddress,
 	chainId: 137,
-	name: 'Matic',
-	symbol: 'MATIC',
+	name: 'Polygon',
+	symbol: 'POL',
 	logoURI: chainIconUrl('polygon'),
 	decimals: 18
 };

@@ -363,8 +363,8 @@ const polygon = {
 	iconBackground: '#000',
 	nativeCurrency: {
 		decimals: 18,
-		name: 'Matic',
-		symbol: 'MATIC'
+		name: 'Polygon',
+		symbol: 'POL'
 	},
 	rpcUrls: {
 		default: { http: Object.values(rpcUrls[137]) }

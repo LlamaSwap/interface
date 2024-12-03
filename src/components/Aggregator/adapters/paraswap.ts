@@ -69,6 +69,10 @@ export async function getQuote(
 				}).then((r) => r.json())
 			: null;
 
+	if (dataSwap.error) {
+		throw new Error(dataSwap.error)
+	}
+
 	let gas = data.priceRoute.gasCost;
 
 	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
