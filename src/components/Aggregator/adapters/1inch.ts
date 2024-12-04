@@ -90,10 +90,11 @@ export async function swap({ signer, rawQuote, chain }) {
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value
 	};
-	const gasPrediction = await signer.estimateGas(txObject);
+	const gasPrediction = await signer.estimateGas(txObject).catch(() => null);
 	const tx = await sendTx(signer, chain, {
 		...txObject,
-		gasLimit: gasPrediction.mul(12).div(10).add(86000) // Increase gas +20% + 2 erc20 txs
+		// Increase gas +20% + 2 erc20 txs
+		...(gasPrediction ? { gasLimit: gasPrediction.mul(12).div(10).add(86000) } : {})
 	});
 	return tx;
 }
