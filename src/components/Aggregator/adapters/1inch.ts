@@ -45,6 +45,8 @@ export function approvalAddress(chain: string) {
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
+const apiEndpoint = 'https://api.1inch.dev/swap/v6.0/';
+
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
@@ -56,12 +58,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const [data, swapData] = await Promise.all([
 		fetch(
-			`https://api-defillama.1inch.io/v6.0/${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
+			`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
 			{ headers: authHeader }
 		).then((r) => r.json()),
 		extra.userAddress !== ethers.constants.AddressZero
 			? fetch(
-				`https://api-defillama.1inch.io/v6.0/${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
+				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
 				{ headers: authHeader }
 			).then((r) => r.json())
 			: null
