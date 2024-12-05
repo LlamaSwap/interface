@@ -49,8 +49,8 @@ export function encode(
 	}
 
 	let inputZeroes = 0n;
-	let inputNum = BigInt(inputAmount ?? 0n);
-	while (inputNum % 10n === 0n && inputNum !== 0n) {
+	let inputNum = BigInt(inputAmount!);
+	while ((inputNum % 10n) === 0n && inputNum !== 0n) {
 		inputZeroes++;
 		inputNum = inputNum / 10n;
 	}
