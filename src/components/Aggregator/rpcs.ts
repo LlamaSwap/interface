@@ -249,7 +249,7 @@ export const rpcUrls = {
 		default: 'https://rpc.pulsechain.com'
 	},
 	8453: {
-		default: 'https://mainnet.base.org',
+		default: 'https://base-rpc.publicnode.com',
 		third: 'https://base-mainnet.public.blastapi.io'
 	},
 	59144: {
