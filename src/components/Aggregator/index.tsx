@@ -887,7 +887,7 @@ export function AggregatorContainer({ tokenList }) {
 						toast(formatErrorToast({}, true));
 					}
 				})
-				.catch(() => {
+				?.catch(() => {
 					isError = true;
 					toast(formatErrorToast({}, true));
 				})
