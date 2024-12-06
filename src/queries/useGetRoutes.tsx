@@ -159,32 +159,36 @@ export function useGetRoutes({
 	disabledAdapters = [],
 	customRefetchInterval
 }: IGetListRoutesProps) {
+	const chainAdapters = useMemo(() => {
+		return adapters.filter((adap) =>
+			chain && adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name) ? true : false
+		);
+	}, [chain, disabledAdapters]);
+
 	const res = useQueries({
-		queries: adapters
-			.filter((adap) =>
-				chain && adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name) ? true : false
-			) // @ts-ignore
-			.map<UseQueryOptions<IAdapterRoute>>((adapter) => {
-				return {
-					queryKey: [
-						'routes',
-						adapter.name,
-						chain,
-						from,
-						to,
-						amount,
-						JSON.stringify(omit(extra, 'amount', 'gasPriceData'))
-					],
-					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					staleTime: customRefetchInterval || REFETCH_INTERVAL,
-					refetchInterval: customRefetchInterval || REFETCH_INTERVAL
-				};
-			})
+		// @ts-ignore
+		queries: chainAdapters.map<UseQueryOptions<IAdapterRoute>>((adapter) => {
+			return {
+				queryKey: [
+					'routes',
+					adapter.name,
+					chain,
+					from,
+					to,
+					amount,
+					JSON.stringify(omit(extra, 'amount', 'gasPriceData'))
+				],
+				queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
+				staleTime: customRefetchInterval || REFETCH_INTERVAL,
+				refetchInterval: customRefetchInterval || REFETCH_INTERVAL
+			};
+		})
 	});
+	
 	const { lastFetched, loadingRoutes, data, isLoading } = useMemo(() => {
 		const loadingRoutes =
 			res
-				?.map((r, i) => [adapters[i].name, r] as [string, UseQueryResult<IAdapterRoute>])
+				?.map((r, i) => [chainAdapters[i].name, r] as [string, UseQueryResult<IAdapterRoute>])
 				?.filter((r) => r[1].isLoading) ?? [];
 
 		const data =
@@ -199,7 +203,7 @@ export function useGetRoutes({
 			data,
 			isLoading: res.length > 0 && data.length === 0
 		};
-	}, [res]);
+	}, [res, chainAdapters]);
 
 	return {
 		isLoading,
