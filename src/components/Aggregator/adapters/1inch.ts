@@ -93,12 +93,12 @@ export async function swap({ rawQuote }) {
 		value: rawQuote.tx.value
 	};
 
-	const gasPrediction = await estimateGas(config, txObject);
+	const gasPrediction = await estimateGas(config, txObject).catch(() => null);
 
 	const tx = await sendTx({
 		...txObject,
 		// Increase gas +20% + 2 erc20 txs
-		...(gasPrediction ? {gas: (gasPrediction * 12n) / 10n + 86000n  } : {})
+		...(gasPrediction ? { gas: (gasPrediction * 12n) / 10n + 86000n } : {})
 	});
 	return tx;
 }
