@@ -1,5 +1,5 @@
 import { useAccount, useEstimateGas } from 'wagmi';
-import { chainsMap, nativeAddress } from '../constants';
+import { chainsMap, nativeAddress, tokenApprovalAbi } from '../constants';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { zeroAddress, erc20Abi, maxInt256, encodeFunctionData } from 'viem';
 import { arbitrum, fantom } from 'viem/chains';
@@ -40,20 +40,7 @@ async function approveTokenSpend({
 
 		const hash = await writeContract(config, {
 			address,
-			abi: [
-				{
-					constant: false,
-					inputs: [
-						{ name: '_spender', type: 'address' },
-						{ name: '_value', type: 'uint256' }
-					],
-					name: 'approve',
-					outputs: [],
-					payable: false,
-					stateMutability: 'nonpayable',
-					type: 'function'
-				}
-			],
+			abi: tokenApprovalAbi,
 			functionName: 'approve',
 			args: [spender, amount],
 			chainId: chainsMap[chain],
@@ -170,20 +157,7 @@ export const useTokenApprove = ({
 	const encodedFunctionData =
 		isConnected && !!spender && !!token && normalizedAmount !== '0'
 			? encodeFunctionData({
-					abi: [
-						{
-							constant: false,
-							inputs: [
-								{ name: '_spender', type: 'address' },
-								{ name: '_value', type: 'uint256' }
-							],
-							name: 'approve',
-							outputs: [],
-							payable: false,
-							stateMutability: 'nonpayable',
-							type: 'function'
-						}
-					],
+					abi: tokenApprovalAbi,
 					functionName: 'approve',
 					args: spender && [spender, normalizedAmount ? BigInt(normalizedAmount) : maxInt256]
 				})

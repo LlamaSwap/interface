@@ -1,4 +1,4 @@
-import { defillamaReferrerAddress } from '../constants';
+import { defillamaReferrerAddress, tokenApprovalAbi } from '../constants';
 import { decodeFunctionData, encodeFunctionData, getAddress, hexToNumber, parseSignature, zeroAddress } from 'viem';
 import { signTypedData } from 'wagmi/actions';
 import { config } from '../../WalletProvider';
@@ -68,20 +68,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 		if (data.approval.eip712.primaryType === 'MetaTransaction') {
 			spender = decodeFunctionData({
-				abi: [
-					{
-						constant: false,
-						inputs: [
-							{ name: '_spender', type: 'address' },
-							{ name: '_value', type: 'uint256' }
-						],
-						name: 'approve',
-						outputs: [],
-						payable: false,
-						stateMutability: 'nonpayable',
-						type: 'function'
-					}
-				],
+				abi: tokenApprovalAbi,
 				data: data.approval.eip712.message.functionSignature
 			}).args[0];
 		}
@@ -127,7 +114,7 @@ export async function gaslessApprove({ rawQuote, isInfiniteApproval }) {
 					? {
 							...rawQuote.approval.eip712.message,
 							functionSignature: encodeFunctionData({
-								abi: ['function approve(address, uint)'],
+								abi: tokenApprovalAbi,
 								functionName: 'approve',
 								args: [getAddress(rawQuote.allowanceTarget), rawQuote.sellAmount]
 							})

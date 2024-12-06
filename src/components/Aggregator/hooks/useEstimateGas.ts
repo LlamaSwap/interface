@@ -2,7 +2,7 @@ import { useQueries, UseQueryOptions } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { encodeFunctionData, maxInt256, zeroAddress } from 'viem';
 import { IRoute } from '~/queries/useGetRoutes';
-import { chainsMap } from '../constants';
+import { chainsMap, tokenApprovalAbi } from '../constants';
 import { useMemo } from 'react';
 
 const traceRpcs = {
@@ -53,20 +53,7 @@ export const estimateGas = async ({
 				: {
 						to: token,
 						data: encodeFunctionData({
-							abi: [
-								{
-									constant: false,
-									inputs: [
-										{ name: '_spender', type: 'address' },
-										{ name: '_value', type: 'uint256' }
-									],
-									name: 'approve',
-									outputs: [],
-									payable: false,
-									stateMutability: 'nonpayable',
-									type: 'function'
-								}
-							],
+							abi: tokenApprovalAbi,
 							functionName: 'approve',
 							args: [route.price.tokenApprovalAddress, maxInt256]
 						})
@@ -77,20 +64,7 @@ export const estimateGas = async ({
 				: {
 						to: token,
 						data: encodeFunctionData({
-							abi: [
-								{
-									constant: false,
-									inputs: [
-										{ name: '_spender', type: 'address' },
-										{ name: '_value', type: 'uint256' }
-									],
-									name: 'approve',
-									outputs: [],
-									payable: false,
-									stateMutability: 'nonpayable',
-									type: 'function'
-								}
-							],
+							abi: tokenApprovalAbi,
 							functionName: 'approve',
 							args: [route.price.tokenApprovalAddress, 0n]
 						})
