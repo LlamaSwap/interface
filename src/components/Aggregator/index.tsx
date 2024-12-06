@@ -760,7 +760,7 @@ export function AggregatorContainer({ tokenList }) {
 			: isTokenApproved;
 
 	const isUSDTNotApprovedOnEthereum =
-		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
+		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval ? true : false;
 	const swapMutation = useMutation({
 		mutationFn: (params: {
 			chain: string;
@@ -1177,7 +1177,7 @@ export function AggregatorContainer({ tokenList }) {
 								Switch Network
 							</Button>
 						) : insufficientBalance ? (
-							<Button colorScheme={'messenger'} disabled>
+							<Button colorScheme={'messenger'} aria-disabled>
 								Insufficient Balance
 							</Button>
 						) : !selectedRoute && isSmallScreen && finalSelectedFromToken && finalSelectedToToken ? (
@@ -1185,7 +1185,7 @@ export function AggregatorContainer({ tokenList }) {
 								Select Aggregator
 							</Button>
 						) : hasMaxPriceImpact && !isDegenModeEnabled ? (
-							<Button colorScheme={'messenger'} disabled>
+							<Button colorScheme={'messenger'} aria-disabled>
 								Price impact is too large
 							</Button>
 						) : (
@@ -1193,7 +1193,7 @@ export function AggregatorContainer({ tokenList }) {
 								{router && address && (
 									<>
 										<>
-											{isUSDTNotApprovedOnEthereum && (
+											{isUSDTNotApprovedOnEthereum && finalSelectedFromToken && (
 												<Flex flexDir="column" gap="4px" w="100%">
 													<Text fontSize="0.75rem" fontWeight={400}>
 														{`${
@@ -1201,8 +1201,8 @@ export function AggregatorContainer({ tokenList }) {
 														} uses an old token implementation that requires resetting approvals if there's a
 														previous approval, and you currently have an approval for ${(
 															Number(allowance) /
-															10 ** finalSelectedFromToken?.decimals
-														).toFixed(2)} ${finalSelectedFromToken?.symbol} for this contract, you
+															10 ** finalSelectedFromToken.decimals
+														).toFixed(2)} ${finalSelectedFromToken.symbol} for this contract, you
 														need to reset your approval and approve again`}
 													</Text>
 													<Button
@@ -1212,7 +1212,7 @@ export function AggregatorContainer({ tokenList }) {
 														onClick={() => {
 															if (approveReset) approveReset();
 														}}
-														disabled={isApproveResetLoading || !selectedRoute}
+														aria-disabled={isApproveResetLoading || !selectedRoute}
 													>
 														Reset Approval
 													</Button>
@@ -1261,7 +1261,7 @@ export function AggregatorContainer({ tokenList }) {
 
 														if (isApproved) handleSwap();
 													}}
-													disabled={
+													aria-disabled={
 														isUSDTNotApprovedOnEthereum ||
 														swapMutation.isPending ||
 														gaslessApprovalMutation.isPending ||
@@ -1306,7 +1306,7 @@ export function AggregatorContainer({ tokenList }) {
 
 														if (approveInfinite) approveInfinite();
 													}}
-													disabled={
+													aria-disabled={
 														isUSDTNotApprovedOnEthereum ||
 														swapMutation.isPending ||
 														gaslessApprovalMutation.isPending ||
@@ -1470,15 +1470,15 @@ export function AggregatorContainer({ tokenList }) {
 											{router && address && (
 												<>
 													<>
-														{isUSDTNotApprovedOnEthereum && (
+														{isUSDTNotApprovedOnEthereum && finalSelectedFromToken && (
 															<Flex flexDir="column" gap="4px" w="100%">
 																<Text fontSize="0.75rem" fontWeight={400}>
 																	{`${
-																		finalSelectedFromToken?.symbol
+																		finalSelectedFromToken.symbol
 																	} uses an old token implementation that requires resetting approvals if there's a
 																		previous approval, and you currently have an approval for ${(
 																			Number(allowance) /
-																			10 ** finalSelectedFromToken?.decimals
+																			10 ** finalSelectedFromToken.decimals
 																		).toFixed(2)} ${finalSelectedFromToken?.symbol} for this contract, you
 																		need to reset your approval and approve again`}
 																</Text>
@@ -1489,7 +1489,7 @@ export function AggregatorContainer({ tokenList }) {
 																	onClick={() => {
 																		if (approveReset) approveReset();
 																	}}
-																	disabled={isApproveResetLoading || !selectedRoute}
+																	aria-disabled={isApproveResetLoading || !selectedRoute}
 																>
 																	Reset Approval
 																</Button>
@@ -1536,7 +1536,7 @@ export function AggregatorContainer({ tokenList }) {
 
 																	if (isApproved) handleSwap();
 																}}
-																disabled={
+																aria-disabled={
 																	isUSDTNotApprovedOnEthereum ||
 																	swapMutation.isPending ||
 																	gaslessApprovalMutation.isPending ||
@@ -1580,7 +1580,7 @@ export function AggregatorContainer({ tokenList }) {
 
 																	if (approveInfinite) approveInfinite();
 																}}
-																disabled={
+																aria-disabled={
 																	isUSDTNotApprovedOnEthereum ||
 																	swapMutation.isPending ||
 																	gaslessApprovalMutation.isPending ||
