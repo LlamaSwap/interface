@@ -41,7 +41,12 @@ import { sendSwapEvent } from './adapters/utils';
 import { useRouter } from 'next/router';
 import { TransactionModal } from '../TransactionModal';
 import RoutesPreview from './RoutesPreview';
-import { formatSuccessToast, formatErrorToast, formatSubmittedToast } from '~/utils/formatToast';
+import {
+	formatSuccessToast,
+	formatErrorToast,
+	formatSubmittedToast,
+	formatUnknownErrorToast
+} from '~/utils/formatToast';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -1061,7 +1066,7 @@ export function AggregatorContainer({ tokenList }) {
 										</FormLabel>
 										<Switch
 											id="privacy-switch"
-											onChange={(e) =>  setIsPrivacyEnabled(e.target.checked)}
+											onChange={(e) => setIsPrivacyEnabled(e.target.checked)}
 											isChecked={isPrivacyEnabled}
 										/>
 									</FormControl>
@@ -1159,9 +1164,15 @@ export function AggregatorContainer({ tokenList }) {
 								onClick={() => {
 									if (selectedChain) {
 										switchChain({ chainId: selectedChain.id });
+									} else {
+										toast(
+											formatUnknownErrorToast({
+												title: 'Failed to switch network',
+												message: 'Selected chain is invalid'
+											})
+										);
 									}
 								}}
-								disabled={!selectedChain}
 							>
 								Switch Network
 							</Button>
@@ -1442,9 +1453,15 @@ export function AggregatorContainer({ tokenList }) {
 											onClick={() => {
 												if (selectedChain) {
 													switchChain({ chainId: selectedChain.id });
+												} else {
+													toast(
+														formatUnknownErrorToast({
+															title: 'Failed to switch network',
+															message: 'Selected chain is invalid'
+														})
+													);
 												}
 											}}
-											disabled={!selectedChain}
 										>
 											Switch Network
 										</Button>
