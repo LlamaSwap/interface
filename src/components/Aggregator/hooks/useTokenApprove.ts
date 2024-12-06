@@ -170,7 +170,20 @@ export const useTokenApprove = ({
 	const encodedFunctionData =
 		isConnected && !!spender && !!token && normalizedAmount !== '0'
 			? encodeFunctionData({
-					abi: erc20Abi,
+					abi: [
+						{
+							constant: false,
+							inputs: [
+								{ name: '_spender', type: 'address' },
+								{ name: '_value', type: 'uint256' }
+							],
+							name: 'approve',
+							outputs: [],
+							payable: false,
+							stateMutability: 'nonpayable',
+							type: 'function'
+						}
+					],
 					functionName: 'approve',
 					args: spender && [spender, normalizedAmount ? BigInt(normalizedAmount) : maxInt256]
 				})
