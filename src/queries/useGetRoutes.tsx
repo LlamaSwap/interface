@@ -52,19 +52,21 @@ interface IGetAdapterRouteProps extends IGetListRoutesProps {
 
 export const REFETCH_INTERVAL = 25_000;
 
+const defaultRouteResponse = ({ adapter, amount }) => ({
+	price: null,
+	name: adapter.name,
+	airdrop: !adapter.token,
+	fromAmount: amount,
+	txData: '',
+	l1Gas: 0,
+	tx: {},
+	isOutputAvailable: false,
+	isGasless: adapter.isGasless ?? false
+});
+
 export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
 	if (!chain || !from || !to || (!amount && !extra.amountOut) || (amount === '0' && extra.amountOut === '0')) {
-		return {
-			price: null,
-			name: adapter.name,
-			airdrop: !adapter.token,
-			fromAmount: amount,
-			txData: '',
-			l1Gas: 0,
-			tx: {},
-			isOutputAvailable: false,
-			isGasless: adapter.isGasless ?? false
-		};
+		return defaultRouteResponse({ adapter, amount });
 	}
 
 	try {
@@ -82,33 +84,13 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 				amountIn = price.amountIn;
 			}
 		} else if (isOutputDefined && !adapter.isOutputAvailable) {
-			return {
-				price: null,
-				name: adapter.name,
-				airdrop: !adapter.token,
-				fromAmount: amount,
-				txData: '',
-				l1Gas: 0,
-				tx: {},
-				isOutputAvailable: false,
-				isGasless: adapter.isGasless ?? false
-			};
+			return defaultRouteResponse({ adapter, amount });
 		} else {
 			price = await quouteFunc(chain, from, to, amount, extra);
 		}
 
 		if (!price) {
-			return {
-				price: null,
-				name: adapter.name,
-				airdrop: !adapter.token,
-				fromAmount: amount,
-				txData: '',
-				l1Gas: 0,
-				tx: {},
-				isOutputAvailable: false,
-				isGasless: adapter.isGasless ?? false
-			};
+			return defaultRouteResponse({ adapter, amount });
 		}
 
 		if (!amountIn) throw Error('amountIn is not defined');
@@ -136,17 +118,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 	} catch (e) {
 		console.error(`Error fetching ${adapter.name} quote`);
 		console.error(e);
-		return {
-			price: null,
-			l1Gas: 0,
-			name: adapter.name,
-			airdrop: !adapter.token,
-			fromAmount: amount,
-			txData: '',
-			tx: {},
-			isOutputAvailable: false,
-			isGasless: adapter.isGasless ?? false
-		};
+		return defaultRouteResponse({ adapter, amount });
 	}
 }
 
@@ -184,7 +156,7 @@ export function useGetRoutes({
 			};
 		})
 	});
-	
+
 	const { lastFetched, loadingRoutes, data, isLoading } = useMemo(() => {
 		const loadingRoutes =
 			res
