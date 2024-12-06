@@ -7,7 +7,10 @@ export async function sendTx(txObject: any) {
 	}
 	if (txObject.gas === undefined) {
 		const gasPrediction = await estimateGas(config, txObject);
-		txObject.gas = (gasPrediction * 14n) / 10n; // Increase gas +40%
+
+		if (gasPrediction) {
+			txObject.gas = (gasPrediction * 14n) / 10n; // Increase gas +40%
+		}
 	}
 
 	return sendTransaction(config, txObject);

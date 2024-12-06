@@ -97,7 +97,8 @@ export async function swap({ rawQuote }) {
 
 	const tx = await sendTx({
 		...txObject,
-		gas: (gasPrediction * 12n) / 10n + 86000n // Increase gas +20% + 2 erc20 txs
+		// Increase gas +20% + 2 erc20 txs
+		...(gasPrediction ? {gas: (gasPrediction * 12n) / 10n + 86000n  } : {})
 	});
 	return tx;
 }

@@ -453,7 +453,7 @@ export function AggregatorContainer({ tokenList }) {
 			chainTokenList
 				?.concat(savedTokens)
 				.map((token) => {
-					const tokenBalance = tokenBalances?.[token?.address?.toLowerCase()];
+					const tokenBalance = token?.address ? tokenBalances?.[token.address.toLowerCase()] : {};
 
 					return {
 						...token,
@@ -789,10 +789,12 @@ export function AggregatorContainer({ tokenList }) {
 							hash: hash,
 							description: `Swap transaction using ${variables.adapter} is sent.`
 						});
-						const explorerUrl = chainOnWallet.blockExplorers.default.url;
-						setTxModalOpen(true);
-						txUrl = `${explorerUrl}/tx/${hash}`;
-						setTxUrl(txUrl);
+						if (chainOnWallet?.blockExplorers) {
+							const explorerUrl = chainOnWallet.blockExplorers.default.url;
+							setTxModalOpen(true);
+							txUrl = `${explorerUrl}/tx/${hash}`;
+							setTxUrl(txUrl);
+						}
 					}
 				} else if (data.gaslessTxReceipt.status === 'pending') {
 					toast(formatSubmittedToast(variables));
@@ -826,10 +828,12 @@ export function AggregatorContainer({ tokenList }) {
 					hash: data,
 					description: `Swap transaction using ${variables.adapter} is sent.`
 				});
-				const explorerUrl = chainOnWallet.blockExplorers.default.url;
-				setTxModalOpen(true);
-				txUrl = `${explorerUrl}/tx/${data}`;
-				setTxUrl(txUrl);
+				if (chainOnWallet?.blockExplorers) {
+					const explorerUrl = chainOnWallet.blockExplorers.default.url;
+					setTxModalOpen(true);
+					txUrl = `${explorerUrl}/tx/${data}`;
+					setTxUrl(txUrl);
+				}
 
 				confirmingTxToastRef.current = toast({
 					title: 'Confirming Transaction',
@@ -855,13 +859,13 @@ export function AggregatorContainer({ tokenList }) {
 
 							toast(formatSuccessToast(variables));
 
-							setAmount(['', ''])
+							setAmount(['', '']);
 						} else {
 							isError = true;
 							toast(formatErrorToast({}, true));
 						}
 					})
-					.catch(() => {
+					?.catch(() => {
 						isError = true;
 						toast(formatErrorToast({}, true));
 					})
@@ -1057,7 +1061,7 @@ export function AggregatorContainer({ tokenList }) {
 										</FormLabel>
 										<Switch
 											id="privacy-switch"
-											onChange={(e) => setIsPrivacyEnabled(e?.target?.checked)}
+											onChange={(e) =>  setIsPrivacyEnabled(e.target.checked)}
 											isChecked={isPrivacyEnabled}
 										/>
 									</FormControl>
