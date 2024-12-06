@@ -122,7 +122,7 @@ export const estimateGas = async ({
 				return null;
 			}
 
-			const swapTx = response.result[2];
+			const swapTx = response.result[response.result.length - 1];
 
 			if (!swapTx) return null;
 
