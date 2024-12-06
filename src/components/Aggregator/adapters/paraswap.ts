@@ -1,10 +1,10 @@
 // Source: https://developers.paraswap.network/api/master
 
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 import { defillamaReferrerAddress } from '../constants';
+import { zeroAddress } from 'viem';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
@@ -38,8 +38,8 @@ export async function getQuote(
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
 
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenFrom = from === zeroAddress ? nativeToken : from;
+	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const side = amountOut && amountOut !== '0' ? 'BUY' : 'SELL';
 	const finalAmount = side === 'BUY' ? amountOut : amount;
 	const data = await fetch(
@@ -47,7 +47,7 @@ export async function getQuote(
 	).then((r) => r.json());
 
 	const dataSwap =
-		userAddress !== ethers.constants.AddressZero
+		userAddress !== zeroAddress
 			? await fetch(`https://apiv5.paraswap.io/transactions/${chainToId[chain]}?ignoreChecks=true`, {
 					method: 'POST',
 					body: JSON.stringify({
@@ -66,8 +66,12 @@ export async function getQuote(
 					headers: {
 						'Content-Type': 'application/json'
 					}
-			  }).then((r) => r.json())
+				}).then((r) => r.json())
 			: null;
+
+	if (dataSwap.error) {
+		throw new Error(dataSwap.error)
+	}
 
 	let gas = data.priceRoute.gasCost;
 
@@ -87,13 +91,13 @@ export async function getQuote(
 	};
 }
 
-export async function swap({ signer, rawQuote, chain }) {
-	const tx = await sendTx(signer, chain, {
+export async function swap({ rawQuote, chain }) {
+	const tx = await sendTx({
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 
 	return tx;

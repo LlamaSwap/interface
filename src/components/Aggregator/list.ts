@@ -12,12 +12,12 @@ import * as paraswap from './adapters/paraswap';
 // import * as unidex from "./adapters/unidex" - disabled, their api is broken
 // import * as airswap from './adapters/airswap' cors
 import * as odos from './adapters/odos';
-import * as yieldyak from './adapters/yieldyak';
-import * as llamazip from './adapters/llamazip';
+// import * as yieldyak from './adapters/yieldyak';
+// import * as llamazip from './adapters/llamazip';
 // import * as krystal from './adapters/krystal'
 import * as matchaGasless from './adapters/0xGasless';
 
-export const adapters = [matcha, inch, cowswap, yieldyak, paraswap, llamazip, kyberswap, odos, matchaGasless];
+export const adapters = [matcha, inch, cowswap, paraswap, kyberswap, odos, matchaGasless];
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name, matchaGasless.name];
 

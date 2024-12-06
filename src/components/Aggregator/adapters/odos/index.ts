@@ -92,13 +92,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ signer, rawQuote, chain }) {
-	const tx = await sendTx(signer, chain, {
+export async function swap({ rawQuote }) {
+	const tx = await sendTx({
 		from: rawQuote.transaction.from,
 		to: rawQuote.transaction.to,
 		data: rawQuote.transaction.data,
 		value: rawQuote.transaction.value
-		//gasLimit: rawQuote.transaction.gas
+		//gas: rawQuote.transaction.gas
 	});
 
 	return tx;

@@ -1,5 +1,4 @@
 import { groupBy, mapValues, uniqBy } from 'lodash';
-import { ethers } from 'ethers';
 import { nativeTokens } from './nativeTokens';
 import { geckoChainsMap, geckoTerminalChainsMap } from './constants';
 import { ownTokenList } from './ownTokenlist';
@@ -7,6 +6,7 @@ import multichainListRawFantom from './multichain/250.json';
 import multichainListRawAll from './multichain/anyswap.json';
 import { getTokensData } from './getTokensData';
 import type { IToken } from './types';
+import { zeroAddress } from 'viem';
 
 const tokensToRemove = {
 	1: {
@@ -227,7 +227,7 @@ export async function getTokenList() {
 					volume24h
 				};
 			})
-			.sort((a, b) => (b.address === ethers.constants.AddressZero ? 1 : b.volume24h - a.volume24h));
+			.sort((a, b) => (b.address === zeroAddress ? 1 : b.volume24h - a.volume24h));
 	};
 
 	// store coingecko token lists by chain

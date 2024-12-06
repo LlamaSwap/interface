@@ -1,14 +1,13 @@
 import { chainIdToName } from './constants';
 import { IToken } from './types';
 import { getS3, storeJSONString } from './s3';
-import { providers } from '../dexAggregators/rpcs';
-import { ethers } from 'ethers';
+import { readContract } from 'wagmi/actions';
+import { config } from '../WalletProvider';
 
-function makeCalls(chain:string, abiMethod:any, tokens:string[]){
+function makeCalls(chainId:string, abiMethod:any, tokens:string[]){
 	return Promise.all(tokens.map(async token=>{
-		const contract = new ethers.Contract(token, [abiMethod], providers[chain])
 		try{
-			const res = await contract[abiMethod.name]()
+			const res = await readContract(config, {address: token as `0x${string}`, abi: [abiMethod], functionName: abiMethod.name, args: [], chainId})
 			return {
 				output: res,
 				success: true
@@ -23,18 +22,6 @@ function makeCalls(chain:string, abiMethod:any, tokens:string[]){
 
 // use multicall to fetch tokens name, symbol and decimals
 export const getTokensData = async ([chainId, tokens]: [string, Array<string>]): Promise<[string, Array<IToken>]> => {
-	const replacements = {
-		100: 'xdai',
-		199: 'bittorrent',
-		324: 'era',
-		1101: 'polygon_zkevm'
-	};
-	const chainName: string = replacements[chainId] ?? chainIdToName(chainId);
-
-	if (!chainName) {
-		return [chainId, []];
-	}
-
 	const filename = `erc20/${chainId}`;
 	let storedTokenMetadata;
 	try {
@@ -46,7 +33,7 @@ export const getTokensData = async ([chainId, tokens]: [string, Array<string>]):
 		(token) => token !== '' && storedTokenMetadata[token.toLowerCase()] === undefined && token.length === 42
 	);
 
-	const names  = await makeCalls(chainName, {
+	const names  = await makeCalls(chainId, {
 			constant: true,
 			inputs: [],
 			name: 'name',
@@ -61,10 +48,10 @@ export const getTokensData = async ([chainId, tokens]: [string, Array<string>]):
 			type: 'function'
 		}, missingTokens);
 
-	const symbols = await makeCalls(chainName, {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+	const symbols = await makeCalls(chainId, {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
 		missingTokens);
 
-	const decimals = await makeCalls(chainName, {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
+	const decimals = await makeCalls(chainId, {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
 		missingTokens);
 
 	const data = [];

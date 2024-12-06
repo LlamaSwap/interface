@@ -14,7 +14,7 @@ import { useGetMcap } from '~/queries/useGetMCap';
 import Loader from '../Aggregator/Loader';
 
 interface ISlippageChart {
-	chartData: Array<[number, number]>;
+	chartData: Array<[number, number, number, string, number]>;
 	fromTokenSymbol: string;
 	toTokenSymbol: string;
 	mcap: number | null;
@@ -56,7 +56,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 
 	const isLoading = fetchingTokenPrices || fetchingInitialTokenLiq;
 
-	const [liquidity, setLiquidity] = React.useState([]);
+	const [liquidity, setLiquidity] = React.useState<Array<number>>([]);
 
 	const { data: addlLiqRoutes } = useGetTokensLiquidity({
 		fromToken,
@@ -72,7 +72,9 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 	const { chartData, newLiquidityValues } = React.useMemo(
 		() =>
 			getChartData({
-				routes: [...(initialRoutes || []), ...(addlLiqRoutes || [])]?.sort((a, b) => a[0] - b[0]),
+				routes: [...(initialRoutes ?? []), ...(addlLiqRoutes ?? [])]?.sort(
+					(a, b) => +(a as [number])[0] - +(b as [number])[0]
+				),
 				toTokenDecimals: toToken.decimals,
 				fromTokenDecimals: fromToken.decimals,
 				price: fromToken.symbol === 'WBTC' ? 10000 : 500,
@@ -197,7 +199,7 @@ export function LiquidityByToken({ fromToken, toToken, chain }: { fromToken: ITo
 														BigNumber(topRoute?.price?.amountReturned ?? 0)
 															.div(10 ** Number(toToken.decimals || 18))
 															.toFixed(3)
-												  ).toFixed(2)} ${toToken.symbol} via ${topRoute?.name}`
+													).toFixed(2)} ${toToken.symbol} via ${topRoute?.name}`
 												: ''}
 										</>
 									)}
