@@ -41,7 +41,9 @@ const ActiveTabBackground = styled.div`
 	height: 100%;
 	background-color: ${({ theme }) => theme.primary1};
 	border-radius: 12px;
-	transition: transform 0.3s ease, width 0.3s ease;
+	transition:
+		transform 0.3s ease,
+		width 0.3s ease;
 	will-change: transform, width;
 `;
 
@@ -105,11 +107,19 @@ const TabPanels = styled.div`
 	}
 `;
 
-const Tabs = ({ tabs = [] }) => {
+const Tabs = ({
+	tabs
+}: {
+	tabs: Array<{
+		id: string;
+		name: string;
+		content: JSX.Element;
+	}>;
+}) => {
 	const router = useRouter();
 	const [isRouterReady, setIsRouterReady] = React.useState(false);
 	const [activeTab, setActiveTab] = React.useState('');
-	const tabRefs = React.useRef([]);
+	const tabRefs = React.useRef<Array<React.RefObject<HTMLLIElement>>>([]);
 	tabRefs.current = tabs.map((_, i) => tabRefs.current[i] ?? React.createRef());
 
 	React.useEffect(() => {

@@ -20,16 +20,20 @@ export default function SlippageChart({
 	const id = useMemo(() => uniqueId(), []);
 
 	const createInstance = useCallback(() => {
-		const instance = echarts.getInstanceByDom(document.getElementById(id));
+		const el = document.getElementById(id);
 
-		return instance || echarts.init(document.getElementById(id));
+		if (el) {
+			return echarts.getInstanceByDom(el) ?? echarts.init(el);
+		}
+
+		return null;
 	}, [id]);
 
 	useEffect(() => {
 		// create instance
 		const chartInstance = createInstance();
 
-		chartInstance.setOption({
+		chartInstance?.setOption({
 			grid: {
 				left: 0,
 				containLabel: true,
@@ -188,14 +192,14 @@ export default function SlippageChart({
 		});
 
 		function resize() {
-			chartInstance.resize();
+			chartInstance?.resize();
 		}
 
 		window.addEventListener('resize', resize);
 
 		return () => {
 			window.removeEventListener('resize', resize);
-			chartInstance.dispose();
+			chartInstance?.dispose();
 		};
 	}, [createInstance, fromTokenSymbol, toTokenSymbol, mcap, minimumSlippage, maximumSlippage]);
 
@@ -203,7 +207,7 @@ export default function SlippageChart({
 		// create instance
 		const chartInstance = createInstance();
 
-		chartInstance.setOption({
+		chartInstance?.setOption({
 			xAxis: {
 				min: chartData[0][0]
 			},

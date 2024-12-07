@@ -3,10 +3,10 @@ import BigNumber from 'bignumber.js';
 import { initialLiquidity } from '~/components/Aggregator/constants';
 import { adapters } from '~/components/Aggregator/list';
 import type { IToken } from '~/types';
-import { getAdapterRoutes } from './useGetRoutes';
+import { getAdapterRoutes, IRoute } from './useGetRoutes';
 import { getTopRoute } from '~/utils/getTopRoute';
 import { useMemo } from 'react';
-import { ethers } from 'ethers';
+import { zeroAddress } from 'viem';
 
 async function getInitialLiquidityRoutes({
 	chain,
@@ -35,7 +35,7 @@ async function getInitialLiquidityRoutes({
 			)
 		);
 
-		const topRoutes = [];
+		const topRoutes: Array<[number, IRoute | null]> = [];
 
 		res.forEach((item) => {
 			if (item.status === 'fulfilled') {
@@ -136,13 +136,21 @@ async function getAdapterRoutesByAmount({ chain, fromToken, toToken, amount, fro
 							amount: amount.toString(),
 							fromToken,
 							toToken,
-							userAddress: ethers.constants.AddressZero
+							userAddress: zeroAddress
 						}
 					})
 				)
 		);
 
-		const data = res.map((route) => (route.status === 'fulfilled' ? route.value : null)).filter((route) => !!route);
+		const data = res
+			.map((route) => (route.status === 'fulfilled' ? route.value : null))
+			.filter((route) => !!route) as Array<{
+			price?: { amountReturned: string; name: string; estimatedGas: string; feeAmount: string } | null;
+			txData: any;
+			name: any;
+			airdrop: boolean;
+			fromAmount: string;
+		}>;
 
 		return [`${amount.toString()}`, data];
 	} catch (error) {
@@ -156,7 +164,7 @@ interface IGetInitialTokenLiquidity {
 	chain: string | null;
 	fromToken: IToken | null;
 	toToken: IToken | null;
-	gasPriceData?: {};
+	gasPriceData?: { gasPrice: number } | null;
 	gasTokenPrice?: number | null;
 	fromTokenPrice?: number | null;
 	toTokenPrice?: number | null;
@@ -171,9 +179,17 @@ export const useGetInitialTokenLiquidity = ({
 	toTokenPrice,
 	gasPriceData
 }: IGetInitialTokenLiquidity) => {
-	return useQuery(
-		['initialLiquidity', chain, fromToken?.address, toToken?.address, gasTokenPrice, fromTokenPrice, toTokenPrice],
-		() =>
+	return useQuery({
+		queryKey: [
+			'initialLiquidity',
+			chain,
+			fromToken?.address,
+			toToken?.address,
+			gasTokenPrice,
+			fromTokenPrice,
+			toTokenPrice
+		],
+		queryFn: () =>
 			getInitialLiquidityRoutes({
 				chain: chain,
 				fromToken,
@@ -183,14 +199,9 @@ export const useGetInitialTokenLiquidity = ({
 				toTokenPrice,
 				gasPriceData
 			}),
-		{
-			refetchOnMount: false,
-			refetchInterval: 5 * 60 * 1000, // 5 minutes
-			refetchOnWindowFocus: false,
-			refetchOnReconnect: false,
-			refetchIntervalInBackground: false
-		}
-	);
+		staleTime: 5 * 60 * 1000,
+		refetchInterval: 5 * 60 * 1000
+	});
 };
 
 interface ITokensLiquidity extends IGetInitialTokenLiquidity {
@@ -231,11 +242,8 @@ export const useGetTokensLiquidity = ({
 						gasPriceData,
 						amount: liquidityAmount
 					}),
-				refetchOnMount: false,
-				refetchInterval: 5 * 60 * 1000, // 5 minutes
-				refetchOnWindowFocus: false,
-				refetchOnReconnect: false,
-				refetchIntervalInBackground: false,
+				staleTime: 5 * 60 * 1000,
+				refetchInterval: 5 * 60 * 1000,
 				retry: 0,
 				retryOnMount: false
 			};

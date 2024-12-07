@@ -1,5 +1,6 @@
 import { WarningIcon } from '@chakra-ui/icons';
 import { Button, Box, Text, Alert, AlertIcon, Popover, PopoverTrigger, PopoverContent } from '@chakra-ui/react';
+import * as React from 'react';
 
 const stablecoins = [
 	'USDT',
@@ -52,7 +53,11 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 	].filter(Boolean);
 	return (
 		<Box display="flex" flexDir="column" marginX="4px">
-			<Box display={['none', 'none', 'block', 'block']}>{warnings}</Box>
+			<Box display={['none', 'none', 'block', 'block']}>
+				{warnings.map((warning, i) => (
+					<React.Fragment key={`warning-${i}`}>{warning}</React.Fragment>
+				))}
+			</Box>
 			<Text fontWeight="400" display="flex" justifyContent="space-between" alignItems="center" fontSize="0.875rem">
 				Swap Slippage: {slippage && !Number.isNaN(Number(slippage)) ? Number(slippage) + '%' : ''}
 			</Text>
@@ -101,7 +106,11 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 						<PopoverTrigger>
 							<WarningIcon color={'rgb(224, 148, 17)'} height="20px" width="20px" mt="6px" />
 						</PopoverTrigger>
-						<PopoverContent>{warnings}</PopoverContent>
+						<PopoverContent>
+							{warnings.map((warning, i) => (
+								<React.Fragment key={`warning-2-${i}`}>{warning}</React.Fragment>
+							))}
+						</PopoverContent>
 					</Popover>
 				) : null}
 			</Box>

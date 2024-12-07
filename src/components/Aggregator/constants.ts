@@ -170,3 +170,18 @@ export const WETH = {
 export const PRICE_IMPACT_MEDIUM_THRESHOLD = 5;
 export const PRICE_IMPACT_HIGH_THRESHOLD = 10;
 export const PRICE_IMPACT_WARNING_THRESHOLD = 3;
+
+export const tokenApprovalAbi = [
+	{
+		constant: false,
+		inputs: [
+			{ name: '_spender', type: 'address' },
+			{ name: '_value', type: 'uint256' }
+		],
+		name: 'approve',
+		outputs: [],
+		payable: false,
+		stateMutability: 'nonpayable',
+		type: 'function'
+	}
+] as const

@@ -1,12 +1,13 @@
 import { useQueries, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
-import { partial, first, omit } from 'lodash';
+import { partial, omit } from 'lodash';
+import { useMemo } from 'react';
 
 import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
-import { chainsWithOpFees, getOptimismFee } from '~/components/Aggregator/hooks/useOptimismFees';
+import { chainsWithOpFees, getOptimismFee } from '~/components/Aggregator/utils/optimismFees';
 import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/list';
 
 interface IGetListRoutesProps {
-	chain: string;
+	chain?: string;
 	from?: string;
 	to?: string;
 	amount?: string;
@@ -15,17 +16,19 @@ interface IGetListRoutesProps {
 	customRefetchInterval?: number;
 }
 
-export interface IRoute {
-	price: {
-		amountReturned: any;
-		estimatedGas: any;
-		tokenApprovalAddress: any;
-		logo: string;
-		isGaslessApproval?: boolean;
-		feeAmount?: number;
-		rawQuote?: {};
-		isSignatureNeededForSwap?: boolean;
-	} | null;
+interface IPrice {
+	amountReturned: any;
+	estimatedGas: any;
+	tokenApprovalAddress: any;
+	logo: string;
+	isGaslessApproval?: boolean;
+	feeAmount?: number;
+	rawQuote?: {};
+	isSignatureNeededForSwap?: boolean;
+}
+
+interface IAdapterRoute {
+	price: IPrice | null;
 	name: string;
 	airdrop: boolean;
 	fromAmount: string;
@@ -40,25 +43,31 @@ export interface IRoute {
 	isGasless: boolean;
 }
 
+export interface IRoute extends Omit<IAdapterRoute, 'price'> {
+	price: IPrice;
+}
+
 interface IGetAdapterRouteProps extends IGetListRoutesProps {
 	adapter: any;
 }
 
 export const REFETCH_INTERVAL = 25_000;
 
+const defaultRouteResponse = ({ adapter, amount }) => ({
+	price: null,
+	name: adapter.name,
+	airdrop: !adapter.token,
+	fromAmount: amount,
+	txData: '',
+	l1Gas: 0,
+	tx: {},
+	isOutputAvailable: false,
+	isGasless: adapter.isGasless ?? false
+});
+
 export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra = {} }: IGetAdapterRouteProps) {
 	if (!chain || !from || !to || (!amount && !extra.amountOut) || (amount === '0' && extra.amountOut === '0')) {
-		return {
-			price: null,
-			name: adapter.name,
-			airdrop: !adapter.token,
-			fromAmount: amount,
-			txData: '',
-			l1Gas: 0,
-			tx: {},
-			isOutputAvailable: false,
-			isGasless: adapter.isGasless ?? false
-		};
+		return defaultRouteResponse({ adapter, amount });
 	}
 
 	try {
@@ -72,21 +81,17 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 				: adapter.getQuote;
 		if (adapter.isOutputAvailable) {
 			price = await quouteFunc(chain, from, to, amount, extra);
-			amountIn = price.amountIn;
+			if (price) {
+				amountIn = price.amountIn;
+			}
 		} else if (isOutputDefined && !adapter.isOutputAvailable) {
-			return {
-				price: null,
-				name: adapter.name,
-				airdrop: !adapter.token,
-				fromAmount: amount,
-				txData: '',
-				l1Gas: 0,
-				tx: {},
-				isOutputAvailable: false,
-				isGasless: adapter.isGasless ?? false
-			};
+			return defaultRouteResponse({ adapter, amount });
 		} else {
 			price = await quouteFunc(chain, from, to, amount, extra);
+		}
+
+		if (!price) {
+			return defaultRouteResponse({ adapter, amount });
 		}
 
 		if (!amountIn) throw Error('amountIn is not defined');
@@ -94,8 +99,8 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 		const txData = adapter?.getTxData?.(price) ?? '';
 		let l1Gas: number | 'Unknown' = 0;
 
-		if (chainsWithOpFees.includes(chain) && adapter.isGasless !== true) {
-			l1Gas = await getOptimismFee(txData);
+		if (txData !== '' && chainsWithOpFees.includes(chain) && adapter.isGasless !== true) {
+			l1Gas = await getOptimismFee(txData, chain);
 		}
 
 		const res = {
@@ -112,18 +117,9 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 
 		return res;
 	} catch (e) {
+		console.error(`Error fetching ${adapter.name} quote`);
 		console.error(e);
-		return {
-			price: null,
-			l1Gas: 0,
-			name: adapter.name,
-			airdrop: !adapter.token,
-			fromAmount: amount,
-			txData: '',
-			tx: {},
-			isOutputAvailable: false,
-			isGasless: adapter.isGasless ?? false
-		};
+		return defaultRouteResponse({ adapter, amount });
 	}
 }
 
@@ -136,38 +132,57 @@ export function useGetRoutes({
 	disabledAdapters = [],
 	customRefetchInterval
 }: IGetListRoutesProps) {
+	const chainAdapters = useMemo(() => {
+		return adapters.filter((adap) =>
+			chain && adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name) ? true : false
+		);
+	}, [chain, disabledAdapters]);
+
 	const res = useQueries({
-		queries: adapters
-			.filter((adap) => adap.chainToId[chain] !== undefined && !disabledAdapters.includes(adap.name))
-			.map<UseQueryOptions<IRoute>>((adapter) => {
-				return {
-					queryKey: ['routes', adapter.name, chain, from, to, amount, JSON.stringify(omit(extra, 'amount'))],
-					queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
-					refetchInterval: customRefetchInterval || REFETCH_INTERVAL,
-					refetchOnWindowFocus: false,
-					refetchIntervalInBackground: false
-				};
-			})
+		// @ts-ignore
+		queries: chainAdapters.map<UseQueryOptions<IAdapterRoute>>((adapter) => {
+			return {
+				queryKey: [
+					'routes',
+					adapter.name,
+					chain,
+					from,
+					to,
+					amount,
+					JSON.stringify(omit(extra, 'amount', 'gasPriceData'))
+				],
+				queryFn: () => getAdapterRoutes({ adapter, chain, from, to, amount, extra }),
+				staleTime: customRefetchInterval || REFETCH_INTERVAL,
+				refetchInterval: customRefetchInterval || REFETCH_INTERVAL
+			};
+		})
 	});
-	const data = res?.filter((r) => r.status === 'success') ?? [];
-	const resData = res?.filter((r) => r.status === 'success' && !!r.data && r.data.price) ?? [];
-	const loadingRoutes =
-		res
-			?.map((r, i) => [adapters[i].name, r])
-			?.filter((r: [string, UseQueryResult<IRoute>]) => r[1].status === 'loading') ?? [];
+
+	const { lastFetched, loadingRoutes, data, isLoading } = useMemo(() => {
+		const loadingRoutes =
+			res
+				?.map((r, i) => [chainAdapters[i].name, r] as [string, UseQueryResult<IAdapterRoute>])
+				?.filter((r) => r[1].isLoading) ?? [];
+
+		const data =
+			res?.filter((r) => r.status === 'success' && !!r.data && r.data.price).map((r) => r.data as IRoute) ?? [];
+
+		return {
+			lastFetched:
+				res
+					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
+					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)?.[0]?.dataUpdatedAt ?? Date.now(),
+			loadingRoutes,
+			data,
+			isLoading: res.length > 0 && data.length === 0
+		};
+	}, [res, chainAdapters]);
 
 	return {
-		isLoaded: loadingRoutes.length === 0,
-		isLoading: data.length >= 1 ? false : true,
-		data: resData?.map((r) => r.data) ?? [],
+		isLoading,
+		data,
 		refetch: () => res?.forEach((r) => r.refetch()),
-		lastFetched:
-			first(
-				data
-					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
-					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)
-					.map((d) => d.dataUpdatedAt)
-			) || null,
+		lastFetched,
 		loadingRoutes
 	};
 }

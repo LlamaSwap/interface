@@ -1,13 +1,15 @@
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
-import { providers } from '../../rpcs';
 import { sendTx } from '../../utils/sendTx';
 import { ABI } from './abi';
+import { encodeFunctionData, zeroAddress } from 'viem';
+import { readContract } from 'wagmi/actions';
+import { config } from '../../../WalletProvider';
+import { chainsMap } from '../../constants';
 
 // Source https://github.com/yieldyak/yak-aggregator
 export const chainToId = {
 	avax: '0xC4729E56b831d74bBc18797e0e17A295fA77488c',
-	canto : '0xE9A2a22c92949d52e963E43174127BEb50739dcF',
+	canto: '0xE9A2a22c92949d52e963E43174127BEb50739dcF'
 };
 
 export const name = 'YieldYak';
@@ -20,29 +22,45 @@ export function approvalAddress(chain: string) {
 const nativeToken = {
 	avax: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
 	canto: '0x826551890dc65655a0aceca109ab11abdbd7a07b'
-}
+};
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: any) {
-	const provider = providers[chain];
-	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, provider);
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken[chain] : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken[chain] : to;
+	const tokenFrom = from === zeroAddress ? nativeToken[chain] : from;
+	const tokenTo = to === zeroAddress ? nativeToken[chain] : to;
 
-	const gasPrice = ethers.BigNumber.from(extra.gasPriceData?.gasPrice ?? '1062500000000');
+	const gasPrice = extra.gasPriceData?.gasPrice ?? '1062500000000';
 
-	const data = await routerContract.findBestPathWithGas(amount, tokenFrom, tokenTo, 3, gasPrice);
-	const expectedAmount = data[0][data[0].length - 1]
+	const data = (await readContract(config, {
+		address: chainToId[chain],
+		abi: ABI,
+		functionName: 'findBestPathWithGas',
+		args: [amount, tokenFrom, tokenTo, 3, gasPrice],
+		chainId: chainsMap[chain]
+	})) as {
+		amounts: Array<bigint>;
+		adapters: Array<`0x${string}`>;
+		gasEstimate: bigint;
+		path: Array<`0x${string}`>;
+	};
+
+	const expectedAmount = data.amounts[data.amounts.length - 1];
+
 	const minAmountOut = BigNumber(expectedAmount.toString())
 		.times(1 - Number(extra.slippage) / 100)
 		.toFixed(0);
 
-	const gas = data.gasEstimate.add(21000);
+	const gas = data.gasEstimate + 21000n;
 
 	return {
 		amountReturned: expectedAmount.toString(),
 		estimatedGas: gas.toString(), // Gas estimates only include gas-cost of swapping and querying on adapter and not intermediate logic.
 		rawQuote: {
-			offer: data,
+			// convert bigint to string so when we send swap event to our server, app doesn't crash serializing bigint values
+			offer: {
+				...data,
+				amounts: data.amounts.map((amount) => String(amount)),
+				gasEstimate: String(data.gasEstimate)
+			},
 			minAmountOut
 		},
 		tokenApprovalAddress: chainToId[chain],
@@ -50,25 +68,25 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ chain, signer, rawQuote, from, to }) {
-	const fromAddress = await signer.getAddress();
+export async function swap({ chain, fromAddress, rawQuote, from, to }) {
+	const data = encodeFunctionData({
+		abi: ABI,
+		functionName:
+			from === zeroAddress ? 'swapNoSplitFromAVAX' : to === zeroAddress ? 'swapNoSplitToAVAX' : 'swapNoSplit',
+		args: [
+			[rawQuote.offer.amounts[0], rawQuote.minAmountOut, rawQuote.offer.path, rawQuote.offer.adapters],
+			fromAddress,
+			0
+		]
+	});
 
-	const routerContract = new ethers.Contract(chainToId[chain], ABI.yieldYakRouter, signer).populateTransaction;
+	const tx = {
+		to: chainToId[chain],
+		data,
+		...(from === zeroAddress ? { value: rawQuote.offer.amounts[0] } : {})
+	};
 
-	const swapFunc = (() => {
-		if (from === ethers.constants.AddressZero) return routerContract.swapNoSplitFromAVAX;
-		if (to === ethers.constants.AddressZero) return routerContract.swapNoSplitToAVAX;
-		return routerContract.swapNoSplit;
-	})();
-
-	const tx = await swapFunc(
-		[rawQuote.offer[0][0], rawQuote.minAmountOut, rawQuote.offer[2], rawQuote.offer[1]],
-		fromAddress,
-		0,
-		from === ethers.constants.AddressZero ? { value: rawQuote.offer[0][0] } : {}
-	);
-
-	const res = await sendTx(signer, chain, tx);
+	const res = await sendTx(tx);
 
 	return res;
 }
