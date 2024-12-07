@@ -10,7 +10,11 @@ module.exports = {
 			{
 				test: /\.ts$/,
 				use: 'ts-loader',
-				include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, '../src/components/Aggregator')],
+				include: [
+					path.resolve(__dirname, 'src'),
+					path.resolve(__dirname, '../src/components/Aggregator'),
+					path.resolve(__dirname, '../src/components/WalletProvider')
+				],
 				exclude: /node_modules/
 			},
 			{

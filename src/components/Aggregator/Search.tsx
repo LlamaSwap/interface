@@ -147,7 +147,20 @@ export default function Search({ tokens, setTokens }: Props) {
 
 	const toggle = () => setIsOpen((open) => !open);
 
-	const [data, setData] = useState([]);
+	const [data, setData] = useState<
+		Array<{
+			token0: {
+				symbol: string;
+				address: string;
+			};
+			token1: {
+				symbol: string;
+				address: string;
+			};
+			label: string;
+			value: string;
+		}>
+	>([]);
 
 	const onRowClick = (pair) => {
 		setTokens(pair);
@@ -181,7 +194,18 @@ export default function Search({ tokens, setTokens }: Props) {
 						value: `${token0.address}-${token1.address}`
 					}))
 				),
-			[]
+			[] as Array<{
+				token0: {
+					symbol: string;
+					address: string;
+				};
+				token1: {
+					symbol: string;
+					address: string;
+				};
+				label: string;
+				value: string;
+			}>
 		);
 
 		setData(data);

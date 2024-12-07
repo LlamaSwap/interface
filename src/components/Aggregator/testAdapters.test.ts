@@ -1,10 +1,10 @@
 import { chainsMap } from './constants';
 import { getAllChains } from './router';
 import { adapters } from './list';
-import { BigNumber, ethers } from 'ethers';
 import { redirectQuoteReq } from './adapters/utils';
 import { nativeTokens } from './nativeTokens';
 import { getTokenList } from '~/props/getTokenList';
+import { zeroAddress } from 'viem';
 
 /*
 Test matrix
@@ -54,7 +54,7 @@ export async function testAdapters(addTest: (test: any) => void) {
 			await Promise.all(
 				tokenCombinations.map(async (tokens) => {
 					const fromAddresses = [
-						ethers.constants.AddressZero,
+						zeroAddress,
 						'0x000000000000000000000000000000000000dEaD' // Just used as a random address that has tokens (so we dont get balance errors)
 					];
 					await Promise.all(
@@ -65,7 +65,7 @@ export async function testAdapters(addTest: (test: any) => void) {
 							const toToken = tokens[1];
 							const extra = {
 								gasPriceData: {
-									gasPrice: BigNumber.from('0x05d21dba00') // for yield yak, hardcoded to 25 nAVAX which was avax's gas price when I write this
+									gasPrice: Number('0x05d21dba00') // for yield yak, hardcoded to 25000000000n AVAX which was avax's gas price when I write this
 								},
 								userAddress,
 								amount, // idk why this is here lol
@@ -83,7 +83,7 @@ export async function testAdapters(addTest: (test: any) => void) {
 												chain,
 												from: fromToken.symbol,
 												to: toToken.symbol,
-												userAddress: userAddress === ethers.constants.AddressZero,
+												userAddress: userAddress === zeroAddress,
 												privacy: extra.isPrivacyEnabled,
 												adapter: adapter.name
 											};
@@ -110,17 +110,18 @@ export async function testAdapters(addTest: (test: any) => void) {
 											} catch (e) {
 												addTest({ ...testParams, success: 'x' });
 												console.error(`Failed to get data for ${adapter.name} on ${chain}`);
+												return;
 											}
 										})
 								)
 							).filter((p) => p !== undefined);
 							const reportUnder = (property: string) => {
 								if (prices.length < 2) return;
-								const sorted = prices.sort((a, b) => b.price[property] - a.price[property]);
+								const sorted = prices.sort((a, b) => b!.price[property] - a!.price[property]);
 								const mid = Math.round(prices.length / 2);
-								const median = Number(sorted[mid].price[property]);
+								const median = Number(sorted[mid]?.price[property] ?? 0);
 								prices.forEach((p) => {
-									if (property === 'estimatedGas' && p.adapter === 'CowSwap') return;
+									if (!p || (property === 'estimatedGas' && p.adapter === 'CowSwap')) return;
 									const value = Number(p.price[property]);
 									if (value < 0.8 * median) {
 										addTest({

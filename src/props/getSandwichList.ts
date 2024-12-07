@@ -19,7 +19,7 @@ export const getSandwichList = async () => {
 				.reduce(
 					(acc, pair) => ({
 						...acc,
-						[normalizeTokens(pair.token0?.address, pair?.token1?.address).join('')]: true
+						[(normalizeTokens(pair.token0?.address, pair?.token1?.address) as Array<string>).join('')]: true
 					}),
 					{}
 				) ?? {};
@@ -45,12 +45,17 @@ export const getSandwichList = async () => {
 
 		const highLiqPairs = pairsData
 			.filter((pair) => pair?.liquidity?.usd > LIQUDITY_THRESHOLD_USD)
-			.map((pair) => ({ ...pair, id: normalizeTokens(pair?.baseToken?.address, pair?.quoteToken?.address).join('') }));
+			.map((pair) => ({
+				...pair,
+				id: (normalizeTokens(pair?.baseToken?.address, pair?.quoteToken?.address) as Array<string>).join('')
+			}));
 
 		const sandwichList = {
 			ethereum: pairsData.reduce((acc, pair) => {
 				const pairData = sandwichData.find(({ address }) => address.toLowerCase() === pair?.pairAddress?.toLowerCase());
-				const pairId = normalizeTokens(pairData?.tokens[0]?.address, pairData?.tokens[1]?.address).join('');
+				const pairId = (
+					normalizeTokens(pairData?.tokens[0]?.address, pairData?.tokens[1]?.address) as Array<string>
+				).join('');
 				if (
 					!pairData ||
 					(pairData.sandwiched / pairData.trades) * 100 < PERCENT_SANDWICHED_TRADES ||

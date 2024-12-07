@@ -30,7 +30,7 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 	}
 	let formattedNum = String();
 	let num = parseFloat(number);
-	const isNegative = num < 0;
+	// const isNegative = num < 0;
 
 	// const currencyMark = isNegative ? `${currencySymbol}-` : currencySymbol
 	// const normalMark = isNegative ? '-' : ''

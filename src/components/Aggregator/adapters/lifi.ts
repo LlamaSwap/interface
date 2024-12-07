@@ -1,8 +1,9 @@
 // Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
 
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import { ExtraData } from '../types';
+import { zeroAddress } from 'viem';
+import { sendTx } from '../utils/sendTx';
 
 export const chainToId = {
 	ethereum: 'eth',
@@ -30,15 +31,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
 
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenFrom = from === zeroAddress ? nativeToken : from;
+	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const data = await fetch(
 		`https://li.quest/v1/quote?fromChain=${chainToId[chain]}&toChain=${
 			chainToId[chain]
 		}&fromToken=${tokenFrom}&toToken=${tokenTo}&fromAmount=${amount}&fromAddress=${
-			extra.userAddress === '0x0000000000000000000000000000000000000000'
-				? '0x1000000000000000000000000000000000000001'
-				: extra.userAddress
+			extra.userAddress === zeroAddress ? '0x1000000000000000000000000000000000000001' : extra.userAddress
 		}&slippage=${+extra.slippage / 100}`
 	).then((r) => r.json());
 
@@ -55,14 +54,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ signer, rawQuote, chain }) {
-	const tx = await signer.sendTransaction({
+export async function swap({ rawQuote, chain }) {
+	const tx = await sendTx({
 		from: rawQuote.transactionRequest.from,
 		to: rawQuote.transactionRequest.to,
 		data: rawQuote.transactionRequest.data,
 		value: rawQuote.transactionRequest.value,
-		...(chain === 'optimism' && { gasLimit: rawQuote.gasLimit })
+		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
+
 	return tx;
 }
 

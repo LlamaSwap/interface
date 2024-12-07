@@ -1,12 +1,17 @@
-import { ethers } from "ethers";
+import { estimateGas, sendTransaction } from 'wagmi/actions';
+import { config } from '../../WalletProvider';
 
-export async function sendTx(signer:ethers.Signer, chain:string, txObject:any){
-    if(txObject.data === "0x" || typeof txObject.to !== "string"){
-        throw new Error("Malformed tx") // Should never happen
-    }
-    if(txObject.gasLimit === undefined){
-        const gasPrediction = await signer.estimateGas(txObject)
-        txObject.gasLimit = gasPrediction.mul(14).div(10) // Increase gas +40%
-    }
-    return signer.sendTransaction(txObject);
+export async function sendTx(txObject: any) {
+	if (txObject.data === '0x' || typeof txObject.to !== 'string') {
+		throw new Error('Malformed tx'); // Should never happen
+	}
+	if (txObject.gas === undefined) {
+		const gasPrediction = await estimateGas(config, txObject).catch(() => null);
+
+		if (gasPrediction) {
+			txObject.gas = (gasPrediction * 14n) / 10n; // Increase gas +40%
+		}
+	}
+
+	return sendTransaction(config, txObject);
 }

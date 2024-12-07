@@ -61,6 +61,21 @@ export const formatErrorToast = (error, isFailed = false) => {
 	} as const;
 };
 
+export const formatUnknownErrorToast = ({ title, message }) => {
+	return {
+		title: title,
+		description: message,
+		status: 'error',
+		duration: 10000,
+		isClosable: true,
+		position: 'top-right',
+		containerStyle: {
+			width: '100%',
+			maxWidth: '300px'
+		}
+	} as const;
+};
+
 export const formatSubmittedToast = (variables) => {
 	const fromToken = variables.tokens.fromToken;
 	const toToken = variables.tokens.toToken;
