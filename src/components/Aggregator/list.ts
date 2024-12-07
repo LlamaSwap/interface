@@ -32,6 +32,6 @@ export const inifiniteApprovalAllowed = [
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
 	[matchaGasless.name]: true,
-	[matchaV2.name]: true
+	// [matchaV2.name]: true
 	//[hashflow.name]: true
 };
