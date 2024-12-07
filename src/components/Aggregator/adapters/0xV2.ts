@@ -1,5 +1,5 @@
-import { sendTx } from '../utils/sendTx';
 import { numberToHex, size, zeroAddress, concat, type Hex } from 'viem';
+import { sendTx } from '../utils/sendTx';
 
 export const name = 'Matcha/0x v2';
 export const token = 'ZRX';
@@ -89,13 +89,13 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 const MAGIC_CALLDATA_STRING = 'f'.repeat(130); // used when signing the eip712 message
 
 export async function swap({ fromAddress, rawQuote, signature }) {
+	// signature not needed for unwrapping native tokens
 	const signatureLengthInHex = signature
 		? numberToHex(size(signature), {
 				signed: false,
 				size: 32
 			})
 		: null;
-
 	const data = signature
 		? concat([rawQuote.transaction.data, signatureLengthInHex, signature])
 		: rawQuote.transaction.data;
@@ -103,9 +103,8 @@ export async function swap({ fromAddress, rawQuote, signature }) {
 	const tx = await sendTx({
 		from: fromAddress,
 		to: rawQuote.transaction.to,
-		// signature not needed for unwrapping native tokens
 		data: data.replace(MAGIC_CALLDATA_STRING, signature.slice(2)) as Hex,
-		value: rawQuote.transaction.value,
+		value: rawQuote.transaction.value
 	});
 
 	return tx;
