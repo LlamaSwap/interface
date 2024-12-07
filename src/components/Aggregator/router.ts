@@ -42,7 +42,8 @@ export async function swap({
 	adapter,
 	rawQuote,
 	tokens,
-	approvalData
+	approvalData,
+	signature
 }) {
 	const aggregator = adaptersMap[adapter];
 
@@ -56,7 +57,8 @@ export async function swap({
 			slippage,
 			rawQuote,
 			tokens,
-			approvalData
+			approvalData,
+			signature
 		});
 		return res;
 	} catch (e) {
@@ -72,6 +74,22 @@ export async function gaslessApprove({ adapter, rawQuote, isInfiniteApproval }) 
 		const res = await aggregator.gaslessApprove({
 			rawQuote,
 			isInfiniteApproval
+		});
+		return res;
+	} catch (e) {
+		throw e;
+	}
+}
+
+export async function signatureForSwap({ signTypedDataAsync, adapter, rawQuote }) {
+	const aggregator = adaptersMap[adapter];
+
+	if (!aggregator.signatureForSwap) return;
+
+	try {
+		const res = await aggregator.signatureForSwap({
+			signTypedDataAsync,
+			rawQuote
 		});
 		return res;
 	} catch (e) {
