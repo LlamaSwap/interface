@@ -18,7 +18,7 @@ import * as odos from './adapters/odos';
 import * as matchaGasless from './adapters/0xGasless';
 import * as matchaV2 from './adapters/0xV2';
 
-export const adapters = [matcha, inch, cowswap, paraswap, kyberswap, odos, matchaGasless];
+export const adapters = [matcha, inch, cowswap, paraswap, kyberswap, odos, matchaGasless, matchaV2];
 
 export const inifiniteApprovalAllowed = [
 	matcha.name,

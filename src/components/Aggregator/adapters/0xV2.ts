@@ -15,7 +15,9 @@ export const chainToId = {
 	base: '8453',
 	linea: '59144',
 	scroll: '534352',
-	blast: '43114'
+	blast: '43114',
+	mantle: '5000',
+	mode: '34443'
 };
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
@@ -89,7 +91,7 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 const MAGIC_CALLDATA_STRING = 'f'.repeat(130); // used when signing the eip712 message
 
 export async function swap({ fromAddress, rawQuote, signature }) {
-	// signature not needed for unwrapping native tokens
+	// signature not needed if using allowance holder api
 	const signatureLengthInHex = signature
 		? numberToHex(size(signature), {
 				signed: false,
