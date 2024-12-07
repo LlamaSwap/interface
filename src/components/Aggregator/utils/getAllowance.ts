@@ -1,5 +1,7 @@
-import { ethers } from 'ethers';
-import { providers } from '../rpcs';
+import { erc20Abi, zeroAddress } from 'viem';
+import { readContract } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
+import { chainsMap } from '../constants';
 
 // To change the approve amount you first have to reduce the addresses`
 //  allowance to zero by calling `approve(_spender, 0)` if it is not
@@ -17,42 +19,22 @@ export async function getAllowance({
 	spender
 }: {
 	token?: string;
-	chain: string;
+	chain?: string;
 	address?: `0x${string}`;
 	spender?: `0x${string}`;
 }) {
-	if (!spender || !token || !address || token === ethers.constants.AddressZero) {
+	if (!spender || !token || !address || token === zeroAddress || !chain) {
 		return null;
 	}
 	try {
-		const provider = providers[chain];
-		const tokenContract = new ethers.Contract(
-			token,
-			[
-				{
-					type: 'function',
-					name: 'allowance',
-					stateMutability: 'view',
-					inputs: [
-						{
-							name: 'owner',
-							type: 'address'
-						},
-						{
-							name: 'spender',
-							type: 'address'
-						}
-					],
-					outputs: [
-						{
-							type: 'uint256'
-						}
-					]
-				}
-			],
-			provider
-		);
-		const allowance = await tokenContract.allowance(address, spender);
+		const allowance = await readContract(config, {
+			address: token as `0x${string}`,
+			abi: erc20Abi,
+			functionName: 'allowance',
+			args: [address, spender],
+			chainId: chainsMap[chain]
+		});
+
 		return allowance;
 	} catch (error) {
 		throw new Error(error instanceof Error ? `[Allowance]:${error.message}` : '[Allowance]: Failed to fetch allowance');
