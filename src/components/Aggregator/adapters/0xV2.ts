@@ -1,6 +1,5 @@
-import { BigNumber, ethers } from 'ethers';
 import { sendTx } from '../utils/sendTx';
-import { getAllowance, oldErc } from '../utils/getAllowance';
+import { numberToHex, size, zeroAddress, concat } from 'viem';
 
 export const name = 'Matcha/0x v2';
 export const token = 'ZRX';
@@ -26,8 +25,8 @@ const permit2Address = '0x000000000022d473030f116ddee9f6b43ac78ba3';
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// amount should include decimals
 
-	const tokenFrom = from === ethers.constants.AddressZero ? nativeToken : from;
-	const tokenTo = to === ethers.constants.AddressZero ? nativeToken : to;
+	const tokenFrom = from === zeroAddress ? nativeToken : from;
+	const tokenTo = to === zeroAddress ? nativeToken : to;
 
 	if (extra.amountOut && extra.amountOut !== '0') {
 		throw new Error('Invalid query params');
@@ -35,10 +34,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const amountParam = `sellAmount=${amount}`;
 
-	const taker =
-		extra.userAddress === '0x0000000000000000000000000000000000000000'
-			? '0x1000000000000000000000000000000000000000'
-			: extra.userAddress;
+	const taker = extra.userAddress === zeroAddress ? '0x1000000000000000000000000000000000000000' : extra.userAddress;
 
 	// only expects integer
 	const slippage = (extra.slippage * 100) | 0;
@@ -47,7 +43,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
 		{
 			headers: {
-				'0x-api-key': process.env.OX_API_KEY,
+				'0x-api-key': process.env.OX_API_KEY as string,
 				'0x-version': 'v2'
 			}
 		}
@@ -79,8 +75,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-const MAGIC_CALLDATA_STRING = 'f'.repeat(130); // used when signing the eip712 message
-
 export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 	const signature = await signTypedDataAsync({
 		domain: rawQuote.permit2.eip712.domain,
@@ -92,20 +86,19 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 	return signature;
 }
 
-export async function swap({ signer, rawQuote, chain, signature }) {
-	const fromAddress = await signer.getAddress();
+export async function swap({ fromAddress, rawQuote, signature }) {
+	const signatureLengthInHex = signature
+		? numberToHex(size(signature), {
+				signed: false,
+				size: 32
+			})
+		: null;
 
-	const signatureLengthInHex = signature ? ethers.utils.hexValue(ethers.utils.hexDataLength(signature)) : null;
-
-	const tx = await sendTx(signer, chain, {
+	const tx = await sendTx({
 		from: fromAddress,
 		to: rawQuote.transaction.to,
 		// signature not needed for unwrapping native tokens
-		data: signature
-			? rawQuote.transaction.data.includes(MAGIC_CALLDATA_STRING)
-				? rawQuote.transaction.data.replace(MAGIC_CALLDATA_STRING, signature.slice(2))
-				: ethers.utils.hexConcat([rawQuote.transaction.data, signatureLengthInHex, signature])
-			: rawQuote.transaction.data,
+		data: signature ? concat([rawQuote.transaction.data, signatureLengthInHex, signature]) : rawQuote.transaction.data,
 		value: rawQuote.transaction.value
 	});
 
@@ -119,32 +112,3 @@ export const getTx = ({ rawQuote }) => ({
 	data: rawQuote.transaction.data,
 	value: rawQuote.transaction.value
 });
-
-async function isTokenApproved({ token, chain, amount, address, spender }) {
-	try {
-		const allowance = await getAllowance({
-			token,
-			chain,
-			address,
-			spender
-		});
-
-		const isOld = token ? oldErc.includes(token.toLowerCase()) : false;
-
-		const shouldRemoveApproval =
-			isOld &&
-			allowance &&
-			amount &&
-			!Number.isNaN(Number(amount)) &&
-			allowance.lt(BigNumber.from(amount)) &&
-			!allowance.eq(0);
-
-		if (!shouldRemoveApproval && allowance.gte(BigNumber.from(amount))) {
-			return true;
-		}
-
-		return false;
-	} catch (error) {
-		return false;
-	}
-}
