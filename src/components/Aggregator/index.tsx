@@ -764,7 +764,7 @@ export function AggregatorContainer({ tokenList }) {
 		: false;
 
 	const isUSDTNotApprovedOnEthereum =
-		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval;
+		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval ? true : false;
 
 	const signatureForSwapMutation = useMutation({
 		mutationFn: (params: { adapter: string; signTypedDataAsync: typeof signTypedDataAsync; rawQuote: any }) =>
