@@ -5,7 +5,7 @@ export async function testApprovalAddresses() {
 	await Promise.all(
 		Object.keys(chainToId).map(async (chain) => {
 			const { address: tokenApprovalAddress } = await fetch(
-				`https://api-defillama.1inch.io/v4.0/${chainToId[chain]}/approve/spender`,
+				`https://api-defillama.1inch.io/v6.0/${chainToId[chain]}/approve/spender`,
 				{
 					headers: { 'auth-key': process.env.INCH_API_KEY! }
 				}
