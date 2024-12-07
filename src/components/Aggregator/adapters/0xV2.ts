@@ -45,7 +45,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
 		{
 			headers: {
-				'0x-api-key': "e3fae20a-652c-4341-8013-7de52e31029b",
+				'0x-api-key': process.env.OX_API_KEY as string,
 				'0x-version': 'v2'
 			}
 		}
