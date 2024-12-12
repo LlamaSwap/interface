@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { ExtraData } from '../types';
 import { sendTx } from '../utils/sendTx';
@@ -34,51 +33,61 @@ export function approvalAddress() {
 }
 
 const nativeToken = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+const clientId = "llamaswap"
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
 	const tokenFrom = from === zeroAddress ? nativeToken : from;
 	const tokenTo = to === zeroAddress ? nativeToken : to;
 
-	const data = await fetch(
+	const quote = await fetch(
 		`https://aggregator-api.kyberswap.com/${
 			chainToId[chain]
-		}/route/encode?tokenIn=${tokenFrom}&tokenOut=${tokenTo}&amountIn=${amount}&to=${
-			extra.userAddress
-		}&saveGas=0&gasInclude=1&slippageTolerance=${+extra.slippage * 100}&clientData={"source":"DefiLlama"}`,
+		}/api/v1/routes?tokenIn=${tokenFrom}&tokenOut=${tokenTo}&amountIn=${amount}&gasInclude=true`,
 		{
 			headers: {
-				'Accept-Version': 'Latest'
+				'x-client-id': clientId
 			}
 		}
 	).then((r) => r.json());
 
-	let gas = data.totalGas;
+	const tx = await fetch(
+		`https://aggregator-api.kyberswap.com/${chainToId[chain]}/api/v1/route/build`,
+		{
+			headers: {
+				'x-client-id': clientId
+			},
+			method: "POST",
+			body: JSON.stringify({
+				routeSummary: quote.data.routeSummary, 
+				sender: extra.userAddress,
+				recipient: extra.userAddress,
+				slippageTolerance: +extra.slippage * 100,
+				source: clientId
+			})
+		}
+	).then((r) => r.json());
 
-	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
-	if (chain === 'arbitrum') gas = await applyArbitrumFees(data.routerAddress, data.encodedSwapData, gas);
+	let gas = tx.data.gas;
+
+	if (chain === 'arbitrum') gas = await applyArbitrumFees(tx.data.routerAddress, tx.data.data, gas);
 
 	return {
-		amountReturned: data.outputAmount,
+		amountReturned: tx.data.amountOut,
 		estimatedGas: gas,
-		tokenApprovalAddress: data.routerAddress,
-		rawQuote: { ...data, gasLimit: gas, slippage: extra.slippage },
+		tokenApprovalAddress: tx.data.routerAddress,
+		rawQuote: tx.data,
 		logo: 'https://assets.coingecko.com/coins/images/14899/small/RwdVsGcw_400x400.jpg?1618923851'
 	};
 }
 
 export async function swap({ fromAddress, from, rawQuote, chain }) {
-	if (rawQuote.slippage < 0.01) {
-		throw { reason: "Kyberswap doesn't support slippage below 0.01%" };
-	}
-
 	const transactionOption: Record<string, string> = {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
-		data: rawQuote.encodedSwapData,
-		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
+		data: rawQuote.data,
 	};
 
-	if (from === zeroAddress) transactionOption.value = rawQuote.inputAmount;
+	if (from === zeroAddress) transactionOption.value = rawQuote.amountIn;
 
 	const tx = await sendTx(transactionOption);
 
@@ -88,5 +97,5 @@ export const getTxData = ({ rawQuote }) => rawQuote?.encodedSwapData;
 
 export const getTx = ({ rawQuote }) => ({
 	to: rawQuote.routerAddress,
-	data: rawQuote.encodedSwapData
+	data: rawQuote.data
 });
