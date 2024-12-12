@@ -35,8 +35,8 @@ provider:
     - Effect: 'Allow'
       Action:
         - 's3:ListBucket'
-        - 's3:*Object*'
-      Resource: 'arn:aws:s3:::llama-tokenlists'
+        - 's3:*'
+      Resource: 'arn:aws:s3:::llama-tokenlists/*'
   environment:
     stage: ${self:custom.stage}
 

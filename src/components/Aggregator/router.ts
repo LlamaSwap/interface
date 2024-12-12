@@ -24,7 +24,12 @@ export function getAllChains() {
 			};
 		})
 		.filter(Boolean);
-	return chainsOptions;
+	return chainsOptions as Array<{
+		value: string;
+		label: string;
+		chainId: number;
+		logoURI?: string | null;
+	}>;
 }
 
 export async function swap({
@@ -32,8 +37,7 @@ export async function swap({
 	from,
 	to,
 	amount,
-	signer,
-	signTypedDataAsync,
+	fromAddress,
 	slippage = '1',
 	adapter,
 	rawQuote,
@@ -48,8 +52,7 @@ export async function swap({
 			from,
 			to,
 			amount,
-			signer,
-			signTypedDataAsync,
+			fromAddress,
 			slippage,
 			rawQuote,
 			tokens,
@@ -60,14 +63,13 @@ export async function swap({
 		throw e;
 	}
 }
-export async function gaslessApprove({ signTypedDataAsync, adapter, rawQuote, isInfiniteApproval }) {
+export async function gaslessApprove({ adapter, rawQuote, isInfiniteApproval }) {
 	const aggregator = adaptersMap[adapter];
 
 	if (!aggregator.gaslessApprove) return;
 
 	try {
 		const res = await aggregator.gaslessApprove({
-			signTypedDataAsync,
 			rawQuote,
 			isInfiniteApproval
 		});

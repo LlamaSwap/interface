@@ -7,7 +7,9 @@ import { SearchIcon } from '@chakra-ui/icons';
 const StyledRow = styled.div`
 	padding: 10px 20px;
 	background-color: ${({ theme }) => theme.bg1};
-	transition: background-color 0.3s, transform 0.3s;
+	transition:
+		background-color 0.3s,
+		transform 0.3s;
 	border-radius: 15px;
 	margin: 5px 0;
 	color: ${({ theme }) => theme.text1};
@@ -101,7 +103,7 @@ export const InfiniteList = ({ items, setToken, search, setIsSearch, isSearch })
 							const item = filteredItems[virtualRow.index];
 							return (
 								<div
-									key={virtualRow.key}
+									key={String(virtualRow.key)}
 									style={{
 										position: 'absolute',
 										top: 0,

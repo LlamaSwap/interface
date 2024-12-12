@@ -79,4 +79,4 @@ export const ABI = [
 		stateMutability: 'payable',
 		type: 'function'
 	}
-];
+] as const;
