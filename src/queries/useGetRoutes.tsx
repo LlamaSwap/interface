@@ -24,6 +24,7 @@ interface IPrice {
 	isGaslessApproval?: boolean;
 	feeAmount?: number;
 	rawQuote?: {};
+	isSignatureNeededForSwap?: boolean;
 }
 
 interface IAdapterRoute {
