@@ -718,7 +718,7 @@ export function AggregatorContainer({ tokenList }) {
 			? +selectedRoute.fromAmount > Number(balance.data.value)
 			: false;
 
-	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '';
+	const slippageIsWrong = Number.isNaN(Number(slippage)) || slippage === '';
 
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
@@ -970,7 +970,7 @@ export function AggregatorContainer({ tokenList }) {
 		if (
 			selectedRoute &&
 			selectedRoute.price &&
-			!slippageIsWorng &&
+			!slippageIsWrong &&
 			selectedChain &&
 			finalSelectedFromToken &&
 			finalSelectedToToken &&
@@ -1268,7 +1268,7 @@ export function AggregatorContainer({ tokenList }) {
 														!(finalSelectedFromToken && finalSelectedToToken) ||
 														insufficientBalance ||
 														!selectedRoute ||
-														slippageIsWorng ||
+														slippageIsWrong ||
 														!isAmountSynced ||
 														isConfirmingInfiniteApproval ||
 														isFetchingAllowance
@@ -1290,7 +1290,7 @@ export function AggregatorContainer({ tokenList }) {
 														</>
 													) : isApproved ? (
 														`Swap via ${selectedRoute?.name}`
-													) : slippageIsWorng ? (
+													) : slippageIsWrong ? (
 														'Set Slippage'
 													) : (
 														'Approve'
@@ -1540,7 +1540,7 @@ export function AggregatorContainer({ tokenList }) {
 																	!(finalSelectedFromToken && finalSelectedToToken) ||
 																	insufficientBalance ||
 																	!selectedRoute ||
-																	slippageIsWorng ||
+																	slippageIsWrong ||
 																	!isAmountSynced ||
 																	isConfirmingInfiniteApproval ||
 																	isFetchingAllowance
@@ -1562,7 +1562,7 @@ export function AggregatorContainer({ tokenList }) {
 																	</>
 																) : isApproved ? (
 																	`Swap via ${selectedRoute?.name}`
-																) : slippageIsWorng ? (
+																) : slippageIsWrong ? (
 																	'Set Slippage'
 																) : (
 																	'Approve'
