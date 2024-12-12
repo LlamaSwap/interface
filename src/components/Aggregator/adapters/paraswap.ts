@@ -43,7 +43,7 @@ export async function getQuote(
 	const side = amountOut && amountOut !== '0' ? 'BUY' : 'SELL';
 	const finalAmount = side === 'BUY' ? amountOut : amount;
 	const data = await fetch(
-		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${finalAmount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=${side}&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders`
+		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${finalAmount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=${side}&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders&version=6.2`
 	).then((r) => r.json());
 
 	const dataSwap =
@@ -59,8 +59,9 @@ export async function getQuote(
 						userAddress: userAddress,
 						partner: partner,
 						partnerAddress: defillamaReferrerAddress,
-						positiveSlippageToUser: false,
+						takeSurplus: true,
 						priceRoute: data.priceRoute,
+						isCapSurplus: true,
 						...(side === 'BUY' ? { destAmount: data.priceRoute.destAmount } : { srcAmount: data.priceRoute.srcAmount })
 					}),
 					headers: {
