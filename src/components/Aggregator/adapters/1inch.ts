@@ -60,12 +60,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const [data, swapData] = await Promise.all([
 		fetch(
-			`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true&excludedProtocols=PMM1,PMM2,PMM3,PMM4,PMM2MM1,PMM9,PMM8,PMM11,PMM8_2,PMM12,PMM15,PMM17,PMM18,PMM16,PMM20,PMM22,PMM23`,
+			`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
 			{ headers: authHeader as any }
 		).then((r) => r.json()),
 		extra.userAddress !== zeroAddress
 			? fetch(
-				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true&excludedProtocols=PMM1,PMM2,PMM3,PMM4,PMM2MM1,PMM9,PMM8,PMM11,PMM8_2,PMM12,PMM15,PMM17,PMM18,PMM16,PMM20,PMM22,PMM23`,
+				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
 				{ headers: authHeader as any }
 			).then((r) => r.json())
 			: null
