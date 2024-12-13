@@ -69,6 +69,10 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			: null
 	]);
 
+	if(swapData && swapData.tx.to.toLowerCase() !== tokenApprovalAddress.toLowerCase()){
+		throw new Error("approval address doesn't match")
+	}
+
 	const estimatedGas = data.gas || 0;
 
 	let gas = estimatedGas;
