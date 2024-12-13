@@ -19,7 +19,7 @@ export const chainToId = {
 };
 
 export const name = 'Odos';
-export const token = null;
+export const token = 'ODOS';
 
 const referralCode = 2101375859;
 
