@@ -85,9 +85,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	).then((r) => r.json());
 
-	let gas = tx?.data?.gas ?? quote.data.routeSummary.gas;
+	let gas = tx === null? quote.data.routeSummary.gas : tx.data.gas;
 
-	if(tx){
+	if(tx !== null){
 		if (chain === 'arbitrum') gas = await applyArbitrumFees(tx.data.routerAddress, tx.data.data, gas);
 
 		if(routers[chain].toLowerCase() !== tx.data.routerAddress.toLowerCase()){
@@ -96,15 +96,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	}
 
 	return {
-		amountReturned: tx?.data?.amountOut ?? quote.data.routeSummary.amountOut,
+		amountReturned: tx === null? quote.data.routeSummary.amountOut: tx.data.amountOut,
 		estimatedGas: gas,
 		tokenApprovalAddress: routers[chain],
-		rawQuote: tx?.data ?? {},
+		rawQuote: tx === null? {} : tx.data,
 		logo: 'https://assets.coingecko.com/coins/images/14899/small/RwdVsGcw_400x400.jpg?1618923851'
 	};
 }
 
-export async function swap({ fromAddress, from, rawQuote, chain }) {
+export async function swap({ fromAddress, from, rawQuote }) {
 	const transactionOption: Record<string, string> = {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
@@ -117,7 +117,7 @@ export async function swap({ fromAddress, from, rawQuote, chain }) {
 
 	return tx;
 }
-export const getTxData = ({ rawQuote }) => rawQuote?.encodedSwapData;
+export const getTxData = ({ rawQuote }) => rawQuote?.data;
 
 export const getTx = ({ rawQuote }) => ({
 	to: rawQuote.routerAddress,
