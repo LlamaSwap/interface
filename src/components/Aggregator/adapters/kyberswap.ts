@@ -3,7 +3,7 @@ import { ExtraData } from '../types';
 import { sendTx } from '../utils/sendTx';
 import { zeroAddress } from 'viem';
 
-// https://docs.kyberswap.com/Aggregator/aggregator-api#tag/swap/operation/get-route-encode
+// https://docs.kyberswap.com/kyberswap-solutions/kyberswap-aggregator/aggregator-api-specification/evm-swaps
 export const chainToId = {
 	ethereum: 'ethereum',
 	bsc: 'bsc',
@@ -12,24 +12,42 @@ export const chainToId = {
 	arbitrum: 'arbitrum',
 	avax: 'avalanche',
 	fantom: 'fantom',
-	aurora: 'aurora',
-	bttc: 'bttc',
-	cronos: 'cronos',
 	zksync: 'zksync',
 	polygonzkevm: 'polygon-zkevm',
 	linea: 'linea',
 	base: 'base',
-	//mantle
 	scroll: 'scroll'
+	//mantle
 	//blast
-	//xlayer
+
+	// removed
+	// cronos: 'cronos',
+	// aurora: 'aurora',
+	// bttc: 'bttc',
 };
+
+const universalRouter = "0x6131b5fae19ea4f9d964eac0408e4408b66337b5"
+
+const routers = {
+	ethereum: universalRouter,
+	bsc: universalRouter,
+	polygon: universalRouter,
+	optimism: universalRouter,
+	arbitrum: universalRouter,
+	avax: universalRouter,
+	fantom: universalRouter,
+	zksync: '0x3F95eF3f2eAca871858dbE20A93c01daF6C2e923',
+	polygonzkevm: universalRouter,
+	linea: universalRouter,
+	base: universalRouter,
+	scroll: universalRouter
+}
 
 export const name = 'KyberSwap';
 export const token = 'KNC';
 
 export function approvalAddress() {
-	return '0x00555513Acf282B42882420E5e5bA87b44D8fA6E';
+	return universalRouter;
 }
 
 const nativeToken = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
@@ -50,7 +68,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	).then((r) => r.json());
 
-	const tx = await fetch(
+	const tx = extra.userAddress === zeroAddress? null : await fetch(
 		`https://aggregator-api.kyberswap.com/${chainToId[chain]}/api/v1/route/build`,
 		{
 			headers: {
@@ -67,15 +85,21 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	).then((r) => r.json());
 
-	let gas = tx.data.gas;
+	let gas = tx?.data?.gas ?? quote.data.routeSummary.gas;
 
-	if (chain === 'arbitrum') gas = await applyArbitrumFees(tx.data.routerAddress, tx.data.data, gas);
+	if(tx){
+		if (chain === 'arbitrum') gas = await applyArbitrumFees(tx.data.routerAddress, tx.data.data, gas);
+
+		if(routers[chain].toLowerCase() !== tx.data.routerAddress.toLowerCase()){
+			throw new Error("Approval address doesn't match hardcoded one")
+		}
+	}
 
 	return {
-		amountReturned: tx.data.amountOut,
+		amountReturned: tx?.data?.amountOut ?? quote.data.routeSummary.amountOut,
 		estimatedGas: gas,
-		tokenApprovalAddress: tx.data.routerAddress,
-		rawQuote: tx.data,
+		tokenApprovalAddress: routers[chain],
+		rawQuote: tx?.data ?? {},
 		logo: 'https://assets.coingecko.com/coins/images/14899/small/RwdVsGcw_400x400.jpg?1618923851'
 	};
 }
