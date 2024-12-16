@@ -257,8 +257,8 @@ export const getTopTokensByChain = async (chainId) => {
 			return [chainId, []];
 		}
 
-		const resData = [];
-		const resIncluded = [];
+		const resData:any[] = [];
+		const resIncluded:any[] = [];
 
 		let prevRes = await fetch(
 			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`

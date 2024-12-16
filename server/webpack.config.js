@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
 	entry: slsw.lib.entries,
-	target: 'node',
+	target: 'node18',
 	mode: slsw.lib.webpack.isLocal ? 'development' : 'production',
 	module: {
 		rules: [
@@ -35,7 +35,10 @@ module.exports = {
 			}
 		]
 	},
-	externals: ['sharp', 'ethers'],
+	externals: {
+		'node:crypto': 'commonjs crypto',
+		wagmi: 'wagmi'
+	},
 	resolve: {
 		extensions: ['.ts', '.js', '.json'],
 		alias: {

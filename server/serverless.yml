@@ -46,7 +46,7 @@ custom:
     webpackConfig: ./webpack.config.js
     includeModules:
       forceInclude:
-        - ethers
+        - wagmi
     packager: 'npm'
     excludeFiles: src/**/*.test.ts
   prune:
