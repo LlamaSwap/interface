@@ -99,5 +99,4 @@ resources:
 
 plugins:
   - serverless-webpack-fixed
-  - serverless-offline
   - serverless-prune-plugin
