@@ -55,7 +55,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === zeroAddress ? nativeToken : from;
 	const tokenTo = to === zeroAddress ? nativeToken : to;
-	const authHeader = process.env.INCH_API_KEY ? { 'auth-key': process.env.INCH_API_KEY as string } : {};
+	const authHeader = process.env.INCH_API_KEY ? { 'Authorization': `Bearer ${process.env.INCH_API_KEY as string}` } : {};
 	const tokenApprovalAddress = spenders[chain];
 
 	const [data, swapData] = await Promise.all([
