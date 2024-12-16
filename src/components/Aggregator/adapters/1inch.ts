@@ -63,7 +63,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		).then((r) => r.json()),
 		extra.userAddress !== zeroAddress
 			? fetch(
-				`https://api-defillama.1inch.io/v6.0/${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true&excludedProtocols=PMM1,PMM2,PMM3,PMM4,PMM2MM1,PMM9,PMM8,PMM11,PMM8_2,PMM12,PMM15,PMM17,PMM18,PMM16,PMM20,PMM22,PMM23`,
+				`https://api-defillama.1inch.io/v6.0/${chainToId[chain]}/swap
+					?src=${tokenFrom}
+					&dst=${tokenTo}
+					&amount=${amount}
+					&from=${extra.userAddress}
+					&origin=${extra.userAddress}
+					&slippage=${extra.slippage}
+					&referrer=${altReferralAddress}
+					&disableEstimate=true&excludedProtocols=PMM1,PMM2,PMM3,PMM4,PMM2MM1,PMM9,PMM8,PMM11,PMM8_2,PMM12,PMM15,PMM17,PMM18,PMM16,PMM20,PMM22,PMM23`,
 				{ headers: authHeader as any }
 			).then((r) => r.json())
 			: null
