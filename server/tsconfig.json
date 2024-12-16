@@ -20,6 +20,7 @@
     "noImplicitThis": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
+    "strictNullChecks": true,
     "lib": ["ES2020", "DOM"]
   },
   "include": ["src"],
