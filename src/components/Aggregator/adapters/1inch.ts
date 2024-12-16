@@ -65,7 +65,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		).then((r) => r.json()),
 		extra.userAddress !== zeroAddress
 			? fetch(
-				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
+				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&origin=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
 				{ headers: authHeader as any }
 			).then((r) => r.json())
 			: null
