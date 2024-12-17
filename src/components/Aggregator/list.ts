@@ -19,7 +19,7 @@ import * as matchaGasless from './adapters/0xGasless';
 
 export const adapters = [matcha, cowswap, paraswap, kyberswap, odos, matchaGasless];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, matchaGasless.name];
+export const inifiniteApprovalAllowed = [matcha.name, cowswap.name, matchaGasless.name];
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
