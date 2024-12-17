@@ -37,7 +37,6 @@ module.exports = {
 	},
 	externals: {
 		'node:crypto': 'commonjs crypto',
-		wagmi: 'wagmi'
 	},
 	resolve: {
 		extensions: ['.ts', '.js', '.json'],
