@@ -29,5 +29,5 @@
 		"noUnusedLocals": false,
   },
   "include": ["src"],
-  "exclude": ["src/setupTestEnv.js", "node_modules", "src/Aggregator", "src/WalletProvider"]
+  "exclude": ["src/setupTestEnv.js"]
 }
