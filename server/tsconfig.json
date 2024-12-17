@@ -1,14 +1,14 @@
 {
-  "ts-node": {
-    "compilerOptions": {
-      "module": "commonjs"
-    }
-  },
-  "compilerOptions": {
-    "target": "ES2022",
+	"ts-node": {
+		"compilerOptions": {
+			"module": "commonjs"
+		}
+	},
+	"compilerOptions": {
+		"target": "ES2022",
 		"lib": ["DOM", "DOM.Iterable", "ES2022"],
 		"allowJs": true,
-    "skipLibCheck": true,
+		"skipLibCheck": true,
 		"strict": false,
 		"forceConsistentCasingInFileNames": true,
 		"noEmit": false,
@@ -26,8 +26,8 @@
 		"strictNullChecks": true,
 		"noImplicitReturns": false,
 		"noImplicitThis": false,
-		"noUnusedLocals": false,
-  },
-  "include": ["src"],
-  "exclude": ["src/setupTestEnv.js"]
+		"noUnusedLocals": false
+	},
+	"include": ["src"],
+	"exclude": ["src/setupTestEnv.js"]
 }
