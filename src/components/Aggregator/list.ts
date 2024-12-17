@@ -1,5 +1,5 @@
 import * as matcha from './adapters/0x';
-import * as inch from './adapters/1inch';
+//import * as inch from './adapters/1inch';
 import * as cowswap from './adapters/cowswap';
 //import * as firebird from './adapters/firebird';
 import * as kyberswap from './adapters/kyberswap';
@@ -17,7 +17,7 @@ import * as odos from './adapters/odos';
 // import * as krystal from './adapters/krystal'
 import * as matchaGasless from './adapters/0xGasless';
 
-export const adapters = [matcha, inch, cowswap, paraswap, kyberswap, odos, matchaGasless];
+export const adapters = [matcha, cowswap, paraswap, kyberswap, odos, matchaGasless];
 
 export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, matchaGasless.name];
 
