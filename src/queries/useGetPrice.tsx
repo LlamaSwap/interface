@@ -49,7 +49,7 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 		const llamaChain = convertChain(rawChain!);
 		let llamaApi = [`${llamaChain}:${zeroAddress}`, `${llamaChain}:${fromToken}`, `${llamaChain}:${toToken}`];
 
-		const { coins } = await fetch(`https://coins.llama.fi/prices/current/${llamaApi.join(',')}`).then((r) => r.json());
+		const { coins } = await fetch(`https://coins.llama.fi/prices/update/${llamaApi.join(',')}`).then((r) => r.json());
 
 		gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${zeroAddress}`]?.price;
 		[fromTokenPrice, toTokenPrice] = await Promise.all([

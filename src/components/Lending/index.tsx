@@ -89,7 +89,7 @@ const useGetPrices = (tokens) => {
 	const res = useQuery({
 		queryKey: ['getPrices', tokens],
 		queryFn: async () => {
-			const prices = await fetch(`https://coins.llama.fi/prices/current/${tokens.join(',')}`).then((res) => res.json());
+			const prices = await fetch(`https://coins.llama.fi/prices/update/${tokens.join(',')}`).then((res) => res.json());
 			return prices;
 		},
 		enabled: tokens?.length > 0
