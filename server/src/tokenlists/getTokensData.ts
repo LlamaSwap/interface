@@ -25,7 +25,7 @@ export const getTokensData = async ([chainId, tokens]: [string, Array<string>]):
 	const filename = `erc20/${chainId}`;
 	let storedTokenMetadata;
 	try {
-		storedTokenMetadata = JSON.parse((await getS3(filename)).body);
+		storedTokenMetadata = JSON.parse((await getS3(filename)).body!);
 	} catch (e) {
 		storedTokenMetadata = {};
 	}
@@ -54,7 +54,7 @@ export const getTokensData = async ([chainId, tokens]: [string, Array<string>]):
 	const decimals = await makeCalls(chainId, {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
 		missingTokens);
 
-	const data = [];
+	const data:any[] = [];
 
 	let changed = false;
 	missingTokens.forEach((token, i) => {

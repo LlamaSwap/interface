@@ -1,5 +1,4 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-
 import { rpcsTransports } from '../Aggregator/rpcs';
 import { allChains } from './chains';
 
