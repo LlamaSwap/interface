@@ -243,6 +243,7 @@ export const useTokenApprove = ({
 		isConfirmingResetApproval: isResetLoading,
 		allowance,
 		shouldRemoveApproval,
-		refetch
+		refetch,
+		isAllowanceNearAmount: allowance && normalizedAmount && BigInt(normalizedAmount) > 0n && allowance > 0n && (BigInt(normalizedAmount) - (BigInt(normalizedAmount) / 10n)) <= allowance,
 	};
 };
