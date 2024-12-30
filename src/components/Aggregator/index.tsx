@@ -513,7 +513,7 @@ export function AggregatorContainer({ tokenList }) {
 
 	const fromTokenRateOfPricing = useGetRateOfPricing({
 		chain: selectedChain,
-		to: finalSelectedFromToken && !fromTokenPrice ? finalSelectedFromToken : null,
+		to: finalSelectedFromToken && !fetchingTokenPrices && !fromTokenPrice ? finalSelectedFromToken : null,
 		disabledAdapters,
 		extra: {
 			gasPriceData,
@@ -525,7 +525,7 @@ export function AggregatorContainer({ tokenList }) {
 
 	const toTokenRateOfPricing = useGetRateOfPricing({
 		chain: selectedChain,
-		to: finalSelectedToToken && !toTokenPrice ? finalSelectedToToken : null,
+		to: finalSelectedToToken && !fetchingTokenPrices && !toTokenPrice ? finalSelectedToToken : null,
 		disabledAdapters,
 		extra: {
 			gasPriceData,
