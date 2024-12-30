@@ -538,8 +538,6 @@ export function AggregatorContainer({ tokenList }) {
 	const finalFromTokenPrice = fromTokenPrice || fromTokenRateOfPricing;
 	const finalToTokenPrice = toTokenPrice || toTokenRateOfPricing;
 
-	console.log(fromTokenRateOfPricing, toTokenRateOfPricing);
-
 	const { data: gasData } = useEstimateGas({
 		routes,
 		token: finalSelectedFromToken?.address,
