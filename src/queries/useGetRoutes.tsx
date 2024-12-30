@@ -6,11 +6,11 @@ import { redirectQuoteReq } from '~/components/Aggregator/adapters/utils';
 import { chainsWithOpFees, getOptimismFee } from '~/components/Aggregator/utils/optimismFees';
 import { adapters, adaptersWithApiKeys } from '~/components/Aggregator/list';
 
-interface IGetListRoutesProps {
-	chain?: string;
-	from?: string;
-	to?: string;
-	amount?: string;
+export interface IGetListRoutesProps {
+	chain?: string | null;
+	from?: string | null;
+	to?: string | null;
+	amount?: string | null;
 	extra?: any;
 	disabledAdapters?: Array<string>;
 	customRefetchInterval?: number;
