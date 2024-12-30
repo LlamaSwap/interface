@@ -27,6 +27,7 @@ interface IPriceImpact {
 	amountReturnedInSelectedRoute?: string;
 	slippage?: string;
 	isPriceImpactNotKnown?: boolean;
+	isRateOfPricing: boolean;
 }
 
 const NoPriceImpactAlert = ({ tokens }) => {
@@ -53,7 +54,8 @@ export function PriceImpact({
 	amountReturnedInSelectedRoute,
 	selectedRoutesPriceImpact,
 	slippage,
-	isPriceImpactNotKnown = false
+	isPriceImpactNotKnown = false,
+	isRateOfPricing
 }: IPriceImpact) {
 	const breakpoint = useBreakpoint();
 	const [priceOrder, setPriceOrder] = useState(1);
@@ -136,7 +138,7 @@ export function PriceImpact({
 											: 'white'
 							}
 						>
-							<span>Price impact according to CoinGecko</span>
+							<span>{isRateOfPricing ? 'Price Impact' : 'Price impact according to CoinGecko'}</span>
 
 							{isPriceImpactNotKnown ||
 							!selectedRoutesPriceImpact ||

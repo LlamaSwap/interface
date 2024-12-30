@@ -1177,6 +1177,7 @@ export function AggregatorContainer({ tokenList }) {
 						amount={selectedRoute?.amountIn}
 						slippage={slippage}
 						isPriceImpactNotKnown={isPriceImpactNotKnown}
+						isRateOfPricing={(fromTokenRateOfPricing || toTokenRateOfPricing) ? true : false}
 					/>
 					<Box display={['none', 'none', 'flex', 'flex']} flexDirection="column" gap="4px">
 						{warnings}
