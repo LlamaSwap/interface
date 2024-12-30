@@ -67,6 +67,7 @@ import { zeroAddress } from 'viem';
 import { useToken } from './hooks/useToken';
 import { waitForTransactionReceipt } from 'wagmi/actions';
 import { config } from '../WalletProvider';
+import { useGetRateOfPricing } from '~/queries/useGetRateOfPricing';
 
 /*
 Integrated:
@@ -372,6 +373,7 @@ export function AggregatorContainer({ tokenList }) {
 	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useSelectedChainAndTokens({
 		tokens: tokenList
 	});
+
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
 
@@ -509,6 +511,35 @@ export function AggregatorContainer({ tokenList }) {
 		}
 	});
 
+	const fromTokenRateOfPricing = useGetRateOfPricing({
+		chain: selectedChain,
+		to: finalSelectedFromToken && !fromTokenPrice ? finalSelectedFromToken : null,
+		disabledAdapters,
+		extra: {
+			gasPriceData,
+			userAddress: address || zeroAddress,
+			slippage,
+			isPrivacyEnabled
+		}
+	});
+
+	const toTokenRateOfPricing = useGetRateOfPricing({
+		chain: selectedChain,
+		to: finalSelectedToToken && !toTokenPrice ? finalSelectedToToken : null,
+		disabledAdapters,
+		extra: {
+			gasPriceData,
+			userAddress: address || zeroAddress,
+			slippage,
+			isPrivacyEnabled
+		}
+	});
+
+	const finalFromTokenPrice = fromTokenPrice || fromTokenRateOfPricing;
+	const finalToTokenPrice = toTokenPrice || toTokenRateOfPricing;
+
+	console.log(fromTokenRateOfPricing, toTokenRateOfPricing);
+
 	const { data: gasData } = useEstimateGas({
 		routes,
 		token: finalSelectedFromToken?.address,
@@ -543,8 +574,8 @@ export function AggregatorContainer({ tokenList }) {
 			finalSelectedFromToken?.decimals
 		);
 
-		const amountUsd = toTokenPrice ? (amount * toTokenPrice).toFixed(2) : null;
-		const amountInUsd = fromTokenPrice ? (+amountIn * fromTokenPrice).toFixed(6) : null;
+		const amountUsd = finalToTokenPrice ? (amount * finalToTokenPrice).toFixed(2) : null;
+		const amountInUsd = finalFromTokenPrice ? (+amountIn * finalFromTokenPrice).toFixed(6) : null;
 
 		const netOut = amountUsd ? (route.l1Gas !== 'Unknown' ? +amountUsd - +gasUsd : +amountUsd) : amount;
 
@@ -678,8 +709,8 @@ export function AggregatorContainer({ tokenList }) {
 	}, [selectedRoute?.amount, aggregator]);
 
 	const selectedRoutesPriceImpact =
-		fromTokenPrice &&
-		toTokenPrice &&
+		finalFromTokenPrice &&
+		finalToTokenPrice &&
 		selectedRoute &&
 		selectedRoute.amountUsd &&
 		selectedRoute.amountInUsd &&
@@ -818,7 +849,7 @@ export function AggregatorContainer({ tokenList }) {
 					quote: variables.rawQuote,
 					txUrl,
 					amount: String(variables.amountIn),
-					amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+					amountUsd: finalFromTokenPrice ? +finalFromTokenPrice * +variables.amountIn || 0 : null,
 					errorData: data,
 					slippage,
 					routePlace: String(variables?.index),
@@ -888,7 +919,7 @@ export function AggregatorContainer({ tokenList }) {
 										quote: variables.rawQuote,
 										txUrl,
 										amount: String(variables.amountIn),
-										amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+										amountUsd: finalFromTokenPrice ? +finalFromTokenPrice * +variables.amountIn || 0 : null,
 										errorData: {},
 										slippage,
 										routePlace: String(variables?.index),
@@ -918,7 +949,7 @@ export function AggregatorContainer({ tokenList }) {
 						quote: variables.rawQuote,
 						txUrl,
 						amount: String(variables.amountIn),
-						amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+						amountUsd: finalFromTokenPrice ? +finalFromTokenPrice * +variables.amountIn || 0 : null,
 						errorData: {},
 						slippage,
 						routePlace: String(variables?.index),
@@ -941,7 +972,7 @@ export function AggregatorContainer({ tokenList }) {
 					quote: variables.rawQuote,
 					txUrl: '',
 					amount: String(variables.amountIn),
-					amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+					amountUsd: finalFromTokenPrice ? +finalFromTokenPrice * +variables.amountIn || 0 : null,
 					errorData: err,
 					slippage,
 					routePlace: String(variables?.index),
@@ -998,7 +1029,7 @@ export function AggregatorContainer({ tokenList }) {
 	};
 
 	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
-	const isUnknownPrice = !fromTokenPrice || !toTokenPrice;
+	const isUnknownPrice = !finalFromTokenPrice || !finalToTokenPrice;
 	const isPriceImpactNotKnown = !selectedRoutesPriceImpact && selectedRoutesPriceImpact !== 0;
 
 	const warnings = [
@@ -1033,7 +1064,7 @@ export function AggregatorContainer({ tokenList }) {
 				High price impact! More than {selectedRoutesPriceImpact.toFixed(2)}% drop.
 			</Alert>
 		) : null,
-		!isLoading && toTokenPrice && Number(selectedRoute?.amount) * toTokenPrice > 100e3 ? (
+		!isLoading && finalToTokenPrice && Number(selectedRoute?.amount) * finalToTokenPrice > 100e3 ? (
 			<Alert status="warning" borderRadius="0.375rem" py="8px" key="size">
 				<AlertIcon />
 				Your size is size. Please be mindful of slippage
@@ -1099,7 +1130,7 @@ export function AggregatorContainer({ tokenList }) {
 							selectedChain={selectedChain}
 							balance={balance.data?.formatted}
 							onMaxClick={onMaxClick}
-							tokenPrice={fromTokenPrice}
+							tokenPrice={finalFromTokenPrice}
 						/>
 
 						<SwapInputArrow
@@ -1125,7 +1156,7 @@ export function AggregatorContainer({ tokenList }) {
 							onSelectTokenChange={onToTokenChange}
 							selectedChain={selectedChain}
 							balance={toTokenBalance.data?.formatted}
-							tokenPrice={toTokenPrice}
+							tokenPrice={finalToTokenPrice}
 							priceImpact={selectedRoutesPriceImpact}
 						/>
 					</Flex>
@@ -1139,9 +1170,9 @@ export function AggregatorContainer({ tokenList }) {
 
 					<PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
-						fromTokenPrice={fromTokenPrice}
+						fromTokenPrice={finalFromTokenPrice}
 						fromToken={finalSelectedFromToken}
-						toTokenPrice={toTokenPrice}
+						toTokenPrice={finalToTokenPrice}
 						toToken={finalSelectedToToken}
 						amountReturnedInSelectedRoute={selectedRoute && selectedRoute.price && selectedRoute.price.amountReturned}
 						selectedRoutesPriceImpact={selectedRoutesPriceImpact}
@@ -1434,7 +1465,7 @@ export function AggregatorContainer({ tokenList }) {
 								fromToken={finalSelectedFromToken!}
 								selectedChain={selectedChain!.value}
 								gasTokenPrice={gasTokenPrice}
-								toTokenPrice={toTokenPrice}
+								toTokenPrice={finalToTokenPrice}
 								isFetchingGasPrice={fetchingTokenPrices}
 								amountOut={amountOutWithDecimals}
 								amountIn={r?.amountIn}
