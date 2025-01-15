@@ -30,17 +30,17 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap(params) {
-	const { signer, chain, rawQuote, signTypedDataAsync } = params;
+	const { chain, rawQuote, fromAddress } = params;
 
 	const data = typeof rawQuote === "object" && "recommendedPreset" in rawQuote
-		? await fusionSwap(chain, rawQuote, signer, signTypedDataAsync)
+		? await fusionSwap(chain, rawQuote, fromAddress)
 		: await classicSwap(rawQuote);
 
 	return typeof rawQuote === "object" && "recommendedPreset" in rawQuote
 		? {
 			...data,
 			hash: data.orderHash,
-			wait: getOrderStatus(chain, data.orderHash)
+			waitForOrder: getOrderStatus({ chain, hash: data.orderHash })
 		}
 		: data;
 }

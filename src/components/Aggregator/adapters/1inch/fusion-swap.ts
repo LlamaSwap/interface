@@ -1,6 +1,8 @@
 import { AVAILABLE_CHAINS_FOR_FUSION, CHAIN_TO_ID, SPENDERS } from './constants';
 import { FusionSDK, OrderStatus } from '@1inch/fusion-sdk';
 import { formatUnits, parseUnits } from 'ethers/lib/utils';
+import { signTypedData, call } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
 
 // const FUSION_QUOTE_ENDPOINT = 'https://api-defillama.1inch.io/v2.0/fusion';
 const FUSION_SDK_ENDPOINT = 'http://localhost:8888/fusion';
@@ -32,18 +34,26 @@ export async function getFusionQuoteResponse(params: {
 	});
 }
 
-export async function fusionSwap(chain, quote, signer, signTypedDataAsync) {
+export async function fusionSwap(chain, quote, fromAddress) {
 	const sdk = new FusionSDK({
 		url: FUSION_SDK_ENDPOINT,
 		network: CHAIN_TO_ID[chain],
 		blockchainProvider: {
-			signTypedData: (_, typedData) => signTypedDataAsync({
+			signTypedData: (_, typedData) => signTypedData(config, {
 				domain: typedData.domain,
 				types: typedData.types,
 				primaryType: typedData.primaryType,
-				value: typedData.message
+				message: typedData.message
 			}),
-			ethCall: signer.call.bind(signer)
+			ethCall: (contractAddress: `0x${string}`, callData: `0x${string}`) =>
+				call(
+					config,
+					{
+						account: fromAddress,
+						data: callData,
+						to: contractAddress,
+					},
+				).then((result) => result as unknown as string),
 		}
 	});
 
@@ -56,29 +66,28 @@ export async function fusionSwap(chain, quote, signer, signTypedDataAsync) {
 	});
 }
 
-export const getOrderStatus = (chain, hash) => async () => {
+export const getOrderStatus = ({ chain, hash }) => async (onSuccess) => {
 	const sdk = new FusionSDK({
 		url: FUSION_SDK_ENDPOINT,
-		network: CHAIN_TO_ID[chain]
+		network: CHAIN_TO_ID[chain],
 	});
-	let status;
 
-	while (true) {
+	let isCompleted = false;
+
+	while (!isCompleted) {
 		try {
 			const data = await sdk.getOrderStatus(hash);
 
 			if (data.status === OrderStatus.Filled) {
-				status = 1;
-				break
+				isCompleted = true;
+				onSuccess();
 			}
-		} catch (e) {
-			console.log(e)
+		} catch (error) {
+			console.log('Error fetching fusion order status:', error);
 		}
-	}
 
-	return {
-		status
-	};
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+	}
 };
 
 export function parseFusionQuote(chain: string, quote, extra) {

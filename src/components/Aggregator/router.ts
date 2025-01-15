@@ -55,8 +55,6 @@ export async function swap({
 			amount,
 			fromAddress,
 			fromAmount: route.fromAmount,
-			// signer,
-			// signTypedDataAsync,
 			slippage,
 			rawQuote,
 			tokens,

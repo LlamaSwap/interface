@@ -901,7 +901,7 @@ export function AggregatorContainer({ tokenList }) {
 					});
 			} else {
 				setTxModalOpen(true);
-				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
+				txUrl = variables.adapter === '1inch' ? '' : `https://explorer.cow.fi/orders/${data.id}`;
 				setTxUrl(txUrl);
 				data.waitForOrder(() => {
 					forceRefreshTokenBalance();
