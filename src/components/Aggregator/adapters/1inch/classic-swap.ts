@@ -9,18 +9,17 @@ import { config } from '../../../WalletProvider';
 const CLASSIC_ENDPOINT = 'http://localhost:8888/swap/v6.0/';
 
 export async function getClassicQuote(chain: string, tokenFrom: string, tokenTo: string, amount: string, extra) {
-	return await Promise.all([
-		fetch(
-			`${CLASSIC_ENDPOINT}${CHAIN_TO_ID[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
-			{ headers: AUTH_HEADER as any }
-		).then((r) => r.json()),
-		extra.userAddress !== zeroAddress
-			? fetch(
-				`${CLASSIC_ENDPOINT}${CHAIN_TO_ID[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
-				{ headers: AUTH_HEADER as any }
-			).then((r) => r.json())
-			: null
-	]);
+	const quoteUrl = `${CLASSIC_ENDPOINT}${CHAIN_TO_ID[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`;
+	const swapUrl = extra.userAddress !== zeroAddress
+		? `${CLASSIC_ENDPOINT}${CHAIN_TO_ID[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`
+		: null;
+
+	const quotePromise = fetch(quoteUrl, { headers: AUTH_HEADER as any }).then((r) => r.json());
+	const swapPromise = swapUrl
+		? fetch(swapUrl, { headers: AUTH_HEADER as any }).then((r) => r.json())
+		: null;
+
+	return await Promise.all([quotePromise, swapPromise]);
 }
 
 export async function parseClassicQuote(chain: string, quote) {
@@ -35,7 +34,7 @@ export async function parseClassicQuote(chain: string, quote) {
 		amountReturned: swapData?.dstAmount ?? data.dstAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress,
-		rawQuote: swapData === null ? null : { ...swapData, tx: swapData.tx },
+		rawQuote: swapData,
 		logo: 'https://icons.llamao.fi/icons/protocols/1inch-network?w=48&q=75'
 	};
 }
@@ -53,7 +52,7 @@ export async function classicSwap(rawQuote) {
 	const tx = await sendTx({
 		...txObject,
 		// Increase gas +20% + 2 erc20 txs
-		...(gasPrediction ? { gas: (gasPrediction * 12n) / 10n + 86000n } : {})
+		...(gasPrediction && { gas: (gasPrediction * 12n) / 10n + 86000n })
 	});
 	return tx;
 }

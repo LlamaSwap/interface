@@ -29,14 +29,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		: await parseClassicQuote(chain, quote);
 }
 
-export async function swap(params) {
-	const { chain, rawQuote, fromAddress } = params;
-
-	const data = typeof rawQuote === "object" && "recommendedPreset" in rawQuote
+export async function swap({ chain, rawQuote, fromAddress }) {
+	const isFusionQuote = typeof rawQuote === "object" && "recommendedPreset" in rawQuote;
+	const data = isFusionQuote
 		? await fusionSwap(chain, rawQuote, fromAddress)
 		: await classicSwap(rawQuote);
 
-	return typeof rawQuote === "object" && "recommendedPreset" in rawQuote
+	return isFusionQuote
 		? {
 			...data,
 			hash: data.orderHash,
