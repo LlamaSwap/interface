@@ -3,12 +3,14 @@ import { FusionSDK, OrderStatus } from '@1inch/fusion-sdk';
 import { formatUnits, parseUnits } from 'ethers/lib/utils';
 import { signTypedData, call } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
+import { Hex } from 'viem/types/misc';
+import { OrderInfo } from '@1inch/fusion-sdk/dist/types/src/sdk/types';
 
 // const FUSION_QUOTE_ENDPOINT = 'https://api-defillama.1inch.io/v2.0/fusion';
 const FUSION_SDK_ENDPOINT = 'http://localhost:8888/fusion';
 const SOURCE = 'f012a792';
 
-export function isFusionSupported(chainId: number): boolean {
+export function isFusionSupportedByChain(chainId: number): boolean {
 	return AVAILABLE_CHAINS_FOR_FUSION.has(chainId);
 }
 
@@ -34,7 +36,7 @@ export async function getFusionQuoteResponse(params: {
 	});
 }
 
-export async function fusionSwap(chain, quote, fromAddress) {
+export async function fusionSwap(chain, quote, fromAddress): Promise<OrderInfo> {
 	const sdk = new FusionSDK({
 		url: FUSION_SDK_ENDPOINT,
 		network: CHAIN_TO_ID[chain],
@@ -45,7 +47,7 @@ export async function fusionSwap(chain, quote, fromAddress) {
 				primaryType: typedData.primaryType,
 				message: typedData.message
 			}),
-			ethCall: (contractAddress: `0x${string}`, callData: `0x${string}`) =>
+			ethCall: (contractAddress: Hex, callData: Hex) =>
 				call(
 					config,
 					{
@@ -53,7 +55,7 @@ export async function fusionSwap(chain, quote, fromAddress) {
 						data: callData,
 						to: contractAddress,
 					},
-				).then((result) => result as unknown as string),
+				).then((result) => result.data as string),
 		}
 	});
 

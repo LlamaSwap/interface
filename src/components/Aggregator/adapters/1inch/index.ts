@@ -6,7 +6,7 @@ import {
 	fusionSwap,
 	getFusionQuoteResponse,
 	getOrderStatus,
-	isFusionSupported,
+	isFusionSupportedByChain,
 	parseFusionQuote
 } from './fusion-swap';
 import { zeroAddress } from 'viem';
@@ -31,17 +31,18 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 export async function swap({ chain, rawQuote, fromAddress }) {
 	const isFusionQuote = typeof rawQuote === "object" && "recommendedPreset" in rawQuote;
-	const data = isFusionQuote
-		? await fusionSwap(chain, rawQuote, fromAddress)
-		: await classicSwap(rawQuote);
 
-	return isFusionQuote
-		? {
+	if (isFusionQuote) {
+		const data = await fusionSwap(chain, rawQuote, fromAddress);
+
+		return {
 			...data,
 			hash: data.orderHash,
 			waitForOrder: getOrderStatus({ chain, hash: data.orderHash })
-		}
-		: data;
+		};
+	}
+
+	return await classicSwap(rawQuote);
 }
 
 async function getFusionOrClassicQuote (chain: string, from: string, to: string, amount: string, extra) {
@@ -51,7 +52,7 @@ async function getFusionOrClassicQuote (chain: string, from: string, to: string,
 	const tokenTo = to === zeroAddress ? NATIVE_TOKEN : to;
 	const address = extra.userAddress;
 
-	if (isFusionSupported(CHAIN_TO_ID[chain])) {
+	if (isFusionSupportedByChain(CHAIN_TO_ID[chain])) {
 		try {
 			const quote = await getFusionQuoteResponse({ chain, tokenFrom, tokenTo, amount, address });
 			if (quote.silippage > +extra.slippage) {
