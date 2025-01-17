@@ -1,7 +1,7 @@
 import { AVAILABLE_CHAINS_FOR_FUSION, CHAIN_TO_ID, SPENDERS } from './constants';
 import { FusionSDK, OrderStatus } from '@1inch/fusion-sdk';
 import { formatUnits, parseUnits } from 'ethers/lib/utils';
-import { signTypedData, call } from 'wagmi/actions';
+import { call, signTypedData } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
 import { Hex } from 'viem/types/misc';
 import { OrderInfo } from '@1inch/fusion-sdk/dist/types/src/sdk/types';
@@ -68,27 +68,36 @@ export async function fusionSwap(chain, quote, fromAddress): Promise<OrderInfo> 
 	});
 }
 
-export const getOrderStatus = ({ chain, hash }) => async (onSuccess) => {
+export const getOrderStatus = ({ chain, hash }) => async (onSuccess, maxRetries = 300, delay = 1000) => {
 	const sdk = new FusionSDK({
 		url: FUSION_SDK_ENDPOINT,
 		network: CHAIN_TO_ID[chain],
 	});
 
-	let isCompleted = false;
+	let attempt = 0;
 
-	while (!isCompleted) {
+	while (attempt < maxRetries) {
 		try {
 			const data = await sdk.getOrderStatus(hash);
 
 			if (data.status === OrderStatus.Filled) {
-				isCompleted = true;
 				onSuccess();
+				return;
+			}
+
+			if (data.status !== OrderStatus.Pending) {
+				return;
 			}
 		} catch (error) {
-			console.log('Error fetching fusion order status:', error);
+			console.error('Error fetching fusion order status:', error);
 		}
 
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		attempt++;
+		if (attempt >= maxRetries) {
+			throw new Error('Max retries reached. Unable to fetch order status.');
+		}
+
+		await new Promise((resolve) => setTimeout(resolve, delay));
 	}
 };
 
