@@ -111,10 +111,10 @@ export function parseFusionQuote(chain: string, quote, extra) {
 	const amount = formatUnits(toTokenAmount, dstTokenDecimals);
 
 	const receivedAmount = amount < start ? amount : start;
-	const amountReturned = end > receivedAmount ? end : receivedAmount;
+	const returnedAmount = end > receivedAmount ? end : receivedAmount;
 
 	return {
-		amountReturned: parseUnits(amountReturned, dstTokenDecimals).toString(),
+		amountReturned: parseUnits(returnedAmount, dstTokenDecimals).toString(),
 		estimatedGas: 0,
 		tokenApprovalAddress: SPENDERS[chain],
 		rawQuote: quote,
