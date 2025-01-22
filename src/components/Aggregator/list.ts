@@ -17,9 +17,9 @@ import * as odos from './adapters/odos';
 // import * as krystal from './adapters/krystal'
 import * as matchaGasless from './adapters/0xGasless';
 
-export const adapters = [matcha, inch, cowswap, paraswap, kyberswap, odos, matchaGasless];
+export const adapters = [matcha, cowswap, paraswap, kyberswap, inch, matchaGasless, odos];
 
-export const inifiniteApprovalAllowed = [matcha.name, inch.name, cowswap.name, paraswap.name, matchaGasless.name];
+export const inifiniteApprovalAllowed = [matcha.name, cowswap.name, matchaGasless.name];
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
