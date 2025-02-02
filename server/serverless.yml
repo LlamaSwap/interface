@@ -44,9 +44,6 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   webpack:
     webpackConfig: ./webpack.config.js
-    includeModules:
-      forceInclude:
-        - ethers
     packager: 'npm'
     excludeFiles: src/**/*.test.ts
   prune:
