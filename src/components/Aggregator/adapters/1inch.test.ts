@@ -7,7 +7,7 @@ export async function testApprovalAddresses() {
 			const { address: tokenApprovalAddress } = await fetch(
 				`https://api.1inch.dev/swap/v6.0/${chainToId[chain]}/approve/spender`,
 				{
-					headers: { 'auth-key': process.env.INCH_API_KEY! }
+					headers: { 'Authorization': "Bearer " + process.env.INCH_API_KEY! }
 				}
 			).then((r) => r.json());
 			if (tokenApprovalAddress !== approvalAddress(chain)) {
