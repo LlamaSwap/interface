@@ -1229,12 +1229,12 @@ export function AggregatorContainer({ tokenList }) {
 															textAlign={'center'}
 														>{`You have approved ${(Number(allowance) / 10 ** finalSelectedFromToken.decimals).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${finalSelectedFromToken.symbol} tokens previously`}</Text>
 														<Button
-															colorScheme={'red'}
+															colorScheme={'green'}
 															onClick={() => {
 																setAmount([Number(allowance) / 10 ** finalSelectedFromToken.decimals, '']);
 															}}
 														>
-															Set Amount
+															{`Set amount to ${(Number(allowance) / 10 ** finalSelectedFromToken.decimals).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${finalSelectedFromToken.symbol}`}
 														</Button>
 													</Flex>
 												</>
@@ -1526,12 +1526,12 @@ export function AggregatorContainer({ tokenList }) {
 																		textAlign={'center'}
 																	>{`You have approved ${(Number(allowance) / 10 ** finalSelectedFromToken.decimals).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${finalSelectedFromToken.symbol} tokens previously`}</Text>
 																	<Button
-																		colorScheme={'red'}
+																		colorScheme={'green'}
 																		onClick={() => {
 																			setAmount([Number(allowance) / 10 ** finalSelectedFromToken.decimals, '']);
 																		}}
 																	>
-																		Set Amount
+																		{`Set amount to ${(Number(allowance) / 10 ** finalSelectedFromToken.decimals).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${finalSelectedFromToken.symbol}`}
 																	</Button>
 																</Flex>
 															</>
