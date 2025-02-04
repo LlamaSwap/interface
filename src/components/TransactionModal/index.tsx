@@ -44,20 +44,22 @@ export const TransactionModal = ({ open, setOpen, link }) => {
 					</Text>
 				</ModalBody>
 
-				<ChakraLink
-					href={link}
-					isExternal
-					fontSize={'lg'}
-					textAlign={'center'}
-					padding="6px 1rem"
-					borderRadius="0.375rem"
-					bg="#a2cdff"
-					margin="0 1rem 1rem"
-					color="black"
-					_hover={{ textDecoration: 'none' }}
-				>
-					View on explorer <ExternalLinkIcon mx="2px" />
-				</ChakraLink>
+				{
+					!!link && <ChakraLink
+						href={link}
+						isExternal
+						fontSize={'lg'}
+						textAlign={'center'}
+						padding="6px 1rem"
+						borderRadius="0.375rem"
+						bg="#a2cdff"
+						margin="0 1rem 1rem"
+						color="black"
+						_hover={{ textDecoration: 'none' }}
+					>
+						View on explorer <ExternalLinkIcon mx="2px" />
+					</ChakraLink>
+				}
 			</ModalContent>
 		</Modal>
 	);
