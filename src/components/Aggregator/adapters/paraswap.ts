@@ -57,12 +57,12 @@ export async function getQuote(
 	const side = amountOut && amountOut !== '0' ? 'BUY' : 'SELL';
 	const finalAmount = side === 'BUY' ? amountOut : amount;
 	const data = await fetch(
-		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${finalAmount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=${side}&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders&version=6.2`
+		`https://api.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${finalAmount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=${side}&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders&version=6.2`
 	).then((r) => r.json());
 
 	const dataSwap =
 		userAddress !== zeroAddress
-			? await fetch(`https://apiv5.paraswap.io/transactions/${chainToId[chain]}?ignoreChecks=true`, {
+			? await fetch(`https://api.paraswap.io/transactions/${chainToId[chain]}?ignoreChecks=true`, {
 					method: 'POST',
 					body: JSON.stringify({
 						srcToken: data.priceRoute.srcToken,
