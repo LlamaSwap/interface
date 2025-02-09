@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { zeroAddress } from 'viem';
+import { chainIdToName } from '~/components/Aggregator/constants';
+import { getBalance } from 'wagmi/actions';
+import { config } from '~/components/WalletProvider';
 
 type Balances = Record<string, any>;
 
@@ -9,25 +12,50 @@ function scramble(str: string) {
 	}, '');
 }
 
-const getBalances = async (address, chain): Promise<Balances> => {
-	if (!address || !chain) return {};
+async function getTokensBalancesAndPrices(address:string, chainId:any, chainName:string){
+	const balances: any = await fetch(
+		`https://peluche.llamao.fi/balances?addresses=${address}&chainId=${chainId}&type=erc20`,
+		{
+			headers:{
+				"x-api-key": scramble('_RqMaPV5)37j3HUOp41RbJrqOoq4wi6eB_J64fjiLrsKL?hhe_h_r0wh7fgEOh_d')
+			}
+		}
+	).then((r) => r.json());
+
+	const gasToken = chainName + ":" + zeroAddress
+	const prices = await fetch(`https://coins.llama.fi/prices/current/${
+		balances.balances.map(a=>chainName + ":" + a.address).concat(gasToken).join(',')
+	}`).then((r) => r.json());
+	
+	return {balances, prices}
+}
+
+const getBalances = async (address, chainId): Promise<Balances> => {
+	if (!address || !chainId) return {};
 
 	try {
-		const balances: any = await fetch(
-			`https://covalent-api.blastapi.io/${scramble(
-				'd51c17d5+3065+23a4+6c._+_1.6.`0a3137'
-			)}/v1/${chain}/address/${address}/balances_v2/`
-		).then((r) => r.json());
+		const chainName = chainIdToName[chainId]
 
-		return balances.data.items.reduce((all: Balances, t: any) => {
-			const address =
-				t.contract_address === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' ? zeroAddress : t.contract_address;
-			all[address.toLowerCase()] = {
-				decimals: t.contract_decimals,
-				symbol: t.contract_ticker_symbol ?? 'UNKNOWN',
-				price: t.quote_rate,
-				amount: t.balance,
-				balanceUSD: t.quote ?? 0
+		const [{balances, prices}, gasBalance] = await Promise.all([
+			getTokensBalancesAndPrices(address, chainId, chainName),
+			getBalance(config, {
+				address: address as `0x${string}`,
+				chainId
+			}).catch(e=>null)
+		])
+
+
+		return balances.balances.concat([{
+			total_amount: gasBalance?.value,
+			address: zeroAddress
+		}]).reduce((all: Balances, t: any) => {
+			const price = prices.coins[chainName+':'+t.address] ?? {}
+			all[t.address] = {
+				decimals: price.decimals,
+				symbol: price.symbol ?? 'UNKNOWN',
+				price: price.price,
+				amount: t.total_amount,
+				balanceUSD: price.price !== undefined ? price.price*t.total_amount/(10**price.decimals) : 0
 			};
 			return all;
 		}, {});
