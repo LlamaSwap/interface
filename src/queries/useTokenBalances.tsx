@@ -44,7 +44,6 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 			}).catch(e=>null)
 		])
 
-
 		return balances.balances.concat([{
 			total_amount: gasBalance?.value,
 			address: zeroAddress
@@ -55,7 +54,7 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 				symbol: price.symbol ?? 'UNKNOWN',
 				price: price.price,
 				amount: t.total_amount,
-				balanceUSD: price.price !== undefined ? price.price*t.total_amount/(10**price.decimals) : 0
+				balanceUSD: price.price !== undefined && t.total_amount != null ? price.price*t.total_amount/(10**price.decimals) : 0
 			};
 			return all;
 		}, {});
