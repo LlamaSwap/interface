@@ -37,7 +37,9 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 		const chainName = chainIdToName[chainId]
 
 		const [{balances, prices}, gasBalance] = await Promise.all([
-			getTokensBalancesAndPrices(address, chainId, chainName),
+			getTokensBalancesAndPrices(address, chainId, chainName).catch(() => {
+				return {balances: { balances: [] }, prices: { coins: {} }}
+			}),
 			getBalance(config, {
 				address: address as `0x${string}`,
 				chainId
