@@ -34,10 +34,10 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 	if (!address || !chainId) return {};
 
 	try {
-		const chainName = chainIdToName[chainId]
+		const chainName = chainIdToName(chainId)
 
 		const [{balances, prices}, gasBalance] = await Promise.all([
-			getTokensBalancesAndPrices(address, chainId, chainName).catch(() => {
+			getTokensBalancesAndPrices(address, chainId, chainName!).catch(() => {
 				return {balances: { balances: [] }, prices: { coins: {} }}
 			}),
 			getBalance(config, {
@@ -47,7 +47,7 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 		])
 
 		return balances.balances.concat([{
-			total_amount: gasBalance?.value,
+			total_amount: gasBalance?.value?.toString(),
 			address: zeroAddress
 		}]).reduce((all: Balances, t: any) => {
 			const price = prices.coins[chainName+':'+t.address] ?? {}
@@ -60,7 +60,8 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 			};
 			return all;
 		}, {});
-	} catch {
+	} catch(e) {
+		console.log(`Couldn't find balances for ${chainId}:${address}`, e)
 		return {};
 	}
 };
