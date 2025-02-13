@@ -1154,6 +1154,17 @@ export function AggregatorContainer({ tokenList }) {
 					</Box>
 
 					<SwapWrapper>
+						<>
+							{failedRoutes.length > 0 ? (
+								<Alert status="warning" borderRadius="0.375rem" py="8px" mt="-14px" mb="16px">
+									<AlertIcon />
+									{`Routes for aggregators ${failedRoutes
+										.map((r) => r.name)
+										.join(', ')} have been hidden since they could not be executed`}
+								</Alert>
+							) : null}
+						</>
+
 						{!isConnected ? (
 							<Button colorScheme={'messenger'} onClick={openConnectModal}>
 								Connect Wallet
