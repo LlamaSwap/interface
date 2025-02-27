@@ -23,9 +23,18 @@ async function getTokensBalancesAndPrices(address:string, chainId:any, chainName
 	).then((r) => r.json());
 
 	const gasToken = chainName + ":" + zeroAddress
-	const prices = await fetch(`https://coins.llama.fi/prices/current/${
-		balances.balances.map(a=>chainName + ":" + a.address).concat(gasToken).join(',')
-	}`).then((r) => r.json());
+	const tokensToPrice:string[] = balances.balances.filter(b=>b.whitelist).map(a=>chainName + ":" + a.address).concat(gasToken)
+	const pricePromises:any[] = []
+	for(let i=0; i<tokensToPrice.length; i+=100){
+		pricePromises.push(fetch(`https://coins.llama.fi/prices/current/${
+			tokensToPrice.slice(i, i+100).join(',')
+		}`).then((r) => r.json()))
+	}
+
+	const prices = (await Promise.all(pricePromises)).reduce((all, prom)=>({
+		...all,
+		...prom.coins
+	}))
 	
 	return {balances, prices}
 }
@@ -50,7 +59,7 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 			total_amount: gasBalance?.value?.toString(),
 			address: zeroAddress
 		}]).reduce((all: Balances, t: any) => {
-			const price = prices.coins[chainName+':'+t.address] ?? {}
+			const price = prices[chainName+':'+t.address] ?? {}
 			all[t.address] = {
 				decimals: price.decimals,
 				symbol: price.symbol ?? 'UNKNOWN',
