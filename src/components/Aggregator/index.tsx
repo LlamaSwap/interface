@@ -341,7 +341,7 @@ export function AggregatorContainer({ tokenList }) {
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['', '']);
 
-	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.05');
+	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.3');
 	const [lastOutputValue, setLastOutputValue] = useState<{ aggregator: string; amount: number } | null>(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
