@@ -34,7 +34,7 @@ async function getTokensBalancesAndPrices(address:string, chainId:any, chainName
 	const prices = (await Promise.all(pricePromises)).reduce((all, prom)=>({
 		...all,
 		...prom.coins
-	}))
+	}), {})
 	
 	return {balances, prices}
 }
