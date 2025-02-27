@@ -36,7 +36,8 @@ export const chainsMap = {
 	linea: 59144,
 	mode: 34443,
 	mantle: 5000,
-	scroll: 534352
+	scroll: 534352,
+	sonic: 146
 } as const;
 
 export const geckoChainsMap: Record<string, number> = {
@@ -112,7 +113,8 @@ export const chainGasToken: Record<keyof typeof chainsMap, string> = {
 	linea: 'ethereum',
 	mode: 'ethereum',
 	mantle: 'mantle',
-	scroll: 'ethereum'
+	scroll: 'ethereum',
+	sonic: "sonic"
 };
 
 export const geckoTerminalChainsMap = {

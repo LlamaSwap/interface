@@ -633,6 +633,26 @@ const scroll = {
 	testnet: false
 };
 
+const sonic = {
+	id: 146,
+	name: 'Sonic',
+	network: 'sonic',
+	iconUrl: chainIconUrl('sonic'),
+	iconBackground: '#000',
+	nativeCurrency: {
+		decimals: 18,
+		name: 'Sonic',
+		symbol: 'S'
+	},
+	rpcUrls: {
+		default: { http: Object.values(rpcUrls[146]) }
+	},
+	blockExplorers: {
+		default: { name: 'SonicScan', url: 'https://sonicscan.org/' }
+	},
+	testnet: false
+};
+
 interface IChain extends Chain {
 	network: string;
 	iconUrl: string;
@@ -672,5 +692,6 @@ export const allChains: Array<IChain> = [
 	pulse,
 	velas,
 	harmony,
-	scroll
+	scroll,
+	sonic
 ];

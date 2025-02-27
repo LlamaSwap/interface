@@ -16,7 +16,8 @@ export const chainToId = {
 	polygonzkevm: 'polygon-zkevm',
 	linea: 'linea',
 	base: 'base',
-	scroll: 'scroll'
+	scroll: 'scroll',
+	sonic: 'sonic',
 	//mantle
 	//blast
 
@@ -40,7 +41,8 @@ const routers = {
 	polygonzkevm: universalRouter,
 	linea: universalRouter,
 	base: universalRouter,
-	scroll: universalRouter
+	scroll: universalRouter,
+	sonic: universalRouter,
 }
 
 export const name = 'KyberSwap';
