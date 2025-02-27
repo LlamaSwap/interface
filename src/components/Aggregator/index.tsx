@@ -297,14 +297,13 @@ export const SwapInputArrow = (props) => (
 	<IconButton
 		icon={<ArrowDown size={14} />}
 		aria-label="Switch Tokens"
-		marginTop="auto"
 		w="2.25rem"
 		h="2.25rem"
 		minW={0}
 		p="0"
 		pos="absolute"
 		top="0"
-		bottom="0"
+		bottom="-24px"
 		right="0"
 		left="0"
 		m="auto"
@@ -340,9 +339,9 @@ export function AggregatorContainer({ tokenList }) {
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState<string | null>(null);
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
-	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
+	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['', '']);
 
-	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
+	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.3');
 	const [lastOutputValue, setLastOutputValue] = useState<{ aggregator: string; amount: number } | null>(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
