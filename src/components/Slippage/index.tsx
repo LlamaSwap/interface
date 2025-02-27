@@ -94,19 +94,19 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 						</PopoverContent>
 					</Popover>
 				) : null}
-				{['0.05', '0.1', '0.5', '1'].map((slippage) => (
+				{['0.05', '0.1', '0.5', '1'].map((slp) => (
 					<Button
 						fontSize="0.875rem"
 						fontWeight="500"
 						p="8px"
-						bg="#38393e"
+						bg={slippage === slp ? "#1f72e5" : "#38393e"}
 						height="2rem"
 						onClick={() => {
-							setSlippage(slippage);
+							setSlippage(slp);
 						}}
-						key={'slippage-btn' + slippage}
+						key={'slp-btn' + slp}
 					>
-						{slippage}
+						{slp}
 					</Button>
 				))}
 			</Box>

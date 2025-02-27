@@ -68,7 +68,7 @@ export const MaxButton = (props: ButtonProps) => (
 		_hover={{ bg: 'none' }}
 		fontSize="0.875rem"
 		fontWeight={500}
-		color="#1f72e5"
+		color="#247cf9"
 		{...props}
 	/>
 );
