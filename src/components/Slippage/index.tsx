@@ -1,6 +1,7 @@
 import { WarningIcon } from '@chakra-ui/icons';
 import { Button, Box, Text, Alert, AlertIcon, Popover, PopoverTrigger, PopoverContent } from '@chakra-ui/react';
 import * as React from 'react';
+import styled from 'styled-components';
 
 const stablecoins = [
 	'USDT',
@@ -62,27 +63,12 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 				Swap Slippage: {slippage && !Number.isNaN(Number(slippage)) ? Number(slippage) + '%' : ''}
 			</Text>
 			<Box display="flex" gap="6px" flexWrap="wrap" width="100%">
-				{['0.1', '0.5', '1'].map((slippage) => (
-					<Button
-						fontSize="0.875rem"
-						fontWeight="500"
-						p="8px"
-						bg="#38393e"
-						height="2rem"
-						onClick={() => {
-							setSlippage(slippage);
-						}}
-						key={'slippage-btn' + slippage}
-					>
-						{slippage}%
-					</Button>
-				))}
-				<Box pos="relative" isolation="isolate">
+				<Box pos="relative" isolation="isolate" flex={1}>
 					<input
 						value={slippage}
 						type="text"
 						style={{
-							width: '100px',
+							width: '100%',
 							height: '2rem',
 							padding: '4px 6px',
 							background: 'rgba(0,0,0,.4)',
@@ -113,7 +99,26 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 						</PopoverContent>
 					</Popover>
 				) : null}
+				{['0.05', '0.1', '0.5', '1'].map((slippage) => (
+					<Button
+						fontSize="0.875rem"
+						fontWeight="500"
+						p="8px"
+						bg="#38393e"
+						height="2rem"
+						onClick={() => {
+							setSlippage(slippage);
+						}}
+						key={'slippage-btn' + slippage}
+					>
+						{slippage}%
+					</Button>
+				))}
 			</Box>
 		</Box>
 	);
 }
+
+const Input = styled.input`
+	width: 100%;
+`;
