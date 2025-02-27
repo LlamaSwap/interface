@@ -30,6 +30,8 @@ const Row = ({ chain, token, onClick, style }) => {
 					bg="black"
 					color="white"
 					isDisabled={!isMultichain}
+					fontSize="0.75rem"
+					padding="8px"
 				>
 					<Text
 						as="span"
@@ -64,11 +66,13 @@ const Row = ({ chain, token, onClick, style }) => {
 				</div>
 			) : null}
 
-			 {token.isGeckoToken && (
+			{token.isGeckoToken && (
 				<Tooltip
 					label="This token doesn't appear on active token list(s). Make sure this is the token that you want to trade."
 					bg="black"
 					color="white"
+					fontSize="0.75rem"
+					padding="8px"
 				>
 					<Button
 						fontSize={'0.75rem'}
@@ -83,7 +87,7 @@ const Row = ({ chain, token, onClick, style }) => {
 						Import Token
 					</Button>
 				</Tooltip>
-			)} 
+			)}
 		</PairRow>
 	);
 };
@@ -322,6 +326,8 @@ export const TokenSelect = ({
 					bg="black"
 					color="white"
 					isDisabled={!token?.isMultichain}
+					fontSize="0.75rem"
+					padding="8px"
 				>
 					{token?.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : <></>}
 				</Tooltip>
