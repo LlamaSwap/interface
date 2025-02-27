@@ -6,15 +6,13 @@ import { Header, IconImage, PairRow } from '../Aggregator/Search';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useQueryClient } from '@tanstack/react-query';
-import Image from 'next/image';
-import coingecko from '~/public/coingecko.svg';
 import { allChains } from '../WalletProvider/chains';
 import { ChevronDown } from 'react-feather';
 import { useToken } from '../Aggregator/hooks/useToken';
 import { isAddress } from 'viem';
 import { IToken } from '~/types';
 
-const Row = ({ chain, token, onClick }) => {
+const Row = ({ chain, token, onClick, style }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
 	const isMultichain = token.isMultichain;
 	return (
@@ -22,6 +20,7 @@ const Row = ({ chain, token, onClick }) => {
 			key={token.value}
 			data-defaultcursor={token.isGeckoToken ? true : false}
 			onClick={() => !token.isGeckoToken && onClick(token)}
+			style={style}
 		>
 			<IconImage src={token.logoURI} onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')} />
 
@@ -46,24 +45,12 @@ const Row = ({ chain, token, onClick }) => {
 
 				{token.isGeckoToken && (
 					<>
-						<Text
-							as="span"
-							display="flex"
-							alignItems="center"
-							textColor="gray.400"
-							justifyContent="flex-start"
-							gap="4px"
-							fontSize="0.75rem"
-						>
-							<span>via CoinGecko</span>
-							<Image src={coingecko} height="14px" width="14px" objectFit="contain" alt="" unoptimized />
-						</Text>
 						{blockExplorer && (
 							<a
 								href={`${blockExplorer.url}/address/${token.address}`}
 								target="_blank"
 								rel="noreferrer noopener"
-								style={{ fontSize: '0.75rem', textDecoration: 'underline' }}
+								style={{ fontSize: '10px', textDecoration: 'underline' }}
 							>{`View on ${blockExplorer.name}`}</a>
 						)}
 					</>
@@ -77,25 +64,26 @@ const Row = ({ chain, token, onClick }) => {
 				</div>
 			) : null}
 
-			{token.isGeckoToken && (
+			 {token.isGeckoToken && (
 				<Tooltip
 					label="This token doesn't appear on active token list(s). Make sure this is the token that you want to trade."
 					bg="black"
 					color="white"
 				>
 					<Button
-						fontSize={'0.875rem'}
+						fontSize={'0.75rem'}
 						fontWeight={500}
 						ml="auto"
 						colorScheme={'orange'}
 						onClick={() => onClick(token)}
 						leftIcon={<WarningTwoIcon />}
 						flexShrink={0}
+						height="28px"
 					>
-						<span style={{ position: 'relative', top: '1px' }}>Import Token</span>
+						Import Token
 					</Button>
 				</Tooltip>
-			)}
+			)} 
 		</PairRow>
 	);
 };
@@ -206,7 +194,7 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 	const rowVirtualizer = useVirtualizer({
 		count: filteredData.length,
 		getScrollElement: () => parentRef?.current ?? null,
-		estimateSize: (index) => (filteredData[index].isGeckoToken ? 72 : 40),
+		estimateSize: () => 44,
 		overscan: 10
 	});
 
@@ -261,19 +249,20 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 						}}
 					>
 						{rowVirtualizer.getVirtualItems().map((virtualRow) => (
-							<div
+							<Row
+								token={filteredData[virtualRow.index]}
+								onClick={onClick}
+								chain={selectedChain}
 								key={virtualRow.index + filteredData[virtualRow.index].address}
 								style={{
 									position: 'absolute',
 									top: 0,
 									left: 0,
 									width: '100%',
-									height: filteredData[virtualRow.index].isGeckoToken ? '72px' : '40px',
+									height: '44px',
 									transform: `translateY(${virtualRow.start}px)`
 								}}
-							>
-								<Row token={filteredData[virtualRow.index]} onClick={onClick} chain={selectedChain} />
-							</div>
+							/>
 						))}
 					</div>
 				</div>
