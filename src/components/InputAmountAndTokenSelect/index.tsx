@@ -68,7 +68,7 @@ export const MaxButton = (props: ButtonProps) => (
 		_hover={{ bg: 'none' }}
 		fontSize="0.875rem"
 		fontWeight={500}
-		color="#247cf9"
+		color="#2172E5"
 		{...props}
 	/>
 );
@@ -307,12 +307,12 @@ const RangeInput = styled.input`
 		height: 4px;
 		border-radius: 8px;
 		border: none;
-		background: linear-gradient(to right, #2172e5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
+		background: linear-gradient(to right, #2172E5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
 	}
 
 	&::-webkit-slider-thumb {
 		-webkit-appearance: none;
-		background: #2172e5;
+		background: #2172E5;
 		height: 16px;
 		width: 16px;
 		border-radius: 50%;

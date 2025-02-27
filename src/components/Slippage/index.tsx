@@ -99,7 +99,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 						fontSize="0.875rem"
 						fontWeight="500"
 						p="8px"
-						bg={slippage === slp ? "#1f72e5" : "#38393e"}
+						bg={slippage === slp ? "#2172E5" : "#38393e"}
 						height="2rem"
 						onClick={() => {
 							setSlippage(slp);
