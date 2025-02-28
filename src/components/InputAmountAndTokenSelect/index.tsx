@@ -266,6 +266,9 @@ const InputRange = ({ amount, balance, setAmount }) => {
 const InputWrapper = styled.div`
 	position: relative;
 	margin-bottom: 4px;
+	width: 100%;
+	max-width: calc(30rem - 32px);
+	isolation: isolate;
 `;
 
 const RangeButton = styled.button<{ $position: number }>`
