@@ -303,7 +303,7 @@ export const SwapInputArrow = (props) => (
 		p="0"
 		pos="absolute"
 		top="0"
-		bottom="-24px"
+		bottom="-36px"
 		right="0"
 		left="0"
 		m="auto"
