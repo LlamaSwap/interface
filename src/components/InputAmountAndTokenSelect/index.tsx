@@ -208,7 +208,7 @@ const InputRange = ({ amount, balance, setAmount }) => {
 				} as any
 			}
 		>
-			<RangeValue>{`${Math.min(inputRangeValue,100)}%`}</RangeValue>
+			<RangeValue>{`${(Math.min(inputRangeValue,100)).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`}</RangeValue>
 			<RangeInput
 				type="range"
 				min="0"
@@ -265,7 +265,7 @@ const InputRange = ({ amount, balance, setAmount }) => {
 
 const InputWrapper = styled.div`
 	position: relative;
-	margin-bottom: 4px;
+	margin: 6px 0;
 `;
 
 const RangeButton = styled.button<{ $position: number }>`
