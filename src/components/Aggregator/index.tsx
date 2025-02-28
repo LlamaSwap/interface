@@ -333,7 +333,7 @@ export function AggregatorContainer({ tokenList }) {
 	// wallet stuff
 	const { address, isConnected, chain: chainOnWallet } = useAccount();
 	const { openConnectModal } = useConnectModal();
-	const { switchChain } = useSwitchChain();
+	const { switchChainAsync } = useSwitchChain();
 	const addRecentTransaction = useAddRecentTransaction();
 
 	// swap input fields and selected aggregator states
@@ -631,7 +631,16 @@ export function AggregatorContainer({ tokenList }) {
 				{ shallow: true }
 			)
 			.then(() => {
-				if (switchChain) switchChain({ chainId: newChain.chainId });
+				if (switchChainAsync)
+					switchChainAsync({ chainId: newChain.chainId }).catch((err) => {
+						toast(
+							formatUnknownErrorToast({
+								title: 'Failed to switch network',
+								message: ''
+							})
+						);
+						console.log(err);
+					});
 			});
 	};
 	const onFromTokenChange = (token) => {
@@ -1173,7 +1182,15 @@ export function AggregatorContainer({ tokenList }) {
 								colorScheme={'messenger'}
 								onClick={() => {
 									if (selectedChain) {
-										switchChain({ chainId: selectedChain.id });
+										switchChainAsync({ chainId: selectedChain.id }).catch((err) => {
+											toast(
+												formatUnknownErrorToast({
+													title: 'Failed to switch network',
+													message: ''
+												})
+											);
+											console.log(err);
+										});
 									} else {
 										toast(
 											formatUnknownErrorToast({
@@ -1462,7 +1479,15 @@ export function AggregatorContainer({ tokenList }) {
 											colorScheme={'messenger'}
 											onClick={() => {
 												if (selectedChain) {
-													switchChain({ chainId: selectedChain.id });
+													switchChainAsync({ chainId: selectedChain.id }).catch((err) => {
+														toast(
+															formatUnknownErrorToast({
+																title: 'Failed to switch network',
+																message: ''
+															})
+														);
+														console.log(err);
+													});
 												} else {
 													toast(
 														formatUnknownErrorToast({
