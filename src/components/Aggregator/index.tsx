@@ -734,7 +734,8 @@ export function AggregatorContainer({ tokenList }) {
 		shouldRemoveApproval,
 		allowance,
 		errorFetchingAllowance,
-		refetch: refetchTokenAllowance
+		refetch: refetchTokenAllowance,
+		isAllowanceNearAmount
 	} = useTokenApprove({
 		token: finalSelectedFromToken?.address as `0x${string}`,
 		spender:
@@ -1229,6 +1230,26 @@ export function AggregatorContainer({ tokenList }) {
 												</Flex>
 											)}
 
+											{finalSelectedFromToken && isAllowanceNearAmount ? (
+												<>
+													<Flex flexDir="column" gap="4px" w="100%">
+														<Text
+															fontSize="0.75rem"
+															fontWeight={400}
+															textAlign={'center'}
+														>{`You have approved ${(Number(allowance) / 10 ** finalSelectedFromToken.decimals).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${finalSelectedFromToken.symbol} tokens previously`}</Text>
+														<Button
+															colorScheme={'green'}
+															onClick={() => {
+																setAmount([Number(allowance) / 10 ** finalSelectedFromToken.decimals, '']);
+															}}
+														>
+															{`Set amount to ${(Number(allowance) / 10 ** finalSelectedFromToken.decimals).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${finalSelectedFromToken.symbol}`}
+														</Button>
+													</Flex>
+												</>
+											) : null}
+
 											{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
 												<SwapConfirmation
 													isUnknownPrice={isUnknownPrice}
@@ -1505,6 +1526,26 @@ export function AggregatorContainer({ tokenList }) {
 																</Button>
 															</Flex>
 														)}
+
+														{finalSelectedFromToken && isAllowanceNearAmount ? (
+															<>
+																<Flex flexDir="column" gap="4px" w="100%">
+																	<Text
+																		fontSize="0.75rem"
+																		fontWeight={400}
+																		textAlign={'center'}
+																	>{`You have approved ${(Number(allowance) / 10 ** finalSelectedFromToken.decimals).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${finalSelectedFromToken.symbol} tokens previously`}</Text>
+																	<Button
+																		colorScheme={'green'}
+																		onClick={() => {
+																			setAmount([Number(allowance) / 10 ** finalSelectedFromToken.decimals, '']);
+																		}}
+																	>
+																		{`Set amount to ${(Number(allowance) / 10 ** finalSelectedFromToken.decimals).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${finalSelectedFromToken.symbol}`}
+																	</Button>
+																</Flex>
+															</>
+														) : null}
 
 														{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
 															<SwapConfirmation
