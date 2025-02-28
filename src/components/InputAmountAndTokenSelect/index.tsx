@@ -204,16 +204,16 @@ const InputRange = ({ amount, balance, setAmount }) => {
 		<InputWrapper
 			style={
 				{
-					'--range-value': `${inputRangeValue}%`
+					'--range-value': `${Math.min(inputRangeValue,100)}%`
 				} as any
 			}
 		>
-			<RangeValue>{`${inputRangeValue}%`}</RangeValue>
+			<RangeValue>{`${Math.min(inputRangeValue,100)}%`}</RangeValue>
 			<RangeInput
 				type="range"
 				min="0"
 				max="100"
-				value={inputRangeValue}
+				value={Math.min(inputRangeValue,100)}
 				onChange={(e) => {
 					setInputRangeValue(Number(e.target.value));
 				}}
@@ -266,9 +266,6 @@ const InputRange = ({ amount, balance, setAmount }) => {
 const InputWrapper = styled.div`
 	position: relative;
 	margin-bottom: 4px;
-	width: 100%;
-	max-width: calc(30rem - 32px);
-	isolation: isolate;
 `;
 
 const RangeButton = styled.button<{ $position: number }>`
