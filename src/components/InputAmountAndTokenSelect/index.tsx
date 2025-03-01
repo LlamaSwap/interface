@@ -208,7 +208,7 @@ const InputRange = ({ amount, balance, setAmount }) => {
 				} as any
 			}
 		>
-			<RangeValue>{`${(Math.min(inputRangeValue,100)).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`}</RangeValue>
+			<RangeValue data-range-value>{`${(Math.min(inputRangeValue,100)).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`}</RangeValue>
 			<RangeInput
 				type="range"
 				min="0"
@@ -266,6 +266,13 @@ const InputRange = ({ amount, balance, setAmount }) => {
 const InputWrapper = styled.div`
 	position: relative;
 	margin: 6px 0;
+
+	&:hover,
+	&:focus-within {
+		> [data-range-value] {
+			opacity: 1;
+		}
+	}
 `;
 
 const RangeButton = styled.button<{ $position: number }>`
@@ -324,6 +331,7 @@ const RangeInput = styled.input`
 `;
 
 const RangeValue = styled.span`
+	opacity: 0;
 	position: absolute;
 	top: -20px;
 	left: var(--range-value);
