@@ -82,15 +82,6 @@ const EmbeddedLogger = {
 };
 
 /**
- * Message interface for postMessage communication with the iframe
- */
-interface EmbeddedMessage {
-  key: string;
-  type: string;
-  payload: any;
-}
-
-/**
  * Transaction parameters - can be at root level or in params
  */
 interface TransactionParams {
