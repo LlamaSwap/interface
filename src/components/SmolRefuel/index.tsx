@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useAccount, useChainId, useWalletClient, useSwitchChain, useConfig } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 /**
  * SmolRefuel Component
@@ -126,6 +127,7 @@ const SmolRefuel = (): React.ReactElement => {
   const { data: walletClient } = useWalletClient();
   const { switchChain } = useSwitchChain();
   const { chains } = useConfig();
+  const { openConnectModal } = useConnectModal();
   
   // Reference to the iframe
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
@@ -346,6 +348,17 @@ const SmolRefuel = (): React.ReactElement => {
     }
   }, [parentProvider, sendToIframe]);
   
+  /**
+   * Handle wallet connection requests from the iframe
+   * Uses RainbowKit's openConnectModal to trigger the wallet connection dialog
+   */
+  const handleConnectWalletRequest = React.useCallback(() => {
+    // Open the RainbowKit connect modal
+    if (openConnectModal) {
+      openConnectModal();
+    }
+  }, [openConnectModal]);
+  
   // Set up message handlers for the iframe
   React.useEffect(() => {
     if (!iframeRef.current?.contentWindow) return;
@@ -356,7 +369,8 @@ const SmolRefuel = (): React.ReactElement => {
       'SWITCH_CHAIN_REQUEST': handleChainSwitch,
       'RESIZE_HEIGHT': handleResize,
       'TRANSACTION_REQUEST': handleTransaction,
-      'SIGN_REQUEST': handleSignature
+      'SIGN_REQUEST': handleSignature,
+      'CONNECT_WALLET_REQUEST': handleConnectWalletRequest
     };
     
     const handleMessage = async (event: MessageEvent) => {
@@ -404,7 +418,8 @@ const SmolRefuel = (): React.ReactElement => {
     handleChainSwitch, 
     handleResize, 
     handleTransaction, 
-    handleSignature
+    handleSignature,
+    handleConnectWalletRequest
   ]);
   
   // Update iframe when wallet or chain changes
