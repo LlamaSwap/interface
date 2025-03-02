@@ -134,6 +134,7 @@ const SmolRefuel = (): React.ReactElement => {
   
   // Base URL for iframe - we communicate chainId via postMessage instead of URL params
   const baseUrl = 'https://smolrefuel.com/embed?partner=llamaswap';
+  // const baseUrl = 'http://localhost:5173/embed?partner=llamaswap'
   
   // Create a provider interface for the iframe
   const parentProvider = React.useMemo<ParentProvider>(() => {
@@ -281,12 +282,20 @@ const SmolRefuel = (): React.ReactElement => {
       }
       
       // Execute transaction
-      const txHash = await walletClient.sendTransaction({
+      // Create transaction parameters
+      const txOptions: any = {
         to: txParams.to as `0x${string}`,
         value: txParams.value ? BigInt(txParams.value) : undefined,
-        data: txParams.data as `0x${string}` || '0x',
-        gas: txParams.gas ? BigInt(txParams.gas) : undefined
-      });
+        data: txParams.data as `0x${string}` || '0x'
+      };
+      
+      // Only set gas if explicitly provided, otherwise let wallet estimate
+      if (txParams.gas) {
+        txOptions.gas = BigInt(txParams.gas);
+      }
+      
+      // Send the transaction
+      const txHash = await walletClient.sendTransaction(txOptions);
       
       // Success response
       sendToIframe('TRANSACTION_RESPONSE', {
