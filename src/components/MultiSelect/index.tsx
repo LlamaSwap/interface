@@ -5,30 +5,25 @@ import { CSSProperties } from 'react';
 
 interface IReactSelect extends Props {
 	style?: CSSProperties;
-	defaultOptions?: boolean;
-	itemCount?: number;
-	cacheOptions?: boolean;
 }
 
 const formatOptionLabel = ({ label, ...rest }) => {
 	return (
 		<div style={{ display: 'flex' }}>
-			<div style={{ color: '#ccc' }}>
+			<div style={{color: '#ccc' }}>
 				{rest.logoURI ? (
 					<img
 						src={rest.logoURI}
 						style={{
-							minWidth: '20px',
-							minHeight: '20px',
-							width: '20px',
-							height: '20px',
+							width: 20,
+							height: 20,
 							marginRight: 8,
 							borderRadius: '50%',
 							aspectRatio: 1
 						}}
 						alt=""
 					/>
-				) : rest?.logoURI === false ? null : (
+				) : (
 					<QuestionIcon height="20px" width="20px" marginRight={'8px'} />
 				)}
 			</div>
@@ -46,10 +41,7 @@ const Wrapper = styled.span`
 	--option-bg: ${({ theme }) => theme.bg2};
 
 	& > * > * {
-		box-shadow:
-			0px 24px 32px rgba(0, 0, 0, 0.04),
-			0px 16px 24px rgba(0, 0, 0, 0.04),
-			0px 4px 8px rgba(0, 0, 0, 0.04),
+		box-shadow: 0px 24px 32px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04), 0px 4px 8px rgba(0, 0, 0, 0.04),
 			0px 0px 1px rgba(0, 0, 0, 0.04);
 		border-radius: 12px;
 	}
@@ -80,14 +72,6 @@ const customStyles = {
 		background: 'var(--menu-background)',
 		zIndex: 10
 	}),
-	menuList: (provided) => ({
-		...provided,
-		'scrollbar-width': 'none',
-		'-ms-overflow-style': 'none',
-		'&::-webkit-scrollbar': {
-			display: 'none'
-		}
-	}),
 	option: (provided, state) => ({
 		...provided,
 		color: state.isActive ? 'black' : 'var(--color)'
@@ -112,6 +96,8 @@ const customStyles = {
 	})
 };
 
+const height = 35;
+
 const ReactSelect = ({ options, style, ...props }: IReactSelect) => (
 	<Wrapper style={style}>
 		<Select
@@ -128,7 +114,7 @@ const ReactSelect = ({ options, style, ...props }: IReactSelect) => (
 					}
 				};
 			}}
-			formatOptionLabel={(props.defaultOptions ? undefined : formatOptionLabel) as any}
+			formatOptionLabel={formatOptionLabel}
 			{...props}
 		/>
 	</Wrapper>
