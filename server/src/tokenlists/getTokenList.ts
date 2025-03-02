@@ -77,6 +77,8 @@ const allSettled = ((promises) => Promise.all(promises.map(p => p
 	}))
 )))
 
+const chainsToFetchFromKyberswap = [324, 1101, 59144, 534352, 146]
+
 export async function getTokenList() {
 	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
 	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
@@ -92,16 +94,14 @@ export async function getTokenList() {
 		})
 	);
 
-	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
-	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
-	const [geckoList, logos, zksyncList, polZkevmList, lineaList, scrollList] = await Promise.all([
+	const [geckoList, logos, kyberswapLists] = await Promise.all([
 		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
-		...[324, 1101, 59144, 534352].map((chainId) =>
+		await Promise.all(chainsToFetchFromKyberswap.map((chainId) =>
 			fetch(`https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=${chainId}`)
 				.then((r) => r.json())
 				.then((r) => r?.data?.tokens.filter((t) => t.chainId === chainId))
-		)
+		))
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -119,10 +119,7 @@ export async function getTokenList() {
 				...nativeTokens,
 				...ownTokenList,
 				...oneInchList,
-				...zksyncList,
-				...polZkevmList,
-				...lineaList,
-				...scrollList
+				...kyberswapLists.flat()
 			].filter((t) => t.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
 			'chainId'
 		),
