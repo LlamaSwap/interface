@@ -233,6 +233,10 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 	534352: {
 		default: 'https://rpc.scroll.io',
 		second: 'https://rpc.ankr.com/scroll'
+	},
+	146: {
+		default: 'https://rpc.soniclabs.com',
+		second: 'https://rpc.ankr.com/sonic_mainnet'
 	}
 };
 

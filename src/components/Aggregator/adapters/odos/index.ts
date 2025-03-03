@@ -15,7 +15,8 @@ export const chainToId = {
 	//mantle
 	//mode:
 	linea: 59144,
-	scroll: 534352
+	scroll: 534352,
+	sonic: 146
 };
 
 export const name = 'Odos';
@@ -35,7 +36,8 @@ const routers = {
 	fantom: '0xd0c22a5435f4e8e5770c1fafb5374015fc12f7cd',
 	zksync: '0x4bBa932E9792A2b917D47830C93a9BC79320E4f7',
 	linea: '0x2d8879046f1559E53eb052E949e9544bCB72f414',
-	scroll: '0xbFe03C9E20a9Fc0b37de01A172F207004935E0b1'
+	scroll: '0xbFe03C9E20a9Fc0b37de01A172F207004935E0b1',
+	sonic: '0xac041df48df9791b0654f1dbbf2cc8450c5f2e9d',
 	//polygonzkevm: '0x2b8B3f0949dfB616602109D2AAbBA11311ec7aEC'
 };
 

@@ -32,8 +32,6 @@ const oneInchChains = {
 };
 
 const fixTotkens = (tokenlist) => {
-	// OKX token logo
-	tokenlist[66][0].logoURI = tokenlist[66][1].logoURI;
 	// BTC -> BTC.b
 	tokenlist[43114].find(
 		({ address }) => address.toLowerCase() === '0x152b9d0fdc40c096757f570a51e494bd4b943e50'
@@ -79,6 +77,8 @@ const allSettled = ((promises) => Promise.all(promises.map(p => p
 	}))
 )))
 
+const chainsToFetchFromKyberswap = [324, 1101, 59144, 534352, 146]
+
 export async function getTokenList() {
 	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
 	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
@@ -94,24 +94,14 @@ export async function getTokenList() {
 		})
 	);
 
-	// const hecoList = await fetch('https://token-list.sushi.com/').then((r) => r.json()); // same as sushi
-	// const lifiList = await fetch('https://li.quest/v1/tokens').then((r) => r.json());
-	const [sushiList, geckoList, logos, zksyncList, polZkevmList, lineaList, scrollList] = await Promise.all([
-		fetch('https://tokens.sushi.com/v0')
-			.then((r) => r.json())
-			.then((r) =>
-				r.map((token) => ({
-					...token,
-					logoURI: `https://cdn.sushi.com/image/upload/f_auto,c_limit,w_40,q_auto/tokens/${token.chainId}/${token.address}.jpg`
-				}))
-			),
+	const [geckoList, logos, kyberswapLists] = await Promise.all([
 		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
-		...[324, 1101, 59144, 534352].map((chainId) =>
+		await Promise.all(chainsToFetchFromKyberswap.map((chainId) =>
 			fetch(`https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=${chainId}`)
 				.then((r) => r.json())
 				.then((r) => r?.data?.tokens.filter((t) => t.chainId === chainId))
-		)
+		))
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -129,11 +119,7 @@ export async function getTokenList() {
 				...nativeTokens,
 				...ownTokenList,
 				...oneInchList,
-				...sushiList,
-				...zksyncList,
-				...polZkevmList,
-				...lineaList,
-				...scrollList
+				...kyberswapLists.flat()
 			].filter((t) => t.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
 			'chainId'
 		),

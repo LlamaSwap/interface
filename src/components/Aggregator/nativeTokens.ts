@@ -328,6 +328,16 @@ const pulse = {
 	decimals: 18
 };
 
+const sonic = {
+	mcap: Number.MAX_SAFE_INTEGER,
+	address: zeroAddress,
+	chainId: 146,
+	name: 'SONIC',
+	symbol: 's',
+	logoURI: chainIconUrl('sonic'),
+	decimals: 18
+};
+
 export const nativeTokens = [
 	ethereum,
 	arbitrum,
@@ -361,5 +371,6 @@ export const nativeTokens = [
 	pulse,
 	base,
 	linea,
-	scroll
+	scroll,
+	sonic
 ];
