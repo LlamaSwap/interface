@@ -1,6 +1,9 @@
 import * as React from 'react';
-import { useAccount, useChainId, useWalletClient, useSwitchChain, useConfig } from 'wagmi';
+import { useAccount, useChainId, useWalletClient, useSwitchChain, useConfig, usePublicClient } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { formatUnits, erc20Abi } from 'viem';
+import { getPrice } from '~/queries/useGetPrice';
+import { nativeTokens } from '~/components/Aggregator/nativeTokens';
 
 /**
  * SmolRefuel Component
@@ -19,6 +22,15 @@ import { useConnectModal } from '@rainbow-me/rainbowkit';
  */
 
 /**
+ * Constants
+ */
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const MAX_USD = 20000; // Maximum USD value threshold for transactions and permits
+const MAX_UINT256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+const MAX_UINT256_STRING = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+const APPROVE_SIG = '0x095ea7b3';
+
+/**
  * Logger for embedded SmolRefuel messages
  * Only logs in development environment to avoid console spam in production
  */
@@ -33,9 +45,7 @@ const EmbeddedLogger = {
   },
 
   // Determine if we should log based on environment
-  shouldLog: () => {
-    return process.env.NODE_ENV === 'development';
-  },
+  shouldLog: () => process.env.NODE_ENV === 'development',
 
   // Log an event received from iframe
   logReceived: (type: string, payload: any) => {
@@ -82,7 +92,7 @@ const EmbeddedLogger = {
 };
 
 /**
- * Transaction parameters - can be at root level or in params
+ * Type definitions
  */
 interface TransactionParams {
   to: string;
@@ -92,9 +102,6 @@ interface TransactionParams {
   chainId?: number;
 }
 
-/**
- * Transaction request format
- */
 interface TransactionRequest {
   requestId: string;
   method?: string;
@@ -102,9 +109,6 @@ interface TransactionRequest {
   routeId?: string;
 }
 
-/**
- * Interface matching the parent provider requirements for the embedded SmolRefuel
- */
 interface ParentProvider {
   request(args: { method: string; params?: any[] }): Promise<any>;
   isConnected(): boolean;
@@ -112,10 +116,27 @@ interface ParentProvider {
   getChainId(): number | null;
 }
 
+/**
+ * Security validation result
+ */
+interface ValidationResult {
+  safe: boolean;
+  reason?: string;
+}
+
+/**
+ * Token validation parameters
+ */
+interface TokenValidationParams {
+  tokenAddress: string;
+  amount: bigint;
+}
+
 const SmolRefuel = (): React.ReactElement => {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient();
   const { switchChain } = useSwitchChain();
   const { chains } = useConfig();
   const { openConnectModal } = useConnectModal();
@@ -255,6 +276,108 @@ const SmolRefuel = (): React.ReactElement => {
   }, []);
   
   /**
+   * Get token decimals, properly handling both native tokens and ERC20s
+   */
+  const getTokenDecimals = React.useCallback(async (tokenAddress: string): Promise<number> => {
+    try {
+      // If it's a native token, get from our native tokens list
+      if (tokenAddress === ZERO_ADDRESS) {
+        const nativeToken = nativeTokens.find(t => t.chainId === chainId);
+        return nativeToken?.decimals || 18;
+      }
+      
+      // For ERC20 tokens, query the contract using publicClient
+      if (publicClient) {
+        try {
+          const decimals = await publicClient.readContract({
+            address: tokenAddress as `0x${string}`,
+            abi: erc20Abi,
+            functionName: 'decimals',
+          });
+          return Number(decimals);
+        } catch (err) {
+          EmbeddedLogger.logError('Failed to get token decimals', err);
+          return 18; // Default to 18 if contract call fails
+        }
+      }
+      
+      return 18; // Default fallback
+    } catch (error) {
+      EmbeddedLogger.logError('Error getting token decimals', error);
+      return 18; // Default fallback
+    }
+  }, [chainId, publicClient]);
+  
+  /**
+   * Validate token value in USD
+   */
+  const validateTokenValue = React.useCallback(async ({ tokenAddress, amount }: TokenValidationParams): Promise<ValidationResult> => {
+    try {
+      const chain = chains.find(c => c.id === chainId)?.name?.toLowerCase();
+      if (!chain) return { safe: true };
+
+      // Check for unlimited approvals
+      if (amount === MAX_UINT256) {
+        return { 
+          safe: false, 
+          reason: 'Unlimited token approval requested - this gives complete access to your tokens' 
+        };
+      }
+
+      // Check USD value
+      const decimals = await getTokenDecimals(tokenAddress);
+      const priceData = await getPrice({ 
+        chain, 
+        fromToken: tokenAddress, 
+        toToken: ZERO_ADDRESS 
+      });
+
+      if (priceData.fromTokenPrice && priceData.fromTokenPrice > 0) {
+        const valueInUSD = Number(formatUnits(amount, decimals)) * priceData.fromTokenPrice;
+        if (valueInUSD > MAX_USD) {
+          return { safe: false, reason: `Transaction value of $${valueInUSD.toFixed(2)} exceeds maximum of $${MAX_USD}` };
+        }
+      }
+      return { safe: true };
+    } catch (error) {
+      EmbeddedLogger.logError('Token value validation error', error);
+      return { safe: true };
+    }
+  }, [chainId, chains, getTokenDecimals]);
+
+  /**
+   * Validate if a transaction is potentially malicious
+   */
+  const validateTransaction = React.useCallback(async (txParams: TransactionParams): Promise<ValidationResult> => {
+    try {      
+      // Check for ERC20 approvals
+      if (txParams.data?.startsWith(APPROVE_SIG)) {
+        const amountBigInt = BigInt('0x' + txParams.data.slice(10).slice(64, 128));
+
+        // Validate token approval
+        return await validateTokenValue({
+          tokenAddress: txParams.to,
+          amount: amountBigInt
+        });
+      }
+      
+      // Check native token sends
+      if (txParams.value && BigInt(txParams.value) > BigInt(0)) {
+        // Validate native token value
+        return await validateTokenValue({
+          tokenAddress: ZERO_ADDRESS,
+          amount: BigInt(txParams.value)
+        });
+      }
+      
+      return { safe: true };
+    } catch (error) {
+      EmbeddedLogger.logError('Validation error', error);
+      return { safe: true };
+    }
+  }, [validateTokenValue]);
+
+  /**
    * Handle transaction requests
    */
   const handleTransaction = React.useCallback(async (payload: any) => {
@@ -262,6 +385,8 @@ const SmolRefuel = (): React.ReactElement => {
     
     const txRequest = payload as TransactionRequest;
     const txParams = txRequest.params || txRequest as unknown as TransactionParams;
+    
+    EmbeddedLogger.logAction('Processing transaction request', { txParams });
     
     try {
       if (!walletClient) {
@@ -271,6 +396,16 @@ const SmolRefuel = (): React.ReactElement => {
       if (!txParams.to) {
         throw new Error('Missing required parameter: to');
       }
+      
+      // Validate transaction for security
+      const validation = await validateTransaction(txParams);
+      
+      if (!validation.safe) {
+        EmbeddedLogger.logError('Transaction security validation failed', validation.reason);
+        throw new Error(`${validation.reason}`);
+      }
+      
+      EmbeddedLogger.logAction('Transaction passed security validation', { txParams });
       
       // Execute transaction
       // Create transaction parameters
@@ -304,15 +439,52 @@ const SmolRefuel = (): React.ReactElement => {
         routeId: txRequest.routeId
       });
     }
-  }, [walletClient, sendToIframe]);
+  }, [walletClient, sendToIframe, validateTransaction, EmbeddedLogger]);
   
   /**
-   * Handle signature requests
+   * Handle signature requests - add validation for permit signatures
    */
   const handleSignature = React.useCallback(async (payload: any) => {
     if (!payload.requestId || !payload.type) return;
     
     try {
+      // Check for permits in EIP-712 typed data and validate
+      if (payload.type === 'eth_signTypedData' && Array.isArray(payload.message) && payload.message.length > 1) {
+        const typedData = payload.message[1];
+
+        if (typedData?.primaryType === 'Permit' && typedData?.message?.value) {
+          const tokenAddress = typedData.domain?.verifyingContract;
+          const value = BigInt(typedData.message.value.toString());
+
+          // Validate token approval
+          if (tokenAddress) {
+            const validation = await validateTokenValue({
+              tokenAddress,
+              amount: value
+            });
+
+            if (!validation.safe) {
+              EmbeddedLogger.logError('Permit signature validation failed', validation.reason);
+              throw new Error(validation.reason);
+            }
+          } else {
+            // Handle case where contract address isn't in the domain (unusual but possible)
+            // Only check for unlimited approvals as a fallback
+            if (value.toString() === MAX_UINT256_STRING) {
+              const reason = 'Unlimited token permit requested - this gives complete access to your tokens';
+              EmbeddedLogger.logError('Permit signature validation failed', reason);
+              throw new Error(reason);
+            }
+          }
+          
+          EmbeddedLogger.logAction('Permit signature passed security validation', { 
+            tokenAddress, 
+            value: value.toString() 
+          });
+        }
+      }
+      
+      // Process the signature request
       let signature;
       
       if (payload.type === 'eth_signTypedData') {
@@ -346,7 +518,7 @@ const SmolRefuel = (): React.ReactElement => {
         error: (error as Error).message
       });
     }
-  }, [parentProvider, sendToIframe]);
+  }, [parentProvider, sendToIframe, validateTokenValue]);
   
   /**
    * Handle wallet connection requests from the iframe
