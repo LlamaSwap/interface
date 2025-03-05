@@ -42,7 +42,8 @@ export async function swap({
 	adapter,
 	rawQuote,
 	tokens,
-	approvalData
+	approvalData,
+	route,
 }) {
 	const aggregator = adaptersMap[adapter];
 
@@ -53,6 +54,7 @@ export async function swap({
 			to,
 			amount,
 			fromAddress,
+			fromAmount: route.fromAmount,
 			slippage,
 			rawQuote,
 			tokens,
