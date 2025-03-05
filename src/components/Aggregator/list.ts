@@ -23,6 +23,7 @@ export const inifiniteApprovalAllowed = [matcha.name, cowswap.name, matchaGasles
 
 export const adaptersWithApiKeys = {
 	[matcha.name]: true,
-	[matchaGasless.name]: true
+	[matchaGasless.name]: true,
+	[inch.name]: true,
 	//[hashflow.name]: true
 };
