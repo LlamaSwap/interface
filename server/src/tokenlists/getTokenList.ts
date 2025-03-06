@@ -200,8 +200,7 @@ export async function getTokenList() {
 					? topTokensByVolume[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
 					: null;
 
-				const volume24h =
-					Number(token?.attributes?.from_volume_in_usd ?? 0) + Number(token?.attributes?.to_volume_in_usd ?? 0);
+				const volume24h = token?.attributes?.volume_usd?.h24 ?? 0
 
 				return {
 					...t,
@@ -247,8 +246,11 @@ export const getTopTokensByChain = async (chainId) => {
 		const resIncluded:any[] = [];
 
 		let prevRes = await fetch(
-			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
+			`https://api.geckoterminal.com/api/v2/networks/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
 		).then((res) => res.json());
+
+		resData.push(...prevRes?.data);
+		resIncluded.push(...prevRes?.included);
 
 		for (let i = 0; i < 5; i++) {
 			if (prevRes?.links?.next) {
