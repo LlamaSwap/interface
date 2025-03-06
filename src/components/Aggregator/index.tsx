@@ -64,7 +64,6 @@ import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
 import { zeroAddress } from 'viem';
-import { useToken } from './hooks/useToken';
 import { waitForTransactionReceipt } from 'wagmi/actions';
 import { config } from '../WalletProvider';
 
@@ -329,7 +328,7 @@ interface IFinalRoute extends IRoute {
 
 const chains = getAllChains();
 
-export function AggregatorContainer({ tokenList }) {
+export function AggregatorContainer() {
 	// wallet stuff
 	const { address, isConnected, chain: chainOnWallet } = useAccount();
 	const { openConnectModal } = useConnectModal();
@@ -366,71 +365,19 @@ export function AggregatorContainer({ tokenList }) {
 	// get selected chain and tokens from URL query params
 	const routesRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
-	const { fromTokenAddress, toTokenAddress } = useQueryParams();
 
-	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useSelectedChainAndTokens({
-		tokens: tokenList
-	});
+	const {  toTokenAddress } = useQueryParams();
+	const {
+		selectedChain,
+		chainTokenList,
+		selectedToToken,
+		finalSelectedFromToken,
+		finalSelectedToToken,
+		fetchingFromToken,
+		fetchingToToken
+	} = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
-
-	// data of selected token not in chain's tokenlist
-	const { data: fromToken2 } = useToken({
-		address: fromTokenAddress as `0x${string}`,
-		chainId: selectedChain?.id,
-		enabled:
-			typeof fromTokenAddress === 'string' && fromTokenAddress.length === 42 && selectedChain && !selectedFromToken
-				? true
-				: false
-	});
-
-	const { data: toToken2 } = useToken({
-		address: toTokenAddress as `0x${string}`,
-		chainId: selectedChain?.id,
-		enabled:
-			typeof toTokenAddress === 'string' && toTokenAddress.length === 42 && selectedChain && !selectedToToken
-				? true
-				: false
-	});
-
-	// final tokens data
-	const { finalSelectedFromToken, finalSelectedToToken } = useMemo(() => {
-		const finalSelectedFromToken: IToken | null =
-			!selectedFromToken && fromToken2
-				? {
-						name: fromToken2.name ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-						label: fromToken2.symbol ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-						symbol: fromToken2.symbol ?? '',
-						address: fromToken2.address,
-						value: fromToken2.address,
-						decimals: fromToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${
-							fromToken2.address
-						}?h=20&w=20`,
-						chainId: selectedChain?.id ?? 1,
-						geckoId: null
-					}
-				: selectedFromToken;
-
-		const finalSelectedToToken: IToken | null =
-			!selectedToToken && toToken2
-				? {
-						name: toToken2.name ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-						label: toToken2.symbol ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-						symbol: toToken2.symbol ?? '',
-						address: toToken2.address,
-						value: toToken2.address,
-						decimals: toToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${
-							toToken2.address
-						}?h=20&w=20`,
-						chainId: selectedChain?.id ?? 1,
-						geckoId: null
-					}
-				: selectedToToken;
-
-		return { finalSelectedFromToken, finalSelectedToToken };
-	}, [fromToken2, selectedChain?.id, toToken2, selectedFromToken, selectedToToken]);
 
 	// format input amount of selected from token
 	const amountWithDecimals = BigNumber(debouncedAmount && debouncedAmount !== '' ? debouncedAmount : '0')
