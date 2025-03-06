@@ -245,27 +245,22 @@ export const getTopTokensByChain = async (chainId) => {
 		const resData:any[] = [];
 		const resIncluded:any[] = [];
 
-		let prevRes = await fetch(
-			`https://api.geckoterminal.com/api/v2/networks/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
-		).then((res) => res.json());
-
-		resData.push(...prevRes?.data);
-		resIncluded.push(...prevRes?.included);
-
-		for (let i = 0; i < 5; i++) {
-			if (prevRes?.links?.next) {
-				prevRes = await fetch(prevRes?.links?.next).then((r) => r.json());
-				resData.push(...prevRes?.data);
-				resIncluded.push(...prevRes?.included);
-			}
+		for (let i = 1; i <= 5; i++) {
+			const prevRes = await fetch(
+				`https://api.geckoterminal.com/api/v2/networks/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=${i}&include_network_metrics=true`
+			)
+				.then((r) => r.json())
+				.catch(() => ({ data: [], included: [] }));
+			resData.push(...prevRes.data);
+			resIncluded.push(...prevRes.included);
 		}
 
 		const result = resData.map((pool) => {
 			const token0Id = pool?.relationships?.tokens?.data[0]?.id;
 			const token1Id = pool?.relationships?.tokens?.data[1]?.id;
 
-			const token0 = resIncluded?.find((item) => item?.id === token0Id)?.attributes || {};
-			const token1 = resIncluded?.find((item) => item?.id === token1Id)?.attributes || {};
+			const token0 = resIncluded.find((item) => item?.id === token0Id)?.attributes || {};
+			const token1 = resIncluded.find((item) => item?.id === token1Id)?.attributes || {};
 
 			return { ...pool, token0, token1 };
 		});
