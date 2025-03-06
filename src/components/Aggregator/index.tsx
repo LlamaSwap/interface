@@ -372,9 +372,7 @@ export function AggregatorContainer() {
 		chainTokenList,
 		selectedToToken,
 		finalSelectedFromToken,
-		finalSelectedToToken,
-		fetchingFromToken,
-		fetchingToToken
+		finalSelectedToToken
 	} = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
