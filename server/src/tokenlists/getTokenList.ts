@@ -197,11 +197,10 @@ export async function getTokenList() {
 						: null;
 
 				const token = Array.isArray(topTokensByVolume?.[chain])
-					? topTokensByVolume[chain]?.find((item) => item?.token0?.address?.toLowerCase() === t.address?.toLowerCase())
+					? topTokensByVolume[chain]?.find((item) => item.baseToken.toLowerCase() === t.address?.toLowerCase())
 					: null;
 
-				const volume24h =
-					Number(token?.attributes?.from_volume_in_usd ?? 0) + Number(token?.attributes?.to_volume_in_usd ?? 0);
+				const volume24h = token?.attributes?.volume_usd?.h24 ?? 0
 
 				return {
 					...t,
@@ -237,38 +236,30 @@ export async function getTokenList() {
 	return tokenlist;
 }
 
-export const getTopTokensByChain = async (chainId) => {
+
+const getTopTokensByChain = async (chainId) => {
 	try {
 		if (!geckoTerminalChainsMap[chainId]) {
 			return [chainId, []];
 		}
 
-		const resData:any[] = [];
-		const resIncluded:any[] = [];
+		const resData: any[] = [];
 
-		let prevRes = await fetch(
-			`https://app.geckoterminal.com/api/p1/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=1&include_network_metrics=true`
-		).then((res) => res.json());
-
-		for (let i = 0; i < 5; i++) {
-			if (prevRes?.links?.next) {
-				prevRes = await fetch(prevRes?.links?.next).then((r) => r.json());
-				resData.push(...prevRes?.data);
-				resIncluded.push(...prevRes?.included);
-			}
+		for (let i = 1; i <= 5; i++) {
+			const prevRes = await fetch(
+				`https://api.geckoterminal.com/api/v2/networks/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=${i}&include_network_metrics=true`
+			)
+				.then((r) => r.json())
+				.catch(() => ({ data: [], included: [] }));
+				
+			resData.push(...prevRes.data);
 		}
 
 		const result = resData.map((pool) => {
-			const token0Id = pool?.relationships?.tokens?.data[0]?.id;
-			const token1Id = pool?.relationships?.tokens?.data[1]?.id;
-
-			const token0 = resIncluded?.find((item) => item?.id === token0Id)?.attributes || {};
-			const token1 = resIncluded?.find((item) => item?.id === token1Id)?.attributes || {};
-
-			return { ...pool, token0, token1 };
+			return { ...pool, baseToken: pool.relationships.base_token.data.id.split('_')[1] };
 		});
 
-		return [chainId, result || []];
+		return [chainId, result];
 	} catch (error) {
 		return [chainId, []];
 	}
