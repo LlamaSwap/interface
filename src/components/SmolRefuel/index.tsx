@@ -109,13 +109,6 @@ interface TransactionRequest {
   routeId?: string;
 }
 
-interface ParentProvider {
-  request(args: { method: string; params?: any[] }): Promise<any>;
-  isConnected(): boolean;
-  getAddress(): string | null;
-  getChainId(): number | null;
-}
-
 /**
  * Security validation result
  */
@@ -132,7 +125,38 @@ interface TokenValidationParams {
   amount: bigint;
 }
 
-const SmolRefuel = (): React.ReactElement => {
+/**
+ * Types for message payloads from iframe
+ */
+interface BaseMessagePayload {
+  requestId: string;
+}
+
+interface SignaturePayload extends BaseMessagePayload {
+  type: 'eth_signTypedData' | 'personal_sign';
+  message: any; // Can be a string or an array for typed data
+  address?: string;
+}
+
+interface TransactionRequestPayload extends BaseMessagePayload {
+  params?: TransactionParams;
+  routeId?: string;
+  method?: string;
+}
+
+interface ChainSwitchPayload extends BaseMessagePayload {
+  chainId: number;
+}
+
+interface ResizePayload {
+  height: number;
+}
+
+interface SmolRefuelProps {
+  isGasTabActive?: boolean; // Flag to indicate if gas refuel tab is currently active
+}
+
+const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactElement => {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { data: walletClient } = useWalletClient();
@@ -141,6 +165,10 @@ const SmolRefuel = (): React.ReactElement => {
   const { chains } = useConfig();
   const { openConnectModal } = useConnectModal();
   
+  // State for security warnings
+  const [securityWarning, setSecurityWarning] = React.useState<string | null>(null);
+  const [showWarning, setShowWarning] = React.useState<boolean>(false);
+  
   // Reference to the iframe
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
   
@@ -148,62 +176,61 @@ const SmolRefuel = (): React.ReactElement => {
   const baseUrl = 'https://smolrefuel.com/embed?partner=llamaswap';
   // const baseUrl = 'http://localhost:5173/embed?partner=llamaswap'
   
-  // Create a provider interface for the iframe
-  const parentProvider = React.useMemo<ParentProvider>(() => {
+  // Helper function to show warning and wait for user review
+  const showSecurityWarningAndWait = React.useCallback(async (message: string): Promise<void> => {
+    // Show the warning
+    setSecurityWarning(message);
+    setShowWarning(true);
+    
+    EmbeddedLogger.logAction('Security warning displayed', { message });
+    
+    // Wait 10 seconds to give user time to review
+    await new Promise(resolve => setTimeout(resolve, 10000));
+    
+    // Clear the warning
+    setShowWarning(false);
+    setSecurityWarning(null);
+    
+    EmbeddedLogger.logAction('Security warning timeout completed');
+  }, []);
+  
+  // Create a signature-only provider interface
+  // This addresses the reviewer's concern by only implementing the methods actually used
+  const parentProvider = React.useMemo(() => {
     return {
       async request({ method, params = [] }) {
         if (!walletClient) {
           throw new Error('Wallet client not available');
         }
         
+        // Only allow signature methods
+        const ALLOWED_SIGNATURE_METHODS = ['eth_signTypedData', 'personal_sign'];
+        
+        if (!ALLOWED_SIGNATURE_METHODS.includes(method)) {
+          EmbeddedLogger.logError('Security violation', 
+            `Method ${method} is not allowed in signature provider`);
+          throw new Error(`Method ${method} is not permitted in signature context`);
+        }
+        
         EmbeddedLogger.logAction('Provider Request', { method, params });
         
-        // Handle different wallet methods
-        switch (method) {
-          case 'eth_requestAccounts':
-            return address ? [address] : [];
-            
-          case 'eth_accounts':
-            return address ? [address] : [];
-            
-          case 'eth_chainId':
-            return `0x${chainId.toString(16)}`;
-            
-          case 'personal_sign':
-            return await walletClient.signMessage({
-              message: params[0],
-              account: params[1],
-            });
-            
-          case 'eth_signTypedData':
-            return await walletClient.signTypedData({
-              ...params[1],
-              account: params[0],
-            });
-            
-          case 'eth_sendTransaction':
-            return await walletClient.sendTransaction({
-              ...params[0],
-            });
-            
-          default:
-            throw new Error(`Unsupported method: ${method}`);
+        // Handle signature methods
+        if (method === 'eth_signTypedData') {
+          return await walletClient.signTypedData({
+            ...params[1],
+            account: params[0],
+          });
+        } else if (method === 'personal_sign') {
+          return await walletClient.signMessage({
+            message: params[0],
+            account: params[1],
+          });
         }
-      },
-      
-      isConnected() {
-        return isConnected;
-      },
-      
-      getAddress() {
-        return address || null;
-      },
-      
-      getChainId() {
-        return chainId;
+        
+        throw new Error(`Unsupported method: ${method}`);
       }
     };
-  }, [address, chainId, walletClient, isConnected]);
+  }, [walletClient]);
   
   // Constants
   const MESSAGE_KEY = 'smolrefuel_embedded';
@@ -236,7 +263,7 @@ const SmolRefuel = (): React.ReactElement => {
   /**
    * Handle chain switching requests
    */
-  const handleChainSwitch = React.useCallback(async (payload: any) => {
+  const handleChainSwitch = React.useCallback(async (payload: ChainSwitchPayload) => {
     if (!payload.chainId || !walletClient) return;
     
     try {
@@ -267,7 +294,7 @@ const SmolRefuel = (): React.ReactElement => {
   /**
    * Handle iframe resize requests
    */
-  const handleResize = React.useCallback((payload: any) => {
+  const handleResize = React.useCallback((payload: ResizePayload) => {
     if (!payload.height || !iframeRef.current) return;
     
     const newHeight = payload.height + 10; // Buffer to prevent scrollbars
@@ -297,14 +324,14 @@ const SmolRefuel = (): React.ReactElement => {
           return Number(decimals);
         } catch (err) {
           EmbeddedLogger.logError('Failed to get token decimals', err);
-          return 18; // Default to 18 if contract call fails
+          throw new Error('Failed to get token decimals. Aborting for security reasons.');
         }
       }
       
-      return 18; // Default fallback
+      throw new Error('Public client not available. Cannot verify token decimals.');
     } catch (error) {
       EmbeddedLogger.logError('Error getting token decimals', error);
-      return 18; // Default fallback
+      throw new Error('Failed to process token decimals. Aborting for security reasons.');
     }
   }, [chainId, publicClient]);
   
@@ -314,7 +341,10 @@ const SmolRefuel = (): React.ReactElement => {
   const validateTokenValue = React.useCallback(async ({ tokenAddress, amount }: TokenValidationParams): Promise<ValidationResult> => {
     try {
       const chain = chains.find(c => c.id === chainId)?.name?.toLowerCase();
-      if (!chain) return { safe: true };
+      if (!chain) return { 
+        safe: false, 
+        reason: 'Chain information not available. Cannot verify transaction safety.'
+      };
 
       // Check for unlimited approvals
       if (amount === MAX_UINT256) {
@@ -341,7 +371,10 @@ const SmolRefuel = (): React.ReactElement => {
       return { safe: true };
     } catch (error) {
       EmbeddedLogger.logError('Token value validation error', error);
-      return { safe: true };
+      return { 
+        safe: false, 
+        reason: 'Validation failed due to an unexpected error. Aborting for security reasons.' 
+      };
     }
   }, [chainId, chains, getTokenDecimals]);
 
@@ -370,18 +403,36 @@ const SmolRefuel = (): React.ReactElement => {
         });
       }
       
-      return { safe: true };
+      return { 
+        safe: false, 
+        reason: 'Unknown transaction type. Only ERC20 approvals and native token transfers are supported.'
+      };
     } catch (error) {
       EmbeddedLogger.logError('Validation error', error);
-      return { safe: true };
+      return { 
+        safe: false, 
+        reason: 'Transaction validation failed due to an unexpected error. Aborting for security reasons.' 
+      };
     }
   }, [validateTokenValue]);
 
   /**
    * Handle transaction requests
    */
-  const handleTransaction = React.useCallback(async (payload: any) => {
+  const handleTransaction = React.useCallback(async (payload: TransactionRequestPayload) => {
     if (!payload.requestId) return;
+    
+    // Prevent transaction processing if gas tab is not active
+    if (!isGasTabActive) {
+      sendToIframe('TRANSACTION_RESPONSE', {
+        requestId: payload.requestId,
+        error: 'Transaction rejected: Gas refuel tab is not active',
+        success: false,
+        routeId: payload.routeId
+      });
+      EmbeddedLogger.logError('Security check', 'Transaction attempted while gas refuel tab not active');
+      return;
+    }
     
     const txRequest = payload as TransactionRequest;
     const txParams = txRequest.params || txRequest as unknown as TransactionParams;
@@ -403,6 +454,31 @@ const SmolRefuel = (): React.ReactElement => {
       if (!validation.safe) {
         EmbeddedLogger.logError('Transaction security validation failed', validation.reason);
         throw new Error(`${validation.reason}`);
+      }
+      
+      // Extra security check for native token transfers to contracts with data
+      if (txParams.value && BigInt(txParams.value) > BigInt(0) && 
+          txParams.data && txParams.data !== '0x' && txParams.data !== '') {
+        
+        // Check if destination is a contract
+        try {
+          if (publicClient && txParams.to) {
+            const isContract = await publicClient.getBytecode({ 
+              address: txParams.to as `0x${string}` 
+            });
+            
+            // If sending native tokens to a contract with data, warn the user
+            if (isContract) {
+              // Show warning in the parent UI and wait for user to have time to review
+              await showSecurityWarningAndWait(
+                'Please be extra careful with this transaction and review it. This native token transfer includes contract interaction data.'
+              );
+            }
+          }
+        } catch (err) {
+          // If we can't determine if it's a contract, log but continue
+          EmbeddedLogger.logError('Contract check failed', err);
+        }
       }
       
       EmbeddedLogger.logAction('Transaction passed security validation', { txParams });
@@ -439,13 +515,24 @@ const SmolRefuel = (): React.ReactElement => {
         routeId: txRequest.routeId
       });
     }
-  }, [walletClient, sendToIframe, validateTransaction, EmbeddedLogger]);
+  }, [walletClient, sendToIframe, validateTransaction, EmbeddedLogger, publicClient, showSecurityWarningAndWait]);
   
   /**
    * Handle signature requests - add validation for permit signatures
    */
-  const handleSignature = React.useCallback(async (payload: any) => {
+  const handleSignature = React.useCallback(async (payload: SignaturePayload) => {
     if (!payload.requestId || !payload.type) return;
+    
+    // Prevent signature processing if gas tab is not active
+    if (!isGasTabActive) {
+      sendToIframe('SIGN_RESPONSE', {
+        requestId: payload.requestId,
+        error: 'Signature rejected: Gas refuel tab is not active',
+        success: false
+      });
+      EmbeddedLogger.logError('Security check', 'Signature attempted while gas refuel tab not active');
+      return;
+    }
     
     try {
       // Check for permits in EIP-712 typed data and validate
@@ -484,24 +571,52 @@ const SmolRefuel = (): React.ReactElement => {
         }
       }
       
+      // Add verification and warnings for unverified signature types
+      let isVerifiedSignature = false;
+      let warningMessage = '';
+      
+      // Check if we're dealing with a known, verifiable signature type
+      if (payload.type === 'eth_signTypedData') {
+        if (Array.isArray(payload.message) && payload.message.length > 1) {
+          const typedData = payload.message[1];
+          if (typedData?.primaryType === 'Permit') {
+            isVerifiedSignature = true;
+          } else {
+            warningMessage = `Warning: Unverified signature type (${typedData?.primaryType || 'unknown'}). Only proceed if you trust this application.`;
+          }
+        } else {
+          warningMessage = 'Warning: Unverified typed data format. Only proceed if you trust this application.';
+        }
+      } else if (payload.type === 'personal_sign') {
+        warningMessage = 'Warning: Personal signature requested. Only sign messages from trusted applications.';
+      }
+      
+      // Send warning if not a verified signature type
+      if (!isVerifiedSignature && warningMessage) {
+        sendToIframe('SIGNATURE_WARNING', {
+          requestId: payload.requestId,
+          message: warningMessage
+        });
+      }
+      
       // Process the signature request
       let signature;
       
       if (payload.type === 'eth_signTypedData') {
         if (Array.isArray(payload.message)) {
           signature = await parentProvider.request({
-            method: payload.type,
+            method: 'eth_signTypedData',
             params: payload.message
           });
         } else {
           signature = await parentProvider.request({
-            method: payload.type,
+            method: 'eth_signTypedData',
             params: [payload.address, payload.message]
           });
         }
-      } else {
+      } else if (payload.type === 'personal_sign') {
         signature = await parentProvider.request({
-          method: payload.type,
+          method: 'personal_sign',
           params: [payload.message, payload.address]
         });
       }
@@ -518,7 +633,7 @@ const SmolRefuel = (): React.ReactElement => {
         error: (error as Error).message
       });
     }
-  }, [parentProvider, sendToIframe, validateTokenValue]);
+  }, [parentProvider, sendToIframe, validateTokenValue, isGasTabActive]);
   
   /**
    * Handle wallet connection requests from the iframe
@@ -535,20 +650,21 @@ const SmolRefuel = (): React.ReactElement => {
   React.useEffect(() => {
     if (!iframeRef.current?.contentWindow) return;
     
-    // Message handler map for cleaner code organization
-    const messageHandlers: Record<string, (payload: any) => void> = {
+    // Message handler map with proper type mapping
+    const messageHandlers = {
       'IFRAME_INITIALIZED': handleIframeInitialized,
-      'SWITCH_CHAIN_REQUEST': handleChainSwitch,
-      'RESIZE_HEIGHT': handleResize,
-      'TRANSACTION_REQUEST': handleTransaction,
-      'SIGN_REQUEST': handleSignature,
+      'SWITCH_CHAIN_REQUEST': (payload: ChainSwitchPayload) => handleChainSwitch(payload),
+      'RESIZE_HEIGHT': (payload: ResizePayload) => handleResize(payload),
+      'TRANSACTION_REQUEST': (payload: TransactionRequestPayload) => handleTransaction(payload),
+      'SIGN_REQUEST': (payload: SignaturePayload) => handleSignature(payload),
       'CONNECT_WALLET_REQUEST': handleConnectWalletRequest
-    };
+    } as const;
     
     const handleMessage = async (event: MessageEvent) => {
-      // Origin validation for security
-      if (process.env.NODE_ENV === 'production' && 
-          !event.origin.match(/^https:\/\/(.*\.)?smolrefuel\.com$/)) {
+      // Origin validation for security - using specific domain and not wildcarding subdomains
+      // Also using NODE_ENV !== 'development' to be safer in unknown environments
+      if (process.env.NODE_ENV !== 'development' && 
+          event.origin !== 'https://smolrefuel.com') {
         EmbeddedLogger.logError('Invalid Origin', `Message from ${event.origin} rejected`);
         return;
       }
@@ -558,13 +674,20 @@ const SmolRefuel = (): React.ReactElement => {
       // Only process messages with the correct key
       if (key !== MESSAGE_KEY || !type) return;
       
+      // Security check: Block all message processing when gas tab is not active
+      // This prevents any wallet operations when user isn't looking at the gas tab
+      if (!isGasTabActive) {
+        EmbeddedLogger.logError('Security check', `Blocked ${type} message because gas refuel tab is not active`);
+        return;
+      }
+      
       EmbeddedLogger.logReceived(type, payload);
       
       try {
         // Route message to appropriate handler
-        const handler = messageHandlers[type];
+        const handler = messageHandlers[type as keyof typeof messageHandlers];
         if (handler) {
-          await handler(payload);
+          await handler(payload as any);
         } else {
           EmbeddedLogger.logError('Unknown Message Type', { type, payload });
         }
@@ -591,7 +714,8 @@ const SmolRefuel = (): React.ReactElement => {
     handleResize, 
     handleTransaction, 
     handleSignature,
-    handleConnectWalletRequest
+    handleConnectWalletRequest,
+    isGasTabActive // Added to react to changes in gas tab active state
   ]);
   
   // Update iframe when wallet or chain changes
@@ -619,6 +743,86 @@ const SmolRefuel = (): React.ReactElement => {
 
   return (
     <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
+      {/* Security warning overlay - shadcn-inspired design */}
+      {showWarning && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1.5rem'
+        }}>
+          <div style={{
+            backgroundColor: 'hsl(0, 0%, 100%)',
+            color: 'hsl(240, 10%, 3.9%)',
+            borderRadius: '0.75rem',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            width: '100%',
+            maxWidth: '28rem',
+            border: '1px solid hsl(240, 5%, 84%)',
+            animation: 'fadeIn 0.2s ease-out'
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '1.5rem'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '0.75rem'
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: 'hsl(0, 84%, 60%)' }}>
+                  <path d="M12 9V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M12 16V16.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path fillRule="evenodd" clipRule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '1.125rem',
+                  fontWeight: 600,
+                  lineHeight: 1.6
+                }}>Security Warning</h3>
+              </div>
+              
+              <p style={{
+                fontSize: '0.875rem',
+                lineHeight: 1.5,
+                marginBottom: '1.25rem',
+                color: 'hsl(240, 3.8%, 46.1%)'
+              }}>
+                {securityWarning}
+              </p>
+              
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{
+                  backgroundColor: 'hsl(0, 84%, 95%)',
+                  color: 'hsl(0, 84%, 40%)',
+                  borderRadius: '0.375rem',
+                  padding: '0.25rem 0.75rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 500
+                }}>
+                  Proceeding in 10s...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <iframe
         ref={iframeRef}
         src={baseUrl}
