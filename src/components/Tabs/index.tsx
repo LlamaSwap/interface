@@ -169,7 +169,11 @@ const Tabs = ({
 						<ActiveTabBackground style={getActiveTabStyles()} />
 					</TabList>
 				</TabButtonsWrapper>
-				<TabPanels>{tabs.find((tab) => tab.id === activeTab)?.content}</TabPanels>
+				<TabPanels>
+					{React.cloneElement(tabs.find((tab) => tab.id === activeTab)?.content ?? <></>, {
+						isGasTabActive: activeTab === 'refuel'
+					})}
+				</TabPanels>
 			</TabsContainer>
 		</Wrapper>
 	);
