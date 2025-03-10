@@ -847,20 +847,46 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
               
               <div style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
+                flexDirection: 'column',
+                gap: '8px'
               }}>
                 <div style={{
-                  backgroundColor: 'hsl(0, 84%, 95%)',
-                  color: 'hsl(0, 84%, 40%)',
+                  backgroundColor: 'hsl(210, 20%, 95%)',
+                  color: 'hsl(210, 30%, 40%)',
                   borderRadius: '0.375rem',
                   padding: '0.25rem 0.75rem',
                   fontSize: '0.75rem',
                   fontWeight: 500
                 }}>
-                  Proceeding in 10s...
+                  Auto-proceeding shortly...
+                </div>
+                <div style={{
+                  width: '100%',
+                  height: '4px',
+                  backgroundColor: 'hsl(220, 13%, 91%)',
+                  borderRadius: '2px',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: '0%',
+                    backgroundColor: 'hsl(210, 70%, 50%)',
+                    borderRadius: 'inherit',
+                    animationName: 'progressFill',
+                    animationDuration: '10s',
+                    animationTimingFunction: 'linear',
+                    animationFillMode: 'forwards',
+                    transformOrigin: 'left',
+                  }} />
                 </div>
               </div>
+              
+              <style jsx>{`
+                @keyframes progressFill {
+                  0% { width: 0%; }
+                  100% { width: 100%; }
+                }
+              `}</style>
             </div>
           </div>
         </div>
