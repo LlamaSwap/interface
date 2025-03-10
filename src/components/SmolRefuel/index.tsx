@@ -165,9 +165,10 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
   const { chains } = useConfig();
   const { openConnectModal } = useConnectModal();
   
-  // State for security warnings
+  // State for security warnings - use single state variable
   const [securityWarning, setSecurityWarning] = React.useState<string | null>(null);
-  const [showWarning, setShowWarning] = React.useState<boolean>(false);
+  // Derive showWarning state from securityWarning
+  const showWarning = securityWarning !== null;
   
   // Reference to the iframe
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
@@ -178,17 +179,14 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
   
   // Helper function to show warning and wait for user review
   const showSecurityWarningAndWait = React.useCallback(async (message: string): Promise<void> => {
-    // Show the warning
     setSecurityWarning(message);
-    setShowWarning(true);
     
     EmbeddedLogger.logAction('Security warning displayed', { message });
     
     // Wait 10 seconds to give user time to review
     await new Promise(resolve => setTimeout(resolve, 10000));
     
-    // Clear the warning
-    setShowWarning(false);
+    // Clear the warning - setting to null will automatically hide it
     setSecurityWarning(null);
     
     EmbeddedLogger.logAction('Security warning timeout completed');
@@ -214,13 +212,46 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
         
         EmbeddedLogger.logAction('Provider Request', { method, params });
         
-        // Handle signature methods
+        // Handle signature methods with additional verification
         if (method === 'eth_signTypedData') {
+          // Verify the typed data content
+          if (Array.isArray(params) && params.length > 1) {
+            const typedData = params[1];
+            
+            // Only allow Permit signatures or explicitly recognized types
+            if (typedData?.primaryType === 'Permit') {
+              // Permit signature is handled and validated elsewhere
+              EmbeddedLogger.logAction('Valid Permit signature request', { domain: typedData.domain });
+            } else {
+              // Block any other types of typed data signing
+              EmbeddedLogger.logError('Unsupported typed data signature', { primaryType: typedData?.primaryType });
+              throw new Error(`Only Permit signatures are supported for security reasons`);
+            }
+          } else {
+            EmbeddedLogger.logError('Invalid eth_signTypedData format', { params });
+            throw new Error('Invalid typed data format');
+          }
+          
           return await walletClient.signTypedData({
             ...params[1],
             account: params[0],
           });
         } else if (method === 'personal_sign') {
+          // Verify personal_sign message content
+          if (typeof params[0] === 'string') {
+            const message = params[0];
+            const expectedLoanMessage = 'I commit to completing the swap on smolrefuel.com after receiving my loan';
+            
+            if (!message.includes(expectedLoanMessage)) {
+              EmbeddedLogger.logError('Unsupported personal signature message', { message });
+              throw new Error('Only the loan request signature is permitted');
+            }
+            
+            EmbeddedLogger.logAction('Valid loan request signature', { message });
+          } else {
+            throw new Error('Invalid message format for personal_sign');
+          }
+          
           return await walletClient.signMessage({
             message: params[0],
             account: params[1],
@@ -476,8 +507,11 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
             }
           }
         } catch (err) {
-          // If we can't determine if it's a contract, log but continue
+          // If we can't determine if it's a contract, show a warning
           EmbeddedLogger.logError('Contract check failed', err);
+          await showSecurityWarningAndWait(
+            'Unable to verify if this is a contract address. Please proceed with caution.'
+          );
         }
       }
       
@@ -588,7 +622,16 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
           warningMessage = 'Warning: Unverified typed data format. Only proceed if you trust this application.';
         }
       } else if (payload.type === 'personal_sign') {
-        warningMessage = 'Warning: Personal signature requested. Only sign messages from trusted applications.';
+        // Check for the specific loan request message format
+        const expectedLoanMessage = 'I commit to completing the swap on smolrefuel.com after receiving my loan';
+        
+        if (typeof payload.message === 'string' && payload.message.includes(expectedLoanMessage)) {
+          // This is the valid loan request signature
+          isVerifiedSignature = true;
+          EmbeddedLogger.logAction('Valid loan request signature detected', { message: payload.message });
+        } else {
+          warningMessage = 'Warning: Unrecognized personal signature. Only the loan request signature is permitted.';
+        }
       }
       
       // Send warning if not a verified signature type
