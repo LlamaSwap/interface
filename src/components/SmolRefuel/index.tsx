@@ -91,6 +91,10 @@ const EmbeddedLogger = {
   }
 };
 
+function isGasTabActive(){
+  return window.location.search.includes("tab=refuel")
+}
+
 /**
  * Type definitions
  */
@@ -152,11 +156,7 @@ interface ResizePayload {
   height: number;
 }
 
-interface SmolRefuelProps {
-  isGasTabActive?: boolean; // Flag to indicate if gas refuel tab is currently active
-}
-
-const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactElement => {
+const SmolRefuel = (): React.ReactElement => {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { data: walletClient } = useWalletClient();
@@ -454,7 +454,7 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
     if (!payload.requestId) return;
     
     // Prevent transaction processing if gas tab is not active
-    if (!isGasTabActive) {
+    if (!isGasTabActive()) {
       sendToIframe('TRANSACTION_RESPONSE', {
         requestId: payload.requestId,
         error: 'Transaction rejected: Gas refuel tab is not active',
@@ -558,7 +558,7 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
     if (!payload.requestId || !payload.type) return;
     
     // Prevent signature processing if gas tab is not active
-    if (!isGasTabActive) {
+    if (!isGasTabActive()) {
       sendToIframe('SIGN_RESPONSE', {
         requestId: payload.requestId,
         error: 'Signature rejected: Gas refuel tab is not active',
@@ -676,7 +676,7 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
         error: (error as Error).message
       });
     }
-  }, [parentProvider, sendToIframe, validateTokenValue, isGasTabActive]);
+  }, [parentProvider, sendToIframe, validateTokenValue]);
   
   /**
    * Handle wallet connection requests from the iframe
@@ -719,7 +719,7 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
       
       // Security check: Block all message processing when gas tab is not active
       // This prevents any wallet operations when user isn't looking at the gas tab
-      if (!isGasTabActive) {
+      if (!isGasTabActive()) {
         EmbeddedLogger.logError('Security check', `Blocked ${type} message because gas refuel tab is not active`);
         return;
       }
@@ -757,8 +757,7 @@ const SmolRefuel = ({ isGasTabActive = false }: SmolRefuelProps): React.ReactEle
     handleResize, 
     handleTransaction, 
     handleSignature,
-    handleConnectWalletRequest,
-    isGasTabActive // Added to react to changes in gas tab active state
+    handleConnectWalletRequest
   ]);
   
   // Update iframe when wallet or chain changes
