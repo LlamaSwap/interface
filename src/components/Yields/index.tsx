@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useRef, useEffect } from 'react';
+import * as React from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import styled from 'styled-components';
 import Panel from './Panel';
@@ -50,17 +50,17 @@ const YieldsRow = ({ data, index, style }) => (
 );
 
 const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
-	const [bodyHeight, setBodyHeight] = useState(0);
-	const [showFilters, setShowFilters] = useState(false);
-	const [isSearch, setIsSearch] = useState(true);
-	const [data, setData] = useState(initialData);
-	const [sortBy, setSortBy] = useState('');
-	const [sortDirection, setSortDirection] = useState('desc');
-	const containerRef = useRef<HTMLDivElement>(null);
+	const [bodyHeight, setBodyHeight] = React.useState(0);
+	const [showFilters, setShowFilters] = React.useState(false);
+	const [isSearch, setIsSearch] = React.useState(true);
+	const [data, setData] = React.useState(initialData);
+	const [sortBy, setSortBy] = React.useState('');
+	const [sortDirection, setSortDirection] = React.useState('desc');
+	const containerRef = React.useRef<HTMLDivElement>(null);
 	const router = useRouter();
 	const { search } = router.query;
 
-	useEffect(() => {
+	React.useEffect(() => {
 		if (!search) {
 			setIsSearch(true);
 		}
@@ -91,7 +91,7 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 		overscan: 1000
 	});
 
-	useLayoutEffect(() => {
+	React.useLayoutEffect(() => {
 		const containerHeight = containerRef.current!.offsetHeight;
 		const totalSize = rowVirtualizer.getTotalSize();
 		setBodyHeight(Math.min(containerHeight, totalSize));

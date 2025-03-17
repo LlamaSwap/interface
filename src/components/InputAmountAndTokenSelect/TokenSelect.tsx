@@ -11,6 +11,7 @@ import { ChevronDown } from 'react-feather';
 import { useToken } from '../Aggregator/hooks/useToken';
 import { isAddress } from 'viem';
 import { IToken } from '~/types';
+import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 
 const Row = ({ chain, token, onClick, style }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
@@ -279,7 +280,8 @@ export const TokenSelect = ({
 	tokens,
 	onClick,
 	token,
-	selectedChain
+	selectedChain,
+	type
 }: {
 	tokens: Array<IToken>;
 	token?: IToken | null;
@@ -291,6 +293,7 @@ export const TokenSelect = ({
 		chainId: number;
 		logoURI?: string | null;
 	} | null;
+	type: 'amountIn' | 'amountOut';
 }) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -298,6 +301,8 @@ export const TokenSelect = ({
 		onClick(token);
 		onClose();
 	};
+
+	const { fetchingFromToken, fetchingToToken } = useSelectedChainAndTokens();
 
 	return (
 		<>
@@ -314,27 +319,42 @@ export const TokenSelect = ({
 				p="12px"
 				onClick={() => onOpen()}
 			>
-				{token ? (
-					<IconImage
-						src={token.logoURI}
-						onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
-					/>
-				) : null}
+				{(type === 'amountIn' ? fetchingFromToken : fetchingToToken) ? (
+					<Text as="span" color="white" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis" fontWeight={400}>
+						Loading...
+					</Text>
+				) : (
+					<>
+						{token ? (
+							<IconImage
+								src={token.logoURI}
+								onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
+							/>
+						) : null}
 
-				<Tooltip
-					label="This token could have been affected by the multichain hack."
-					bg="black"
-					color="white"
-					isDisabled={!token?.isMultichain}
-					fontSize="0.75rem"
-					padding="8px"
-				>
-					{token?.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : <></>}
-				</Tooltip>
+						<Tooltip
+							label="This token could have been affected by the multichain hack."
+							bg="black"
+							color="white"
+							isDisabled={!token?.isMultichain}
+							fontSize="0.75rem"
+							padding="8px"
+						>
+							{token?.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : <></>}
+						</Tooltip>
 
-				<Text as="span" color="white" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis" fontWeight={400}>
-					{token ? token.symbol : 'Select Token'}
-				</Text>
+						<Text
+							as="span"
+							color="white"
+							overflow="hidden"
+							whiteSpace="nowrap"
+							textOverflow="ellipsis"
+							fontWeight={400}
+						>
+							{token ? token.symbol : 'Select Token'}
+						</Text>
+					</>
+				)}
 
 				<ChevronDown size={16} style={{ marginLeft: 'auto' }} />
 			</Button>

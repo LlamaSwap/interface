@@ -302,12 +302,13 @@ export const SwapInputArrow = (props) => (
 		p="0"
 		pos="absolute"
 		top="0"
-		bottom="-36px"
+		bottom="0"
 		right="0"
 		left="0"
 		m="auto"
 		borderRadius="8px"
-		bg="#222429"
+		border="4px solid #222429"
+		bg="#141619"
 		_hover={{ bg: '#2d3037' }}
 		color="white"
 		zIndex={1}

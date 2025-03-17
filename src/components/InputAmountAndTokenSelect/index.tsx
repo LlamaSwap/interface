@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import * as React from 'react';
 import { Flex, Input, Text, Button, Box, FlexProps, InputProps, TextProps, ButtonProps } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
 import type { Dispatch, SetStateAction } from 'react';
@@ -7,7 +7,6 @@ import { formattedNum } from '~/utils';
 import { formatAmount } from '~/utils/formatAmount';
 import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../Aggregator/constants';
 import { TokenSelect } from './TokenSelect';
-import styled from 'styled-components';
 
 export const Container = (props: FlexProps) => (
 	<Flex
@@ -140,7 +139,13 @@ export function InputAmountAndTokenSelect({
 				{customSelect ? (
 					customSelect
 				) : (
-					<TokenSelect tokens={tokens} token={token} onClick={onSelectTokenChange} selectedChain={selectedChain} />
+					<TokenSelect
+						tokens={tokens}
+						token={token}
+						onClick={onSelectTokenChange}
+						selectedChain={selectedChain}
+						type={type}
+					/>
 				)}
 			</Flex>
 
@@ -181,10 +186,6 @@ export function InputAmountAndTokenSelect({
 					)}
 				</Flex>
 			</Flex>
-
-			{type === 'amountIn' ? (
-				<InputRange amount={amount} balance={balance} setAmount={setAmount} key={`range-${amount}`} />
-			) : null}
 		</Container>
 	);
 }
@@ -196,140 +197,3 @@ function formatNumber(string) {
 	}
 	return string.replace(pattern, ' ');
 }
-
-const InputRange = ({ amount, balance, setAmount }) => {
-	const [inputRangeValue, setInputRangeValue] = useState(amount && balance ? Number((+amount / +balance) * 100) : 0);
-
-	return (
-		<InputWrapper
-			style={
-				{
-					'--range-value': `${Math.min(inputRangeValue,100)}%`
-				} as any
-			}
-		>
-			<RangeValue>{`${(Math.min(inputRangeValue,100)).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`}</RangeValue>
-			<RangeInput
-				type="range"
-				min="0"
-				max="100"
-				value={Math.min(inputRangeValue,100)}
-				onChange={(e) => {
-					setInputRangeValue(Number(e.target.value));
-				}}
-				onMouseUp={(e) => {
-					setAmount([+(balance ?? 0) * (Number(e.currentTarget.value) / 100), '']);
-				}}
-				onTouchEnd={(e) => {
-					setAmount([+(balance ?? 0) * (Number(e.currentTarget.value) / 100), '']);
-				}}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(0);
-					setAmount([+(balance ?? 0) * (0 / 100), '']);
-				}}
-				$position={0}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(25);
-					setAmount([+(balance ?? 0) * (25 / 100), '']);
-				}}
-				$position={25}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(50);
-					setAmount([+(balance ?? 0) * (50 / 100), '']);
-				}}
-				$position={50}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(75);
-					setAmount([+(balance ?? 0) * (75 / 100), '']);
-				}}
-				$position={75}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(100);
-					setAmount([+(balance ?? 0) * (100 / 100), '']);
-				}}
-				$position={100}
-			/>
-		</InputWrapper>
-	);
-};
-
-const InputWrapper = styled.div`
-	position: relative;
-	margin: 6px 0;
-`;
-
-const RangeButton = styled.button<{ $position: number }>`
-	position: absolute;
-	top: 8px;
-	left: 0;
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-	background-color: #2d3037;
-	border: none;
-	cursor: pointer;
-
-	:nth-of-type(2) {
-		left: 25%;
-	}
-
-	:nth-of-type(3) {
-		left: calc(50% - 5px);
-	}
-
-	:nth-of-type(4) {
-		left: calc(75% - 10px);
-	}
-
-	:nth-of-type(5) {
-		left: calc(100% - 10px);
-	}
-`;
-
-const RangeInput = styled.input`
-	width: 100%;
-	height: 4px;
-	border-radius: 8px;
-	-webkit-appearance: none;
-
-	&::-webkit-slider-runnable-track {
-		-webkit-appearance: none;
-		height: 4px;
-		border-radius: 8px;
-		border: none;
-		background: linear-gradient(to right, #2172E5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
-	}
-
-	&::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		background: #2172E5;
-		height: 16px;
-		width: 16px;
-		border-radius: 50%;
-		margin-top: -6px;
-		position: relative;
-		z-index: 1;
-		cursor: pointer;
-	}
-`;
-
-const RangeValue = styled.span`
-	position: absolute;
-	top: -20px;
-	left: var(--range-value);
-	background-color: #2d3037;
-	padding: 2px 4px;
-	border-radius: 4px;
-	color: white;
-	font-size: 12px;
-`;

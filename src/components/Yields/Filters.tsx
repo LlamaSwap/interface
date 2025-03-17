@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import * as React from 'react';
 import {
 	Box,
 	Flex,
@@ -32,7 +32,7 @@ const createIndex = (data, key) => {
 };
 
 const useAdvancedFilter = (initialData, config = {}) => {
-	const indexes = useMemo(
+	const indexes = React.useMemo(
 		() => ({
 			chain: createIndex(initialData, 'chain'),
 			project: createIndex(initialData, 'project')
@@ -40,7 +40,7 @@ const useAdvancedFilter = (initialData, config = {}) => {
 		[initialData]
 	);
 
-	return useCallback(
+	return React.useCallback(
 		(query) => {
 			const {
 				chains,
@@ -116,12 +116,12 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 	} = router.query;
 	const advancedFilter = useAdvancedFilter(initialData, config);
 
-	projects = useMemo(() => arrayFromString(projects), [projects]);
-	chains = useMemo(() => arrayFromString(chains), [chains]);
-	category = useMemo(() => arrayFromString(category), [category]);
-	const [displayedApyRange, setDisplayedApyRange] = useState([+apyFrom, +apyTo]);
+	projects = React.useMemo(() => arrayFromString(projects), [projects]);
+	chains = React.useMemo(() => arrayFromString(chains), [chains]);
+	category = React.useMemo(() => arrayFromString(category), [category]);
+	const [displayedApyRange, setDisplayedApyRange] = React.useState([+apyFrom, +apyTo]);
 
-	const allChains = useMemo(
+	const allChains = React.useMemo(
 		() => Array.from(new Set(initialData.map((item) => item.chain))) as Array<string>,
 		[initialData]
 	);
@@ -131,8 +131,8 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 		logoURI: chainIconUrl(chain?.toLowerCase())
 	}));
 
-	const allProjects = useMemo(() => Object.keys(config), [config]);
-	const projectOptions = useMemo(
+	const allProjects = React.useMemo(() => Object.keys(config), [config]);
+	const projectOptions = React.useMemo(
 		() =>
 			allProjects.map((project) => ({
 				value: project,
@@ -142,7 +142,7 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 		[allProjects, config]
 	);
 
-	const allTokens = useMemo(
+	const allTokens = React.useMemo(
 		() =>
 			(Array.from(new Set(initialData.map((item) => item.symbol))) as Array<string>).filter(
 				(s: string) => s.split('-')?.length === 1
@@ -154,7 +154,7 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 		label: token
 	}));
 
-	const allCategories = useMemo(
+	const allCategories = React.useMemo(
 		() =>
 			Array.from(
 				new Set(
@@ -169,18 +169,18 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 		label: category
 	}));
 
-	const handleFilterChanges = useCallback(
+	const handleFilterChanges = React.useCallback(
 		debounce((query) => {
 			const filteredData = advancedFilter(query);
 			setData(filteredData);
 		}, 500),
 		[advancedFilter, setData]
 	);
-	useEffect(() => {
+	React.useEffect(() => {
 		handleFilterChanges({ chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, category, includeRewardApy });
 	}, [chains, projects, search, apyFrom, apyTo, tvlFrom, tvlTo, handleFilterChanges, category, includeRewardApy]);
 
-	const handleQueryChange = useCallback(
+	const handleQueryChange = React.useCallback(
 		(value, key) => {
 			let query;
 			if (key === 'apy') {
@@ -215,11 +215,11 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 		);
 	};
 
-	const handleSymbolSearch = useCallback((value) => {
+	const handleSymbolSearch = React.useCallback((value) => {
 		handleQueryChange(value, 'search');
 	}, []);
 
-	const handleTvlFromChange = useCallback(
+	const handleTvlFromChange = React.useCallback(
 		(e) => {
 			const value = e.target.value;
 			handleQueryChange(value, 'tvlFrom');
@@ -227,7 +227,7 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 		[handleQueryChange]
 	);
 
-	const handleTvlToChange = useCallback(
+	const handleTvlToChange = React.useCallback(
 		(e) => {
 			const value = e.target.value;
 			handleQueryChange(value, 'tvlTo');
@@ -235,14 +235,14 @@ const Filters = ({ setData, initialData, config, closeFilters }) => {
 		[handleQueryChange]
 	);
 
-	const changeApyRange = useCallback(
+	const changeApyRange = React.useCallback(
 		(values) => {
 			handleQueryChange(values, 'apy');
 		},
 		[handleQueryChange]
 	);
 
-	const handleApyRangeChange = useCallback(
+	const handleApyRangeChange = React.useCallback(
 		(values) => {
 			setDisplayedApyRange(values);
 		},
