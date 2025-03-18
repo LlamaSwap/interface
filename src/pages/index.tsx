@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { AggregatorContainer } from '~/components/Aggregator';
 import Lending from '~/components/Lending';
+import SmolRefuel from '~/components/SmolRefuel';
 import Tabs from '~/components/Tabs';
 import Yields from '~/components/Yields';
 import Layout from '~/layout';
@@ -28,7 +29,8 @@ export default function Aggregator(props) {
 	const tabData = [
 		{ id: 'swap', name: 'Swap', content: <AggregatorContainer {...props} /> },
 		{ id: 'earn', name: 'Earn', content: <Yields tokens={props?.tokenList} {...yeildProps} /> },
-		{ id: 'borrow', name: 'Borrow', content: <Lending {...lendingProps} /> }
+		{ id: 'borrow', name: 'Borrow', content: <Lending {...lendingProps} /> },
+		{ id: 'refuel', name: 'Gas Refuel', content: <SmolRefuel /> }
 	];
 	return (
 		<Layout title={`Meta-dex aggregator - DefiLlama`} defaultSEO>
