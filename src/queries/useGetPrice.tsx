@@ -91,7 +91,7 @@ const getExperimentalPrice = async (chain: string, token: string): Promise<numbe
 
 		experimentalPrices.pairs.forEach((pair: DexScreenerTokenPair) => {
 			const { priceUsd, liquidity, chainId, baseToken } = pair;
-			if (baseToken.address === getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
+			if (liquidity && priceUsd && baseToken.address === getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
 				if (totalLiquidity !== 0) {
 					const avgPrice = weightedPrice / totalLiquidity;
 					const priceDiff = Math.abs(Number(priceUsd) - avgPrice) / avgPrice;
