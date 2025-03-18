@@ -157,7 +157,7 @@ interface ResizePayload {
 }
 
 const SmolRefuel = (): React.ReactElement => {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const chainId = useChainId();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -196,7 +196,7 @@ const SmolRefuel = (): React.ReactElement => {
   // This addresses the reviewer's concern by only implementing the methods actually used
   const parentProvider = React.useMemo(() => {
     return {
-      async request({ method, params = [] }) {
+      async request({ method, params = [] }:{method:any, params:any}) {
         if (!walletClient) {
           throw new Error('Wallet client not available');
         }
