@@ -5,7 +5,8 @@ import { IToken } from '~/types';
 import { useQueryParams } from './useQueryParams';
 import { useGetTokenListByChain } from '~/queries/useGetTokenList';
 import { useToken } from '~/components/Aggregator/hooks/useToken';
-import { isAddress } from 'viem';
+import { isAddress, zeroAddress } from 'viem';
+import { nativeTokens } from '~/components/Aggregator/nativeTokens';
 
 const chains = getAllChains();
 
@@ -20,10 +21,22 @@ export function useSelectedChainAndTokens() {
 		const selectedChain = chains.find((c) => c.value === chainName);
 
 		const selectedFromToken =
-			tokenList && fromTokenAddress && isAddress(fromTokenAddress) ? tokenList[fromTokenAddress.toLowerCase()] : null;
+			fromTokenAddress && isAddress(fromTokenAddress)
+				? (fromTokenAddress === zeroAddress && selectedChain
+						? nativeTokens.find((t) => t.chainId === selectedChain.chainId)
+						: null) ??
+					tokenList?.[fromTokenAddress.toLowerCase()] ??
+					null
+				: null;
 
 		const selectedToToken =
-			tokenList && toTokenAddress && isAddress(toTokenAddress) ? tokenList[toTokenAddress.toLowerCase()] : null;
+			toTokenAddress && isAddress(toTokenAddress)
+				? (toTokenAddress === zeroAddress && selectedChain
+						? nativeTokens.find((t) => t.chainId === selectedChain.chainId)
+						: null) ??
+					tokenList?.[toTokenAddress.toLowerCase()] ??
+					null
+				: null;
 
 		return {
 			selectedChain: selectedChain ? { ...selectedChain, id: chainsMap[selectedChain.value] } : null,
@@ -43,9 +56,10 @@ export function useSelectedChainAndTokens() {
 		chainId: data.selectedChain?.id,
 		enabled:
 			typeof fromTokenAddress === 'string' &&
-			fromTokenAddress.length === 42 &&
+			isAddress(fromTokenAddress) &&
 			data.selectedChain &&
-			data.selectedFromToken === null
+			data.selectedFromToken === null &&
+			!fetchingTokenList
 				? true
 				: false
 	});
@@ -55,9 +69,10 @@ export function useSelectedChainAndTokens() {
 		chainId: data.selectedChain?.id,
 		enabled:
 			typeof toTokenAddress === 'string' &&
-			toTokenAddress.length === 42 &&
+			isAddress(toTokenAddress) &&
 			data.selectedChain &&
-			data.selectedToToken === null
+			data.selectedToToken === null &&
+			!fetchingTokenList
 				? true
 				: false
 	});
@@ -101,8 +116,8 @@ export function useSelectedChainAndTokens() {
 			...data,
 			finalSelectedFromToken,
 			finalSelectedToToken,
-			fetchingFromToken: !finalSelectedFromToken && fetchingTokenList && fetchingFromToken2,
-			fetchingToToken: !finalSelectedToToken && fetchingTokenList && fetchingToToken2
+			fetchingFromToken: !finalSelectedFromToken && (fetchingTokenList || fetchingFromToken2) ? true : false,
+			fetchingToToken: !finalSelectedToToken && (fetchingTokenList || fetchingToToken2) ? true : false
 		};
 	}, [data, fromToken2, toToken2, fetchingTokenList]);
 }
