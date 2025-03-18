@@ -3,24 +3,27 @@ import { chainsMap } from '~/components/Aggregator/constants';
 import { getAllChains } from '~/components/Aggregator/router';
 import { IToken } from '~/types';
 import { useQueryParams } from './useQueryParams';
-import { useGetTokenList } from '~/queries/useGetTokenList';
+import { useGetTokenListByChain } from '~/queries/useGetTokenList';
 import { useToken } from '~/components/Aggregator/hooks/useToken';
+import { isAddress } from 'viem';
 
 const chains = getAllChains();
 
 export function useSelectedChainAndTokens() {
 	const { chainName, fromTokenAddress, toTokenAddress } = useQueryParams();
-	const { data: tokens, isLoading: fetchingTokenList } = useGetTokenList();
+
+	const { data: tokenList, isLoading: fetchingTokenList } = useGetTokenListByChain({
+		chainId: chainName ? chainsMap[chainName] : null
+	});
+
 	const data = useMemo(() => {
-		const chainId = chainsMap[chainName];
-
-		const tokenList: Array<IToken> = tokens && chainName ? tokens[chainId] || [] : null;
-
 		const selectedChain = chains.find((c) => c.value === chainName);
 
-		const selectedFromToken = tokenList?.find((t) => t.address.toLowerCase() === fromTokenAddress);
+		const selectedFromToken =
+			tokenList && fromTokenAddress && isAddress(fromTokenAddress) ? tokenList[fromTokenAddress.toLowerCase()] : null;
 
-		const selectedToToken = tokenList?.find((t) => t.address.toLowerCase() === toTokenAddress);
+		const selectedToToken =
+			tokenList && toTokenAddress && isAddress(toTokenAddress) ? tokenList[toTokenAddress.toLowerCase()] : null;
 
 		return {
 			selectedChain: selectedChain ? { ...selectedChain, id: chainsMap[selectedChain.value] } : null,
@@ -30,9 +33,9 @@ export function useSelectedChainAndTokens() {
 			selectedToToken: selectedToToken
 				? { ...selectedToToken, label: selectedToToken.symbol, value: selectedToToken.address }
 				: null,
-			chainTokenList: tokenList
+			chainTokenList: (tokenList ?? {}) as Record<string, IToken>
 		};
-	}, [chainName, fromTokenAddress, toTokenAddress, tokens]);
+	}, [chainName, fromTokenAddress, toTokenAddress, tokenList]);
 
 	// data of selected token not in chain's tokenlist
 	const { data: fromToken2, isLoading: fetchingFromToken2 } = useToken({
@@ -58,9 +61,6 @@ export function useSelectedChainAndTokens() {
 				? true
 				: false
 	});
-
-	const fetchingFromToken = fetchingTokenList || fetchingFromToken2;
-	const fetchingToToken = fetchingTokenList || fetchingToToken2;
 
 	return useMemo(() => {
 		const finalSelectedFromToken: IToken | null =
@@ -101,8 +101,8 @@ export function useSelectedChainAndTokens() {
 			...data,
 			finalSelectedFromToken,
 			finalSelectedToToken,
-			fetchingFromToken,
-			fetchingToToken
+			fetchingFromToken: !finalSelectedFromToken && fetchingTokenList && fetchingFromToken2,
+			fetchingToToken: !finalSelectedToToken && fetchingTokenList && fetchingToToken2
 		};
-	}, [data, fromToken2, toToken2]);
+	}, [data, fromToken2, toToken2, fetchingTokenList]);
 }

@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Flex, Input, Text, Button, Box, FlexProps, InputProps, TextProps, ButtonProps } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
 import type { Dispatch, SetStateAction } from 'react';
-import type { IToken } from '~/types';
 import { formattedNum } from '~/utils';
 import { formatAmount } from '~/utils/formatAmount';
 import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../Aggregator/constants';
@@ -76,10 +75,7 @@ export function InputAmountAndTokenSelect({
 	amount,
 	setAmount,
 	type,
-	tokens,
-	token,
 	onSelectTokenChange,
-	selectedChain,
 	balance,
 	onMaxClick,
 	tokenPrice,
@@ -91,16 +87,7 @@ export function InputAmountAndTokenSelect({
 	amount: string | number;
 	setAmount: Dispatch<SetStateAction<[string | number, string | number]>>;
 	type: 'amountIn' | 'amountOut';
-	tokens: Array<IToken>;
-	token?: IToken | null;
 	onSelectTokenChange: (token: any) => void;
-	selectedChain?: {
-		id: any;
-		value: string;
-		label: string;
-		chainId: number;
-		logoURI?: string | null;
-	} | null;
 	balance?: string;
 	onMaxClick?: () => void;
 	tokenPrice?: number | null;
@@ -136,17 +123,7 @@ export function InputAmountAndTokenSelect({
 					/>
 				</Box>
 
-				{customSelect ? (
-					customSelect
-				) : (
-					<TokenSelect
-						tokens={tokens}
-						token={token}
-						onClick={onSelectTokenChange}
-						selectedChain={selectedChain}
-						type={type}
-					/>
-				)}
+				{customSelect ? customSelect : <TokenSelect onClick={onSelectTokenChange} type={type} />}
 			</Flex>
 
 			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem">

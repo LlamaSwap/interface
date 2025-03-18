@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
+import { useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
@@ -33,7 +33,6 @@ import Loader from './Loader';
 import { useTokenApprove } from './hooks';
 import { IRoute, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
-import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
@@ -370,7 +369,6 @@ export function AggregatorContainer() {
 	const {  toTokenAddress } = useQueryParams();
 	const {
 		selectedChain,
-		chainTokenList,
 		selectedToToken,
 		finalSelectedFromToken,
 		finalSelectedToToken
@@ -394,33 +392,6 @@ export function AggregatorContainer() {
 
 	// selected from token's balances
 	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain?.id });
-
-	// balances of all token's in wallet
-	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain?.id : null);
-
-	const tokensInChain = useMemo(() => {
-		return (
-			chainTokenList
-				?.concat(savedTokens)
-				.map((token) => {
-					const tokenBalance = token?.address ? tokenBalances?.[token.address.toLowerCase()] : {};
-
-					return {
-						...token,
-						amount: tokenBalance?.amount ?? 0,
-						balanceUSD: tokenBalance?.balanceUSD ?? 0
-					};
-				})
-				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
-		);
-	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
-
-	const { fromTokensList, toTokensList } = useMemo(() => {
-		return {
-			fromTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
-			toTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)
-		};
-	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
 
 	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
@@ -1038,10 +1009,7 @@ export function AggregatorContainer() {
 							setAmount={setAmount}
 							type="amountIn"
 							amount={selectedRoute?.amountIn && amountOut !== '' ? selectedRoute.amountIn : amount}
-							tokens={fromTokensList}
-							token={finalSelectedFromToken}
 							onSelectTokenChange={onFromTokenChange}
-							selectedChain={selectedChain}
 							balance={balance.data?.formatted}
 							onMaxClick={onMaxClick}
 							tokenPrice={fromTokenPrice}
@@ -1065,10 +1033,7 @@ export function AggregatorContainer() {
 							setAmount={setAmount}
 							type="amountOut"
 							amount={selectedRoute?.amount && amount !== '' ? selectedRoute.amount : amountOut}
-							tokens={toTokensList}
-							token={finalSelectedToToken}
 							onSelectTokenChange={onToTokenChange}
-							selectedChain={selectedChain}
 							balance={toTokenBalance.data?.formatted}
 							tokenPrice={toTokenPrice}
 							priceImpact={selectedRoutesPriceImpact}

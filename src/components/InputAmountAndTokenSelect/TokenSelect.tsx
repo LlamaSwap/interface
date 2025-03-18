@@ -1,6 +1,13 @@
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure, Input } from '@chakra-ui/react';
+import {
+	Modal,
+	ModalOverlay,
+	ModalContent,
+	ModalCloseButton,
+	useDisclosure,
+	Input
+} from '@chakra-ui/react';
 import { WarningTwoIcon } from '@chakra-ui/icons';
 import { Header, IconImage, PairRow } from '../Aggregator/Search';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
@@ -12,6 +19,10 @@ import { useToken } from '../Aggregator/hooks/useToken';
 import { isAddress } from 'viem';
 import { IToken } from '~/types';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
+import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
+import { useAccount } from 'wagmi';
+import { useRouter } from 'next/router';
+import { useTokenBalances } from '~/queries/useTokenBalances';
 
 const Row = ({ chain, token, onClick, style }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
@@ -166,7 +177,7 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 	);
 };
 
-const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
+const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain, isLoading }) => {
 	const [input, setInput] = useState('');
 	const onInputChange = (e) => {
 		setInput(e?.target?.value);
@@ -233,68 +244,69 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 						autoFocus
 					/>
 				</div>
-				{isAddress(input) && filteredData.length === 0 ? (
-					<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
-				) : null}
 
-				<div
-					ref={parentRef}
-					className="List"
-					style={{
-						height: `390px`,
-						overflow: 'auto',
-						marginTop: '24px'
-					}}
-				>
-					<div
-						style={{
-							height: `${rowVirtualizer.getTotalSize()}px`,
-							width: '100%',
-							position: 'relative'
-						}}
-					>
-						{rowVirtualizer.getVirtualItems().map((virtualRow) => (
-							<Row
-								token={filteredData[virtualRow.index]}
-								onClick={onClick}
-								chain={selectedChain}
-								key={virtualRow.index + filteredData[virtualRow.index].address}
+				{isLoading ? (
+					<Text textAlign={'center'} marginTop="25%">
+						Loading...
+					</Text>
+				) : (
+					<>
+						{isAddress(input) && filteredData.length === 0 ? (
+							<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
+						) : null}
+
+						<div
+							ref={parentRef}
+							className="List"
+							style={{
+								height: `390px`,
+								overflow: 'auto',
+								marginTop: '24px'
+							}}
+						>
+							<div
 								style={{
-									position: 'absolute',
-									top: 0,
-									left: 0,
+									height: `${rowVirtualizer.getTotalSize()}px`,
 									width: '100%',
-									height: '44px',
-									transform: `translateY(${virtualRow.start}px)`
+									position: 'relative'
 								}}
-							/>
-						))}
-					</div>
-				</div>
+							>
+								{rowVirtualizer.getVirtualItems().map((virtualRow) => (
+									<Row
+										token={filteredData[virtualRow.index]}
+										onClick={onClick}
+										chain={selectedChain}
+										key={virtualRow.index + filteredData[virtualRow.index].address}
+										style={{
+											position: 'absolute',
+											top: 0,
+											left: 0,
+											width: '100%',
+											height: '44px',
+											transform: `translateY(${virtualRow.start}px)`
+										}}
+									/>
+								))}
+							</div>
+						</div>
+					</>
+				)}
 			</ModalContent>
 		</Modal>
 	);
 };
 
 export const TokenSelect = ({
-	tokens,
 	onClick,
-	token,
-	selectedChain,
 	type
 }: {
-	tokens: Array<IToken>;
-	token?: IToken | null;
 	onClick: (token: IToken) => void;
-	selectedChain?: {
-		id: any;
-		value: string;
-		label: string;
-		chainId: number;
-		logoURI?: string | null;
-	} | null;
 	type: 'amountIn' | 'amountOut';
 }) => {
+	const { address } = useAccount();
+
+	const router = useRouter();
+
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const onTokenClick = (token) => {
@@ -302,7 +314,55 @@ export const TokenSelect = ({
 		onClose();
 	};
 
-	const { fetchingFromToken, fetchingToToken } = useSelectedChainAndTokens();
+	const {
+		fetchingFromToken,
+		fetchingToToken,
+		finalSelectedFromToken,
+		finalSelectedToToken,
+		chainTokenList,
+		selectedChain
+	} = useSelectedChainAndTokens();
+
+	// balances of all token's in wallet
+	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain?.id : null);
+
+	// saved tokens list
+	const savedTokens = useGetSavedTokens(selectedChain?.id);
+
+	const tokensInChain = useMemo(() => {		
+		return (
+			[
+				...Object.values(chainTokenList),
+				...savedTokens.filter((token) => (chainTokenList[token.address.toLowerCase()] ? false : true))
+			]
+				.map((token) => {
+					const tokenBalance = token?.address ? tokenBalances?.[token.address.toLowerCase()] : {};
+
+					return {
+						...token,
+						amount: tokenBalance?.amount ?? 0,
+						balanceUSD: tokenBalance?.balanceUSD ?? 0
+					};
+				})
+				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
+		);
+	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
+
+	const { tokens, token, isLoading } = useMemo(() => {
+		if (type === 'amountIn') {
+			return {
+				tokens: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
+				token: finalSelectedFromToken,
+				isLoading: fetchingFromToken
+			};
+		}
+
+		return {
+			tokens: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address),
+			token: finalSelectedToToken,
+			isLoading: fetchingToToken
+		};
+	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken, fetchingFromToken, fetchingToToken]);
 
 	return (
 		<>
@@ -319,7 +379,7 @@ export const TokenSelect = ({
 				p="12px"
 				onClick={() => onOpen()}
 			>
-				{(type === 'amountIn' ? fetchingFromToken : fetchingToToken) ? (
+				{isLoading ? (
 					<Text as="span" color="white" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis" fontWeight={400}>
 						Loading...
 					</Text>
@@ -365,6 +425,7 @@ export const TokenSelect = ({
 					data={tokens}
 					onClick={onTokenClick}
 					selectedChain={selectedChain}
+					isLoading={isLoading}
 				/>
 			) : null}
 		</>
