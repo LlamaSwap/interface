@@ -3,11 +3,7 @@ import { fallback, http } from 'wagmi';
 
 export const rpcUrls: Record<number, Record<string, string>> = {
 	1: {
-		default: 'https://rpc.ankr.com/eth',
-		ankr: 'https://rpc.ankr.com/eth',
-		pokt: 'https://eth-mainnet.gateway.pokt.network/v1/5f3453978e354ab992c4da79',
-		cloudflare: 'https://cloudflare-eth.com',
-		//linkpool: 'https://main-light.eth.linkpool.io',
+		default: 'https://cloudflare-eth.com',
 		flashbots: 'https://rpc.flashbots.net',
 		builder: 'https://rpc.builder0x69.io',
 		publicNode: 'https://ethereum.publicnode.com',
@@ -21,17 +17,13 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 		ninicoin2: 'https://bsc-dataseed2.ninicoin.io'
 	},
 	137: {
-		default: 'https://polygon-rpc.com',
-		quicknode: 'https://rpc-mainnet.matic.quiknode.pro',
-		ankr: 'https://rpc.ankr.com/polygon'
+		default: 'https://rpc-mainnet.matic.quiknode.pro',
 	},
 	128: {
 		default: 'https://http-mainnet.hecochain.com'
 	},
 	250: {
-		default: 'https://rpc.ankr.com/fantom',
-		ftmtools: 'https://rpc.ftm.tools',
-		fantomnetwork: 'https://rpcapi.fantom.network',
+		default: 'https://rpcapi.fantom.network',
 		fantomnetwork2: 'https://rpc2.fantom.network'
 	},
 	30: {
@@ -41,11 +33,10 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 		default: 'https://rpc.tomochain.com'
 	},
 	100: {
-		default: 'https://rpc.ankr.com/gnosis'
+		default: 'https://rpc.gnosischain.com'
 	},
 	43114: {
 		default: 'https://api.avax.network/ext/bc/C/rpc',
-		ankr: 'https://rpc.ankr.com/avalanche',
 		blockpi: 'https://avalanche.blockpi.network/v1/rpc/public',
 		blastapi: 'https://ava-mainnet.public.blastapi.io/ext/bc/C/rpc'
 	},
@@ -65,12 +56,12 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 		default: 'https://exchainrpc.okex.org'
 	},
 	10: {
-		default: 'https://rpc.ankr.com/optimism',
+		default: 'https://mainnet.optimism.io',
 		blockpi: 'https://optimism.blockpi.network/v1/rpc/public'
 	},
 	42161: {
-		default: 'https://rpc.ankr.com/arbitrum',
-		arb: 'https://arb1.arbitrum.io/rpc'
+		default: 'https://arb1.arbitrum.io/rpc',
+		llama: 'https://arbitrum.llamarpc.com'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
@@ -189,7 +180,7 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 		default: 'https://eth-rpc-api.thetatoken.org/rpc'
 	},
 	42262: { default: 'https://emerald.oasis.dev' },
-	57: { default: 'https://rpc.ankr.com/syscoin', sys: 'https://rpc.syscoin.org' },
+	57: { default: 'https://rpc.syscoin.org' },
 	1284: {
 		default: 'https://rpc.api.moonbeam.network'
 	},
@@ -232,11 +223,11 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 	},
 	534352: {
 		default: 'https://rpc.scroll.io',
-		second: 'https://rpc.ankr.com/scroll'
+		blastapi: 'https://scroll-mainnet.public.blastapi.io'
 	},
 	146: {
 		default: 'https://rpc.soniclabs.com',
-		second: 'https://rpc.ankr.com/sonic_mainnet'
+		publicnode: 'https://sonic-rpc.publicnode.com'
 	}
 };
 
