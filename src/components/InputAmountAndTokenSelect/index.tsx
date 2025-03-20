@@ -34,7 +34,7 @@ export const StyledInput = (props: InputProps) => (
 		_focusVisible={{ outline: 'none' }}
 		fontSize="2.25rem"
 		p="0"
-		_placeholder={{ color: '#5c5c5c', fontSize: '1rem' }}
+		_placeholder={{ color: '#5c5c5c' }}
 		overflow="hidden"
 		whiteSpace="nowrap"
 		textOverflow="ellipsis"
@@ -110,23 +110,14 @@ export function InputAmountAndTokenSelect({
 					<StyledInput
 						type="text"
 						value={amount}
-						placeholder={(placeholder && String(placeholder)) || 'Enter Amount (20 or 20%)'}
+						placeholder={(placeholder && String(placeholder)) || '0'}
 						onChange={(e) => {
 							const value = formatNumber(e.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
-							const finalValue = e.target.value.endsWith('%')
-								? value && !Number.isNaN(value)
-									? +value > 100
-										? balance
-										: +value < 0
-											? ''
-											: Number(balance ?? 0) * (+value / 100)
-									: ''
-								: value;
 
 							if (type === 'amountOut') {
-								setAmount(['', finalValue]);
+								setAmount(['', value]);
 							} else {
-								setAmount([finalValue, '']);
+								setAmount([value, '']);
 							}
 						}}
 					/>

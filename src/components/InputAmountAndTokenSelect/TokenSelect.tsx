@@ -1,13 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import {
-	Modal,
-	ModalOverlay,
-	ModalContent,
-	ModalCloseButton,
-	useDisclosure,
-	Input
-} from '@chakra-ui/react';
+import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure, Input } from '@chakra-ui/react';
 import { WarningTwoIcon } from '@chakra-ui/icons';
 import { Header, IconImage, PairRow } from '../Aggregator/Search';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
@@ -329,7 +322,7 @@ export const TokenSelect = ({
 	// saved tokens list
 	const savedTokens = useGetSavedTokens(selectedChain?.id);
 
-	const tokensInChain = useMemo(() => {		
+	const tokensInChain = useMemo(() => {
 		return (
 			[
 				...Object.values(chainTokenList),
@@ -348,21 +341,21 @@ export const TokenSelect = ({
 		);
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
 
-	const { tokens, token, isLoading } = useMemo(() => {
+	const { tokens, token } = useMemo(() => {
 		if (type === 'amountIn') {
 			return {
 				tokens: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
-				token: finalSelectedFromToken,
-				isLoading: fetchingFromToken
+				token: finalSelectedFromToken
 			};
 		}
 
 		return {
 			tokens: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address),
-			token: finalSelectedToToken,
-			isLoading: fetchingToToken
+			token: finalSelectedToToken
 		};
-	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken, fetchingFromToken, fetchingToToken]);
+	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
+
+	const isLoading = type === 'amountIn' ? fetchingFromToken : fetchingToToken;
 
 	return (
 		<>
