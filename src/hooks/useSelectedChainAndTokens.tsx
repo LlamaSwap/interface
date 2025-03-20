@@ -116,6 +116,7 @@ export function useSelectedChainAndTokens() {
 			...data,
 			finalSelectedFromToken,
 			finalSelectedToToken,
+			fetchingTokenList,
 			fetchingFromToken: !finalSelectedFromToken && (fetchingTokenList || fetchingFromToken2) ? true : false,
 			fetchingToToken: !finalSelectedToToken && (fetchingTokenList || fetchingToToken2) ? true : false
 		};

@@ -271,7 +271,8 @@ export const TokenSelect = ({
 		finalSelectedFromToken,
 		finalSelectedToToken,
 		chainTokenList,
-		selectedChain
+		selectedChain,
+		fetchingTokenList
 	} = useSelectedChainAndTokens();
 
 	// balances of all token's in wallet
@@ -371,7 +372,7 @@ export const TokenSelect = ({
 					data={tokens}
 					onClick={onTokenClick}
 					selectedChain={selectedChain}
-					isLoading={isLoading}
+					isLoading={fetchingTokenList || isLoading}
 				/>
 			) : null}
 		</>

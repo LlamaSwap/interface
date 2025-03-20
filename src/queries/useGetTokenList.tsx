@@ -34,5 +34,11 @@ export async function getTokenListByChain({ chainId }: { chainId: number | null 
 }
 
 export const useGetTokenListByChain = ({ chainId }: { chainId: number | null | undefined }) => {
-	return useQuery({ queryKey: ['token-list', chainId], queryFn: () => getTokenListByChain({ chainId }) });
+	return useQuery({
+		queryKey: ['token-list', chainId],
+		queryFn: () => getTokenListByChain({ chainId }),
+		staleTime: 60 * 60 * 1000,
+		refetchInterval: 60 * 60 * 1000,
+		refetchOnWindowFocus: false
+	});
 };

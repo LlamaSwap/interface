@@ -68,16 +68,22 @@ const markMultichain = (tokens) => {
 	return tokens;
 };
 
-const allSettled = ((promises) => Promise.all(promises.map(p => p
-	.then(value => ({
-	  status: 'fulfilled', value
-	}))
-	.catch(reason => ({
-	  status: 'rejected', reason
-	}))
-)))
+const allSettled = (promises) =>
+	Promise.all(
+		promises.map((p) =>
+			p
+				.then((value) => ({
+					status: 'fulfilled',
+					value
+				}))
+				.catch((reason) => ({
+					status: 'rejected',
+					reason
+				}))
+		)
+	);
 
-const chainsToFetchFromKyberswap = [324, 1101, 59144, 534352, 146]
+const chainsToFetchFromKyberswap = [324, 1101, 59144, 534352, 146];
 
 export async function getTokenList() {
 	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
@@ -97,11 +103,15 @@ export async function getTokenList() {
 	const [geckoList, logos, kyberswapLists] = await Promise.all([
 		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
 		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
-		await Promise.all(chainsToFetchFromKyberswap.map((chainId) =>
-			fetch(`https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=${chainId}`)
-				.then((r) => r.json())
-				.then((r) => r?.data?.tokens.filter((t) => t.chainId === chainId))
-		))
+		await Promise.all(
+			chainsToFetchFromKyberswap.map((chainId) =>
+				fetch(
+					`https://ks-setting.kyberswap.com/api/v1/tokens?page=1&pageSize=100&isWhitelisted=true&chainIds=${chainId}`
+				)
+					.then((r) => r.json())
+					.then((r) => r?.data?.tokens.filter((t) => t.chainId === chainId))
+			)
+		)
 	]);
 
 	const oneInchList = Object.values(oneInchChains)
@@ -115,12 +125,9 @@ export async function getTokenList() {
 
 	const tokensByChain = mapValues(
 		groupBy(
-			[
-				...nativeTokens,
-				...ownTokenList,
-				...oneInchList,
-				...kyberswapLists.flat()
-			].filter((t) => t.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'),
+			[...nativeTokens, ...ownTokenList, ...oneInchList, ...kyberswapLists.flat()].filter(
+				(t) => t.address !== '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+			),
 			'chainId'
 		),
 		(val) => uniqBy(val, (token: IToken) => token.address.toLowerCase())
@@ -140,7 +147,7 @@ export async function getTokenList() {
 	const topTokensByChain = await Promise.all(Object.keys(tokensFiltered).map((chain) => getTopTokensByChain(chain)));
 
 	const topTokensByVolume = Object.fromEntries(
-		topTokensByChain.filter((chain) => chain !== null && tokensFiltered[chain[0]])
+		topTokensByChain.filter((chain) => chain !== null && tokensFiltered[chain[0] as string])
 	);
 
 	// store unique tokens by chain
@@ -176,17 +183,18 @@ export async function getTokenList() {
 	}
 
 	// fetch name, symbol, decimals fo coingecko tokens
-	const geckoTokensList = (await allSettled(
-		Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
-			getTokensData([chain, Array.from(tokens || new Set())])
+	const geckoTokensList = (
+		await allSettled(
+			Object.entries(geckoListByChain).map(([chain, tokens]: [string, Set<string>]) =>
+				getTokensData([chain, Array.from(tokens || new Set())])
+			)
 		)
-	)).map((t:any)=>t.value);
-	Object.entries(geckoTokensList).map(v=>{
-		if(v[1] === undefined){
-			throw new Error(`Failed getting getTokensData for chain ${Object.entries(geckoListByChain)[v[0]][0]}`)
+	).map((t: any) => t.value);
+	Object.entries(geckoTokensList).map((v) => {
+		if (v[1] === undefined) {
+			throw new Error(`Failed getting getTokensData for chain ${Object.entries(geckoListByChain)[v[0]][0]}`);
 		}
-	})
-	
+	});
 
 	const formatAndSortTokens = (tokens, chain) => {
 		return tokens
@@ -200,8 +208,6 @@ export async function getTokenList() {
 					? topTokensByVolume[chain]?.find((item) => item.baseToken.toLowerCase() === t.address?.toLowerCase())
 					: null;
 
-				const volume24h = token?.attributes?.volume_usd?.h24 ?? 0
-
 				return {
 					...t,
 					label: t.symbol,
@@ -209,7 +215,7 @@ export async function getTokenList() {
 					geckoId,
 					logoURI: t.ownLogoURI || `https://token-icons.llamao.fi/icons/tokens/${t.chainId}/${t.address}?h=20&w=20`,
 					logoURI2: t.logoURI || logos[geckoId] || null,
-					volume24h
+					volume24h: token?.volume24h ?? 0
 				};
 			})
 			.sort((a, b) => (b.address === zeroAddress ? 1 : b.volume24h - a.volume24h));
@@ -236,31 +242,47 @@ export async function getTokenList() {
 	return tokenlist;
 }
 
-
-const getTopTokensByChain = async (chainId) => {
+const getTopTokensByChain = async (chainId: string) => {
 	try {
+		// Skip if not Ethereum or chain not supported in geckoTerminal
 		if (!geckoTerminalChainsMap[chainId]) {
 			return [chainId, []];
 		}
 
 		const resData: any[] = [];
+		const PAGE_LIMIT = 5;
 
-		for (let i = 1; i <= 5; i++) {
-			const prevRes = await fetch(
-				`https://api.geckoterminal.com/api/v2/networks/${geckoTerminalChainsMap[chainId]}/pools?include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&page=${i}&include_network_metrics=true`
+		// Fetch data from multiple pages in parallel
+		const pagePromises = Array.from({ length: PAGE_LIMIT }, (_, i) =>
+			fetch(
+				`https://api.geckoterminal.com/api/v2/networks/${geckoTerminalChainsMap[chainId]}/pools?` +
+					'include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&' +
+					`page=${i + 1}&include_network_metrics=true`
 			)
 				.then((r) => r.json())
-				.catch(() => ({ data: [], included: [] }));
-				
-			resData.push(...prevRes.data);
-		}
+				.catch(() => ({ data: [], included: [] }))
+		);
 
-		const result = resData.map((pool) => {
-			return { ...pool, baseToken: pool.relationships.base_token.data.id.split('_')[1] };
+		const responses = await Promise.allSettled(pagePromises);
+		responses.forEach((response) => {
+			if (response.status === 'fulfilled') {
+				resData.push(...response.value.data);
+			}
 		});
+
+		// Map and sort by volume
+		const result = resData
+			.map((pool) => ({
+				...pool,
+				baseToken: pool.relationships.base_token.data.id.split('_')[1],
+				volume24h: parseFloat(pool.attributes?.volume_usd?.h24 || '0')
+			}))
+			.filter((token) => token.volume24h > 0)
+			.sort((a, b) => b.volume24h - a.volume24h);
 
 		return [chainId, result];
 	} catch (error) {
+		console.error(`Error fetching top tokens for chain ${chainId}:`, error);
 		return [chainId, []];
 	}
 };
