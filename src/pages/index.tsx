@@ -13,7 +13,7 @@ export default function Aggregator() {
 	];
 	return (
 		<Layout title={`Meta-dex aggregator - DefiLlama`} defaultSEO>
-				<Tabs tabs={tabData} />
+			<Tabs tabs={tabData} />
 		</Layout>
 	);
 }
