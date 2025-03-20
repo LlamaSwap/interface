@@ -178,24 +178,25 @@ function formatNumber(string) {
 	return string.replace(pattern, ' ');
 }
 
-
 const InputRange = ({ amount, balance, setAmount }) => {
-	const [inputRangeValue, setInputRangeValue] = React.useState(amount && balance ? Number((+amount / +balance) * 100) : 0);
+	const [inputRangeValue, setInputRangeValue] = React.useState(
+		amount && balance ? Number((+amount / +balance) * 100) : 0
+	);
 
 	return (
 		<InputRangeWrapper
 			style={
 				{
-					'--range-value': `${Math.min(inputRangeValue,100)}%`
+					'--range-value': `${Math.min(inputRangeValue, 100)}%`
 				} as any
 			}
 		>
-			<RangeValue>{`${(Math.min(inputRangeValue,100)).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`}</RangeValue>
+			<RangeValue>{`${Math.min(inputRangeValue, 100).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`}</RangeValue>
 			<RangeInput
 				type="range"
 				min="0"
 				max="100"
-				value={Math.min(inputRangeValue,100)}
+				value={Math.min(inputRangeValue, 100)}
 				onChange={(e) => {
 					setInputRangeValue(Number(e.target.value));
 				}}
@@ -260,6 +261,7 @@ const RangeButton = styled.button<{ $position: number }>`
 	background-color: #2d3037;
 	border: none;
 	cursor: pointer;
+	z-index: 1;
 
 	:nth-of-type(2) {
 		left: 25%;
@@ -289,19 +291,41 @@ const RangeInput = styled.input`
 		height: 4px;
 		border-radius: 8px;
 		border: none;
-		background: linear-gradient(to right, #2172E5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
+		background: linear-gradient(to right, #2172e5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
 	}
 
 	&::-webkit-slider-thumb {
 		-webkit-appearance: none;
-		background: #2172E5;
+		background: #2172e5;
 		height: 16px;
 		width: 16px;
 		border-radius: 50%;
 		margin-top: -6px;
 		position: relative;
-		z-index: 1;
+		z-index: 10;
 		cursor: pointer;
+		border: none;
+	}
+
+	&::-moz-range-track {
+		-moz-appearance: none;
+		height: 4px;
+		border-radius: 8px;
+		border: none;
+		background: linear-gradient(to right, #2172e5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
+	}
+
+	&::-moz-range-thumb {
+		-moz-appearance: none;
+		background: #2172e5;
+		height: 16px;
+		width: 16px;
+		border-radius: 50%;
+		margin-top: -6px;
+		position: relative;
+		z-index: 10;
+		cursor: pointer;
+		border: none;
 	}
 `;
 
