@@ -111,7 +111,8 @@ const heco = {
 	chainId: 128,
 	logoURI: chainIconUrl('heco'),
 	name: 'Huobi Token',
-	symbol: 'HT'
+	symbol: 'HT',
+	decimals: 18
 };
 
 const velas = {
@@ -120,7 +121,8 @@ const velas = {
 	chainId: 106,
 	logoURI: chainIconUrl('velas'),
 	name: 'Velas',
-	symbol: 'VLX'
+	symbol: 'VLX',
+	decimals: 18
 };
 
 const oasis = {
