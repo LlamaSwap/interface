@@ -464,7 +464,6 @@ const Trigger = styled.button`
 `;
 
 const VirtualListWrapper = styled.div`
-	height: 390px;
 	overflow: auto;
 	margin-top: 16px;
 `;
@@ -493,6 +492,7 @@ const InputSearch = styled.input`
 	background: #141619;
 	border-radius: 8px;
 	height: 52px;
+	flex-shrink: 0;
 	padding: 0 12px;
 	margin: 0 16px;
 	&::placeholder {
@@ -507,8 +507,8 @@ const Dialog = styled(Ariakit.Dialog)`
 	margin: auto;
 	display: flex;
 	flex-direction: column;
-	max-width: 540px;
-	max-height: 500px;
+	max-width: min(95vw, 520px);
+	max-height: min(90vh, 640px);
 	width: 100%;
 	height: 100%;
 	border-radius: 16px;
@@ -555,6 +555,7 @@ const TopTokenWrapper = styled.div`
 	flex-wrap: wrap;
 	gap: 4px;
 	padding: 16px 0 0 16px;
+	flex-shrink: 0;
 
 	& > span {
 		white-space: nowrap;
