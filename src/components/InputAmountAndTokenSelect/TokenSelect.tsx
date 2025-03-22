@@ -466,7 +466,7 @@ const Trigger = styled.button`
 const VirtualListWrapper = styled.div`
 	height: 390px;
 	overflow: auto;
-	margin-top: 24px;
+	margin-top: 16px;
 `;
 
 const DialogHeading = styled(Ariakit.DialogHeading)`
