@@ -107,7 +107,10 @@ const Row = ({ chain, token, onClick, style }) => {
 						fontWeight={500}
 						ml={token.balanceUSD ? '0px' : 'auto'}
 						colorScheme={'orange'}
-						onClick={() => onClick(token)}
+						onClick={() => {
+							saveToken(token);
+							onClick(token);
+						}}
 						leftIcon={<WarningTwoIcon />}
 						flexShrink={0}
 						height="32px"
@@ -122,8 +125,11 @@ const Row = ({ chain, token, onClick, style }) => {
 
 const saveToken = (token) => {
 	const tokens = JSON.parse(localStorage.getItem('savedTokens') || '{}');
+
 	const chainTokens = tokens[token.chainId] || [];
+
 	const newTokens = { ...tokens, [token.chainId]: chainTokens.concat(token) };
+
 	localStorage.setItem('savedTokens', JSON.stringify(newTokens));
 };
 
@@ -140,7 +146,7 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 		if (error) return;
 
 		saveToken({
-			address,
+			address: address.toLowerCase(),
 			...(data || {}),
 			label: data?.symbol,
 			value: address,
@@ -324,18 +330,19 @@ export const TokenSelect = ({
 	const savedTokens = useGetSavedTokens(selectedChain?.id);
 
 	const { tokensInChain, topTokens } = useMemo(() => {
+		const uniqSavedTokens = new Set(savedTokens.map((t) => t.address));
+
 		const tokensInChain =
 			[
 				...Object.values(chainTokenList),
-				...savedTokens.filter((token) => (chainTokenList[token.address.toLowerCase()] ? false : true))
+				...savedTokens.filter((token) => (chainTokenList[token.address] ? false : true))
 			]
 				.map((token) => {
-					const tokenBalance = token?.address ? tokenBalances?.[token.address.toLowerCase()] : {};
-
 					return {
 						...token,
-						amount: tokenBalance?.amount ?? 0,
-						balanceUSD: tokenBalance?.balanceUSD ?? 0
+						amount: tokenBalances?.[token.address]?.amount ?? 0,
+						balanceUSD: tokenBalances?.[token.address]?.balanceUSD ?? 0,
+						isGeckoToken: token.isGeckoToken ? (uniqSavedTokens.has(token.address) ? false : true) : false
 					};
 				})
 				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? [];

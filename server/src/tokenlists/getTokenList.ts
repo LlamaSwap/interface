@@ -210,6 +210,7 @@ export async function getTokenList() {
 
 				return {
 					...t,
+					address: t.address.toLowerCase(),
 					label: t.symbol,
 					value: t.address,
 					geckoId,
