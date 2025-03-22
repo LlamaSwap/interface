@@ -2,7 +2,6 @@ import * as Ariakit from 'ariakit/dialog';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { WarningTwoIcon } from '@chakra-ui/icons';
-import { IconImage, PairRow } from '../Aggregator/Search';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,6 +16,7 @@ import { useAccount } from 'wagmi';
 import { useRouter } from 'next/router';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import styled from 'styled-components';
+import { formatAddress } from '~/utils/formatAddress';
 
 const Row = ({ chain, token, onClick, style }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
@@ -27,9 +27,14 @@ const Row = ({ chain, token, onClick, style }) => {
 			onClick={() => !token.isGeckoToken && onClick(token)}
 			style={style}
 		>
-			<IconImage src={token.logoURI} onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')} />
+			<IconImage
+				src={`https://token-icons.llamao.fi/icons/tokens/${chain.id}/${token.address}?h=48&w=48`}
+				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+				height={32}
+				width={32}
+			/>
 
-			<Text display="flex" flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
+			<Flex flexDir="column">
 				{token.isMultichain ? (
 					<Tooltip
 						label="This token could have been affected by the multichain hack."
@@ -38,36 +43,54 @@ const Row = ({ chain, token, onClick, style }) => {
 						fontSize="0.75rem"
 						padding="8px"
 					>
-						<Text as="span" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="orange.200">
-							{`${token.name} (${token.symbol})`}
-							{token.isMultichain ? <WarningTwoIcon color={'orange.200'} style={{ marginLeft: '0.4em' }} /> : null}
+						<Text
+							whiteSpace="nowrap"
+							textOverflow="ellipsis"
+							overflow="hidden"
+							color="orange.200"
+							display="flex"
+							alignItems="center"
+							gap="4px"
+							fontWeight={500}
+						>
+							{token.name}
+							{token.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : null}
 						</Text>
 					</Tooltip>
 				) : (
-					<Text as="span" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="white">
-						{`${token.name} (${token.symbol})`}
+					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="white" fontWeight={500}>
+						{token.name}
 					</Text>
 				)}
-				
-				{token.isGeckoToken && (
-					<>
-						{blockExplorer && (
-							<a
-								href={`${blockExplorer.url}/address/${token.address}`}
-								target="_blank"
-								rel="noreferrer noopener"
-								style={{ fontSize: '10px', textDecoration: 'underline' }}
-							>{`View on ${blockExplorer.name}`}</a>
-						)}
-					</>
-				)}
-			</Text>
+
+				<Flex alignItems="center" gap="8px">
+					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="#A2A2A2">
+						{token.symbol}
+					</Text>
+					{blockExplorer && (
+						<LinkToExplorer
+							href={`${blockExplorer.url}/address/${token.address}`}
+							target="_blank"
+							rel="noreferrer noopener"
+							onClick={(e) => {
+								e.stopPropagation();
+							}}
+						>
+							{formatAddress(token.address, 5)}
+						</LinkToExplorer>
+					)}
+				</Flex>
+			</Flex>
 
 			{token.balanceUSD ? (
-				<div style={{ marginRight: 0, marginLeft: 'auto' }}>
-					{(token.amount / 10 ** token.decimals).toFixed(3)}
-					<span style={{ fontSize: 12 }}> (~${token.balanceUSD?.toFixed(3)})</span>
-				</div>
+				<Flex flexDir="column" marginLeft="auto">
+					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" textAlign="right">
+						${token.balanceUSD?.toFixed(3)}
+					</Text>
+					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="#A2A2A2" textAlign="right">
+						{(token.amount / 10 ** token.decimals).toFixed(3)}
+					</Text>
+				</Flex>
 			) : null}
 
 			{token.isGeckoToken && (
@@ -121,7 +144,7 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			label: data?.symbol,
 			value: address,
 			chainId: selectedChain?.id,
-			logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`
+			logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=48&w=48`
 		});
 
 		queryClient.invalidateQueries({ queryKey: ['savedTokens', selectedChain?.id] });
@@ -141,16 +164,14 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			key={address}
 		>
 			<IconImage
-				src={`https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`}
+				src={`https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=48&w=48`}
 				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+				height={32}
+				width={32}
 			/>
 
 			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
-				{isLoading
-					? 'Loading...'
-					: data?.name
-						? `${data.name} (${data.symbol})`
-						: address.slice(0, 4) + '...' + address.slice(-4)}
+				{isLoading ? 'Loading...' : data?.name ? `${data.name} (${data.symbol})` : formatAddress(address)}
 			</Text>
 
 			<Button height={38} marginLeft="auto" onClick={onTokenClick} disabled={error ? true : false}>
@@ -197,7 +218,7 @@ const SelectModal = ({ dialogState, data, onClick, selectedChain, isLoading }) =
 	const rowVirtualizer = useVirtualizer({
 		count: filteredData.length,
 		getScrollElement: () => parentRef?.current ?? null,
-		estimateSize: () => 44,
+		estimateSize: () => 52,
 		overscan: 10
 	});
 
@@ -240,7 +261,7 @@ const SelectModal = ({ dialogState, data, onClick, selectedChain, isLoading }) =
 											top: 0,
 											left: 0,
 											width: '100%',
-											height: '44px',
+											height: '52px',
 											transform: `translateY(${virtualRow.start}px)`
 										}}
 									/>
@@ -334,8 +355,10 @@ export const TokenSelect = ({
 					<>
 						{token ? (
 							<IconImage
-								src={token.logoURI}
-								onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
+								src={`https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${token.address}?h=48&w=48`}
+								onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+								height={20}
+								width={20}
 							/>
 						) : null}
 
@@ -413,6 +436,7 @@ const DialogHeading = styled(Ariakit.DialogHeading)`
 	font-weight: 500;
 	text-align: center;
 	margin-bottom: 8px;
+	margin: 16px;
 `;
 
 const DialogDismiss = styled(Ariakit.DialogDismiss)`
@@ -429,8 +453,9 @@ const DialogDismiss = styled(Ariakit.DialogDismiss)`
 const InputSearch = styled.input`
 	background: #141619;
 	border-radius: 8px;
-	height: 40px;
+	height: 52px;
 	padding: 0 12px;
+	margin: 0 16px;
 	&::placeholder {
 		color: #808080;
 	}
@@ -447,11 +472,41 @@ const Dialog = styled(Ariakit.Dialog)`
 	max-height: 500px;
 	width: 100%;
 	height: 100%;
-	padding: 16px;
 	border-radius: 16px;
 	background: #212429;
 	color: white;
 	isolation: isolate;
 	box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 	--inset: 0.75rem;
+`;
+
+const PairRow = styled.div<{ hover?: boolean }>`
+	display: flex;
+	gap: 8px;
+	padding: 0 16px;
+	align-items: center;
+	border-bottom: 1px solid #373944;
+
+	cursor: pointer;
+
+	&[data-defaultcursor='true'] {
+		cursor: default;
+	}
+
+	&:hover {
+		background-color: rgba(246, 246, 246, 0.1);
+	}
+`;
+
+const IconImage = styled.img`
+	border-radius: 50%;
+	aspect-ratio: 1;
+	flex-shrink: 0;
+	object-fit: contain;
+`;
+
+const LinkToExplorer = styled.a`
+	font-size: 12px;
+	color: #a2a2a2;
+	text-decoration: underline;
 `;

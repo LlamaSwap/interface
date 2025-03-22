@@ -7,6 +7,7 @@ import { useGetTokenListByChain } from '~/queries/useGetTokenList';
 import { useToken } from '~/components/Aggregator/hooks/useToken';
 import { isAddress, zeroAddress } from 'viem';
 import { nativeTokens } from '~/components/Aggregator/nativeTokens';
+import { formatAddress } from '~/utils/formatAddress';
 
 const chains = getAllChains();
 
@@ -81,8 +82,8 @@ export function useSelectedChainAndTokens() {
 		const finalSelectedFromToken: IToken | null =
 			data.selectedFromToken === null && fromToken2
 				? {
-						name: fromToken2.name ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-						label: fromToken2.symbol ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
+						name: fromToken2.name ?? formatAddress(fromToken2.address),
+						label: fromToken2.symbol ?? formatAddress(fromToken2.address),
 						symbol: fromToken2.symbol ?? '',
 						address: fromToken2.address,
 						value: fromToken2.address,
@@ -98,8 +99,8 @@ export function useSelectedChainAndTokens() {
 		const finalSelectedToToken: IToken | null =
 			data.selectedToToken === null && toToken2
 				? {
-						name: toToken2.name ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-						label: toToken2.symbol ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
+						name: toToken2.name ?? formatAddress(toToken2.address),
+						label: toToken2.symbol ?? formatAddress(toToken2.address),
 						symbol: toToken2.symbol ?? '',
 						address: toToken2.address,
 						value: toToken2.address,
