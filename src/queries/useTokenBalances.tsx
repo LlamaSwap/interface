@@ -67,7 +67,7 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 			address: zeroAddress
 		}]).reduce((all: Balances, t: any) => {
 			const price = prices[`${chainName}:${t.address}`] ?? {}
-			all[t.address] = {
+			all[t.address.toLowerCase()] = {
 				decimals: price.decimals,
 				symbol: price.symbol ?? 'UNKNOWN',
 				price: price.price,
@@ -79,7 +79,7 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 
 		if (wrappedTokenBalance){
 			const price = prices[`${chainName}:${zeroAddress}`] ?? {}
-			finalBalances[wrappedTokensByChain[chainId]] = {
+			finalBalances[wrappedTokensByChain[chainId].toLowerCase()] = {
 				decimals:  price.decimals,
 				symbol: `W${price.symbol}`,
 				price: price.price,

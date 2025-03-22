@@ -17,6 +17,7 @@ import { useRouter } from 'next/router';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import styled from 'styled-components';
 import { formatAddress } from '~/utils/formatAddress';
+import { topTokensByChain } from '../Aggregator/constants';
 
 const Row = ({ chain, token, onClick, style }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
@@ -28,13 +29,13 @@ const Row = ({ chain, token, onClick, style }) => {
 			style={style}
 		>
 			<IconImage
-				src={`https://token-icons.llamao.fi/icons/tokens/${chain.id}/${token.address}?h=48&w=48`}
-				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+				src={token.logoURI}
+				onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
 				height={32}
 				width={32}
 			/>
 
-			<Flex flexDir="column">
+			<Flex flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
 				{token.isMultichain ? (
 					<Tooltip
 						label="This token could have been affected by the multichain hack."
@@ -104,7 +105,7 @@ const Row = ({ chain, token, onClick, style }) => {
 					<Button
 						fontSize={'0.75rem'}
 						fontWeight={500}
-						ml="auto"
+						ml={token.balanceUSD ? '0px' : 'auto'}
 						colorScheme={'orange'}
 						onClick={() => onClick(token)}
 						leftIcon={<WarningTwoIcon />}
@@ -190,7 +191,7 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 	);
 };
 
-const SelectModal = ({ dialogState, data, onClick, selectedChain, isLoading }) => {
+const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoading, topTokens }) => {
 	const [input, setInput] = useState('');
 	const onInputChange = (e) => {
 		setInput(e?.target?.value);
@@ -236,12 +237,32 @@ const SelectModal = ({ dialogState, data, onClick, selectedChain, isLoading }) =
 					<Text textAlign={'center'} marginTop="25%">
 						Loading...
 					</Text>
+				) : isAddress(input) && filteredData.length === 0 ? (
+					<AddToken address={input} onClick={onTokenSelect} selectedChain={selectedChain} />
 				) : (
 					<>
-						{isAddress(input) && filteredData.length === 0 ? (
-							<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
+						{topTokens.length > 0 ? (
+							<>
+								<TopTokenWrapper>
+									{topTokens.map((token) => (
+										<TopToken
+											key={`top-token-${selectedChain.id}-${token.address}`}
+											onClick={() => {
+												onTokenSelect(token);
+											}}
+										>
+											<IconImage
+												src={token.logoURI}
+												onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
+												height={24}
+												width={24}
+											/>
+											<span>{token.symbol}</span>
+										</TopToken>
+									))}
+								</TopTokenWrapper>
+							</>
 						) : null}
-
 						<VirtualListWrapper ref={parentRef}>
 							<div
 								style={{
@@ -253,7 +274,7 @@ const SelectModal = ({ dialogState, data, onClick, selectedChain, isLoading }) =
 								{rowVirtualizer.getVirtualItems().map((virtualRow) => (
 									<Row
 										token={filteredData[virtualRow.index]}
-										onClick={onClick}
+										onClick={onTokenSelect}
 										chain={selectedChain}
 										key={virtualRow.index + filteredData[virtualRow.index].address}
 										style={{
@@ -302,8 +323,8 @@ export const TokenSelect = ({
 	// saved tokens list
 	const savedTokens = useGetSavedTokens(selectedChain?.id);
 
-	const tokensInChain = useMemo(() => {
-		return (
+	const { tokensInChain, topTokens } = useMemo(() => {
+		const tokensInChain =
 			[
 				...Object.values(chainTokenList),
 				...savedTokens.filter((token) => (chainTokenList[token.address.toLowerCase()] ? false : true))
@@ -317,8 +338,16 @@ export const TokenSelect = ({
 						balanceUSD: tokenBalance?.balanceUSD ?? 0
 					};
 				})
-				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
-		);
+				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? [];
+
+		const topTokens =
+			selectedChain && topTokensByChain[selectedChain.id]
+				? topTokensByChain[selectedChain.id]
+						.map((token) => chainTokenList[token.toLowerCase()] ?? null)
+						.filter((token) => token !== null)
+				: [];
+
+		return { tokensInChain, topTokens };
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
 
 	const { tokens, token } = useMemo(() => {
@@ -339,7 +368,7 @@ export const TokenSelect = ({
 
 	const dialogState = Ariakit.useDialogState();
 
-	const onTokenClick = (token) => {
+	const onTokenSelect = (token) => {
 		onClick(token);
 		dialogState.toggle();
 	};
@@ -348,15 +377,23 @@ export const TokenSelect = ({
 		<>
 			<Trigger onClick={dialogState.toggle}>
 				{isLoading ? (
-					<Text as="span" color="white" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis" fontWeight={400}>
+					<Text
+						as="span"
+						color="white"
+						overflow="hidden"
+						whiteSpace="nowrap"
+						textOverflow="ellipsis"
+						fontWeight={400}
+						marginRight="auto"
+					>
 						Loading...
 					</Text>
 				) : (
 					<>
 						{token ? (
 							<IconImage
-								src={`https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${token.address}?h=48&w=48`}
-								onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+								src={token.logoURI}
+								onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
 								height={20}
 								width={20}
 							/>
@@ -381,21 +418,23 @@ export const TokenSelect = ({
 							whiteSpace="nowrap"
 							textOverflow="ellipsis"
 							fontWeight={400}
+							marginRight="auto"
 						>
 							{token ? token.symbol : 'Select Token'}
 						</Text>
 					</>
 				)}
 
-				<ChevronDown size={16} style={{ marginLeft: 'auto' }} />
+				<ChevronDown size={16} />
 			</Trigger>
 			{dialogState.open ? (
 				<SelectModal
 					dialogState={dialogState}
 					data={tokens}
-					onClick={onTokenClick}
+					onTokenSelect={onTokenSelect}
 					selectedChain={selectedChain}
 					isLoading={fetchingTokenList || isLoading}
+					topTokens={topTokens}
 				/>
 			) : null}
 		</>
@@ -509,4 +548,36 @@ const LinkToExplorer = styled.a`
 	font-size: 12px;
 	color: #a2a2a2;
 	text-decoration: underline;
+`;
+
+const TopTokenWrapper = styled.div`
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	padding: 16px 0 0 16px;
+
+	& > span {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+`;
+
+const TopToken = styled.button`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	font-weight: 500;
+	font-size: 14px;
+	padding: 4px;
+	background: #2d3037;
+	height: 68px;
+	width: 68px;
+	border-radius: 16px;
+
+	&:hover {
+		background-color: rgba(246, 246, 246, 0.1);
+	}
 `;

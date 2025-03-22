@@ -18,6 +18,7 @@ export const Container = (props: FlexProps) => (
 		p={{ base: '8px', md: '16px' }}
 		border="1px solid transparent"
 		_focusWithin={{ border: '1px solid white' }}
+		isolation={'isolate'}
 		{...props}
 	/>
 );
