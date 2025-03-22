@@ -508,7 +508,7 @@ const Dialog = styled(Ariakit.Dialog)`
 	display: flex;
 	flex-direction: column;
 	max-width: min(95vw, 520px);
-	max-height: min(90vh, 640px);
+	max-height: min(90vh, 600px);
 	width: 100%;
 	height: 100%;
 	border-radius: 16px;
