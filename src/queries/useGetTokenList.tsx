@@ -17,17 +17,23 @@ export const useGetTokenList = () => {
 export async function getTokenListByChain({ chainId }: { chainId: number | null | undefined }) {
 	if (!chainId) return {};
 	try {
-		const data = await getTokenList();
+		const data = await getTokenList(chainId).catch(() => null);
 
-		if (!data[chainId]) return {};
+		if (!data) {
+			const dataAllChains = await getTokenList();
 
-		const tokens = {};
+			if (!dataAllChains[chainId]) return {};
 
-		for (const token of data[chainId]) {
-			tokens[token.address] = token;
+			const tokens = {};
+
+			for (const token of dataAllChains[chainId]) {
+				tokens[token.address] = token;
+			}
+
+			return tokens;
 		}
 
-		return tokens;
+		return data;
 	} catch (error) {
 		throw new Error(error instanceof Error ? error.message : 'Failed to fetch');
 	}
