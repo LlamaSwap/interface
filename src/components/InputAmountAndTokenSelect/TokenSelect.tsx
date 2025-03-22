@@ -232,7 +232,7 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 	return (
 		<>
 			<Dialog state={dialogState} backdropProps={{ className: 'dialog-backdrop' }}>
-				<DialogHeading>Select Token</DialogHeading>
+				<DialogHeading>Select a token</DialogHeading>
 				<DialogDismiss>
 					<X size={20} />
 				</DialogDismiss>
@@ -502,8 +502,10 @@ const InputSearch = styled.input`
 	flex-shrink: 0;
 	padding: 0 12px;
 	margin: 0 16px;
+	font-size: 16px;
+	font-weight: 500;
 	&::placeholder {
-		color: #808080;
+		color: #5c5c5c;
 	}
 `;
 
@@ -526,12 +528,11 @@ const Dialog = styled(Ariakit.Dialog)`
 	--inset: 0.75rem;
 `;
 
-const PairRow = styled.div<{ hover?: boolean }>`
+const PairRow = styled.div`
 	display: flex;
 	gap: 8px;
 	padding: 0 16px;
 	align-items: center;
-	border-bottom: 1px solid #373944;
 
 	cursor: pointer;
 
