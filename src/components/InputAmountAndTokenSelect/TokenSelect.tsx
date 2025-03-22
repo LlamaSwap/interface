@@ -110,7 +110,7 @@ const Row = ({ chain, token, onClick, style }) => {
 						onClick={() => onClick(token)}
 						leftIcon={<WarningTwoIcon />}
 						flexShrink={0}
-						height="28px"
+						height="32px"
 					>
 						Import Token
 					</Button>
