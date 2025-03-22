@@ -574,8 +574,8 @@ const TopToken = styled.button`
 	font-size: 14px;
 	padding: 4px;
 	background: #2d3037;
-	height: 68px;
-	width: 68px;
+	height: 64px;
+	width: 64px;
 	border-radius: 8px;
 
 	&:hover {
