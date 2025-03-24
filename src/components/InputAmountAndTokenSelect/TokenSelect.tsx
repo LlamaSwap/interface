@@ -65,7 +65,7 @@ const Row = ({ chain, token, onClick, style }) => {
 				)}
 
 				<Flex alignItems="center" gap="8px">
-					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="#A2A2A2">
+					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="#9B9B9B">
 						{token.symbol}
 					</Text>
 					{blockExplorer && (
@@ -230,7 +230,9 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 	});
 
 	const topHeight =
-		(topTokens.length > 0 ? 80 : 0) + (tokensWithBalances.length > 0 ? 8 + 36 + tokensWithBalances.length * 56 : 0) + 36;
+		(topTokens.length > 0 ? 80 : 0) +
+		(tokensWithBalances.length > 0 ? 8 + 36 + tokensWithBalances.length * 56 : 0) +
+		36;
 
 	return (
 		<>
@@ -378,7 +380,13 @@ export const TokenSelect = ({
 
 				return t;
 			})
-			.filter((token) => token !== null && (type === 'amountIn' ? token.address !== finalSelectedToToken?.address : token.address !== finalSelectedFromToken?.address));
+			.filter(
+				(token) =>
+					token !== null &&
+					(type === 'amountIn'
+						? token.address !== finalSelectedToToken?.address
+						: token.address !== finalSelectedFromToken?.address)
+			);
 
 		const tokensInChain = {
 			...savedTokens,
@@ -539,7 +547,7 @@ const DialogDismiss = styled(Ariakit.DialogDismiss)`
 `;
 
 const InputSearch = styled.input`
-	background: #141619;
+	background: rgba(27, 27, 27, 1);
 	border-radius: 8px;
 	height: 52px;
 	flex-shrink: 0;
@@ -548,7 +556,7 @@ const InputSearch = styled.input`
 	font-size: 16px;
 	font-weight: 500;
 	&::placeholder {
-		color: #5c5c5c;
+		color: #9B9B9B;
 	}
 `;
 
@@ -564,10 +572,10 @@ const Dialog = styled(Ariakit.Dialog)`
 	width: 100%;
 	height: 100%;
 	border-radius: 16px;
-	background: #212429;
+	background: #131313;
+	border: 1px solid rgba(255, 255, 255, 0.12);
 	color: white;
 	isolation: isolate;
-	box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 	--inset: 0.75rem;
 `;
 
@@ -598,8 +606,11 @@ const IconImage = styled.img`
 
 const LinkToExplorer = styled.a`
 	font-size: 12px;
-	color: #a2a2a2;
-	text-decoration: underline;
+	color: #7e7e7e;
+	
+	&:hover {
+		text-decoration: underline;
+	}
 `;
 
 const TopTokenWrapper = styled.div`
@@ -626,7 +637,7 @@ const TopToken = styled.button`
 	font-weight: 500;
 	font-size: 14px;
 	padding: 4px;
-	background: #2d3037;
+	background: rgba(27, 27, 27, 1);
 	height: 64px;
 	width: 64px;
 	border-radius: 8px;
@@ -645,7 +656,7 @@ const ListHeader = styled.h2`
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	color: #a2a2a2;
+	color: #9B9B9B;
 	font-weight: 500;
 
 	&:not(:first-of-type) {
