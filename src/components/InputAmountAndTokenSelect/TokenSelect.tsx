@@ -230,7 +230,7 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 	});
 
 	const topHeight =
-		(topTokens.length > 0 ? 80 : 0) + (tokensWithBalances.length > 0 ? 36 + tokensWithBalances.length * 56 : 0) + 36;
+		(topTokens.length > 0 ? 80 : 0) + (tokensWithBalances.length > 0 ? 8 + 36 + tokensWithBalances.length * 56 : 0) + 36;
 
 	return (
 		<>
@@ -607,7 +607,7 @@ const TopTokenWrapper = styled.div`
 	flex-wrap: nowrap;
 	overflow-x: auto;
 	gap: 4px;
-	padding: 8px 16px;
+	padding: 0px 16px 16px 16px;
 	flex-shrink: 0;
 
 	& > span {
@@ -647,4 +647,8 @@ const ListHeader = styled.h2`
 	text-overflow: ellipsis;
 	color: #a2a2a2;
 	font-weight: 500;
+
+	&:not(:first-of-type) {
+		margin-top: 8px;
+	}
 `;
