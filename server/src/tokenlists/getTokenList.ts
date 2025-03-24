@@ -204,9 +204,7 @@ export async function getTokenList() {
 						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
 						: null;
 
-				const token = Array.isArray(topTokensByVolume?.[chain])
-					? topTokensByVolume[chain]?.find((item) => item.baseToken.toLowerCase() === t.address?.toLowerCase())
-					: null;
+				const volume24h = topTokensByVolume[chain]?.[t.address.toLowerCase()] ?? 0;
 
 				return {
 					...t,
@@ -216,7 +214,7 @@ export async function getTokenList() {
 					geckoId,
 					logoURI: t.ownLogoURI || `https://token-icons.llamao.fi/icons/tokens/${t.chainId}/${t.address}?h=48&w=48`,
 					logoURI2: t.logoURI || logos[geckoId] || null,
-					volume24h: token?.volume24h ?? 0
+					volume24h
 				};
 			})
 			.sort((a, b) => (b.address === zeroAddress ? 1 : b.volume24h - a.volume24h));
@@ -247,7 +245,7 @@ const getTopTokensByChain = async (chainId: string) => {
 	try {
 		// Skip if not Ethereum or chain not supported in geckoTerminal
 		if (!geckoTerminalChainsMap[chainId]) {
-			return [chainId, []];
+			return [chainId, {}];
 		}
 
 		const resData: any[] = [];
@@ -271,19 +269,16 @@ const getTopTokensByChain = async (chainId: string) => {
 			}
 		});
 
-		// Map and sort by volume
-		const result = resData
-			.map((pool) => ({
-				...pool,
-				baseToken: pool.relationships.base_token.data.id.split('_')[1],
-				volume24h: parseFloat(pool.attributes?.volume_usd?.h24 || '0')
-			}))
-			.filter((token) => token.volume24h > 0)
-			.sort((a, b) => b.volume24h - a.volume24h);
+		const volumeByTokens = {};
 
-		return [chainId, result];
+		for (const pool of resData) {
+			const token = pool.relationships.base_token.data.id.split('_')[1].toLowerCase();
+			volumeByTokens[token] = (volumeByTokens[token] || 0) + Number((pool.attributes?.volume_usd?.h24 || '0').split(".")[0]);
+		}
+
+		return [chainId, volumeByTokens];
 	} catch (error) {
 		console.error(`Error fetching top tokens for chain ${chainId}:`, error);
-		return [chainId, []];
+		return [chainId, {}];
 	}
 };
