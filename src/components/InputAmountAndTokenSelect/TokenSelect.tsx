@@ -378,7 +378,7 @@ export const TokenSelect = ({
 
 				return t;
 			})
-			.filter((token) => token !== null);
+			.filter((token) => token !== null && (type === 'amountIn' ? token.address !== finalSelectedToToken?.address : token.address !== finalSelectedFromToken?.address));
 
 		const tokensInChain = {
 			...savedTokens,
@@ -393,7 +393,7 @@ export const TokenSelect = ({
 				: [];
 
 		return { tokensInChain: Object.values(tokensInChain), topTokens, tokensWithBalances };
-	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
+	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens, type]);
 
 	const { tokens, token } = useMemo(() => {
 		if (type === 'amountIn') {

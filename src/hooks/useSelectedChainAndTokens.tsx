@@ -118,8 +118,8 @@ export function useSelectedChainAndTokens() {
 			finalSelectedFromToken,
 			finalSelectedToToken,
 			fetchingTokenList,
-			fetchingFromToken: !finalSelectedFromToken && (fetchingTokenList || fetchingFromToken2) ? true : false,
-			fetchingToToken: !finalSelectedToToken && (fetchingTokenList || fetchingToToken2) ? true : false
+			fetchingFromToken: fromTokenAddress && !finalSelectedFromToken && (fetchingTokenList || fetchingFromToken2) ? true : false,
+			fetchingToToken: toTokenAddress && !finalSelectedToToken && (fetchingTokenList || fetchingToToken2) ? true : false
 		};
 	}, [data, fromToken2, toToken2, fetchingTokenList]);
 }
