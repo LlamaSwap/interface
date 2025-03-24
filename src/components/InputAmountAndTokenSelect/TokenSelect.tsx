@@ -197,7 +197,7 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 	);
 };
 
-const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoading, topTokens }) => {
+const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoading, topTokens, tokensWithBalances }) => {
 	const [input, setInput] = useState('');
 	const onInputChange = (e) => {
 		setInput(e?.target?.value);
@@ -225,9 +225,12 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 	const rowVirtualizer = useVirtualizer({
 		count: filteredData.length,
 		getScrollElement: () => parentRef?.current ?? null,
-		estimateSize: () => 52,
+		estimateSize: () => 56,
 		overscan: 10
 	});
+
+	const topHeight =
+		(topTokens.length > 0 ? 80 : 0) + (tokensWithBalances.length > 0 ? 36 + tokensWithBalances.length * 56 : 0) + 36;
 
 	return (
 		<>
@@ -247,36 +250,67 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 					<AddToken address={input} onClick={onTokenSelect} selectedChain={selectedChain} />
 				) : (
 					<>
-						{topTokens.length > 0 ? (
-							<>
-								<TopTokenWrapper>
-									{topTokens.map((token) => (
-										<TopToken
-											key={`top-token-${selectedChain.id}-${token.address}`}
-											onClick={() => {
-												onTokenSelect(token);
-											}}
-										>
-											<IconImage
-												src={token.logoURI}
-												onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
-												height={24}
-												width={24}
-											/>
-											<span>{token.symbol}</span>
-										</TopToken>
-									))}
-								</TopTokenWrapper>
-							</>
-						) : null}
 						<VirtualListWrapper ref={parentRef}>
 							<div
 								style={{
-									height: `${rowVirtualizer.getTotalSize()}px`,
+									height: `${rowVirtualizer.getTotalSize() + topHeight}px`,
 									width: '100%',
 									position: 'relative'
 								}}
 							>
+								{topTokens.length > 0 ? (
+									<>
+										<TopTokenWrapper>
+											{topTokens.map((token) => (
+												<TopToken
+													key={`top-token-${selectedChain.id}-${token.address}`}
+													onClick={() => {
+														onTokenSelect(token);
+													}}
+												>
+													<IconImage
+														src={token.logoURI}
+														onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
+														height={24}
+														width={24}
+													/>
+													<span>{token.symbol}</span>
+												</TopToken>
+											))}
+										</TopTokenWrapper>
+									</>
+								) : null}
+								{tokensWithBalances.length > 0 ? (
+									<>
+										<ListHeader>
+											<svg viewBox="0 0 24 24" fill="none" strokeWidth="8" width={16} height={16}>
+												<path
+													d="M7.5 18.01C7.5 18.74 7.72001 19.4 8.13 19.97C5.45 19.8 3 18.82 3 17.01V16.13C4.05 16.95 5.6 17.5 7.5 17.68V18.01ZM7.53998 13.94C7.52998 13.95 7.53003 13.96 7.53003 13.97C7.51003 14.07 7.5 14.17 7.5 14.27V16.18C5.08 15.9 3 14.94 3 13.27V12.39C4.05 13.22 5.61003 13.77 7.53003 13.94H7.53998ZM11.44 10.28C9.92 10.75 8.73001 11.52 8.07001 12.48C5.41001 12.31 3 11.33 3 9.53003V8.84998C4.31 9.87998 6.41 10.48 9 10.48C9.87 10.48 10.69 10.41 11.44 10.28ZM15 8.84998V9.53003C15 9.62003 14.99 9.70003 14.98 9.78003C14.19 9.78003 13.44 9.84997 12.74 9.96997C13.64 9.69997 14.4 9.31998 15 8.84998ZM9 3C6 3 3 3.99999 3 5.98999C3 7.99999 6 8.97998 9 8.97998C12 8.97998 15 7.99999 15 5.98999C15 3.99999 12 3 9 3ZM15 18.76C12.49 18.76 10.35 18.1 9 17.03V18.01C9 20 12 21 15 21C18 21 21 20 21 18.01V17.03C19.65 18.1 17.51 18.76 15 18.76ZM15 11.28C11.69 11.28 9 12.62 9 14.27C9 15.92 11.69 17.26 15 17.26C18.31 17.26 21 15.92 21 14.27C21 12.62 18.31 11.28 15 11.28Z"
+													fill="currentColor"
+												></path>
+											</svg>
+											<span>Your tokens</span>
+										</ListHeader>
+										{tokensWithBalances.map((token) => (
+											<Row
+												token={token}
+												onClick={onTokenSelect}
+												chain={selectedChain}
+												key={`token-with-balnce-${token.address}`}
+												style={undefined}
+											/>
+										))}
+									</>
+								) : null}
+								<ListHeader>
+									<svg viewBox="0 0 18 17" fill="none" strokeWidth="8" width={16} height={16}>
+										<path
+											d="M8.80054 0.829883L10.4189 4.09404C10.5406 4.33988 10.7756 4.50989 11.0481 4.54906L14.7838 5.08902C15.4688 5.18818 15.7422 6.0282 15.2464 6.50987L12.5456 9.13071C12.3481 9.32238 12.258 9.5982 12.3047 9.86904L12.9221 13.4557C13.0471 14.1832 12.283 14.7382 11.628 14.3957L8.38805 12.6999C8.14471 12.5724 7.85469 12.5724 7.61219 12.6999L4.37468 14.394C3.71885 14.7374 2.95216 14.1815 3.07799 13.4524L3.69556 9.86904C3.74223 9.5982 3.65218 9.32238 3.45468 9.13071L0.753871 6.50987C0.257205 6.0282 0.530481 5.18818 1.21631 5.08902L4.95217 4.54906C5.22384 4.50989 5.45885 4.33988 5.58135 4.09404L7.19969 0.829883C7.52553 0.167383 8.47221 0.167383 8.80054 0.829883Z"
+											fill="currentColor"
+										></path>
+									</svg>
+									<span>Tokens by 24H volume</span>
+								</ListHeader>
 								{rowVirtualizer.getVirtualItems().map((virtualRow) => (
 									<Row
 										token={filteredData[virtualRow.index]}
@@ -288,8 +322,8 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 											top: 0,
 											left: 0,
 											width: '100%',
-											height: '52px',
-											transform: `translateY(${virtualRow.start}px)`
+											height: '56px',
+											transform: `translateY(${topHeight + virtualRow.start}px)`
 										}}
 									/>
 								))}
@@ -329,23 +363,27 @@ export const TokenSelect = ({
 	// saved tokens list
 	const savedTokens = useGetSavedTokens(selectedChain?.id);
 
-	const { tokensInChain, topTokens } = useMemo(() => {
-		const uniqSavedTokens = new Set(savedTokens.map((t) => t.address));
+	const { tokensInChain, topTokens, tokensWithBalances } = useMemo(() => {
+		const tokensWithBalances = Object.keys(tokenBalances || {})
+			.map((token) => {
+				const t = chainTokenList[token] || savedTokens[token] || null;
 
-		const tokensInChain =
-			[
-				...Object.values(chainTokenList),
-				...savedTokens.filter((token) => (chainTokenList[token.address] ? false : true))
-			]
-				.map((token) => {
+				if (t) {
 					return {
-						...token,
-						amount: tokenBalances?.[token.address]?.amount ?? 0,
-						balanceUSD: tokenBalances?.[token.address]?.balanceUSD ?? 0,
-						isGeckoToken: token.isGeckoToken ? (uniqSavedTokens.has(token.address) ? false : true) : false
+						...t,
+						amount: tokenBalances?.[t.address]?.amount ?? 0,
+						balanceUSD: tokenBalances?.[t.address]?.balanceUSD ?? 0
 					};
-				})
-				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? [];
+				}
+
+				return t;
+			})
+			.filter((token) => token !== null);
+
+		const tokensInChain = {
+			...savedTokens,
+			...chainTokenList
+		};
 
 		const topTokens =
 			selectedChain && topTokensByChain[selectedChain.id]
@@ -354,19 +392,23 @@ export const TokenSelect = ({
 						.filter((token) => token !== null)
 				: [];
 
-		return { tokensInChain, topTokens };
+		return { tokensInChain: Object.values(tokensInChain), topTokens, tokensWithBalances };
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
 
 	const { tokens, token } = useMemo(() => {
 		if (type === 'amountIn') {
 			return {
-				tokens: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
+				tokens: tokensInChain.filter(
+					({ address }) => address !== finalSelectedToToken?.address && !tokenBalances?.[address]
+				),
 				token: finalSelectedFromToken
 			};
 		}
 
 		return {
-			tokens: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address),
+			tokens: tokensInChain.filter(
+				({ address }) => address !== finalSelectedFromToken?.address && !tokenBalances?.[address]
+			),
 			token: finalSelectedToToken
 		};
 	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
@@ -442,6 +484,7 @@ export const TokenSelect = ({
 					selectedChain={selectedChain}
 					isLoading={fetchingTokenList || isLoading}
 					topTokens={topTokens}
+					tokensWithBalances={tokensWithBalances}
 				/>
 			) : null}
 		</>
@@ -533,6 +576,7 @@ const PairRow = styled.div`
 	gap: 8px;
 	padding: 0 16px;
 	align-items: center;
+	min-height: 56px;
 
 	cursor: pointer;
 
@@ -560,9 +604,10 @@ const LinkToExplorer = styled.a`
 
 const TopTokenWrapper = styled.div`
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
+	overflow-x: auto;
 	gap: 4px;
-	padding: 16px 0 0 16px;
+	padding: 8px 16px;
 	flex-shrink: 0;
 
 	& > span {
@@ -589,4 +634,17 @@ const TopToken = styled.button`
 	&:hover {
 		background-color: rgba(246, 246, 246, 0.1);
 	}
+`;
+
+const ListHeader = styled.h2`
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0 16px;
+	height: 36px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: #a2a2a2;
+	font-weight: 500;
 `;

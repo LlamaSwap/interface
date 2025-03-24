@@ -570,7 +570,7 @@ export function AggregatorContainer() {
 			finalSelectedToToken !== null &&
 			savedTokens &&
 			toTokenAddress &&
-			!savedTokens.find(({ address }) => address.toLowerCase() === toTokenAddress.toLowerCase());
+			!savedTokens[toTokenAddress.toLowerCase()];
 
 		if (isUnknown && toTokenAddress && savedTokens?.length > 1) {
 			onToTokenChange(undefined);
