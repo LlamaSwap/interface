@@ -74,7 +74,10 @@ const Route = ({
 		chain: selectedChain
 	});
 
-	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap' && !isGasless)) return null;
+	if (
+		!price.amountReturned
+		|| (Number(gasUsd) === 0 && !['CowSwap', '1inch'].includes(name) && !isGasless)
+	) return null;
 
 	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
 
@@ -172,7 +175,7 @@ const Route = ({
 								<Gift size={14} color="#A0AEC0" />
 							</Tooltip>
 						) : null}
-						{name === 'CowSwap' ? (
+						{name === 'CowSwap' || (name === '1inch' && gasUsd === 0) ? (
 							<Tooltip content="Gas is taken from output amount">
 								<Text as="span" display="flex" alignItems="center" gap="4px" color="gray.400" fontWeight={500}>
 									{isGasNotKnown ? null : <GasIcon />}
