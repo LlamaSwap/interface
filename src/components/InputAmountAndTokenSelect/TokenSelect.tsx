@@ -6,7 +6,7 @@ import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useQueryClient } from '@tanstack/react-query';
 import { allChains } from '../WalletProvider/chains';
-import { ChevronDown, X } from 'react-feather';
+import { ChevronDown, X, Search } from 'react-feather';
 import { useToken } from '../Aggregator/hooks/useToken';
 import { isAddress } from 'viem';
 import { IToken } from '~/types';
@@ -242,7 +242,10 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 					<X size={20} />
 				</DialogDismiss>
 
-				<InputSearch placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
+				<InputSearchWrapper>
+					<Search size={17} />
+					<InputSearch placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
+				</InputSearchWrapper>
 
 				{isLoading ? (
 					<Text textAlign={'center'} marginTop="25%">
@@ -389,8 +392,8 @@ export const TokenSelect = ({
 			);
 
 		const tokensInChain = {
+			...chainTokenList,
 			...savedTokens,
-			...chainTokenList
 		};
 
 		const topTokens =
@@ -546,17 +549,31 @@ const DialogDismiss = styled(Ariakit.DialogDismiss)`
 	right: 12px;
 `;
 
+const InputSearchWrapper = styled.div`
+	position: relative;
+	display: flex;
+	flex-direction: column;
+
+	& > svg {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 28px;
+		margin: auto;
+	}
+`;
+
 const InputSearch = styled.input`
 	background: rgba(27, 27, 27, 1);
 	border-radius: 8px;
 	height: 52px;
 	flex-shrink: 0;
-	padding: 0 12px;
+	padding: 0 12px 0px 36px;
 	margin: 0 16px;
 	font-size: 16px;
 	font-weight: 500;
 	&::placeholder {
-		color: #9B9B9B;
+		color: #9b9b9b;
 	}
 `;
 
@@ -607,7 +624,7 @@ const IconImage = styled.img`
 const LinkToExplorer = styled.a`
 	font-size: 12px;
 	color: #7e7e7e;
-	
+
 	&:hover {
 		text-decoration: underline;
 	}
@@ -656,7 +673,7 @@ const ListHeader = styled.h2`
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	color: #9B9B9B;
+	color: #9b9b9b;
 	font-weight: 500;
 
 	&:not(:first-of-type) {
