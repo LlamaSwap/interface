@@ -19,8 +19,8 @@ const wrappedTokens = {
 };
 
 const nativeSwapAddress = {
-	ethereum: '0x40A50cf069e992AA4536211B23F286eF88752187',
-	gnosis: '0x40A50cf069e992AA4536211B23F286eF88752187'
+	ethereum: '0xba3cb449bd2b4adddbc894d8697f5170800eadec',
+	gnosis: '0xba3cb449bd2b4adddbc894d8697f5170800eadec'
 };
 
 export const name = 'CowSwap';
