@@ -1,9 +1,13 @@
 import { uniq } from 'lodash';
 import { fallback, http } from 'wagmi';
 
+
+const ankrApiKey = "8cf34fea798274d63a94fdc1185563307c7a3bd8ef23462364270a73e7d99dce"
+
 export const rpcUrls: Record<number, Record<string, string>> = {
 	1: {
 		default: 'https://cloudflare-eth.com',
+		ankr: `https://rpc.ankr.com/eth/${ankrApiKey}`,
 		flashbots: 'https://rpc.flashbots.net',
 		builder: 'https://rpc.builder0x69.io',
 		publicNode: 'https://ethereum.publicnode.com',
@@ -12,12 +16,14 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 	56: {
 		default: 'https://bsc-dataseed.binance.org',
 		defibit: 'https://bsc-dataseed1.defibit.io',
+		ankr: `https://rpc.ankr.com/bsc/${ankrApiKey}`,
 		ninicoin: 'https://bsc-dataseed1.ninicoin.io',
 		defibit2: 'https://bsc-dataseed2.defibit.io',
 		ninicoin2: 'https://bsc-dataseed2.ninicoin.io'
 	},
 	137: {
 		default: 'https://rpc-mainnet.matic.quiknode.pro',
+		ankr: `https://rpc.ankr.com/polygon/${ankrApiKey}`
 	},
 	128: {
 		default: 'https://http-mainnet.hecochain.com'
@@ -61,7 +67,7 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 	},
 	42161: {
 		default: 'https://arb1.arbitrum.io/rpc',
-		llama: 'https://arbitrum.llamarpc.com'
+		ankr: `https://rpc.ankr.com/arbitrum/${ankrApiKey}`
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
@@ -214,7 +220,8 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 		default: 'https://rpc.pulsechain.com'
 	},
 	8453: {
-		default: 'https://base-rpc.publicnode.com',
+		default: `https://rpc.ankr.com/base/${ankrApiKey}`,
+		publicnode: 'https://base-rpc.publicnode.com',
 		third: 'https://base-mainnet.public.blastapi.io'
 	},
 	59144: {
