@@ -390,7 +390,7 @@ const canto = {
 		default: { http: Object.values(rpcUrls[7700]) }
 	},
 	blockExplorers: {
-		default: { name: 'CantoScan', url: 'https://evm.explorer.canto.io' }
+		default: { name: 'CantoScan', url: 'https://tuber.build' }
 	},
 	testnet: false
 };
