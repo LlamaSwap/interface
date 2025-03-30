@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Flex, Box, Button, Text, Switch } from '@chakra-ui/react';
 import {
 	AmountUsd,

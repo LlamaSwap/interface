@@ -1,4 +1,3 @@
-import { get } from 'lodash';
 import { getSavedTokens } from '~/utils';
 
 function fetchSavedTokens(chainId?: number | null) {
@@ -6,7 +5,7 @@ function fetchSavedTokens(chainId?: number | null) {
 
 	const savedTokens = getSavedTokens();
 
-	return get(savedTokens, chainId, []);
+	return Object.fromEntries((savedTokens[chainId] ?? []).map((token) => [token.address.toLowerCase(), token]));
 }
 
 export function useGetSavedTokens(chainId?: number | null) {
