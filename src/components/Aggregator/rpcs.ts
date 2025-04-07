@@ -125,6 +125,6 @@ export const rpcUrls: Record<number, Array<string>> = {
 export const rpcsTransports = Object.fromEntries(
 	Object.entries(rpcUrls).map((chain: [string, Array<string>]) => [
 		chain[0],
-		fallback(uniq(chain[1]).map((rpc) => http(rpc)))
+		fallback(uniq(chain[1]).map((rpc) => http(rpc, { timeout: 3_000 })))
 	])
 );
