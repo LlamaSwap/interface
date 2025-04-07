@@ -14,7 +14,7 @@ const okx = {
 		symbol: 'OKT'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[66]) }
+		default: { http: rpcUrls[66] }
 	},
 	blockExplorers: {
 		default: { name: 'OKLink', url: 'https://www.oklink.com/en/okc' }
@@ -34,7 +34,7 @@ const binance = {
 		symbol: 'BNB'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[56]) }
+		default: { http: rpcUrls[56] }
 	},
 	blockExplorers: {
 		default: { name: 'BSCScan', url: 'https://bscscan.com' }
@@ -54,7 +54,7 @@ const boba = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[288]) }
+		default: { http: rpcUrls[288] }
 	},
 	blockExplorers: {
 		default: { name: 'BobaScan', url: 'https://bobascan.com' }
@@ -74,7 +74,7 @@ const harmony = {
 		symbol: 'ONE'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[1666600000]) }
+		default: { http: rpcUrls[1666600000] }
 	},
 	blockExplorers: {
 		default: {
@@ -97,7 +97,7 @@ const heco = {
 		symbol: 'HT'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[128]) }
+		default: { http: rpcUrls[128] }
 	},
 	blockExplorers: {
 		default: {
@@ -120,7 +120,7 @@ const velas = {
 		symbol: 'VLX'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[106]) }
+		default: { http: rpcUrls[106] }
 	},
 	blockExplorers: {
 		default: { name: 'VelaScan', url: 'https://velascan.org' }
@@ -140,7 +140,7 @@ const oasis = {
 		symbol: 'ROSE'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[42262]) }
+		default: { http: rpcUrls[42262] }
 	},
 	blockExplorers: {
 		default: { name: 'OasisScan', url: 'https://www.oasisscan.com' }
@@ -160,7 +160,7 @@ const moonbeam = {
 		symbol: 'GLMR'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[1284]) }
+		default: { http: rpcUrls[1284] }
 	},
 	blockExplorers: {
 		default: {
@@ -183,7 +183,7 @@ const fuse = {
 		symbol: 'FUSE'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[122]) }
+		default: { http: rpcUrls[122] }
 	},
 	blockExplorers: {
 		default: {
@@ -206,7 +206,7 @@ const moonriver = {
 		symbol: 'MOVR'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[1285]) }
+		default: { http: rpcUrls[1285] }
 	},
 	blockExplorers: {
 		default: {
@@ -229,7 +229,7 @@ const cronos = {
 		symbol: 'CRO'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[25]) }
+		default: { http: rpcUrls[25] }
 	},
 	blockExplorers: {
 		default: { name: 'CronosScan', url: 'https://cronoscan.com' }
@@ -248,7 +248,7 @@ const celo = {
 		symbol: 'CELO'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[42220]) }
+		default: { http: rpcUrls[42220] }
 	},
 	blockExplorers: {
 		default: { name: 'CeloScan', url: 'https://celoscan.io' }
@@ -267,7 +267,7 @@ const aurora = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[1313161554]) }
+		default: { http: rpcUrls[1313161554] }
 	},
 	blockExplorers: {
 		default: { name: 'AuroraScan', url: 'https://aurorascan.dev' }
@@ -286,7 +286,7 @@ const avax = {
 		symbol: 'AVAX'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[43114]) }
+		default: { http: rpcUrls[43114] }
 	},
 	blockExplorers: {
 		default: { name: 'SnowScan', url: 'https://snowscan.xyz' }
@@ -306,7 +306,7 @@ const klaytn = {
 		symbol: 'KLAY'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[8217]) }
+		default: { http: rpcUrls[8217] }
 	},
 	blockExplorers: {
 		default: {
@@ -328,7 +328,7 @@ const fantom = {
 		symbol: 'FTM'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[250]) }
+		default: { http: rpcUrls[250] }
 	},
 	blockExplorers: {
 		default: { name: 'FTMScan', url: 'https://ftmscan.com' }
@@ -348,7 +348,7 @@ const gnosis = {
 		symbol: 'xDai'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[100]) }
+		default: { http: rpcUrls[100] }
 	},
 	blockExplorers: {
 		default: { name: 'GnosisScan', url: 'https://gnosisscan.io' }
@@ -367,7 +367,7 @@ const polygon = {
 		symbol: 'POL'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[137]) }
+		default: { http: rpcUrls[137] }
 	},
 	blockExplorers: {
 		default: { name: 'PolygonScan', url: 'https://polygonscan.com' }
@@ -387,7 +387,7 @@ const canto = {
 		symbol: 'CANTO'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[7700]) }
+		default: { http: rpcUrls[7700] }
 	},
 	blockExplorers: {
 		default: { name: 'CantoScan', url: 'https://evm.explorer.canto.io' }
@@ -410,7 +410,7 @@ const arbitrum = {
 	},
 	testnet: false,
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[42161]) }
+		default: { http: rpcUrls[42161] }
 	},
 	iconUrl: chainIconUrl('arbitrum')
 };
@@ -429,7 +429,7 @@ const ethereum = {
 	},
 	testnet: false,
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[1]) }
+		default: { http: rpcUrls[1] }
 	},
 	iconUrl: chainIconUrl('ethereum')
 };
@@ -448,7 +448,7 @@ const optimism = {
 	},
 	testnet: false,
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[10]) }
+		default: { http: rpcUrls[10] }
 	},
 	iconUrl: chainIconUrl('optimism')
 };
@@ -465,7 +465,7 @@ const zksync = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[324]) }
+		default: { http: rpcUrls[324] }
 	},
 	blockExplorers: {
 		default: { name: 'zkScan', url: 'https://explorer.zksync.io' }
@@ -485,7 +485,7 @@ const ontology = {
 		symbol: 'ONT'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[58]) }
+		default: { http: rpcUrls[58] }
 	},
 	blockExplorers: {
 		default: { name: 'Ontology Explorer', url: 'https://explorer.ont.io' }
@@ -505,7 +505,7 @@ const polygonZKEvm = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[1101]) }
+		default: { http: rpcUrls[1101] }
 	},
 	blockExplorers: {
 		default: { name: 'Polygon zkEVM Scan', url: 'https://zkevm.polygonscan.com' }
@@ -525,7 +525,7 @@ const kava = {
 		symbol: 'KAVA'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[2222]) }
+		default: { http: rpcUrls[2222] }
 	},
 	blockExplorers: {
 		default: { name: 'Kava Explorer', url: 'https://explorer.kava.io' }
@@ -545,7 +545,7 @@ const metis = {
 		symbol: 'METIS'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[1088]) }
+		default: { http: rpcUrls[1088] }
 	},
 	blockExplorers: {
 		default: { name: 'Metis Explorer', url: 'https://andromeda-explorer.metis.io' }
@@ -565,7 +565,7 @@ const pulse = {
 		symbol: 'PLS'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[369]) }
+		default: { http: rpcUrls[369] }
 	},
 	blockExplorers: {
 		default: { name: 'PulseChain Explorer', url: 'https://scan.pulsechain.com' }
@@ -585,7 +585,7 @@ const base = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[8453]) }
+		default: { http: rpcUrls[8453] }
 	},
 	blockExplorers: {
 		default: { name: 'BaseScan', url: 'https://basescan.org' }
@@ -605,7 +605,7 @@ const linea = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[59144]) }
+		default: { http: rpcUrls[59144] }
 	},
 	blockExplorers: {
 		default: { name: 'LineaScan', url: 'https://lineascan.build' }
@@ -625,7 +625,7 @@ const scroll = {
 		symbol: 'ETH'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[534352]) }
+		default: { http: rpcUrls[534352] }
 	},
 	blockExplorers: {
 		default: { name: 'ScrollScan', url: 'https://scrollscan.com/' }
@@ -645,7 +645,7 @@ const sonic = {
 		symbol: 'S'
 	},
 	rpcUrls: {
-		default: { http: Object.values(rpcUrls[146]) }
+		default: { http: rpcUrls[146] }
 	},
 	blockExplorers: {
 		default: { name: 'SonicScan', url: 'https://sonicscan.org/' }
