@@ -7,7 +7,6 @@ const ankrApiKey = "8cf34fea798274d63a94fdc1185563307c7a3bd8ef23462364270a73e7d9
 export const rpcUrls: Record<number, Record<string, string>> = {
 	1: {
 		default: 'https://cloudflare-eth.com',
-		ankr: `https://rpc.ankr.com/eth/${ankrApiKey}`,
 		flashbots: 'https://rpc.flashbots.net',
 		builder: 'https://rpc.builder0x69.io',
 		publicNode: 'https://ethereum.publicnode.com',
@@ -16,21 +15,23 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 	56: {
 		default: 'https://bsc-dataseed.binance.org',
 		defibit: 'https://bsc-dataseed1.defibit.io',
-		ankr: `https://rpc.ankr.com/bsc/${ankrApiKey}`,
 		ninicoin: 'https://bsc-dataseed1.ninicoin.io',
 		defibit2: 'https://bsc-dataseed2.defibit.io',
 		ninicoin2: 'https://bsc-dataseed2.ninicoin.io'
 	},
 	137: {
 		default: 'https://rpc-mainnet.matic.quiknode.pro',
-		ankr: `https://rpc.ankr.com/polygon/${ankrApiKey}`
+		polygonrpc: 'https://polygon-rpc.com',
+		publicnode: 'https://polygon-bor-rpc.publicnode.com',
+		omnia: 'https://endpoints.omniatech.io/v1/matic/mainnet/public'
 	},
 	128: {
 		default: 'https://http-mainnet.hecochain.com'
 	},
 	250: {
 		default: 'https://rpcapi.fantom.network',
-		fantomnetwork2: 'https://rpc2.fantom.network'
+		fantomnetwork2: 'https://rpc2.fantom.network',
+		publicnode: 'https://fantom-rpc.publicnode.com'
 	},
 	30: {
 		default: 'https://public-node.rsk.co'
@@ -39,12 +40,14 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 		default: 'https://rpc.tomochain.com'
 	},
 	100: {
-		default: 'https://rpc.gnosischain.com'
+		default: 'https://rpc.gnosischain.com',
+		blastapi: 'https://gnosis-mainnet.public.blastapi.io'
+
 	},
 	43114: {
 		default: 'https://api.avax.network/ext/bc/C/rpc',
-		blockpi: 'https://avalanche.blockpi.network/v1/rpc/public',
-		blastapi: 'https://ava-mainnet.public.blastapi.io/ext/bc/C/rpc'
+		blastapi: 'https://ava-mainnet.public.blastapi.io/ext/bc/C/rpc',
+		omnia: 'https://endpoints.omniatech.io/v1/avax/mainnet/public'
 	},
 	888: {
 		default: 'https://gwan-ssl.wandevs.org:56891'
@@ -63,11 +66,13 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 	},
 	10: {
 		default: 'https://mainnet.optimism.io',
-		blockpi: 'https://optimism.blockpi.network/v1/rpc/public'
+		blastapi: 'https://optimism-mainnet.public.blastapi.io',
+		omnia: 'https://endpoints.omniatech.io/v1/op/mainnet/public'
 	},
 	42161: {
 		default: 'https://arb1.arbitrum.io/rpc',
-		ankr: `https://rpc.ankr.com/arbitrum/${ankrApiKey}`
+		blastapi: 'https://arbitrum-one.public.blastapi.io',
+		lava: 'https://arb1.lava.build'
 	},
 	321: {
 		default: 'https://rpc-mainnet.kcc.network'
@@ -128,7 +133,7 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 	70: {
 		default: 'https://http-mainnet.hoosmartchain.com'
 	},
-	32659: { default: 'https://mainnet.anyswap.exchange,https://mainway.freemoon.xyz/gate' },
+	32659: { default: 'https://mainnet.anyswap.exchange' },
 	1313161554: { default: 'https://mainnet.aurora.dev' },
 	2020: {
 		default: 'https://api.roninchain.com/rpc'
@@ -220,13 +225,12 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 		default: 'https://rpc.pulsechain.com'
 	},
 	8453: {
-		default: `https://rpc.ankr.com/base/${ankrApiKey}`,
+		default: 'https://mainnet.base.org',
 		publicnode: 'https://base-rpc.publicnode.com',
 		third: 'https://base-mainnet.public.blastapi.io'
 	},
 	59144: {
-		default: 'https://rpc.linea.build',
-		second: 'https://linea.blockpi.network/v1/rpc/public'
+		default: 'https://rpc.linea.build'
 	},
 	534352: {
 		default: 'https://rpc.scroll.io',
