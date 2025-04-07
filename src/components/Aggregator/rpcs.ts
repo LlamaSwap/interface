@@ -242,19 +242,8 @@ export const rpcUrls: Record<number, Record<string, string>> = {
 	}
 };
 
-export const rpcsMap = Object.entries(rpcUrls).reduce(
-	(acc, [chainId, rpcs]) => {
-		const normalizedRpcs = Object.values(rpcs).reduce(
-			(innerAcc, rpc, i) => ({ ...innerAcc, [i === 0 ? 'default' : i]: rpc }),
-			{}
-		);
-		return { ...acc, [chainId]: normalizedRpcs };
-	},
-	{} as Record<number, Record<number, string>>
-);
-
 export const rpcsTransports = Object.fromEntries(
-	Object.entries(rpcsMap).map((chain: [string, Record<number, string>]) => [
+	Object.entries(rpcUrls).map((chain: [string, Record<number, string>]) => [
 		chain[0],
 		fallback(uniq(Object.values(chain[1])).map((rpc) => http(rpc)))
 	])
