@@ -1,12 +1,12 @@
 // Source: https://docs.cow.fi/off-chain-services/api
 
-import { ExtraData } from '../../types';
-import { ABI } from './abi';
 import BigNumber from 'bignumber.js';
-import { chainsMap } from '../../constants';
 import { zeroAddress } from 'viem';
 import { signTypedData, watchContractEvent, writeContract } from 'wagmi/actions';
 import { config } from '../../../WalletProvider';
+import { chainsMap } from '../../constants';
+import { ExtraData } from '../../types';
+import { ABI } from './abi';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
@@ -19,8 +19,8 @@ const wrappedTokens = {
 };
 
 const nativeSwapAddress = {
-	ethereum: '0x40A50cf069e992AA4536211B23F286eF88752187',
-	gnosis: '0x40A50cf069e992AA4536211B23F286eF88752187'
+	ethereum: '0xba3cb449bd2b4adddbc894d8697f5170800eadec',
+	gnosis: '0xba3cb449bd2b4adddbc894d8697f5170800eadec'
 };
 
 export const name = 'CowSwap';
