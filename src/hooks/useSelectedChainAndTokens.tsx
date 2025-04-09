@@ -3,22 +3,41 @@ import { chainsMap } from '~/components/Aggregator/constants';
 import { getAllChains } from '~/components/Aggregator/router';
 import { IToken } from '~/types';
 import { useQueryParams } from './useQueryParams';
+import { useGetTokenListByChain } from '~/queries/useGetTokenList';
+import { useToken } from '~/components/Aggregator/hooks/useToken';
+import { isAddress, zeroAddress } from 'viem';
+import { nativeTokens } from '~/components/Aggregator/nativeTokens';
+import { formatAddress } from '~/utils/formatAddress';
 
 const chains = getAllChains();
 
-export function useSelectedChainAndTokens({ tokens }) {
+export function useSelectedChainAndTokens() {
 	const { chainName, fromTokenAddress, toTokenAddress } = useQueryParams();
 
-	return useMemo(() => {
-		const chainId = chainsMap[chainName];
+	const { data: tokenList, isLoading: fetchingTokenList } = useGetTokenListByChain({
+		chainId: chainName ? chainsMap[chainName] : null
+	});
 
-		const tokenList: Array<IToken> = tokens && chainName ? tokens[chainId] || [] : null;
-
+	const data = useMemo(() => {
 		const selectedChain = chains.find((c) => c.value === chainName);
 
-		const selectedFromToken = tokenList?.find((t) => t.address.toLowerCase() === fromTokenAddress);
+		const selectedFromToken =
+			fromTokenAddress && isAddress(fromTokenAddress)
+				? (fromTokenAddress === zeroAddress && selectedChain
+						? nativeTokens.find((t) => t.chainId === selectedChain.chainId)
+						: null) ??
+					tokenList?.[fromTokenAddress.toLowerCase()] ??
+					null
+				: null;
 
-		const selectedToToken = tokenList?.find((t) => t.address.toLowerCase() === toTokenAddress);
+		const selectedToToken =
+			toTokenAddress && isAddress(toTokenAddress)
+				? (toTokenAddress === zeroAddress && selectedChain
+						? nativeTokens.find((t) => t.chainId === selectedChain.chainId)
+						: null) ??
+					tokenList?.[toTokenAddress.toLowerCase()] ??
+					null
+				: null;
 
 		return {
 			selectedChain: selectedChain ? { ...selectedChain, id: chainsMap[selectedChain.value] } : null,
@@ -28,7 +47,79 @@ export function useSelectedChainAndTokens({ tokens }) {
 			selectedToToken: selectedToToken
 				? { ...selectedToToken, label: selectedToToken.symbol, value: selectedToToken.address }
 				: null,
-			chainTokenList: tokenList
+			chainTokenList: (tokenList ?? {}) as Record<string, IToken>
 		};
-	}, [chainName, fromTokenAddress, toTokenAddress, tokens]);
+	}, [chainName, fromTokenAddress, toTokenAddress, tokenList]);
+
+	// data of selected token not in chain's tokenlist
+	const { data: fromToken2, isLoading: fetchingFromToken2 } = useToken({
+		address: fromTokenAddress as `0x${string}`,
+		chainId: data.selectedChain?.id,
+		enabled:
+			typeof fromTokenAddress === 'string' &&
+			isAddress(fromTokenAddress) &&
+			data.selectedChain &&
+			data.selectedFromToken === null &&
+			!fetchingTokenList
+				? true
+				: false
+	});
+
+	const { data: toToken2, isLoading: fetchingToToken2 } = useToken({
+		address: toTokenAddress as `0x${string}`,
+		chainId: data.selectedChain?.id,
+		enabled:
+			typeof toTokenAddress === 'string' &&
+			isAddress(toTokenAddress) &&
+			data.selectedChain &&
+			data.selectedToToken === null &&
+			!fetchingTokenList
+				? true
+				: false
+	});
+
+	return useMemo(() => {
+		const finalSelectedFromToken: IToken | null =
+			data.selectedFromToken === null && fromToken2
+				? {
+						name: fromToken2.name ?? formatAddress(fromToken2.address),
+						label: fromToken2.symbol ?? formatAddress(fromToken2.address),
+						symbol: fromToken2.symbol ?? '',
+						address: fromToken2.address,
+						value: fromToken2.address,
+						decimals: fromToken2.decimals,
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${data.selectedChain?.id ?? 1}/${
+							fromToken2.address
+						}?h=20&w=20`,
+						chainId: data.selectedChain?.id ?? 1,
+						geckoId: null
+					}
+				: data.selectedFromToken;
+
+		const finalSelectedToToken: IToken | null =
+			data.selectedToToken === null && toToken2
+				? {
+						name: toToken2.name ?? formatAddress(toToken2.address),
+						label: toToken2.symbol ?? formatAddress(toToken2.address),
+						symbol: toToken2.symbol ?? '',
+						address: toToken2.address,
+						value: toToken2.address,
+						decimals: toToken2.decimals,
+						logoURI: `https://token-icons.llamao.fi/icons/tokens/${data.selectedChain?.id ?? 1}/${
+							toToken2.address
+						}?h=20&w=20`,
+						chainId: data.selectedChain?.id ?? 1,
+						geckoId: null
+					}
+				: data.selectedToToken;
+
+		return {
+			...data,
+			finalSelectedFromToken,
+			finalSelectedToToken,
+			fetchingTokenList,
+			fetchingFromToken: fromTokenAddress && !finalSelectedFromToken && (fetchingTokenList || fetchingFromToken2) ? true : false,
+			fetchingToToken: toTokenAddress && !finalSelectedToToken && (fetchingTokenList || fetchingToToken2) ? true : false
+		};
+	}, [data, fromToken2, toToken2, fetchingTokenList]);
 }

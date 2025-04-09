@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import * as React from 'react';
 import { Flex, Input, Text, Button, Box, FlexProps, InputProps, TextProps, ButtonProps } from '@chakra-ui/react';
 import BigNumber from 'bignumber.js';
 import type { Dispatch, SetStateAction } from 'react';
-import type { IToken } from '~/types';
 import { formattedNum } from '~/utils';
 import { formatAmount } from '~/utils/formatAmount';
 import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../Aggregator/constants';
@@ -19,6 +18,7 @@ export const Container = (props: FlexProps) => (
 		p={{ base: '8px', md: '16px' }}
 		border="1px solid transparent"
 		_focusWithin={{ border: '1px solid white' }}
+		isolation={'isolate'}
 		{...props}
 	/>
 );
@@ -77,10 +77,7 @@ export function InputAmountAndTokenSelect({
 	amount,
 	setAmount,
 	type,
-	tokens,
-	token,
 	onSelectTokenChange,
-	selectedChain,
 	balance,
 	onMaxClick,
 	tokenPrice,
@@ -92,16 +89,7 @@ export function InputAmountAndTokenSelect({
 	amount: string | number;
 	setAmount: Dispatch<SetStateAction<[string | number, string | number]>>;
 	type: 'amountIn' | 'amountOut';
-	tokens: Array<IToken>;
-	token?: IToken | null;
 	onSelectTokenChange: (token: any) => void;
-	selectedChain?: {
-		id: any;
-		value: string;
-		label: string;
-		chainId: number;
-		logoURI?: string | null;
-	} | null;
 	balance?: string;
 	onMaxClick?: () => void;
 	tokenPrice?: number | null;
@@ -137,11 +125,7 @@ export function InputAmountAndTokenSelect({
 					/>
 				</Box>
 
-				{customSelect ? (
-					customSelect
-				) : (
-					<TokenSelect tokens={tokens} token={token} onClick={onSelectTokenChange} selectedChain={selectedChain} />
-				)}
+				{customSelect ? customSelect : <TokenSelect onClick={onSelectTokenChange} type={type} />}
 			</Flex>
 
 			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem">
@@ -182,9 +166,7 @@ export function InputAmountAndTokenSelect({
 				</Flex>
 			</Flex>
 
-			{type === 'amountIn' ? (
-				<InputRange amount={amount} balance={balance} setAmount={setAmount} key={`range-${amount}`} />
-			) : null}
+			{type === 'amountIn' && <InputRange amount={amount} balance={balance} setAmount={setAmount} />}
 		</Container>
 	);
 }
@@ -198,22 +180,24 @@ function formatNumber(string) {
 }
 
 const InputRange = ({ amount, balance, setAmount }) => {
-	const [inputRangeValue, setInputRangeValue] = useState(amount && balance ? Number((+amount / +balance) * 100) : 0);
+	const [inputRangeValue, setInputRangeValue] = React.useState(
+		amount && balance ? Number((+amount / +balance) * 100) : 0
+	);
 
 	return (
-		<InputWrapper
+		<InputRangeWrapper
 			style={
 				{
-					'--range-value': `${Math.min(inputRangeValue,100)}%`
+					'--range-value': `${Math.min(inputRangeValue, 100)}%`
 				} as any
 			}
 		>
-			<RangeValue>{`${(Math.min(inputRangeValue,100)).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`}</RangeValue>
+			<RangeValue>{`${Math.min(inputRangeValue, 100).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`}</RangeValue>
 			<RangeInput
 				type="range"
 				min="0"
 				max="100"
-				value={Math.min(inputRangeValue,100)}
+				value={Math.min(inputRangeValue, 100)}
 				onChange={(e) => {
 					setInputRangeValue(Number(e.target.value));
 				}}
@@ -259,11 +243,11 @@ const InputRange = ({ amount, balance, setAmount }) => {
 				}}
 				$position={100}
 			/>
-		</InputWrapper>
+		</InputRangeWrapper>
 	);
 };
 
-const InputWrapper = styled.div`
+const InputRangeWrapper = styled.div`
 	position: relative;
 	margin: 6px 0;
 `;
@@ -278,6 +262,7 @@ const RangeButton = styled.button<{ $position: number }>`
 	background-color: #2d3037;
 	border: none;
 	cursor: pointer;
+	z-index: 1;
 
 	:nth-of-type(2) {
 		left: 25%;
@@ -307,19 +292,41 @@ const RangeInput = styled.input`
 		height: 4px;
 		border-radius: 8px;
 		border: none;
-		background: linear-gradient(to right, #2172E5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
+		background: linear-gradient(to right, #2172e5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
 	}
 
 	&::-webkit-slider-thumb {
 		-webkit-appearance: none;
-		background: #2172E5;
+		background: #2172e5;
 		height: 16px;
 		width: 16px;
 		border-radius: 50%;
 		margin-top: -6px;
 		position: relative;
-		z-index: 1;
+		z-index: 10;
 		cursor: pointer;
+		border: none;
+	}
+
+	&::-moz-range-track {
+		-moz-appearance: none;
+		height: 4px;
+		border-radius: 8px;
+		border: none;
+		background: linear-gradient(to right, #2172e5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
+	}
+
+	&::-moz-range-thumb {
+		-moz-appearance: none;
+		background: #2172e5;
+		height: 16px;
+		width: 16px;
+		border-radius: 50%;
+		margin-top: -6px;
+		position: relative;
+		z-index: 10;
+		cursor: pointer;
+		border: none;
 	}
 `;
 
