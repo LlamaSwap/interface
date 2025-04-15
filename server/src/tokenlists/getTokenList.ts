@@ -85,6 +85,23 @@ const allSettled = (promises) =>
 
 const chainsToFetchFromKyberswap = [324, 1101, 59144, 534352, 146];
 
+async function getFullCGTokenlist(){
+	const cgCoins = (await fetch("https://api.coingecko.com/api/v3/coins/list?include_platform=true").then(r => r.json())) as {
+        "id": string;
+        "symbol": string;
+        "name": string;
+        "platforms": {
+            [platform: string]: string
+        }
+    }[];
+
+    return cgCoins.map(coin => ({
+        name: coin.name,
+        symbol: coin.symbol,
+        platforms: coin.platforms,
+    }))
+}
+
 export async function getTokenList() {
 	// const uniList = await fetch('https://tokens.uniswap.org/').then((r) => r.json());
 	// const sushiList = await fetch('https://token-list.sushi.com/').then((r) => r.json());
@@ -100,9 +117,8 @@ export async function getTokenList() {
 		})
 	);
 
-	const [geckoList, logos, kyberswapLists] = await Promise.all([
-		fetch('https://defillama-datasets.llama.fi/tokenlist/all.json').then((res) => res.json()),
-		fetch('https://defillama-datasets.llama.fi/tokenlist/logos.json').then((res) => res.json()),
+	const [geckoList, kyberswapLists] = await Promise.all([
+		getFullCGTokenlist(),
 		await Promise.all(
 			chainsToFetchFromKyberswap.map((chainId) =>
 				fetch(
@@ -159,7 +175,7 @@ export async function getTokenList() {
 				uniqueTokenList[chain] = new Set();
 			}
 
-			uniqueTokenList[chain].add(token.address);
+			uniqueTokenList[chain].add(token.address.toLowerCase());
 		});
 	}
 
@@ -182,6 +198,7 @@ export async function getTokenList() {
 		});
 	}
 
+
 	// fetch name, symbol, decimals fo coingecko tokens
 	const geckoTokensList = (
 		await allSettled(
@@ -199,11 +216,6 @@ export async function getTokenList() {
 	const formatAndSortTokens = (tokens, chain) => {
 		return tokens
 			.map((t) => {
-				const geckoId =
-					geckoList && geckoList.length > 0
-						? geckoList.find((geckoCoin) => geckoCoin.symbol === t.symbol?.toLowerCase())?.id ?? null
-						: null;
-
 				const volume24h = topTokensByVolume[chain]?.[t.address.toLowerCase()] ?? 0;
 
 				return {
@@ -211,9 +223,8 @@ export async function getTokenList() {
 					address: t.address.toLowerCase(),
 					label: t.symbol,
 					value: t.address,
-					geckoId,
 					logoURI: t.ownLogoURI || `https://token-icons.llamao.fi/icons/tokens/${t.chainId}/${t.address}?h=48&w=48`,
-					logoURI2: t.logoURI || logos[geckoId] || null,
+					logoURI2: t.logoURI || null,
 					volume24h
 				};
 			})
@@ -235,7 +246,7 @@ export async function getTokenList() {
 	// format and store final tokens list
 	let tokenlist = {};
 	for (const chain in { ...tokensFiltered, ...cgList }) {
-		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])];
+		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])].sort((a,b)=>(b.volume24h ?? 0) - (a.volume24h ?? 0));
 	}
 
 	return tokenlist;
