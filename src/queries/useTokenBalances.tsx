@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { zeroAddress } from 'viem';
-import { chainIdToName } from '~/components/Aggregator/constants';
-import { getBalance } from 'wagmi/actions';
+import { erc20Abi, zeroAddress } from 'viem';
+import { chainIdToName, wrappedTokensByChain } from '~/components/Aggregator/constants';
+import { getBalance, readContract } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
 
 type Balances = Record<string, any>;
@@ -45,22 +45,29 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 	try {
 		const chainName = chainIdToName(chainId)
 
-		const [{balances, prices}, gasBalance] = await Promise.all([
+		const [{balances, prices}, gasBalance, wrappedTokenBalance] = await Promise.all([
 			getTokensBalancesAndPrices(address, chainId, chainName!).catch(() => {
 				return {balances: { balances: [] }, prices: { coins: {} }}
 			}),
 			getBalance(config, {
 				address: address as `0x${string}`,
 				chainId
-			}).catch(e=>null)
+			}).catch(e=>null),
+			wrappedTokensByChain[chainId] ? readContract(config, {
+				address: wrappedTokensByChain[chainId] as `0x${string}`,
+				abi: erc20Abi,
+				functionName: 'balanceOf',
+				args: [address as `0x${string}`],
+				chainId
+			}).catch(e=>null) : null
 		])
 
-		return balances.balances.concat([{
+		const finalBalances = balances.balances.concat([{
 			total_amount: gasBalance?.value?.toString(),
 			address: zeroAddress
 		}]).reduce((all: Balances, t: any) => {
-			const price = prices[chainName+':'+t.address] ?? {}
-			all[t.address] = {
+			const price = prices[`${chainName}:${t.address}`] ?? {}
+			all[t.address.toLowerCase()] = {
 				decimals: price.decimals,
 				symbol: price.symbol ?? 'UNKNOWN',
 				price: price.price,
@@ -69,6 +76,19 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 			};
 			return all;
 		}, {});
+
+		if (wrappedTokenBalance){
+			const price = prices[`${chainName}:${zeroAddress}`] ?? {}
+			finalBalances[wrappedTokensByChain[chainId].toLowerCase()] = {
+				decimals:  price.decimals,
+				symbol: `W${price.symbol}`,
+				price: price.price,
+				amount: wrappedTokenBalance.toString(),
+				balanceUSD: price.price !== undefined ? price.price*Number(wrappedTokenBalance)/(10**price.decimals) : 0
+			}
+		}
+
+		return finalBalances
 	} catch(e) {
 		console.log(`Couldn't find balances for ${chainId}:${address}`, e)
 		return {};

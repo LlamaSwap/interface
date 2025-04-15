@@ -71,18 +71,23 @@ export const getTokensData = async ([chainId, tokens]: [string, Array<string>]):
 			};
 		}
 	});
-	Object.entries(storedTokenMetadata).map(([address, info]: [string, any]) => {
-		data.push({
-			name: info.name,
-			symbol: info.symbol,
-			decimals: info.decimals,
-			address: address,
-			chainId,
-			geckoId: null,
-			logoURI: null,
-			isGeckoToken: true
-		});
-	});
+	tokens.map(address=>{
+		const info = storedTokenMetadata[address.toLowerCase()]
+		if(info){
+			data.push({
+				name: info.name,
+				symbol: info.symbol,
+				decimals: info.decimals,
+				address: address,
+				chainId,
+				geckoId: null,
+				logoURI: null,
+				isGeckoToken: true
+			});
+		} else {
+			console.log(chainId, address)
+		}
+	})
 	if (changed) {
 		await storeJSONString(filename, JSON.stringify(storedTokenMetadata));
 	}

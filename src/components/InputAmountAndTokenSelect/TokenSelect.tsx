@@ -1,20 +1,26 @@
+import * as Ariakit from 'ariakit/dialog';
 import { useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Modal, ModalOverlay, ModalContent, ModalCloseButton, useDisclosure, Input } from '@chakra-ui/react';
 import { WarningTwoIcon } from '@chakra-ui/icons';
-import { Header, IconImage, PairRow } from '../Aggregator/Search';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useQueryClient } from '@tanstack/react-query';
 import { allChains } from '../WalletProvider/chains';
-import { ChevronDown } from 'react-feather';
+import { ChevronDown, X, Search } from 'react-feather';
 import { useToken } from '../Aggregator/hooks/useToken';
 import { isAddress } from 'viem';
 import { IToken } from '~/types';
+import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
+import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
+import { useAccount } from 'wagmi';
+import { useRouter } from 'next/router';
+import { useTokenBalances } from '~/queries/useTokenBalances';
+import styled from 'styled-components';
+import { formatAddress } from '~/utils/formatAddress';
+import { topTokensByChain } from '../Aggregator/constants';
 
 const Row = ({ chain, token, onClick, style }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
-	const isMultichain = token.isMultichain;
 	return (
 		<PairRow
 			key={token.value}
@@ -22,48 +28,70 @@ const Row = ({ chain, token, onClick, style }) => {
 			onClick={() => !token.isGeckoToken && onClick(token)}
 			style={style}
 		>
-			<IconImage src={token.logoURI} onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')} />
+			<IconImage
+				src={token.logoURI}
+				onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
+				height={32}
+				width={32}
+			/>
 
-			<Text display="flex" flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
-				<Tooltip
-					label="This token could have been affected by the multichain hack."
-					bg="black"
-					color="white"
-					isDisabled={!isMultichain}
-					fontSize="0.75rem"
-					padding="8px"
-				>
-					<Text
-						as="span"
-						whiteSpace="nowrap"
-						textOverflow="ellipsis"
-						overflow="hidden"
-						color={isMultichain ? 'orange.200' : 'white'}
+			<Flex flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
+				{token.isMultichain ? (
+					<Tooltip
+						label="This token could have been affected by the multichain hack."
+						bg="black"
+						color="white"
+						fontSize="0.75rem"
+						padding="8px"
 					>
-						{`${token.name} (${token.symbol})`}
-						{token.isMultichain ? <WarningTwoIcon color={'orange.200'} style={{ marginLeft: '0.4em' }} /> : null}
+						<Text
+							whiteSpace="nowrap"
+							textOverflow="ellipsis"
+							overflow="hidden"
+							color="orange.200"
+							display="flex"
+							alignItems="center"
+							gap="4px"
+							fontWeight={500}
+						>
+							{token.name}
+							{token.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : null}
+						</Text>
+					</Tooltip>
+				) : (
+					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="white" fontWeight={500}>
+						{token.name}
 					</Text>
-				</Tooltip>
-
-				{token.isGeckoToken && (
-					<>
-						{blockExplorer && (
-							<a
-								href={`${blockExplorer.url}/address/${token.address}`}
-								target="_blank"
-								rel="noreferrer noopener"
-								style={{ fontSize: '10px', textDecoration: 'underline' }}
-							>{`View on ${blockExplorer.name}`}</a>
-						)}
-					</>
 				)}
-			</Text>
+
+				<Flex alignItems="center" gap="8px">
+					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="#9B9B9B">
+						{token.symbol}
+					</Text>
+					{blockExplorer && (
+						<LinkToExplorer
+							href={`${blockExplorer.url}/address/${token.address}`}
+							target="_blank"
+							rel="noreferrer noopener"
+							onClick={(e) => {
+								e.stopPropagation();
+							}}
+						>
+							{formatAddress(token.address, 5)}
+						</LinkToExplorer>
+					)}
+				</Flex>
+			</Flex>
 
 			{token.balanceUSD ? (
-				<div style={{ marginRight: 0, marginLeft: 'auto' }}>
-					{(token.amount / 10 ** token.decimals).toFixed(3)}
-					<span style={{ fontSize: 12 }}> (~${token.balanceUSD?.toFixed(3)})</span>
-				</div>
+				<Flex flexDir="column" marginLeft="auto">
+					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" textAlign="right">
+						${token.balanceUSD?.toFixed(3)}
+					</Text>
+					<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="#A2A2A2" textAlign="right">
+						{(token.amount / 10 ** token.decimals).toFixed(3)}
+					</Text>
+				</Flex>
 			) : null}
 
 			{token.isGeckoToken && (
@@ -77,12 +105,15 @@ const Row = ({ chain, token, onClick, style }) => {
 					<Button
 						fontSize={'0.75rem'}
 						fontWeight={500}
-						ml="auto"
+						ml={token.balanceUSD ? '0px' : 'auto'}
 						colorScheme={'orange'}
-						onClick={() => onClick(token)}
+						onClick={() => {
+							saveToken(token);
+							onClick(token);
+						}}
 						leftIcon={<WarningTwoIcon />}
 						flexShrink={0}
-						height="28px"
+						height="32px"
 					>
 						Import Token
 					</Button>
@@ -94,8 +125,11 @@ const Row = ({ chain, token, onClick, style }) => {
 
 const saveToken = (token) => {
 	const tokens = JSON.parse(localStorage.getItem('savedTokens') || '{}');
+
 	const chainTokens = tokens[token.chainId] || [];
+
 	const newTokens = { ...tokens, [token.chainId]: chainTokens.concat(token) };
+
 	localStorage.setItem('savedTokens', JSON.stringify(newTokens));
 };
 
@@ -112,12 +146,12 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 		if (error) return;
 
 		saveToken({
-			address,
+			address: address.toLowerCase(),
 			...(data || {}),
 			label: data?.symbol,
 			value: address,
 			chainId: selectedChain?.id,
-			logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`
+			logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=48&w=48`
 		});
 
 		queryClient.invalidateQueries({ queryKey: ['savedTokens', selectedChain?.id] });
@@ -137,16 +171,14 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 			key={address}
 		>
 			<IconImage
-				src={`https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=20&w=20`}
+				src={`https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${address}?h=48&w=48`}
 				onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+				height={32}
+				width={32}
 			/>
 
 			<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
-				{isLoading
-					? 'Loading...'
-					: data?.name
-						? `${data.name} (${data.symbol})`
-						: address.slice(0, 4) + '...' + address.slice(-4)}
+				{isLoading ? 'Loading...' : data?.name ? `${data.name} (${data.symbol})` : formatAddress(address)}
 			</Text>
 
 			<Button height={38} marginLeft="auto" onClick={onTokenClick} disabled={error ? true : false}>
@@ -165,7 +197,7 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 	);
 };
 
-const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
+const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoading, topTokens, tokensWithBalances }) => {
 	const [input, setInput] = useState('');
 	const onInputChange = (e) => {
 		setInput(e?.target?.value);
@@ -174,22 +206,17 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 	const debouncedInput = useDebounce(input, 300);
 
 	const filteredData = useMemo(() => {
+		const search = debouncedInput.toLowerCase();
+
+		if (search && isAddress(search)) {
+			const tokenByaddress = data?.find((token) => token.address === search);
+			return tokenByaddress ? [tokenByaddress] : [];
+		}
+
 		return debouncedInput
-			? data?.filter((token) => {
-					if (token.symbol && token.symbol.toLowerCase()?.includes(debouncedInput.toLowerCase())) {
-						return true;
-					}
-
-					if (token.address && token.address.toLowerCase() === debouncedInput.toLowerCase()) {
-						return true;
-					}
-
-					if (token.name && token.name.toLowerCase()?.includes(debouncedInput.toLowerCase())) {
-						return true;
-					}
-
-					return false;
-				})
+			? data.filter((token) =>
+					`${token.symbol?.toLowerCase() ?? ''}:${token.name?.toLowerCase() ?? ''}`.includes(search)
+				)
 			: data;
 	}, [debouncedInput, data]);
 
@@ -198,155 +225,458 @@ const SelectModal = ({ isOpen, onClose, data, onClick, selectedChain }) => {
 	const rowVirtualizer = useVirtualizer({
 		count: filteredData.length,
 		getScrollElement: () => parentRef?.current ?? null,
-		estimateSize: () => 44,
+		estimateSize: () => 56,
 		overscan: 10
 	});
 
-	return (
-		<Modal isCentered isOpen={isOpen} onClose={onClose}>
-			<ModalOverlay />
-			<ModalContent
-				display="flex"
-				flexDir="column"
-				maxW="540px"
-				maxH="500px"
-				w="100%"
-				h="100%"
-				p="16px"
-				borderRadius="16px"
-				bg="#212429"
-				color="white"
-			>
-				<Header>
-					<Text fontWeight={500} color={'#FAFAFA'} fontSize={20}>
-						Select Token
-					</Text>
-					<ModalCloseButton bg="none" pos="absolute" top="-4px" right="-8px" onClick={onClose} />
-				</Header>
-				<div>
-					<Input
-						bg="#141619"
-						placeholder="Search... (Symbol or Address)"
-						_focusVisible={{ outline: 'none' }}
-						onChange={onInputChange}
-						autoFocus
-					/>
-				</div>
-				{isAddress(input) && filteredData.length === 0 ? (
-					<AddToken address={input} onClick={onClick} selectedChain={selectedChain} />
-				) : null}
+	const topHeight =
+		(topTokens.length > 0 ? 80 : 0) +
+		(tokensWithBalances.length > 0 ? 8 + 36 + tokensWithBalances.length * 56 : 0) +
+		36;
 
-				<div
-					ref={parentRef}
-					className="List"
-					style={{
-						height: `390px`,
-						overflow: 'auto',
-						marginTop: '24px'
-					}}
-				>
-					<div
-						style={{
-							height: `${rowVirtualizer.getTotalSize()}px`,
-							width: '100%',
-							position: 'relative'
-						}}
-					>
-						{rowVirtualizer.getVirtualItems().map((virtualRow) => (
-							<Row
-								token={filteredData[virtualRow.index]}
-								onClick={onClick}
-								chain={selectedChain}
-								key={virtualRow.index + filteredData[virtualRow.index].address}
+	return (
+		<>
+			<Dialog state={dialogState} backdropProps={{ className: 'dialog-backdrop' }}>
+				<DialogHeading>Select a token</DialogHeading>
+				<DialogDismiss>
+					<X size={20} />
+				</DialogDismiss>
+
+				<InputSearchWrapper>
+					<Search size={17} />
+					<InputSearch placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
+				</InputSearchWrapper>
+
+				{isLoading ? (
+					<Text textAlign={'center'} marginTop="25%">
+						Loading...
+					</Text>
+				) : isAddress(input) && filteredData.length === 0 ? (
+					<AddToken address={input} onClick={onTokenSelect} selectedChain={selectedChain} />
+				) : (
+					<>
+						<VirtualListWrapper ref={parentRef}>
+							<div
 								style={{
-									position: 'absolute',
-									top: 0,
-									left: 0,
+									height: `${rowVirtualizer.getTotalSize() + topHeight}px`,
 									width: '100%',
-									height: '44px',
-									transform: `translateY(${virtualRow.start}px)`
+									position: 'relative'
 								}}
-							/>
-						))}
-					</div>
-				</div>
-			</ModalContent>
-		</Modal>
+							>
+								{topTokens.length > 0 ? (
+									<>
+										<TopTokenWrapper>
+											{topTokens.map((token) => (
+												<TopToken
+													key={`top-token-${selectedChain.id}-${token.address}`}
+													onClick={() => {
+														onTokenSelect(token);
+													}}
+												>
+													<IconImage
+														src={token.logoURI}
+														onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
+														height={24}
+														width={24}
+													/>
+													<span>{token.symbol}</span>
+												</TopToken>
+											))}
+										</TopTokenWrapper>
+									</>
+								) : null}
+								{tokensWithBalances.length > 0 ? (
+									<>
+										<ListHeader>
+											<svg viewBox="0 0 24 24" fill="none" strokeWidth="8" width={16} height={16}>
+												<path
+													d="M7.5 18.01C7.5 18.74 7.72001 19.4 8.13 19.97C5.45 19.8 3 18.82 3 17.01V16.13C4.05 16.95 5.6 17.5 7.5 17.68V18.01ZM7.53998 13.94C7.52998 13.95 7.53003 13.96 7.53003 13.97C7.51003 14.07 7.5 14.17 7.5 14.27V16.18C5.08 15.9 3 14.94 3 13.27V12.39C4.05 13.22 5.61003 13.77 7.53003 13.94H7.53998ZM11.44 10.28C9.92 10.75 8.73001 11.52 8.07001 12.48C5.41001 12.31 3 11.33 3 9.53003V8.84998C4.31 9.87998 6.41 10.48 9 10.48C9.87 10.48 10.69 10.41 11.44 10.28ZM15 8.84998V9.53003C15 9.62003 14.99 9.70003 14.98 9.78003C14.19 9.78003 13.44 9.84997 12.74 9.96997C13.64 9.69997 14.4 9.31998 15 8.84998ZM9 3C6 3 3 3.99999 3 5.98999C3 7.99999 6 8.97998 9 8.97998C12 8.97998 15 7.99999 15 5.98999C15 3.99999 12 3 9 3ZM15 18.76C12.49 18.76 10.35 18.1 9 17.03V18.01C9 20 12 21 15 21C18 21 21 20 21 18.01V17.03C19.65 18.1 17.51 18.76 15 18.76ZM15 11.28C11.69 11.28 9 12.62 9 14.27C9 15.92 11.69 17.26 15 17.26C18.31 17.26 21 15.92 21 14.27C21 12.62 18.31 11.28 15 11.28Z"
+													fill="currentColor"
+												></path>
+											</svg>
+											<span>Your tokens</span>
+										</ListHeader>
+										{tokensWithBalances.map((token) => (
+											<Row
+												token={token}
+												onClick={onTokenSelect}
+												chain={selectedChain}
+												key={`token-with-balnce-${token.address}`}
+												style={undefined}
+											/>
+										))}
+									</>
+								) : null}
+								<ListHeader>
+									<svg viewBox="0 0 18 17" fill="none" strokeWidth="8" width={16} height={16}>
+										<path
+											d="M8.80054 0.829883L10.4189 4.09404C10.5406 4.33988 10.7756 4.50989 11.0481 4.54906L14.7838 5.08902C15.4688 5.18818 15.7422 6.0282 15.2464 6.50987L12.5456 9.13071C12.3481 9.32238 12.258 9.5982 12.3047 9.86904L12.9221 13.4557C13.0471 14.1832 12.283 14.7382 11.628 14.3957L8.38805 12.6999C8.14471 12.5724 7.85469 12.5724 7.61219 12.6999L4.37468 14.394C3.71885 14.7374 2.95216 14.1815 3.07799 13.4524L3.69556 9.86904C3.74223 9.5982 3.65218 9.32238 3.45468 9.13071L0.753871 6.50987C0.257205 6.0282 0.530481 5.18818 1.21631 5.08902L4.95217 4.54906C5.22384 4.50989 5.45885 4.33988 5.58135 4.09404L7.19969 0.829883C7.52553 0.167383 8.47221 0.167383 8.80054 0.829883Z"
+											fill="currentColor"
+										></path>
+									</svg>
+									<span>Tokens by 24H volume</span>
+								</ListHeader>
+								{rowVirtualizer.getVirtualItems().map((virtualRow) => (
+									<Row
+										token={filteredData[virtualRow.index]}
+										onClick={onTokenSelect}
+										chain={selectedChain}
+										key={virtualRow.index + filteredData[virtualRow.index].address}
+										style={{
+											position: 'absolute',
+											top: 0,
+											left: 0,
+											width: '100%',
+											height: '56px',
+											transform: `translateY(${topHeight + virtualRow.start}px)`
+										}}
+									/>
+								))}
+							</div>
+						</VirtualListWrapper>
+					</>
+				)}
+			</Dialog>
+		</>
 	);
 };
 
 export const TokenSelect = ({
-	tokens,
 	onClick,
-	token,
-	selectedChain
+	type
 }: {
-	tokens: Array<IToken>;
-	token?: IToken | null;
 	onClick: (token: IToken) => void;
-	selectedChain?: {
-		id: any;
-		value: string;
-		label: string;
-		chainId: number;
-		logoURI?: string | null;
-	} | null;
+	type: 'amountIn' | 'amountOut';
 }) => {
-	const { isOpen, onOpen, onClose } = useDisclosure();
+	const { address } = useAccount();
 
-	const onTokenClick = (token) => {
+	const router = useRouter();
+
+	const {
+		fetchingFromToken,
+		fetchingToToken,
+		finalSelectedFromToken,
+		finalSelectedToToken,
+		chainTokenList,
+		selectedChain,
+		fetchingTokenList
+	} = useSelectedChainAndTokens();
+
+	// balances of all token's in wallet
+	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain?.id : null);
+
+	// saved tokens list
+	const savedTokens = useGetSavedTokens(selectedChain?.id);
+
+	const { tokensInChain, topTokens, tokensWithBalances } = useMemo(() => {
+		const tokensWithBalances = Object.keys(tokenBalances || {})
+			.map((token) => {
+				const t = chainTokenList[token] || savedTokens[token] || null;
+
+				if (t) {
+					return {
+						...t,
+						amount: tokenBalances?.[t.address]?.amount ?? 0,
+						balanceUSD: tokenBalances?.[t.address]?.balanceUSD ?? 0
+					};
+				}
+
+				return t;
+			})
+			.filter(
+				(token) =>
+					token !== null &&
+					(type === 'amountIn'
+						? token.address !== finalSelectedToToken?.address
+						: token.address !== finalSelectedFromToken?.address)
+			);
+
+		const tokensInChain = {
+			...chainTokenList,
+			...savedTokens,
+		};
+
+		const topTokens =
+			selectedChain && topTokensByChain[selectedChain.id]
+				? topTokensByChain[selectedChain.id]
+						.map((token) => chainTokenList[token.toLowerCase()] ?? null)
+						.filter((token) => token !== null)
+				: [];
+
+		return { tokensInChain: Object.values(tokensInChain), topTokens, tokensWithBalances };
+	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens, type]);
+
+	const { tokens, token } = useMemo(() => {
+		if (type === 'amountIn') {
+			return {
+				tokens: tokensInChain.filter(
+					({ address }) => address !== finalSelectedToToken?.address && !tokenBalances?.[address]
+				),
+				token: finalSelectedFromToken
+			};
+		}
+
+		return {
+			tokens: tokensInChain.filter(
+				({ address }) => address !== finalSelectedFromToken?.address && !tokenBalances?.[address]
+			),
+			token: finalSelectedToToken
+		};
+	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
+
+	const isLoading = type === 'amountIn' ? fetchingFromToken : fetchingToToken;
+
+	const dialogState = Ariakit.useDialogState();
+
+	const onTokenSelect = (token) => {
 		onClick(token);
-		onClose();
+		dialogState.toggle();
 	};
 
 	return (
 		<>
-			<Button
-				display="flex"
-				gap="6px"
-				flexWrap="nowrap"
-				alignItems="center"
-				w="100%"
-				borderRadius="8px"
-				bg="#222429"
-				_hover={{ bg: '#2d3037' }}
-				maxW={{ base: '128px', md: '9rem' }}
-				p="12px"
-				onClick={() => onOpen()}
-			>
-				{token ? (
-					<IconImage
-						src={token.logoURI}
-						onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
-					/>
-				) : null}
+			<Trigger onClick={dialogState.toggle}>
+				{isLoading ? (
+					<Text
+						as="span"
+						color="white"
+						overflow="hidden"
+						whiteSpace="nowrap"
+						textOverflow="ellipsis"
+						fontWeight={400}
+						marginRight="auto"
+					>
+						Loading...
+					</Text>
+				) : (
+					<>
+						{token ? (
+							<IconImage
+								src={token.logoURI}
+								onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
+								height={20}
+								width={20}
+							/>
+						) : null}
 
-				<Tooltip
-					label="This token could have been affected by the multichain hack."
-					bg="black"
-					color="white"
-					isDisabled={!token?.isMultichain}
-					fontSize="0.75rem"
-					padding="8px"
-				>
-					{token?.isMultichain ? <WarningTwoIcon color={'orange.200'} /> : <></>}
-				</Tooltip>
+						{token?.isMultichain ? (
+							<Tooltip
+								label="This token could have been affected by the multichain hack."
+								bg="black"
+								color="white"
+								fontSize="0.75rem"
+								padding="8px"
+							>
+								<WarningTwoIcon color={'orange.200'} />
+							</Tooltip>
+						) : null}
 
-				<Text as="span" color="white" overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis" fontWeight={400}>
-					{token ? token.symbol : 'Select Token'}
-				</Text>
+						<Text
+							as="span"
+							color="white"
+							overflow="hidden"
+							whiteSpace="nowrap"
+							textOverflow="ellipsis"
+							fontWeight={400}
+							marginRight="auto"
+						>
+							{token ? token.symbol : 'Select Token'}
+						</Text>
+					</>
+				)}
 
-				<ChevronDown size={16} style={{ marginLeft: 'auto' }} />
-			</Button>
-			{isOpen ? (
+				<ChevronDown size={16} />
+			</Trigger>
+			{dialogState.open ? (
 				<SelectModal
-					isOpen={isOpen}
-					onClose={onClose}
+					dialogState={dialogState}
 					data={tokens}
-					onClick={onTokenClick}
+					onTokenSelect={onTokenSelect}
 					selectedChain={selectedChain}
+					isLoading={fetchingTokenList || isLoading}
+					topTokens={topTokens}
+					tokensWithBalances={tokensWithBalances}
 				/>
 			) : null}
 		</>
 	);
 };
+
+const Trigger = styled.button`
+	display: flex;
+	gap: 6px;
+	flex-wrap: nowrap;
+	align-items: center;
+	height: 40px;
+	padding: 12px;
+	width: 100%;
+	border-radius: 8px;
+	background: #222429;
+	max-width: 128px;
+	font-size: 16px;
+
+	:hover {
+		background: #2d3037;
+	}
+
+	@media (min-width: 768px) {
+		max-width: 9rem;
+	}
+`;
+
+const VirtualListWrapper = styled.div`
+	overflow: auto;
+	margin-top: 16px;
+`;
+
+const DialogHeading = styled(Ariakit.DialogHeading)`
+	color: #fafafa;
+	font-size: 20px;
+	font-weight: 500;
+	text-align: center;
+	margin-bottom: 8px;
+	margin: 16px;
+`;
+
+const DialogDismiss = styled(Ariakit.DialogDismiss)`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	position: absolute;
+	top: 20px;
+	right: 12px;
+`;
+
+const InputSearchWrapper = styled.div`
+	position: relative;
+	display: flex;
+	flex-direction: column;
+
+	& > svg {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 28px;
+		margin: auto;
+	}
+`;
+
+const InputSearch = styled.input`
+	background: rgba(27, 27, 27, 1);
+	border-radius: 8px;
+	height: 52px;
+	flex-shrink: 0;
+	padding: 0 12px 0px 36px;
+	margin: 0 16px;
+	font-size: 16px;
+	font-weight: 500;
+	&::placeholder {
+		color: #9b9b9b;
+	}
+`;
+
+const Dialog = styled(Ariakit.Dialog)`
+	position: fixed;
+	inset: var(--inset);
+	z-index: 50;
+	margin: auto;
+	display: flex;
+	flex-direction: column;
+	max-width: min(95vw, 520px);
+	max-height: min(90vh, 600px);
+	width: 100%;
+	height: 100%;
+	border-radius: 16px;
+	background: #131313;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	color: white;
+	isolation: isolate;
+	--inset: 0.75rem;
+`;
+
+const PairRow = styled.div`
+	display: flex;
+	gap: 8px;
+	padding: 0 16px;
+	align-items: center;
+	min-height: 56px;
+
+	cursor: pointer;
+
+	&[data-defaultcursor='true'] {
+		cursor: default;
+	}
+
+	&:hover {
+		background-color: rgba(246, 246, 246, 0.1);
+	}
+`;
+
+const IconImage = styled.img`
+	border-radius: 50%;
+	aspect-ratio: 1;
+	flex-shrink: 0;
+	object-fit: contain;
+`;
+
+const LinkToExplorer = styled.a`
+	font-size: 12px;
+	color: #7e7e7e;
+
+	&:hover {
+		text-decoration: underline;
+	}
+`;
+
+const TopTokenWrapper = styled.div`
+	display: flex;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	gap: 4px;
+	padding: 0px 16px 16px 16px;
+	flex-shrink: 0;
+
+	& > span {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+`;
+
+const TopToken = styled.button`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	font-weight: 500;
+	font-size: 14px;
+	padding: 4px;
+	background: rgba(27, 27, 27, 1);
+	height: 64px;
+	width: 64px;
+	border-radius: 8px;
+
+	&:hover {
+		background-color: rgba(246, 246, 246, 0.1);
+	}
+`;
+
+const ListHeader = styled.h2`
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0 16px;
+	height: 36px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: #9b9b9b;
+	font-weight: 500;
+
+	&:not(:first-of-type) {
+		margin-top: 8px;
+	}
+`;

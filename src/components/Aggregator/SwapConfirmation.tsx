@@ -10,7 +10,7 @@ import {
 	PopoverTrigger,
 	useDisclosure
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import * as React from 'react';
 
 const SwapConfiramtion = ({
 	handleSwap,
@@ -20,7 +20,7 @@ const SwapConfiramtion = ({
 }) => {
 	const { isOpen, onToggle, onClose } = useDisclosure();
 	const requiredText = isMaxPriceImpact ? 'trade' : 'confirm';
-	const [value, setValue] = useState('');
+	const [value, setValue] = React.useState('');
 	const isSwapDisabled = value?.toLowerCase() !== requiredText;
 
 	const onPopoverClose = () => {
