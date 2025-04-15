@@ -493,7 +493,7 @@ export const TokenSelect = ({
 					data={tokens}
 					onTokenSelect={onTokenSelect}
 					selectedChain={selectedChain}
-					isLoading={fetchingTokenList || isLoading}
+					isLoading={fetchingTokenList}
 					topTokens={topTokens}
 					tokensWithBalances={tokensWithBalances}
 				/>
