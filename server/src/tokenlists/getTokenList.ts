@@ -254,9 +254,14 @@ const getTopTokensByChain = async (chainId: string) => {
 		// Fetch data from multiple pages in parallel
 		const pagePromises = Array.from({ length: PAGE_LIMIT }, (_, i) =>
 			fetch(
-				`https://api.geckoterminal.com/api/v2/networks/${geckoTerminalChainsMap[chainId]}/pools?` +
+				`https://pro-api.coingecko.com/api/v3/onchain/networks/${geckoTerminalChainsMap[chainId]}/pools?` +
 					'include=dex%2Cdex.network%2Cdex.network.network_metric%2Ctokens&' +
-					`page=${i + 1}&include_network_metrics=true`
+					`page=${i + 1}&include_network_metrics=true`,
+				{
+					headers: {
+						"x-cg-pro-api-key": process.env.CG_API_KEY!
+					}
+				}
 			)
 				.then((r) => r.json())
 				.catch(() => ({ data: [], included: [] }))
@@ -264,8 +269,10 @@ const getTopTokensByChain = async (chainId: string) => {
 
 		const responses = await Promise.allSettled(pagePromises);
 		responses.forEach((response) => {
-			if (response.status === 'fulfilled') {
+			if (response.status === 'fulfilled' && response.value.data) {
 				resData.push(...response.value.data);
+			} else {
+				console.log(geckoTerminalChainsMap[chainId], response)
 			}
 		});
 
