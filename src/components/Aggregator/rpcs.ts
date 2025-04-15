@@ -1,8 +1,6 @@
 import { uniq } from 'lodash';
 import { fallback, http } from 'wagmi';
 
-const ankrApiKey = '8cf34fea798274d63a94fdc1185563307c7a3bd8ef23462364270a73e7d99dce';
-
 export const rpcUrls: Record<number, Array<string>> = {
 	1: [
 		'https://cloudflare-eth.com',
