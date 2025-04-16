@@ -205,25 +205,35 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 
 	const debouncedInput = useDebounce(input, 300);
 
-	const filteredData = useMemo(() => {
+	const {filteredTokenList, filteredBalances} = useMemo(() => {
 		const search = debouncedInput.toLowerCase();
 
 		if (search && isAddress(search)) {
 			const tokenByaddress = data?.find((token) => token.address === search);
-			return tokenByaddress ? [tokenByaddress] : [];
+			return {
+				filteredTokenList: tokenByaddress ? [tokenByaddress] : [],
+				filteredBalances: []
+			}
 		}
 
 		return debouncedInput
-			? data.filter((token) =>
+			? {
+				filteredTokenList: data.filter((token) =>
 					`${token.symbol?.toLowerCase() ?? ''}:${token.name?.toLowerCase() ?? ''}`.includes(search)
-				)
-			: data;
-	}, [debouncedInput, data]);
+				),
+				filteredBalances: tokensWithBalances.filter((token) =>
+				`${token.symbol?.toLowerCase() ?? ''}:${token.name?.toLowerCase() ?? ''}`.includes(search)
+				),
+			} : {
+				filteredTokenList: data,
+				filteredBalances: tokensWithBalances
+			}
+	}, [debouncedInput, data, tokensWithBalances]);
 
 	const parentRef = useRef<HTMLDivElement>(null);
 
 	const rowVirtualizer = useVirtualizer({
-		count: filteredData.length,
+		count: filteredTokenList.length,
 		getScrollElement: () => parentRef?.current ?? null,
 		estimateSize: () => 56,
 		overscan: 10
@@ -231,7 +241,7 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 
 	const topHeight =
 		(topTokens.length > 0 ? 80 : 0) +
-		(tokensWithBalances.length > 0 ? 8 + 36 + tokensWithBalances.length * 56 : 0) +
+		(filteredBalances.length > 0 ? 8 + 36 + filteredBalances.length * 56 : 0) +
 		36;
 
 	return (
@@ -251,7 +261,7 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 					<Text textAlign={'center'} marginTop="25%">
 						Loading...
 					</Text>
-				) : isAddress(input) && filteredData.length === 0 ? (
+				) : isAddress(input) && filteredTokenList.length === 0 ? (
 					<AddToken address={input} onClick={onTokenSelect} selectedChain={selectedChain} />
 				) : (
 					<>
@@ -285,7 +295,7 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 										</TopTokenWrapper>
 									</>
 								) : null}
-								{tokensWithBalances.length > 0 ? (
+								{filteredBalances.length > 0 ? (
 									<>
 										<ListHeader>
 											<svg viewBox="0 0 24 24" fill="none" strokeWidth="8" width={16} height={16}>
@@ -296,7 +306,7 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 											</svg>
 											<span>Your tokens</span>
 										</ListHeader>
-										{tokensWithBalances.map((token) => (
+										{filteredBalances.map((token) => (
 											<Row
 												token={token}
 												onClick={onTokenSelect}
@@ -318,10 +328,10 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 								</ListHeader>
 								{rowVirtualizer.getVirtualItems().map((virtualRow) => (
 									<Row
-										token={filteredData[virtualRow.index]}
+										token={filteredTokenList[virtualRow.index]}
 										onClick={onTokenSelect}
 										chain={selectedChain}
-										key={virtualRow.index + filteredData[virtualRow.index].address}
+										key={virtualRow.index + filteredTokenList[virtualRow.index].address}
 										style={{
 											position: 'absolute',
 											top: 0,
