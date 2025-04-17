@@ -77,7 +77,7 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 			return all;
 		}, {});
 
-		if (wrappedTokenBalance){
+		if (wrappedTokenBalance != null){
 			const price = prices[`${chainName}:${zeroAddress}`] ?? {}
 			finalBalances[wrappedTokensByChain[chainId].toLowerCase()] = {
 				decimals:  price.decimals,
