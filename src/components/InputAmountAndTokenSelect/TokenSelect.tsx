@@ -243,9 +243,6 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 	const topHeight =
 		(topTokens.length > 0 ? 80 : 0) + (filteredBalances.length > 0 ? 8 + 36 + filteredBalances.length * 56 : 0) + 36;
 
-
-
-
 	return (
 		<>
 			<Dialog state={dialogState} backdropProps={{ className: 'dialog-backdrop' }}>
@@ -386,10 +383,7 @@ export const TokenSelect = ({
 		const tokensWithBalances: Record<string, IToken> = {};
 		const tokensWithNoprice: Record<string, IToken> = {};
 		const topTokensWithBalances = new Set<string>();
-		const totalHoldingsInUsd = Object.values(tokenBalances ?? {}).reduce(
-			(acc, curr) => (acc += curr.balanceUSD ?? 0),
-			0
-		);
+		const topHoldingUsd = Math.max(...Object.values(tokenBalances ?? {}).map((curr) => curr.balanceUSD ?? 0), 0);
 
 		for (const token in tokenBalances || {}) {
 			const t = chainTokenList[token] || savedTokens[token] || null;
@@ -402,7 +396,7 @@ export const TokenSelect = ({
 				const amount = tokenBalances?.[t.address]?.amount ?? 0;
 				const balanceUSD = tokenBalances?.[t.address]?.balanceUSD ?? 0;
 
-				if (amount && balanceUSD && (balanceUSD >= 10 || balanceUSD >= totalHoldingsInUsd * 0.01)) {
+				if (amount && balanceUSD && (balanceUSD >= 10 || balanceUSD >= topHoldingUsd * 0.01)) {
 					topTokensWithBalances.add(t.address);
 					tokensWithBalances[t.address] = {
 						...t,
