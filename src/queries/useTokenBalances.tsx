@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { erc20Abi, formatUnits, zeroAddress } from 'viem';
+import { erc20Abi, zeroAddress } from 'viem';
 import { chainIdToName, wrappedTokensByChain } from '~/components/Aggregator/constants';
 import { getBalance, readContract } from 'wagmi/actions';
 import { config } from '~/components/WalletProvider';
@@ -83,7 +83,7 @@ const getBalances = async (address, chainId): Promise<Balances> => {
 				decimals:  price.decimals,
 				symbol: `W${price.symbol}`,
 				price: price.price,
-				amount: formatUnits(wrappedTokenBalance, 18),
+				amount: wrappedTokenBalance.toString(),
 				balanceUSD: price.price !== undefined ? price.price*Number(wrappedTokenBalance)/(10**price.decimals) : 0
 			}
 		}
