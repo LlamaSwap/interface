@@ -205,7 +205,7 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 
 	const debouncedInput = useDebounce(input, 300);
 
-	const {filteredTokenList, filteredBalances} = useMemo(() => {
+	const { filteredTokenList, filteredBalances } = useMemo(() => {
 		const search = debouncedInput.toLowerCase();
 
 		if (search && isAddress(search)) {
@@ -213,21 +213,22 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 			return {
 				filteredTokenList: tokenByaddress ? [tokenByaddress] : [],
 				filteredBalances: []
-			}
+			};
 		}
 
 		return debouncedInput
 			? {
-				filteredTokenList: data.filter((token) =>
-					`${token.symbol?.toLowerCase() ?? ''}:${token.name?.toLowerCase() ?? ''}`.includes(search)
-				),
-				filteredBalances: tokensWithBalances.filter((token) =>
-				`${token.symbol?.toLowerCase() ?? ''}:${token.name?.toLowerCase() ?? ''}`.includes(search)
-				),
-			} : {
-				filteredTokenList: data,
-				filteredBalances: tokensWithBalances
-			}
+					filteredTokenList: data.filter((token) =>
+						`${token.symbol?.toLowerCase() ?? ''}:${token.name?.toLowerCase() ?? ''}`.includes(search)
+					),
+					filteredBalances: tokensWithBalances.filter((token) =>
+						`${token.symbol?.toLowerCase() ?? ''}:${token.name?.toLowerCase() ?? ''}`.includes(search)
+					)
+				}
+			: {
+					filteredTokenList: data,
+					filteredBalances: tokensWithBalances
+				};
 	}, [debouncedInput, data, tokensWithBalances]);
 
 	const parentRef = useRef<HTMLDivElement>(null);
@@ -240,9 +241,7 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 	});
 
 	const topHeight =
-		(topTokens.length > 0 ? 80 : 0) +
-		(filteredBalances.length > 0 ? 8 + 36 + filteredBalances.length * 56 : 0) +
-		36;
+		(topTokens.length > 0 ? 80 : 0) + (filteredBalances.length > 0 ? 8 + 36 + filteredBalances.length * 56 : 0) + 36;
 
 	return (
 		<>
@@ -379,31 +378,43 @@ export const TokenSelect = ({
 	const savedTokens = useGetSavedTokens(selectedChain?.id);
 
 	const { tokensInChain, topTokens, tokensWithBalances } = useMemo(() => {
-		const tokensWithBalances = Object.keys(tokenBalances || {})
-			.map((token) => {
-				const t = chainTokenList[token] || savedTokens[token] || null;
+		const tokensWithBalances: Array<IToken> = [];
+		const tokensWithNoprice: Array<IToken> = [];
+		const totalHoldingsInUsd = Object.values(tokenBalances ?? {}).reduce(
+			(acc, curr) => (acc += curr.balanceUSD ?? 0),
+			0
+		);
 
-				if (t) {
-					return {
+		for (const token in tokenBalances || {}) {
+			const t = chainTokenList[token] || savedTokens[token] || null;
+			if (
+				t &&
+				(type === 'amountIn'
+					? t.address !== finalSelectedToToken?.address
+					: t.address !== finalSelectedFromToken?.address)
+			) {
+				const amount = tokenBalances?.[t.address]?.amount ?? 0;
+				const balanceUSD = tokenBalances?.[t.address]?.balanceUSD ?? 0;
+
+				if (amount && balanceUSD && (balanceUSD >= 10 || balanceUSD >= totalHoldingsInUsd * 0.01)) {
+					tokensWithBalances.push({
 						...t,
 						amount: tokenBalances?.[t.address]?.amount ?? 0,
 						balanceUSD: tokenBalances?.[t.address]?.balanceUSD ?? 0
-					};
+					});
+				} else {
+					tokensWithNoprice.push({
+						...t,
+						amount: tokenBalances?.[t.address]?.amount ?? 0,
+						balanceUSD: tokenBalances?.[t.address]?.balanceUSD ?? 0
+					});
 				}
-
-				return t;
-			})
-			.filter(
-				(token) =>
-					token !== null &&
-					(type === 'amountIn'
-						? token.address !== finalSelectedToToken?.address
-						: token.address !== finalSelectedFromToken?.address)
-			);
+			}
+		}
 
 		const tokensInChain = {
 			...chainTokenList,
-			...savedTokens,
+			...savedTokens
 		};
 
 		const topTokens =
@@ -413,7 +424,11 @@ export const TokenSelect = ({
 						.filter((token) => token !== null)
 				: [];
 
-		return { tokensInChain: Object.values(tokensInChain), topTokens, tokensWithBalances };
+		return {
+			tokensInChain: Object.values(tokensInChain).concat(tokensWithNoprice),
+			topTokens,
+			tokensWithBalances: tokensWithBalances.sort((a, b) => (b.balanceUSD ?? 0) - (a.balanceUSD ?? 0))
+		};
 	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens, type]);
 
 	const { tokens, token } = useMemo(() => {

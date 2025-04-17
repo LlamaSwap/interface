@@ -94,7 +94,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 						</PopoverContent>
 					</Popover>
 				) : null}
-				{['0.05', '0.1', '0.5', '1'].map((slp) => (
+				{['0.01', '0.1', '0.5', '1'].map((slp) => (
 					<Button
 						fontSize="0.875rem"
 						fontWeight="500"
