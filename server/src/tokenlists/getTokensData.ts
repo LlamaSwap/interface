@@ -8,7 +8,7 @@ export const getTokensData = async ([chainId, tokens]: [string, Array<string>]):
 	const filename = `erc20/${chainId}`;
 	let storedTokenMetadata;
 	try {
-		storedTokenMetadata = { ...JSON.parse((await getS3(filename)).body!) };
+		storedTokenMetadata = JSON.parse((await getS3(filename)).body!);
 	} catch (e) {
 		storedTokenMetadata = {};
 	}
