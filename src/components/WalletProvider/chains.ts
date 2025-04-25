@@ -1,88 +1,38 @@
 import { Chain } from 'viem';
 import { chainIconUrl } from '../Aggregator/nativeTokens';
 import { rpcUrls } from '../Aggregator/rpcs';
+import * as wagmiChains from 'viem/chains';
 
 const okx = {
-	id: 66,
+	...wagmiChains.okc,
 	name: 'OKTChain',
 	network: 'okexchain',
 	iconUrl: chainIconUrl('oktchain'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'OKT',
-		symbol: 'OKT'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[66] }
-	},
-	blockExplorers: {
-		default: { name: 'OKLink', url: 'https://www.oklink.com/en/okc' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const binance = {
-	id: 56,
-	name: 'Binance SmartChain',
+	...wagmiChains.bsc,
+	name: 'Binance Smart Chain',
 	network: 'bsc',
 	iconUrl: chainIconUrl('binance'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Binance',
-		symbol: 'BNB'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[56] }
-	},
-	blockExplorers: {
-		default: { name: 'BSCScan', url: 'https://bscscan.com' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const boba = {
-	id: 288,
+	...wagmiChains.boba,
 	name: 'Boba',
 	network: 'boba',
 	iconUrl: chainIconUrl('boba'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[288] }
-	},
-	blockExplorers: {
-		default: { name: 'BobaScan', url: 'https://bobascan.com' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const harmony = {
-	id: 1666600000,
+	...wagmiChains.harmonyOne,
 	name: 'Harmony',
 	network: 'harmony',
 	iconUrl: chainIconUrl('harmony'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Harmony',
-		symbol: 'ONE'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[1666600000] }
-	},
-	blockExplorers: {
-		default: {
-			name: 'Harmony Explorer',
-			url: 'https://explorer.harmony.one'
-		}
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const heco = {
@@ -109,23 +59,11 @@ const heco = {
 };
 
 const velas = {
-	id: 106,
+	...wagmiChains.velas,
 	name: 'Velas',
 	network: 'velas',
 	iconUrl: chainIconUrl('velas'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Velas',
-		symbol: 'VLX'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[106] }
-	},
-	blockExplorers: {
-		default: { name: 'VelaScan', url: 'https://velascan.org' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const oasis = {
@@ -149,328 +87,126 @@ const oasis = {
 };
 
 const moonbeam = {
-	id: 1284,
+	...wagmiChains.moonbeam,
 	name: 'Moonbeam',
 	network: 'moonbeam',
 	iconUrl: chainIconUrl('moonbeam'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Moonbeam',
-		symbol: 'GLMR'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[1284] }
-	},
-	blockExplorers: {
-		default: {
-			name: 'MoonScan',
-			url: 'https://moonscan.io'
-		}
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const fuse = {
-	id: 122,
+	...wagmiChains.fuse,
 	name: 'Fuse',
 	network: 'fuse',
 	iconUrl: chainIconUrl('fuse'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Fuse',
-		symbol: 'FUSE'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[122] }
-	},
-	blockExplorers: {
-		default: {
-			name: 'Fuse Explorer',
-			url: 'https://explorer.fuse.io'
-		}
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const moonriver = {
-	id: 1285,
+	...wagmiChains.moonriver,
 	name: 'MoonRiver',
 	network: 'moonriver',
 	iconUrl: chainIconUrl('moonriver'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Moonriver',
-		symbol: 'MOVR'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[1285] }
-	},
-	blockExplorers: {
-		default: {
-			name: 'MoonScan',
-			url: 'https://moonriver.moonscan.io'
-		}
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const cronos = {
-	id: 25,
+	...wagmiChains.cronos,
 	name: 'Cronos',
 	network: 'cronos',
 	iconUrl: chainIconUrl('cronos'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Cronos',
-		symbol: 'CRO'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[25] }
-	},
-	blockExplorers: {
-		default: { name: 'CronosScan', url: 'https://cronoscan.com' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 const celo = {
-	id: 42220,
+	...wagmiChains.celo,
 	name: 'Celo',
 	network: 'celo',
 	iconUrl: chainIconUrl('celo'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Celo',
-		symbol: 'CELO'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[42220] }
-	},
-	blockExplorers: {
-		default: { name: 'CeloScan', url: 'https://celoscan.io' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 const aurora = {
-	id: 1313161554,
+	...wagmiChains.aurora,
 	name: 'Aurora',
 	network: 'aurora',
 	iconUrl: chainIconUrl('aurora'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[1313161554] }
-	},
-	blockExplorers: {
-		default: { name: 'AuroraScan', url: 'https://aurorascan.dev' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 const avax = {
-	id: 43114,
+	...wagmiChains.avalanche,
 	name: 'AVAX',
 	network: 'avax',
 	iconUrl: chainIconUrl('avalanche'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Avalanche',
-		symbol: 'AVAX'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[43114] }
-	},
-	blockExplorers: {
-		default: { name: 'SnowScan', url: 'https://snowscan.xyz' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const klaytn = {
-	id: 8217,
+	...wagmiChains.klaytn,
 	name: 'Klaytn',
-	network: 'Klaytn',
+	network: 'klaytn',
 	iconUrl: chainIconUrl('klaytn'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Klaytn',
-		symbol: 'KLAY'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[8217] }
-	},
-	blockExplorers: {
-		default: {
-			name: 'KlaytnScope',
-			url: 'https://scope.klaytn.com'
-		}
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 const fantom = {
-	id: 250,
+	...wagmiChains.fantom,
 	name: 'Fantom Opera',
 	network: 'fantom',
 	iconUrl: chainIconUrl('fantom'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Fantom',
-		symbol: 'FTM'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[250] }
-	},
-	blockExplorers: {
-		default: { name: 'FTMScan', url: 'https://ftmscan.com' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const gnosis = {
-	id: 100,
+	...wagmiChains.gnosis,
 	name: 'Gnosis',
 	network: 'gnosis',
 	iconUrl: chainIconUrl('gnosis'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'xDai',
-		symbol: 'xDai'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[100] }
-	},
-	blockExplorers: {
-		default: { name: 'GnosisScan', url: 'https://gnosisscan.io' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 const polygon = {
-	id: 137,
+	...wagmiChains.polygon,
 	name: 'Polygon',
 	network: 'polygon',
 	iconUrl: chainIconUrl('polygon'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Polygon',
-		symbol: 'POL'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[137] }
-	},
-	blockExplorers: {
-		default: { name: 'PolygonScan', url: 'https://polygonscan.com' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const canto = {
-	id: 7700,
+	...wagmiChains.canto,
 	name: 'Canto',
 	network: 'Canto',
 	iconUrl: chainIconUrl('canto'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Canto',
-		symbol: 'CANTO'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[7700] }
-	},
-	blockExplorers: {
-		default: { name: 'CantoScan', url: 'https://evm.explorer.canto.io' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const arbitrum = {
-	id: 42161,
+	...wagmiChains.arbitrum,
 	name: 'Arbitrum',
 	network: 'arbitrum',
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	blockExplorers: {
-		default: { name: 'arbiscan', url: 'https://arbiscan.io' }
-	},
-	testnet: false,
-	rpcUrls: {
-		default: { http: rpcUrls[42161] }
-	},
-	iconUrl: chainIconUrl('arbitrum')
+	iconUrl: chainIconUrl('arbitrum'),
+	iconBackground: '#000'
 };
+
 const ethereum = {
-	id: 1,
+	...wagmiChains.mainnet,
 	name: 'Ethereum',
 	network: 'ethereum',
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	blockExplorers: {
-		default: { name: 'etherscan', url: 'https://etherscan.io' }
-	},
-	testnet: false,
-	rpcUrls: {
-		default: { http: rpcUrls[1] }
-	},
-	iconUrl: chainIconUrl('ethereum')
+	iconUrl: chainIconUrl('ethereum'),
+	iconBackground: '#000'
 };
+
 const optimism = {
-	id: 10,
+	...wagmiChains.optimism,
 	name: 'Optimism',
 	network: 'optimism',
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	blockExplorers: {
-		default: { name: 'etherscan', url: 'https://optimistic.etherscan.io' }
-	},
-	testnet: false,
-	rpcUrls: {
-		default: { http: rpcUrls[10] }
-	},
-	iconUrl: chainIconUrl('optimism')
+	iconUrl: chainIconUrl('optimism'),
+	iconBackground: '#000'
 };
 
 const zksync = {
-	id: 324,
+	...wagmiChains.zksync,
 	name: 'zkSync Era',
 	network: 'zksync',
 	iconUrl: chainIconUrl('zksync era'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[324] }
-	},
-	blockExplorers: {
-		default: { name: 'zkScan', url: 'https://explorer.zksync.io' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const ontology = {
@@ -494,163 +230,67 @@ const ontology = {
 };
 
 const polygonZKEvm = {
-	id: 1101,
+	...wagmiChains.polygonZkEvm,
 	name: 'Polygon zkEVM',
 	network: 'polygonzkevm',
 	iconUrl: chainIconUrl('Polygon zkEVM'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[1101] }
-	},
-	blockExplorers: {
-		default: { name: 'Polygon zkEVM Scan', url: 'https://zkevm.polygonscan.com' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const kava = {
-	id: 2222,
+	...wagmiChains.kava,
 	name: 'Kava',
 	network: 'kava',
 	iconUrl: chainIconUrl('Kava'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Kava',
-		symbol: 'KAVA'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[2222] }
-	},
-	blockExplorers: {
-		default: { name: 'Kava Explorer', url: 'https://explorer.kava.io' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const metis = {
-	id: 1088,
+	...wagmiChains.metis,
 	name: 'Metis',
 	network: 'metis',
 	iconUrl: chainIconUrl('metis'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Metis',
-		symbol: 'METIS'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[1088] }
-	},
-	blockExplorers: {
-		default: { name: 'Metis Explorer', url: 'https://andromeda-explorer.metis.io' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const pulse = {
-	id: 369,
+	...wagmiChains.pulsechain,
 	name: 'PulseChain',
 	network: 'pulse',
 	iconUrl: chainIconUrl('Pulse'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Pulse',
-		symbol: 'PLS'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[369] }
-	},
-	blockExplorers: {
-		default: { name: 'PulseChain Explorer', url: 'https://scan.pulsechain.com' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const base = {
-	id: 8453,
+	...wagmiChains.base,
 	name: 'Base',
 	network: 'base',
 	iconUrl: chainIconUrl('Base'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[8453] }
-	},
-	blockExplorers: {
-		default: { name: 'BaseScan', url: 'https://basescan.org' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const linea = {
-	id: 59144,
+	...wagmiChains.linea,
 	name: 'Linea',
 	network: 'linea',
 	iconUrl: chainIconUrl('Linea'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[59144] }
-	},
-	blockExplorers: {
-		default: { name: 'LineaScan', url: 'https://lineascan.build' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const scroll = {
-	id: 534352,
+	...wagmiChains.scroll,
 	name: 'Scroll',
 	network: 'scroll',
 	iconUrl: chainIconUrl('Scroll'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Ethereum',
-		symbol: 'ETH'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[534352] }
-	},
-	blockExplorers: {
-		default: { name: 'ScrollScan', url: 'https://scrollscan.com/' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 const sonic = {
-	id: 146,
+	...wagmiChains.sonic,
 	name: 'Sonic',
 	network: 'sonic',
 	iconUrl: chainIconUrl('sonic'),
-	iconBackground: '#000',
-	nativeCurrency: {
-		decimals: 18,
-		name: 'Sonic',
-		symbol: 'S'
-	},
-	rpcUrls: {
-		default: { http: rpcUrls[146] }
-	},
-	blockExplorers: {
-		default: { name: 'SonicScan', url: 'https://sonicscan.org/' }
-	},
-	testnet: false
+	iconBackground: '#000'
 };
 
 interface IChain extends Chain {
