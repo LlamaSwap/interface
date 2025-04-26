@@ -2,7 +2,7 @@ import { uniq } from 'lodash';
 import { fallback, http } from 'wagmi';
 
 
-const getLlamaRpc = (chain:string) => `https://rpc-aggregator-worker.0xngmi.workers.dev/${chain}?source=llamaswap`
+const getLlamaRpc = (chain:string) => `https://rpc.llama-rpc.com/${chain}?source=llamaswap`
 
 export const rpcUrls: Record<number, Array<string>> = {
 	1: [
