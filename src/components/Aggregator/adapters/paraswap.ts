@@ -1,7 +1,5 @@
 // Source: https://developers.paraswap.network/api/master
 
-import BigNumber from 'bignumber.js';
-import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 import { defillamaReferrerAddress } from '../constants';
 import { zeroAddress } from 'viem';
@@ -89,12 +87,6 @@ export async function getQuote(
 	}
 
 	let gas = data.priceRoute.gasCost;
-
-	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
-
-	if (chain === 'arbitrum' && dataSwap) {
-		gas = await applyArbitrumFees(dataSwap.to, dataSwap.data, gas);
-	}
 
 	if(data.priceRoute.tokenTransferProxy.toLowerCase() !== approvers[chain].toLowerCase()){
 		throw new Error("Approval address doesn't match")
