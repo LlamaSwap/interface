@@ -1,4 +1,3 @@
-import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { ExtraData } from '../types';
 import { sendTx } from '../utils/sendTx';
 import { zeroAddress } from 'viem';
@@ -90,8 +89,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	let gas = tx === null? quote.data.routeSummary.gas : tx.data.gas;
 
 	if(tx !== null){
-		if (chain === 'arbitrum') gas = await applyArbitrumFees(tx.data.routerAddress, tx.data.data, gas);
-
 		if(routers[chain].toLowerCase() !== tx.data.routerAddress.toLowerCase()){
 			throw new Error("Approval address doesn't match hardcoded one")
 		}

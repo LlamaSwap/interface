@@ -1,6 +1,5 @@
 // Source https://portal.1inch.dev/documentation/apis/swap/classic-swap/introduction
 
-import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { altReferralAddress } from '../constants';
 import { sendTx } from '../utils/sendTx';
 import { estimateGas } from 'wagmi/actions';
@@ -78,9 +77,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const estimatedGas = data.gas || 0;
 
 	let gas = estimatedGas;
-
-	if (chain === 'arbitrum')
-		gas = swapData === null ? null : await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas);
 
 	return {
 		amountReturned: swapData?.dstAmount ?? data.dstAmount,
