@@ -64,7 +64,6 @@ export async function swap({ fromAddress, rawQuote, chain }) {
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 
 	return tx;
