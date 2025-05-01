@@ -10,7 +10,12 @@ export function useQueryParams() {
 	const router = useRouter();
 	const { isConnected, chain: chainOnWallet } = useAccount();
 
-	const { chain: chainOnURL, from: fromToken, to: toToken, ...query } = router.query;
+	const urlParams = new URLSearchParams(window.location.search);
+	const toToken = urlParams.get('to');
+	const fromToken = urlParams.get('from');
+	const chainOnURL = urlParams.get('chain');
+
+	const { ...query } = router.query;
 
 	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
 	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;

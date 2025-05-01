@@ -1,6 +1,5 @@
 // Source https://portal.1inch.dev/documentation/apis/swap/classic-swap/introduction
 
-import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { altReferralAddress } from '../constants';
 import { sendTx } from '../utils/sendTx';
 import { estimateGas } from 'wagmi/actions';
@@ -47,23 +46,25 @@ export function approvalAddress(chain: string) {
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
+const apiEndpoint = 'https://api.1inch.dev/swap/v6.0/';
+
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
 
 	const tokenFrom = from === zeroAddress ? nativeToken : from;
 	const tokenTo = to === zeroAddress ? nativeToken : to;
-	const authHeader = process.env.INCH_API_KEY ? { 'auth-key': process.env.INCH_API_KEY as string } : {};
+	const authHeader = process.env.INCH_API_KEY ? { 'Authorization': `Bearer ${process.env.INCH_API_KEY as string}` } : {};
 	const tokenApprovalAddress = spenders[chain];
 
 	const [data, swapData] = await Promise.all([
 		fetch(
-			`https://api-defillama.1inch.io/v6.0/${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true&excludedProtocols=PMM1,PMM2,PMM3,PMM4,PMM2MM1,PMM9,PMM8,PMM11,PMM8_2,PMM12,PMM15,PMM17,PMM18,PMM16,PMM20,PMM22,PMM23`,
+			`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
 			{ headers: authHeader as any }
 		).then((r) => r.json()),
 		extra.userAddress !== zeroAddress
 			? fetch(
-				`https://api-defillama.1inch.io/v6.0/${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true&excludedProtocols=PMM1,PMM2,PMM3,PMM4,PMM2MM1,PMM9,PMM8,PMM11,PMM8_2,PMM12,PMM15,PMM17,PMM18,PMM16,PMM20,PMM22,PMM23`,
+				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&origin=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
 				{ headers: authHeader as any }
 			).then((r) => r.json())
 			: null
@@ -76,9 +77,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const estimatedGas = data.gas || 0;
 
 	let gas = estimatedGas;
-
-	if (chain === 'arbitrum')
-		gas = swapData === null ? null : await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas);
 
 	return {
 		amountReturned: swapData?.dstAmount ?? data.dstAmount,

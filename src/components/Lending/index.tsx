@@ -15,6 +15,7 @@ import { SwapInputArrow } from '../Aggregator';
 import { last } from 'lodash';
 import { ArrowDownIcon, ArrowUpIcon, ExternalLinkIcon, QuestionIcon } from '@chakra-ui/icons';
 import { IPool } from '~/types';
+import { useLendingProps } from '~/queries/useLendingProps';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -594,7 +595,13 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 	);
 };
 
-export default Lending;
+const Wrapper = () => {
+	const lendingProps = useLendingProps();
+
+	return <Lending {...lendingProps} />;
+};
+
+export default Wrapper;
 
 const TabsContainer = styled(Box)`
 	width: 100%;

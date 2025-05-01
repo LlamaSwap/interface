@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, Fragment, useEffect } from 'react';
+import { useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
@@ -32,7 +32,6 @@ import Loader from './Loader';
 import { useTokenApprove } from './hooks';
 import { IRoute, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
-import { useTokenBalances } from '~/queries/useTokenBalances';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
@@ -63,7 +62,6 @@ import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
 import { zeroAddress } from 'viem';
-import { useToken } from './hooks/useToken';
 import { waitForTransactionReceipt } from 'wagmi/actions';
 import { config } from '../WalletProvider';
 
@@ -314,19 +312,19 @@ export const SwapInputArrow = (props) => (
 	<IconButton
 		icon={<ArrowDown size={14} />}
 		aria-label="Switch Tokens"
-		marginTop="auto"
 		w="2.25rem"
 		h="2.25rem"
 		minW={0}
 		p="0"
 		pos="absolute"
 		top="0"
-		bottom="0"
+		bottom="-36px"
 		right="0"
 		left="0"
 		m="auto"
 		borderRadius="8px"
-		bg="#222429"
+		border="4px solid #222429"
+		bg="#141619"
 		_hover={{ bg: '#2d3037' }}
 		color="white"
 		zIndex={1}
@@ -347,7 +345,7 @@ interface IFinalRoute extends IRoute {
 
 const chains = getAllChains();
 
-export function AggregatorContainer({ tokenList }) {
+export function AggregatorContainer() {
 	// wallet stuff
 	const { address, isConnected, chain: chainOnWallet } = useAccount();
 	const { openConnectModal } = useConnectModal();
@@ -357,9 +355,9 @@ export function AggregatorContainer({ tokenList }) {
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState<string | null>(null);
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
-	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['10', '']);
+	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['', '']);
 
-	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.5');
+	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.3');
 	const [lastOutputValue, setLastOutputValue] = useState<{ aggregator: string; amount: number } | null>(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
@@ -384,71 +382,16 @@ export function AggregatorContainer({ tokenList }) {
 	// get selected chain and tokens from URL query params
 	const routesRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
-	const { fromTokenAddress, toTokenAddress } = useQueryParams();
 
-	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = useSelectedChainAndTokens({
-		tokens: tokenList
-	});
+	const {  toTokenAddress } = useQueryParams();
+	const {
+		selectedChain,
+		selectedToToken,
+		finalSelectedFromToken,
+		finalSelectedToToken
+	} = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
-
-	// data of selected token not in chain's tokenlist
-	const { data: fromToken2 } = useToken({
-		address: fromTokenAddress as `0x${string}`,
-		chainId: selectedChain?.id,
-		enabled:
-			typeof fromTokenAddress === 'string' && fromTokenAddress.length === 42 && selectedChain && !selectedFromToken
-				? true
-				: false
-	});
-
-	const { data: toToken2 } = useToken({
-		address: toTokenAddress as `0x${string}`,
-		chainId: selectedChain?.id,
-		enabled:
-			typeof toTokenAddress === 'string' && toTokenAddress.length === 42 && selectedChain && !selectedToToken
-				? true
-				: false
-	});
-
-	// final tokens data
-	const { finalSelectedFromToken, finalSelectedToToken } = useMemo(() => {
-		const finalSelectedFromToken: IToken | null =
-			!selectedFromToken && fromToken2
-				? {
-						name: fromToken2.name ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-						label: fromToken2.symbol ?? fromToken2.address.slice(0, 4) + '...' + fromToken2.address.slice(-4),
-						symbol: fromToken2.symbol ?? '',
-						address: fromToken2.address,
-						value: fromToken2.address,
-						decimals: fromToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${
-							fromToken2.address
-						}?h=20&w=20`,
-						chainId: selectedChain?.id ?? 1,
-						geckoId: null
-					}
-				: selectedFromToken;
-
-		const finalSelectedToToken: IToken | null =
-			!selectedToToken && toToken2
-				? {
-						name: toToken2.name ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-						label: toToken2.symbol ?? toToken2.address.slice(0, 4) + '...' + toToken2.address.slice(-4),
-						symbol: toToken2.symbol ?? '',
-						address: toToken2.address,
-						value: toToken2.address,
-						decimals: toToken2.decimals,
-						logoURI: `https://token-icons.llamao.fi/icons/tokens/${selectedChain?.id ?? 1}/${
-							toToken2.address
-						}?h=20&w=20`,
-						chainId: selectedChain?.id ?? 1,
-						geckoId: null
-					}
-				: selectedToToken;
-
-		return { finalSelectedFromToken, finalSelectedToToken };
-	}, [fromToken2, selectedChain?.id, toToken2, selectedFromToken, selectedToToken]);
 
 	// format input amount of selected from token
 	const amountWithDecimals = BigNumber(debouncedAmount && debouncedAmount !== '' ? debouncedAmount : '0')
@@ -466,33 +409,6 @@ export function AggregatorContainer({ tokenList }) {
 
 	// selected from token's balances
 	const toTokenBalance = useBalance({ address, token: finalSelectedToToken?.address, chainId: selectedChain?.id });
-
-	// balances of all token's in wallet
-	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain?.id : null);
-
-	const tokensInChain = useMemo(() => {
-		return (
-			chainTokenList
-				?.concat(savedTokens)
-				.map((token) => {
-					const tokenBalance = token?.address ? tokenBalances?.[token.address.toLowerCase()] : {};
-
-					return {
-						...token,
-						amount: tokenBalance?.amount ?? 0,
-						balanceUSD: tokenBalance?.balanceUSD ?? 0
-					};
-				})
-				.sort((a, b) => b.balanceUSD - a.balanceUSD) ?? []
-		);
-	}, [chainTokenList, selectedChain?.id, tokenBalances, savedTokens]);
-
-	const { fromTokensList, toTokensList } = useMemo(() => {
-		return {
-			fromTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedToToken?.address),
-			toTokensList: tokensInChain.filter(({ address }) => address !== finalSelectedFromToken?.address)
-		};
-	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
 
 	const { data: tokenPrices, isLoading: fetchingTokenPrices } = useGetPrice({
 		chain: selectedChain?.value,
@@ -671,7 +587,7 @@ export function AggregatorContainer({ tokenList }) {
 			finalSelectedToToken !== null &&
 			savedTokens &&
 			toTokenAddress &&
-			!savedTokens.find(({ address }) => address.toLowerCase() === toTokenAddress.toLowerCase());
+			!savedTokens[toTokenAddress.toLowerCase()];
 
 		if (isUnknown && toTokenAddress && savedTokens?.length > 1) {
 			onToTokenChange(undefined);
@@ -1108,10 +1024,7 @@ export function AggregatorContainer({ tokenList }) {
 							setAmount={setAmount}
 							type="amountIn"
 							amount={selectedRoute?.amountIn && amountOut !== '' ? selectedRoute.amountIn : amount}
-							tokens={fromTokensList}
-							token={finalSelectedFromToken}
 							onSelectTokenChange={onFromTokenChange}
-							selectedChain={selectedChain}
 							balance={balance.data?.formatted}
 							onMaxClick={onMaxClick}
 							tokenPrice={fromTokenPrice}
@@ -1135,10 +1048,7 @@ export function AggregatorContainer({ tokenList }) {
 							setAmount={setAmount}
 							type="amountOut"
 							amount={selectedRoute?.amount && amount !== '' ? selectedRoute.amount : amountOut}
-							tokens={toTokensList}
-							token={finalSelectedToToken}
 							onSelectTokenChange={onToTokenChange}
-							selectedChain={selectedChain}
 							balance={toTokenBalance.data?.formatted}
 							tokenPrice={toTokenPrice}
 							priceImpact={selectedRoutesPriceImpact}
@@ -1169,6 +1079,17 @@ export function AggregatorContainer({ tokenList }) {
 					</Box>
 
 					<SwapWrapper>
+						<>
+							{failedRoutes.length > 0 ? (
+								<Alert status="warning" borderRadius="0.375rem" py="8px" mt="-14px" mb="16px">
+									<AlertIcon />
+									{`Routes for aggregators ${failedRoutes
+										.map((r) => r.name)
+										.join(', ')} have been hidden since they could not be executed`}
+								</Alert>
+							) : null}
+						</>
+
 						{!isConnected ? (
 							<Button onClick={openConnectModal}>Connect Wallet</Button>
 						) : !isValidSelectedChain ? (

@@ -51,6 +51,13 @@ async function getCoinsPrice({ chain: rawChain, fromToken, toToken }: IGetPriceP
 
 		const { coins } = await fetch(`https://coins.llama.fi/prices/current/${llamaApi.join(',')}`).then((r) => r.json());
 
+		const unixTsNow = Date.now()/1e3
+		const outdatedCoins = Object.entries(coins).filter((c:any)=>c[1].timestamp < unixTsNow - 90)
+		if(outdatedCoins.length > 0){
+			const newCoins = await fetch(`https://coins.llama.fi/prices/update/${outdatedCoins.map(c=>c[0]).join(',')}`).then((r) => r.json());
+			Object.assign(coins, newCoins.coins)
+		}
+
 		gasTokenPrice = gasTokenPrice || coins[`${llamaChain}:${zeroAddress}`]?.price;
 		[fromTokenPrice, toTokenPrice] = await Promise.all([
 			fromTokenPrice || coins[`${llamaChain}:${fromToken}`]?.price || getExperimentalPrice(rawChain!, fromToken!),
@@ -84,7 +91,7 @@ const getExperimentalPrice = async (chain: string, token: string): Promise<numbe
 
 		experimentalPrices.pairs.forEach((pair: DexScreenerTokenPair) => {
 			const { priceUsd, liquidity, chainId, baseToken } = pair;
-			if (baseToken.address === getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
+			if (liquidity && priceUsd && baseToken.address === getAddress(token) && liquidity.usd > 10000 && chainId === chain) {
 				if (totalLiquidity !== 0) {
 					const avgPrice = weightedPrice / totalLiquidity;
 					const priceDiff = Math.abs(Number(priceUsd) - avgPrice) / avgPrice;
