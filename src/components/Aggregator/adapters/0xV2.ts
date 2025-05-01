@@ -15,9 +15,10 @@ export const chainToId = {
 	base: '8453',
 	linea: '59144',
 	scroll: '534352',
-	blast: '43114',
+	blast: '81457',
 	mantle: '5000',
-	mode: '34443'
+	mode: '34443',
+	// missing unichain
 };
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
