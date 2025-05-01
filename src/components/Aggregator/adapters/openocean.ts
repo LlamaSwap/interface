@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js';
-import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 import { zeroAddress } from 'viem';
 
@@ -69,9 +68,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	let gas = data.estimatedGas;
 
-	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
-	if (chain === 'arbitrum') gas = await applyArbitrumFees(data.to, data.data, gas);
-
 	return {
 		amountReturned: data.outAmount,
 		estimatedGas: gas,
@@ -87,7 +83,6 @@ export async function swap({ rawQuote, chain }) {
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 	return tx;
 }

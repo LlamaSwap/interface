@@ -2,28 +2,6 @@ import * as React from 'react';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
 
-const TabsContainer = styled.div`
-	width: 100%;
-	background-color: rgb(34, 36, 42);
-	border-radius: 10px;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 16px;
-`;
-
-const TabButtonsWrapper = styled.div`
-	background-color: ${({ theme }) => theme.background};
-	display: flex;
-	justify-content: center;
-	border-radius: 12px;
-	padding: 4px;
-	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.6);
-	position: relative;
-	overflow: hidden;
-`;
-
 const TabList = styled.ul`
 	display: flex;
 	list-style: none;
@@ -32,6 +10,10 @@ const TabList = styled.ul`
 	position: relative;
 	z-index: 1000;
 	gap: 8px;
+	background-color: ${({ theme }) => theme.background};
+	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.6);
+	overflow: auto;
+	border-radius: 12px;
 `;
 
 const ActiveTabBackground = styled.div`
@@ -78,27 +60,26 @@ const Tab = styled.li<{ active: boolean }>`
 		border-radius: 25px;
 	}
 `;
+
 const Wrapper = styled.div`
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	align-items: center;
+	gap: 24px;
 	width: 100%;
-	align-self: flex-start;
 	text-align: left;
-	background-color: #22242a;
-	margin-top: -24px;
+
+	background-color: rgb(34, 36, 42);
+	border-radius: 10px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-		margin-top: 48px;
+		margin-top: 60px;
 	}
 `;
 
 const TabPanels = styled.div`
 	width: 100%;
-	background-color: rgb(34, 36, 42);
-	border-radius: 10px;
-	padding: 1rem;
-	margin-top: 0.5rem;
 	display: flex;
 	justify-content: center;
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
@@ -153,24 +134,21 @@ const Tabs = ({
 
 	return (
 		<Wrapper>
-			<TabsContainer>
-				<TabButtonsWrapper>
-					<TabList>
-						{tabs.map((tab, index) => (
-							<Tab
-								ref={tabRefs.current[index]}
-								key={tab.id}
-								active={tab.id === activeTab}
-								onClick={() => handleTabChange(index)}
-							>
-								{tab.name}
-							</Tab>
-						))}
-						<ActiveTabBackground style={getActiveTabStyles()} />
-					</TabList>
-				</TabButtonsWrapper>
-				<TabPanels>{tabs.find((tab) => tab.id === activeTab)?.content}</TabPanels>
-			</TabsContainer>
+				<TabList>
+					{tabs.map((tab, index) => (
+						<Tab
+							ref={tabRefs.current[index]}
+							key={tab.id}
+							active={tab.id === activeTab}
+							onClick={() => handleTabChange(index)}
+						>
+							{tab.name}
+						</Tab>
+					))}
+					<ActiveTabBackground style={getActiveTabStyles()} />
+				</TabList>
+
+			<TabPanels>{tabs.find((tab) => tab.id === activeTab)?.content}</TabPanels>
 		</Wrapper>
 	);
 };

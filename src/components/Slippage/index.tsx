@@ -59,48 +59,29 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 				))}
 			</Box>
 			<Text fontWeight="400" display="flex" justifyContent="space-between" alignItems="center" fontSize="0.875rem">
-				Swap Slippage: {slippage && !Number.isNaN(Number(slippage)) ? Number(slippage) + '%' : ''}
+				Slippage (%)
 			</Text>
 			<Box display="flex" gap="6px" flexWrap="wrap" width="100%">
-				{['0.1', '0.5', '1'].map((slippage) => (
-					<Button
-						fontSize="0.875rem"
-						fontWeight="500"
-						p="8px"
-						bg="#38393e"
-						height="2rem"
-						onClick={() => {
-							setSlippage(slippage);
-						}}
-						key={'slippage-btn' + slippage}
-					>
-						{slippage}%
-					</Button>
-				))}
-				<Box pos="relative" isolation="isolate">
-					<input
-						value={slippage}
-						type="text"
-						style={{
-							width: '100px',
-							height: '2rem',
-							padding: '4px 6px',
-							background: 'rgba(0,0,0,.4)',
-							marginLeft: 'auto',
-							borderRadius: '0.375rem',
-							fontSize: '0.875rem',
-							borderColor: warnings.length ? 'rgb(224, 148, 17)' : undefined,
-							borderWidth: warnings.length ? '1px' : undefined
-						}}
-						placeholder="Custom"
-						onChange={(val) => {
-							setSlippage(val.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
-						}}
-					/>
-					<Text pos="absolute" top="6px" right="6px" fontSize="0.875rem" zIndex={1}>
-						%
-					</Text>
-				</Box>
+				<input
+					value={slippage}
+					type="text"
+					style={{
+						width: '100%',
+						height: '2rem',
+						padding: '4px 6px',
+						background: 'rgba(0,0,0,.4)',
+						marginLeft: 'auto',
+						borderRadius: '0.375rem',
+						fontSize: '0.875rem',
+						borderColor: warnings.length ? 'rgb(224, 148, 17)' : undefined,
+						borderWidth: warnings.length ? '1px' : undefined,
+						flex: 1
+					}}
+					placeholder="Custom"
+					onChange={(val) => {
+						setSlippage(val.target.value.replace(/[^0-9.,]/g, '')?.replace(/,/g, '.'));
+					}}
+				/>
 				{warnings.length ? (
 					<Popover>
 						<PopoverTrigger>
@@ -113,6 +94,21 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 						</PopoverContent>
 					</Popover>
 				) : null}
+				{['0.01', '0.1', '0.5', '1'].map((slp) => (
+					<Button
+						fontSize="0.875rem"
+						fontWeight="500"
+						p="8px"
+						bg={slippage === slp ? "#2172E5" : "#38393e"}
+						height="2rem"
+						onClick={() => {
+							setSlippage(slp);
+						}}
+						key={'slp-btn' + slp}
+					>
+						{slp}
+					</Button>
+				))}
 			</Box>
 		</Box>
 	);

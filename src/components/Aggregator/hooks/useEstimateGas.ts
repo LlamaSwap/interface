@@ -14,7 +14,7 @@ const traceRpcs = {
 	moonriver: 'https://moonriver.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
 	//palm: 'https://palm-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1', // we don't support it
 	polygon: 'https://polygon-mainnet.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1',
-	arbitrum: 'https://arbitrum-one.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1'
+	//arbitrum: 'https://arbitrum-one.blastapi.io/090c6ffd-6cd1-40d1-98af-338a96523ea1'
 };
 
 export const estimateGas = async ({

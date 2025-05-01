@@ -1,6 +1,5 @@
-// Source https://docs.1inch.io/docs/aggregation-protocol/api/swagger
+// Source https://portal.1inch.dev/documentation/apis/swap/classic-swap/introduction
 
-import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { altReferralAddress } from '../constants';
 import { sendTx } from '../utils/sendTx';
 import { estimateGas } from 'wagmi/actions';
@@ -23,18 +22,18 @@ export const chainToId = {
 };
 
 const spenders = {
-	ethereum: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	bsc: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	polygon: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	optimism: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	arbitrum: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	gnosis: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	avax: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	fantom: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	klaytn: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	aurora: '0x1111111254eeb25477b68fb85ed929f73a960582',
-	zksync: '0x6e2b76966cbd9cf4cc2fa0d76d24d5241e0abc2f',
-	base: '0x1111111254eeb25477b68fb85ed929f73a960582'
+	ethereum: '0x111111125421ca6dc452d289314280a0f8842a65',
+	bsc: '0x111111125421ca6dc452d289314280a0f8842a65',
+	polygon: '0x111111125421ca6dc452d289314280a0f8842a65',
+	optimism: '0x111111125421ca6dc452d289314280a0f8842a65',
+	arbitrum: '0x111111125421ca6dc452d289314280a0f8842a65',
+	gnosis: '0x111111125421ca6dc452d289314280a0f8842a65',
+	avax: '0x111111125421ca6dc452d289314280a0f8842a65',
+	fantom: '0x111111125421ca6dc452d289314280a0f8842a65',
+	klaytn: '0x111111125421ca6dc452d289314280a0f8842a65',
+	aurora: '0x111111125421ca6dc452d289314280a0f8842a65',
+	zksync: '0x6fd4383cb451173d5f9304f041c7bcbf27d561ff',
+	base: '0x111111125421ca6dc452d289314280a0f8842a65'
 };
 
 export const name = '1inch';
@@ -42,10 +41,12 @@ export const token = '1INCH';
 export const referral = true;
 
 export function approvalAddress(chain: string) {
-	// https://api.1inch.io/v4.0/1/approve/spender
+	// https://api.1inch.io/v6.0/1/approve/spender
 	return spenders[chain];
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
+const apiEndpoint = 'https://api.1inch.dev/swap/v6.0/';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
@@ -53,31 +54,32 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === zeroAddress ? nativeToken : from;
 	const tokenTo = to === zeroAddress ? nativeToken : to;
-	const authHeader = process.env.INCH_API_KEY ? { 'auth-key': process.env.INCH_API_KEY as string } : {};
+	const authHeader = process.env.INCH_API_KEY ? { 'Authorization': `Bearer ${process.env.INCH_API_KEY as string}` } : {};
 	const tokenApprovalAddress = spenders[chain];
 
 	const [data, swapData] = await Promise.all([
 		fetch(
-			`https://api-defillama.1inch.io/v5.2/${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
+			`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
 			{ headers: authHeader as any }
 		).then((r) => r.json()),
 		extra.userAddress !== zeroAddress
 			? fetch(
-					`https://api-defillama.1inch.io/v5.2/${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
-					{ headers: authHeader as any }
-				).then((r) => r.json())
+				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&origin=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
+				{ headers: authHeader as any }
+			).then((r) => r.json())
 			: null
 	]);
+
+	if(swapData && swapData.tx.to.toLowerCase() !== tokenApprovalAddress.toLowerCase()){
+		throw new Error("approval address doesn't match")
+	}
 
 	const estimatedGas = data.gas || 0;
 
 	let gas = estimatedGas;
 
-	if (chain === 'arbitrum')
-		gas = swapData === null ? null : await applyArbitrumFees(swapData.tx.to, swapData.tx.data, gas);
-
 	return {
-		amountReturned: swapData?.toAmount ?? data.toAmount,
+		amountReturned: swapData?.dstAmount ?? data.dstAmount,
 		estimatedGas: gas,
 		tokenApprovalAddress,
 		rawQuote: swapData === null ? null : { ...swapData, tx: swapData.tx },

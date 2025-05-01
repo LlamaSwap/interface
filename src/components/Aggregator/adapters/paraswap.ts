@@ -1,7 +1,5 @@
 // Source: https://developers.paraswap.network/api/master
 
-import BigNumber from 'bignumber.js';
-import { applyArbitrumFees } from '../utils/arbitrumFees';
 import { sendTx } from '../utils/sendTx';
 import { defillamaReferrerAddress } from '../constants';
 import { zeroAddress } from 'viem';
@@ -16,8 +14,22 @@ export const chainToId = {
 	fantom: 250,
 	optimism: 10,
 	polygonzkevm: 1101,
-	base: 8453
+	base: 8453,
+	gnosis: 100
 };
+
+const approvers = {
+	ethereum: "0x6a000f20005980200259b80c5102003040001068",
+	bsc: "0x6a000f20005980200259b80c5102003040001068",
+	polygon: "0x6a000f20005980200259b80c5102003040001068",
+	avax: "0x6a000f20005980200259b80c5102003040001068",
+	arbitrum: "0x6a000f20005980200259b80c5102003040001068",
+	fantom: "0x6a000f20005980200259b80c5102003040001068",
+	optimism: "0x6a000f20005980200259b80c5102003040001068",
+	polygonzkevm: "0x6a000f20005980200259b80c5102003040001068",
+	base: "0x6a000f20005980200259b80c5102003040001068",
+	gnosis: "0x6a000f20005980200259b80c5102003040001068"
+}
 
 export const name = 'ParaSwap';
 export const token = 'PSP';
@@ -43,7 +55,7 @@ export async function getQuote(
 	const side = amountOut && amountOut !== '0' ? 'BUY' : 'SELL';
 	const finalAmount = side === 'BUY' ? amountOut : amount;
 	const data = await fetch(
-		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${finalAmount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=${side}&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders`
+		`https://apiv5.paraswap.io/prices/?srcToken=${tokenFrom}&destToken=${tokenTo}&amount=${finalAmount}&srcDecimals=${fromToken?.decimals}&destDecimals=${toToken?.decimals}&partner=${partner}&side=${side}&network=${chainToId[chain]}&excludeDEXS=ParaSwapPool,ParaSwapLimitOrders&version=6.2`
 	).then((r) => r.json());
 
 	const dataSwap =
@@ -59,8 +71,9 @@ export async function getQuote(
 						userAddress: userAddress,
 						partner: partner,
 						partnerAddress: defillamaReferrerAddress,
-						positiveSlippageToUser: false,
+						takeSurplus: true,
 						priceRoute: data.priceRoute,
+						isCapSurplus: true,
 						...(side === 'BUY' ? { destAmount: data.priceRoute.destAmount } : { srcAmount: data.priceRoute.srcAmount })
 					}),
 					headers: {
@@ -69,16 +82,14 @@ export async function getQuote(
 				}).then((r) => r.json())
 			: null;
 
-	if (dataSwap.error) {
+	if (dataSwap?.error) {
 		throw new Error(dataSwap.error)
 	}
 
 	let gas = data.priceRoute.gasCost;
 
-	if (chain === 'optimism') gas = BigNumber(3.5).times(gas).toFixed(0, 1);
-
-	if (chain === 'arbitrum') {
-		gas = await applyArbitrumFees(dataSwap.to, dataSwap.data, gas);
+	if(data.priceRoute.tokenTransferProxy.toLowerCase() !== approvers[chain].toLowerCase()){
+		throw new Error("Approval address doesn't match")
 	}
 
 	return {
@@ -97,7 +108,6 @@ export async function swap({ rawQuote, chain }) {
 		to: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
-		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
 	});
 
 	return tx;
