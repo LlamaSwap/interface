@@ -1,4 +1,4 @@
-import { numberToHex, size, zeroAddress, concat, type Hex } from 'viem';
+import { numberToHex, size, zeroAddress, concat} from 'viem';
 import { sendTx } from '../utils/sendTx';
 
 export const name = 'Matcha/0x v2';
@@ -17,7 +17,7 @@ export const chainToId = {
 	scroll: '534352',
 	blast: '81457',
 	mantle: '5000',
-	mode: '34443',
+	mode: '34443'
 	// missing unichain
 };
 
@@ -89,8 +89,6 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 	return signature;
 }
 
-const MAGIC_CALLDATA_STRING = 'f'.repeat(130); // used when signing the eip712 message
-
 export async function swap({ fromAddress, rawQuote, signature }) {
 	// signature not needed if using allowance holder api
 	const signatureLengthInHex = signature
@@ -102,11 +100,10 @@ export async function swap({ fromAddress, rawQuote, signature }) {
 	const data = signature
 		? concat([rawQuote.transaction.data, signatureLengthInHex, signature])
 		: rawQuote.transaction.data;
-
 	const tx = await sendTx({
 		from: fromAddress,
 		to: rawQuote.transaction.to,
-		data: data.replace(MAGIC_CALLDATA_STRING, signature.slice(2)) as Hex,
+		data,
 		value: rawQuote.transaction.value
 	});
 
