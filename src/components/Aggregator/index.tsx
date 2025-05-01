@@ -467,7 +467,7 @@ export function AggregatorContainer() {
 
 		return {
 			...route,
-			isFailed: route.name !== 'Matcha/0x v2' ? gasData?.[route.name]?.isFailed || false : false,
+			isFailed: gasData?.[route.name]?.isFailed || false,
 			route,
 			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' && !route.isGasless ? 'Unknown' : gasUsd,
 			amountUsd,

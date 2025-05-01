@@ -38,7 +38,7 @@ export const estimateGas = async ({
 		!Number.isFinite(balance) ||
 		balance < +route.fromAmount ||
 		!route.price ||
-		!traceRpcs[chain]
+		!traceRpcs[chain] || route.name === 'Matcha/0x v2'
 	) {
 		return null;
 	}
