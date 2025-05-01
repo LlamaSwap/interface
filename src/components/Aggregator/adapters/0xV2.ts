@@ -79,13 +79,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
-	const signature = await signTypedDataAsync({
-		domain: rawQuote.permit2.eip712.domain,
-		types: rawQuote.permit2.eip712.types,
-		primaryType: rawQuote.permit2.eip712.primaryType,
-		value: rawQuote.permit2.eip712.message
+	const signature = await signTypedDataAsync(rawQuote.permit2.eip712).catch((err) => {
+		console.log(err)
 	});
-
 	return signature;
 }
 

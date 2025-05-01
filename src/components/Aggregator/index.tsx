@@ -467,7 +467,7 @@ export function AggregatorContainer() {
 
 		return {
 			...route,
-			isFailed: gasData?.[route.name]?.isFailed || false,
+			isFailed: route.name === '0xV2' ? gasData?.[route.name]?.isFailed || false : false,
 			route,
 			gasUsd: gasUsd === 0 && route.name !== 'CowSwap' && !route.isGasless ? 'Unknown' : gasUsd,
 			amountUsd,
@@ -1195,7 +1195,7 @@ export function AggregatorContainer() {
 													onClick={() => {
 														handleSignatureForMutation();
 													}}
-													disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data}
+													disabled={(signatureForSwapMutation.isPending || signatureForSwapMutation.data) ? true : false}
 												>
 													Sign
 												</Button>
