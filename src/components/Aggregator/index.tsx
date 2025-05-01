@@ -367,8 +367,13 @@ export function AggregatorContainer() {
 	const routesRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 
-	const { toTokenAddress } = useQueryParams();
-	const { selectedChain, selectedToToken, finalSelectedFromToken, finalSelectedToToken } = useSelectedChainAndTokens();
+	const {  toTokenAddress } = useQueryParams();
+	const {
+		selectedChain,
+		selectedToToken,
+		finalSelectedFromToken,
+		finalSelectedToToken
+	} = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
 
@@ -679,8 +684,7 @@ export function AggregatorContainer() {
 
 	const signatureForSwapMutation = useMutation({
 		mutationFn: (params: { adapter: string; signTypedDataAsync: typeof signTypedDataAsync; rawQuote: any }) =>
-			signatureForSwap(params),
-		mutationKey: ['signatureForSwap', selectedRoute?.name, debouncedAmount, debouncedAmountOut, slippage, selectedRoute?.netOut, selectedRoute?.gasUsd]
+			signatureForSwap(params)
 	});
 
 	const handleSignatureForMutation = () => {
@@ -1191,7 +1195,7 @@ export function AggregatorContainer() {
 													onClick={() => {
 														handleSignatureForMutation();
 													}}
-													disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data ? true : false}
+													disabled={(signatureForSwapMutation.isPending || signatureForSwapMutation.data) ? true : false}
 												>
 													Sign
 												</Button>
