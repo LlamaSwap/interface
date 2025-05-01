@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { defillamaReferrerAddress } from '../constants';
 import { sendTx } from '../utils/sendTx';
 import { zeroAddress } from 'viem';
