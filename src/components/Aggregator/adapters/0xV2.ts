@@ -41,9 +41,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	// only expects integer
 	const slippage = (extra.slippage * 100) | 0;
-	const feesPathParams = extra.feeRecipient && extra.feeBps ? `&swapFeeRecipient=${extra.feeRecipient}&swapFeeBps=${extra.feeBps}&swapFeeToken=${tokenFrom}&tradeSurplusRecipient=${extra.feeRecipient}` : `&tradeSurplusRecipient=${feeCollectorAddress}`;
+
 	const data = await fetch(
-		`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}${feesPathParams}`,
+		`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
 		{
 			headers: {
 				'0x-api-key': process.env.OX_API_KEY as string,
