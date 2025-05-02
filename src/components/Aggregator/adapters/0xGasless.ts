@@ -36,13 +36,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const amountParam =
 		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
-
+	// fees = percentage (denoted as a decimal between 0 - 1.0 where 1.0 represents 100%)
+	const fees = extra.feeBps ? Math.max(extra.feeBps / (100 * 100), 1) : 0;
+	const feesPathParams = extra.feeRecipient && extra.feeBps ? `&feeRecipient=${extra.feeRecipient}&feeSellTokenPercentage=${fees}` : `&feeRecipient=${feeCollectorAddress}&feeSellTokenPercentage=0.0015`;
 	const data = await fetch(
 		`https://api.0x.org/tx-relay/v1/swap/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&checkApproval=true&slippagePercentage=${
 			extra.slippage / 100
 		}&affiliateAddress=${defillamaReferrerAddress}&takerAddress=${
 			extra.userAddress
-		}&feeRecipient=${feeCollectorAddress}&feeSellTokenPercentage=0.0015`,
+		}${feesPathParams}`,
 		{
 			headers: {
 				'0x-api-key': process.env.OX_API_KEY as string,

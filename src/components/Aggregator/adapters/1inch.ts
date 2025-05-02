@@ -58,7 +58,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenApprovalAddress = spenders[chain];
 	//fee in % not bps, min 0 max 3
 	const fees = extra.feeBps ? Math.min(extra.feeBps / 100, 3) : 0;
-	const feesPathParams = extra.feeAddress && extra.feeBps ? `&referrer=${extra.feeAddress}&fee=${fees}` : `&referrer=${altReferralAddress}`;
+	const feesPathParams = extra.feeRecipient && extra.feeBps ? `&referrer=${extra.feeRecipient}&fee=${fees}` : `&referrer=${altReferralAddress}`;
 	const [data, swapData] = await Promise.all([
 		fetch(
 			`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&fee=${fees}&includeGas=true${feesPathParams}`,

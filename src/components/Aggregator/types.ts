@@ -2,7 +2,7 @@ export interface ExtraData {
 	userAddress: string;
 	slippage: string;
 	amountOut: string;
-	feeAddress?: string;
+	feeRecipient?: string;
 	feeBps?: number;
 	referralCode?: string;
 	appData?: string;

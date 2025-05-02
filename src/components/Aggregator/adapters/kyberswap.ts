@@ -58,7 +58,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenFrom = from === zeroAddress ? nativeToken : from;
 	const tokenTo = to === zeroAddress ? nativeToken : to;
 
-	const feesPathParams = extra.feeAddress && extra.feeBps ? `&feeReceiver=${extra.feeAddress}&feeAmount=${extra.feeBps}&isInBps=true&chargeFeeBy=currency_in` : '';
+	const feesPathParams = extra.feeRecipient && extra.feeBps ? `&feeReceiver=${extra.feeRecipient}&feeAmount=${extra.feeBps}&isInBps=true&chargeFeeBy=currency_in` : '';
 	const quote = await fetch(
 		`https://aggregator-api.kyberswap.com/${
 			chainToId[chain]
