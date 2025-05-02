@@ -4,4 +4,5 @@ export interface ExtraData {
 	amountOut: string;
 	feeAddress?: string;
 	feeBps?: number;
+	referralCode?: string;
 }

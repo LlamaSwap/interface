@@ -68,7 +68,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			referralCode,
 			// optional:
 			disableRFQs: true,
-			compact: true
+			compact: true,
+			...(extra.referralCode ? { referralCode: extra.referralCode } : {})
 		})
 	}).then((res) => res.json());
 
