@@ -33,7 +33,7 @@ import Loader from './Loader';
 import { useTokenApprove } from './hooks';
 import { IRoute, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
-import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
+import { EIP_5792_CHAINS, PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
@@ -330,7 +330,7 @@ const chains = getAllChains();
 
 export function AggregatorContainer() {
 	// wallet stuff
-	const { address, isConnected, chain: chainOnWallet } = useAccount();
+	const { address, isConnected, chain: chainOnWallet, connector } = useAccount();
 	const { openConnectModal } = useConnectModal();
 	const { switchChain } = useSwitchChain();
 	const addRecentTransaction = useAddRecentTransaction();
@@ -366,13 +366,8 @@ export function AggregatorContainer() {
 	const routesRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 
-	const {  toTokenAddress } = useQueryParams();
-	const {
-		selectedChain,
-		selectedToToken,
-		finalSelectedFromToken,
-		finalSelectedToToken
-	} = useSelectedChainAndTokens();
+	const { toTokenAddress } = useQueryParams();
+	const { selectedChain, selectedToToken, finalSelectedFromToken, finalSelectedToToken } = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
 
@@ -664,8 +659,12 @@ export function AggregatorContainer() {
 		mutationFn: (params: { adapter: string; rawQuote: any; isInfiniteApproval: boolean }) => gaslessApprove(params)
 	});
 
-	const isApproved =
-		selectedRoute?.price && selectedRoute?.isGasless
+	const isEip5792 =
+	selectedChain && connector?.id === 'io.metamask' ? EIP_5792_CHAINS.includes(selectedChain.id) : false;
+
+	const isApproved = isEip5792
+		? true
+		: selectedRoute?.price && selectedRoute?.isGasless
 			? (selectedRoute.price.rawQuote as any).approval.isRequired
 				? (selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
 					? gaslessApprovalMutation.data
@@ -675,8 +674,12 @@ export function AggregatorContainer() {
 				: true
 			: isTokenApproved;
 
-	const isUSDTNotApprovedOnEthereum =
-		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval ? true : false;
+	const isUSDTNotApprovedOnEthereum = isEip5792
+		? false
+		: selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval
+			? true
+			: false;
+
 	const swapMutation = useMutation({
 		mutationFn: (params: {
 			chain: string;
@@ -692,6 +695,7 @@ export function AggregatorContainer() {
 			index: number;
 			route: any;
 			approvalData: any;
+			isEip5792: boolean;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -899,7 +903,8 @@ export function AggregatorContainer() {
 				route: selectedRoute,
 				amount: selectedRoute.amount,
 				amountIn: selectedRoute.amountIn,
-				approvalData: gaslessApprovalMutation?.data ?? {}
+				approvalData: gaslessApprovalMutation?.data ?? {},
+				isEip5792
 			});
 		}
 	};
@@ -1170,7 +1175,7 @@ export function AggregatorContainer() {
 															return;
 														}
 
-														if (approve) approve();
+														if (!isEip5792 && approve) approve();
 
 														if (
 															balance.data &&
@@ -1445,7 +1450,7 @@ export function AggregatorContainer() {
 																		return;
 																	}
 
-																	if (approve) approve();
+																	if (!isEip5792 && approve) approve();
 
 																	if (
 																		balance.data &&

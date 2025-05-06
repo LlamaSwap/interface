@@ -42,7 +42,8 @@ export async function swap({
 	adapter,
 	rawQuote,
 	tokens,
-	approvalData
+	approvalData,
+	isEip5792
 }) {
 	const aggregator = adaptersMap[adapter];
 
@@ -56,13 +57,15 @@ export async function swap({
 			slippage,
 			rawQuote,
 			tokens,
-			approvalData
+			approvalData,
+			isEip5792
 		});
 		return res;
 	} catch (e) {
 		throw e;
 	}
 }
+
 export async function gaslessApprove({ adapter, rawQuote, isInfiniteApproval }) {
 	const aggregator = adaptersMap[adapter];
 

@@ -1,6 +1,7 @@
+import { tokenApprovalAbi } from '../constants';
 import { ExtraData } from '../types';
-import { sendTx } from '../utils/sendTx';
-import { zeroAddress } from 'viem';
+import { sendMultipleTxs, sendTx } from '../utils/sendTx';
+import { encodeFunctionData, parseUnits, zeroAddress } from 'viem';
 
 // https://docs.kyberswap.com/kyberswap-solutions/kyberswap-aggregator/aggregator-api-specification/evm-swaps
 export const chainToId = {
@@ -103,16 +104,30 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ fromAddress, from, rawQuote }) {
-	const transactionOption: Record<string, string> = {
+export async function swap({ tokens, amount, fromAddress, from, rawQuote, isEip5792 }) {
+	const txObj: Record<string, string> = {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
 		data: rawQuote.data,
 	};
 
-	if (from === zeroAddress) transactionOption.value = rawQuote.amountIn;
+	if (from === zeroAddress) txObj.value = rawQuote.amountIn;
 
-	const tx = await sendTx(transactionOption);
+	if (isEip5792) {
+		const approveTxObj = {
+			from: rawQuote.from,
+			to: tokens.fromToken.address,
+			data: encodeFunctionData({
+				abi: tokenApprovalAbi,
+				functionName: 'approve',
+				args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+			})
+		};
+		const tx = await sendMultipleTxs([approveTxObj, txObj]);
+		return tx;
+	}
+
+	const tx = await sendTx(txObj);
 
 	return tx;
 }

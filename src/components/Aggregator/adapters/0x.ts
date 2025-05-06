@@ -1,6 +1,6 @@
-import { defillamaReferrerAddress } from '../constants';
-import { sendTx } from '../utils/sendTx';
-import { zeroAddress } from 'viem';
+import { defillamaReferrerAddress, tokenApprovalAbi } from '../constants';
+import { sendMultipleTxs, sendTx } from '../utils/sendTx';
+import { encodeFunctionData, parseUnits, zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 'https://api.0x.org/',
@@ -57,13 +57,29 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ fromAddress, rawQuote, chain }) {
-	const tx = await sendTx({
+export async function swap({ tokens, amount, fromAddress, rawQuote, isEip5792 }) {
+	const txObj = {
 		from: fromAddress,
 		to: rawQuote.to,
 		data: rawQuote.data,
-		value: rawQuote.value,
-	});
+		value: rawQuote.value
+	};
+
+	if (isEip5792) {
+		const approveTxObj = {
+			from: fromAddress,
+			to: tokens.fromToken.address,
+			data: encodeFunctionData({
+				abi: tokenApprovalAbi,
+				functionName: 'approve',
+				args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+			})
+		};
+		const tx = await sendMultipleTxs([approveTxObj, txObj]);
+		return tx;
+	}
+
+	const tx = await sendTx(txObj);
 
 	return tx;
 }

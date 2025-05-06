@@ -1,4 +1,6 @@
-import { sendTx } from '../../utils/sendTx';
+import { encodeFunctionData, parseUnits } from 'viem';
+import { sendMultipleTxs, sendTx } from '../../utils/sendTx';
+import { tokenApprovalAbi } from '../../constants';
 
 // https://api.odos.xyz/info/chains
 export const chainToId = {
@@ -94,14 +96,30 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ rawQuote }) {
-	const tx = await sendTx({
+export async function swap({ tokens, amount, rawQuote, isEip5792 }) {
+	const txObj = {
 		from: rawQuote.transaction.from,
 		to: rawQuote.transaction.to,
 		data: rawQuote.transaction.data,
 		value: rawQuote.transaction.value
 		//gas: rawQuote.transaction.gas
-	});
+	}
+
+	if (isEip5792) {
+		const approveTxObj = {
+			from: rawQuote.from,
+			to: tokens.fromToken.address,
+			data: encodeFunctionData({
+				abi: tokenApprovalAbi,
+				functionName: 'approve',
+				args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+			})
+		};
+		const tx = await sendMultipleTxs([approveTxObj, txObj]);
+		return tx;
+	}
+
+	const tx = await sendTx(txObj);
 
 	return tx;
 }

@@ -332,3 +332,5 @@ export const topTokensByChain = {
 		'0x50c42deacd8fc9773493ed674b675be577f2634b' // WETH
 	]
 };
+
+export const EIP_5792_CHAINS = [1, 56];

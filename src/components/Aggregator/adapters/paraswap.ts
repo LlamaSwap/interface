@@ -1,8 +1,8 @@
 // Source: https://developers.paraswap.network/api/master
 
-import { sendTx } from '../utils/sendTx';
-import { defillamaReferrerAddress } from '../constants';
-import { zeroAddress } from 'viem';
+import { sendMultipleTxs, sendTx } from '../utils/sendTx';
+import { defillamaReferrerAddress, tokenApprovalAbi } from '../constants';
+import { encodeFunctionData, parseUnits, zeroAddress } from 'viem';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
@@ -102,13 +102,29 @@ export async function getQuote(
 	};
 }
 
-export async function swap({ rawQuote, chain }) {
-	const tx = await sendTx({
+export async function swap({ tokens, amount, rawQuote, isEip5792 }) {
+	const txObj = {
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
-		value: rawQuote.value,
-	});
+		value: rawQuote.value
+	};
+
+	if (isEip5792) {
+		const approveTxObj = {
+			from: rawQuote.from,
+			to: tokens.fromToken.address,
+			data: encodeFunctionData({
+				abi: tokenApprovalAbi,
+				functionName: 'approve',
+				args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+			})
+		};
+		const tx = await sendMultipleTxs([approveTxObj, txObj]);
+		return tx;
+	}
+
+	const tx = await sendTx(txObj);
 
 	return tx;
 }

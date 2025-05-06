@@ -1,7 +1,7 @@
 // Source https://portal.1inch.dev/documentation/apis/swap/classic-swap/introduction
 
 import { altReferralAddress } from '../constants';
-import { sendTx } from '../utils/sendTx';
+import { sendMultipleTxs, sendTx } from '../utils/sendTx';
 import { estimateGas } from 'wagmi/actions';
 import { config } from '../../WalletProvider';
 import { zeroAddress } from 'viem';
@@ -87,7 +87,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ rawQuote }) {
+export async function swap({ rawQuote, isEip5792 }) {
 	const txObject = {
 		from: rawQuote.tx.from,
 		to: rawQuote.tx.to,
@@ -97,11 +97,19 @@ export async function swap({ rawQuote }) {
 
 	const gasPrediction = await estimateGas(config, txObject).catch(() => null);
 
-	const tx = await sendTx({
+	const finalTxObj = {
 		...txObject,
 		// Increase gas +20% + 2 erc20 txs
 		...(gasPrediction ? { gas: (gasPrediction * 12n) / 10n + 86000n } : {})
-	});
+	}
+
+	if(isEip5792){
+		const tx = await sendMultipleTxs([finalTxObj])
+		return tx
+	}
+
+	const tx = await sendTx(finalTxObj);
+
 	return tx;
 }
 
