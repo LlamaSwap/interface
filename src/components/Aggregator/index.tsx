@@ -660,11 +660,10 @@ export function AggregatorContainer() {
 	});
 
 	const isEip5792 =
-	selectedChain && connector?.id === 'io.metamask' ? EIP_5792_CHAINS.includes(selectedChain.id) : false;
+		selectedChain && connector?.id === 'io.metamask' ? EIP_5792_CHAINS.includes(selectedChain.id) : false;
 
-	const isApproved = isEip5792
-		? true
-		: selectedRoute?.price && selectedRoute?.isGasless
+	const isApproved =
+		selectedRoute?.price && selectedRoute?.isGasless
 			? (selectedRoute.price.rawQuote as any).approval.isRequired
 				? (selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
 					? gaslessApprovalMutation.data
@@ -672,7 +671,9 @@ export function AggregatorContainer() {
 						: false
 					: isTokenApproved
 				: true
-			: isTokenApproved;
+			: isEip5792
+				? true
+				: isTokenApproved;
 
 	const isUSDTNotApprovedOnEthereum = isEip5792
 		? false
@@ -695,7 +696,7 @@ export function AggregatorContainer() {
 			index: number;
 			route: any;
 			approvalData: any;
-			isEip5792: boolean;
+			eip5792: { shouldRemoveApproval: boolean; isTokenApproved: boolean } | null;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -904,7 +905,7 @@ export function AggregatorContainer() {
 				amount: selectedRoute.amount,
 				amountIn: selectedRoute.amountIn,
 				approvalData: gaslessApprovalMutation?.data ?? {},
-				isEip5792
+				eip5792: isEip5792 ? { shouldRemoveApproval: shouldRemoveApproval ? true : false, isTokenApproved } : null
 			});
 		}
 	};

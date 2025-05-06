@@ -57,7 +57,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ tokens, amount, fromAddress, rawQuote, isEip5792 }) {
+export async function swap({ tokens, amount, fromAddress, rawQuote, eip5792 }) {
 	const txObj = {
 		from: fromAddress,
 		to: rawQuote.to,
@@ -65,17 +65,32 @@ export async function swap({ tokens, amount, fromAddress, rawQuote, isEip5792 })
 		value: rawQuote.value
 	};
 
-	if (isEip5792) {
-		const approveTxObj = {
-			from: fromAddress,
-			to: tokens.fromToken.address,
-			data: encodeFunctionData({
-				abi: tokenApprovalAbi,
-				functionName: 'approve',
-				args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+	if (eip5792 && (eip5792.shouldRemoveApproval || !eip5792.isTokenApproved)) {
+		const txs: any = [];
+		if (eip5792.shouldRemoveApproval) {
+			txs.push({
+				from: fromAddress,
+				to: tokens.fromToken.address,
+				data: encodeFunctionData({
+					abi: tokenApprovalAbi,
+					functionName: 'approve',
+					args: [rawQuote.to, 0n]
+				})
+			});
+		}
+		if (!eip5792.isTokenApproved) {
+			txs.push({
+				from: fromAddress,
+				to: tokens.fromToken.address,
+				data: encodeFunctionData({
+					abi: tokenApprovalAbi,
+					functionName: 'approve',
+					args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+				})
 			})
-		};
-		const tx = await sendMultipleTxs([approveTxObj, txObj]);
+		}
+		txs.push(txObj);
+		const tx = await sendMultipleTxs(txs);
 		return tx;
 	}
 

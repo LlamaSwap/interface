@@ -43,7 +43,7 @@ export async function swap({
 	rawQuote,
 	tokens,
 	approvalData,
-	isEip5792
+	eip5792
 }) {
 	const aggregator = adaptersMap[adapter];
 
@@ -58,7 +58,7 @@ export async function swap({
 			rawQuote,
 			tokens,
 			approvalData,
-			isEip5792
+			eip5792
 		});
 		return res;
 	} catch (e) {

@@ -1,10 +1,10 @@
 // Source https://portal.1inch.dev/documentation/apis/swap/classic-swap/introduction
 
-import { altReferralAddress } from '../constants';
+import { altReferralAddress, tokenApprovalAbi } from '../constants';
 import { sendMultipleTxs, sendTx } from '../utils/sendTx';
 import { estimateGas } from 'wagmi/actions';
 import { config } from '../../WalletProvider';
-import { zeroAddress } from 'viem';
+import { encodeFunctionData, parseUnits, zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 1,
@@ -87,7 +87,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ rawQuote, isEip5792 }) {
+export async function swap({ tokens, amount, rawQuote, eip5792 }) {
 	const txObject = {
 		from: rawQuote.tx.from,
 		to: rawQuote.tx.to,
@@ -101,11 +101,35 @@ export async function swap({ rawQuote, isEip5792 }) {
 		...txObject,
 		// Increase gas +20% + 2 erc20 txs
 		...(gasPrediction ? { gas: (gasPrediction * 12n) / 10n + 86000n } : {})
-	}
+	};
 
-	if(isEip5792){
-		const tx = await sendMultipleTxs([finalTxObj])
-		return tx
+	if (eip5792 && (eip5792.shouldRemoveApproval || !eip5792.isTokenApproved)) {
+		const txs: any = [];
+		if (eip5792.shouldRemoveApproval) {
+			txs.push({
+				from: rawQuote.tx.from,
+				to: tokens.fromToken.address,
+				data: encodeFunctionData({
+					abi: tokenApprovalAbi,
+					functionName: 'approve',
+					args: [rawQuote.to, 0n]
+				})
+			});
+		}
+		if (!eip5792.isTokenApproved) {
+			txs.push({
+				from: rawQuote.tx.from,
+				to: tokens.fromToken.address,
+				data: encodeFunctionData({
+					abi: tokenApprovalAbi,
+					functionName: 'approve',
+					args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+				})
+			});
+		}
+		txs.push(finalTxObj);
+		const tx = await sendMultipleTxs(txs);
+		return tx;
 	}
 
 	const tx = await sendTx(finalTxObj);
