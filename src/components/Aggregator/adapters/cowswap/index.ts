@@ -23,6 +23,7 @@ const wrappedTokens = {
 	base: '0x4200000000000000000000000000000000000006'
 };
 
+const cowContractAddress = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
 const cowSwapEthFlowContractAddress = '0xba3cb449bd2b4adddbc894d8697f5170800eadec';
 
 const nativeSwapAddress = {
@@ -38,7 +39,7 @@ export const referral = true;
 export const isOutputAvailable = true;
 
 export function approvalAddress() {
-	return '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
+	return cowContractAddress;
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
@@ -124,7 +125,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
-		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
+		tokenApprovalAddress: cowContractAddress,
 		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589',
 		isMEVSafe: true
 	};
