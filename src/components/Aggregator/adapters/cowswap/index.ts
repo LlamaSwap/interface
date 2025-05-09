@@ -13,12 +13,14 @@ export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
 	gnosis: 'https://api.cow.fi/xdai',
 	arbitrum: 'https://api.cow.fi/arbitrum_one'
+	base: 'https://api.cow.fi/base'
 };
 
 const wrappedTokens = {
 	ethereum: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
 	gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
-	arbitrum: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+	arbitrum: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+	base: '0x4200000000000000000000000000000000000006'
 };
 
 const nativeSwapAddress = {
