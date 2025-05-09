@@ -43,6 +43,26 @@ export function approvalAddress() {
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
+const feeRecipientAddress = '0x1713B79e3dbb8A76D80e038CA701A4a781AC69eB';
+
+const appData = JSON.stringify({
+	version: '1.4.0',
+	appCode: 'DefiLlama',
+	environment: 'production',
+	metadata: {
+		orderClass: {
+			orderClass: 'market'
+		},
+		partnerFee: [
+			{
+				priceImprovementBps: 5000, // Capture 50% of the price improvement
+				maxVolumeBps: 100, // Capped at 1% volume
+				recipient: feeRecipientAddress
+			}
+		]
+	}
+});
+
 const waitForOrder =
 	({ uid, trader, chain }) =>
 	(onSuccess) => {
@@ -86,7 +106,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			sellToken: tokenFrom,
 			buyToken: tokenTo,
 			receiver: extra.userAddress,
-			appData: '0xf249b3db926aa5b5a1b18f3fec86b9cc99b9a8a99ad7e8034242d2838ae97422', // generated using https://explorer.cow.fi/appdata?tab=encode
+			appData,
 			partiallyFillable: false,
 			sellTokenBalance: 'erc20',
 			buyTokenBalance: 'erc20',
@@ -147,7 +167,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 					receiver: fromAddress as `0x${string}`,
 					sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
 					buyAmount: BigInt(rawQuote.quote.buyAmount),
-					appData: rawQuote.quote.appData as `0x${string}`,
+					appData: rawQuote.quote.appDataHash,
 					feeAmount: 0n,
 					validTo: rawQuote.quote.validTo,
 					partiallyFillable: rawQuote.quote.partiallyFillable,
@@ -167,7 +187,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 			sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
 			buyAmount: BigInt(rawQuote.quote.buyAmount),
 			validTo: rawQuote.quote.validTo as number,
-			appData: rawQuote.quote.appData as `0x${string}`,
+			appData: rawQuote.quote.appDataHash,
 			feeAmount: 0n,
 			kind: rawQuote.quote.kind as string,
 			partiallyFillable: rawQuote.quote.partiallyFillable as boolean,
