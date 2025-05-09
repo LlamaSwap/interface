@@ -32,7 +32,7 @@ const nativeSwapAddress = {
 	base: cowSwapEthFlowContractAddress
 };
 
-export const name = 'CowSwap';
+export const name = 'CoW Swap';
 export const token = 'COW';
 export const referral = true;
 export const isOutputAvailable = true;
