@@ -23,10 +23,13 @@ const wrappedTokens = {
 	base: '0x4200000000000000000000000000000000000006'
 };
 
+const cowSwapEthFlowContractAddress = '0xba3cb449bd2b4adddbc894d8697f5170800eadec';
+
 const nativeSwapAddress = {
-	ethereum: '0x40A50cf069e992AA4536211B23F286eF88752187',
-	gnosis: '0x40A50cf069e992AA4536211B23F286eF88752187',
-	arbitrum: '0x552fcecc218158fff20e505c8f3ad24f8e1dd33c'
+	ethereum: cowSwapEthFlowContractAddress,
+	gnosis: cowSwapEthFlowContractAddress,
+	arbitrum: cowSwapEthFlowContractAddress,
+	base: cowSwapEthFlowContractAddress
 };
 
 export const name = 'CowSwap';
