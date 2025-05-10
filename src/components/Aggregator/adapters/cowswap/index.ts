@@ -1,37 +1,67 @@
 // Source: https://docs.cow.fi/off-chain-services/api
 
 import { ExtraData } from '../../types';
-import { ABI } from './abi';
+
 import BigNumber from 'bignumber.js';
-import { chainsMap } from '../../constants';
 import { zeroAddress } from 'viem';
 import { signTypedData, watchContractEvent, writeContract } from 'wagmi/actions';
 import { config } from '../../../WalletProvider';
+import { chainsMap } from '../../constants';
+import { ABI } from './abi';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
-	gnosis: 'https://api.cow.fi/xdai'
+	gnosis: 'https://api.cow.fi/xdai',
+	arbitrum: 'https://api.cow.fi/arbitrum_one'
+	base: 'https://api.cow.fi/base'
 };
 
 const wrappedTokens = {
 	ethereum: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-	gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
+	gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+	arbitrum: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+	base: '0x4200000000000000000000000000000000000006'
 };
+
+const cowContractAddress = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
+const cowSwapEthFlowContractAddress = '0xba3cb449bd2b4adddbc894d8697f5170800eadec';
 
 const nativeSwapAddress = {
-	ethereum: '0x40A50cf069e992AA4536211B23F286eF88752187',
-	gnosis: '0x40A50cf069e992AA4536211B23F286eF88752187'
+	ethereum: cowSwapEthFlowContractAddress,
+	gnosis: cowSwapEthFlowContractAddress,
+	arbitrum: cowSwapEthFlowContractAddress,
+	base: cowSwapEthFlowContractAddress
 };
 
-export const name = 'CowSwap';
+export const name = 'CoW Swap';
 export const token = 'COW';
 export const referral = true;
 export const isOutputAvailable = true;
 
 export function approvalAddress() {
-	return '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
+	return cowContractAddress;
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
+const feeRecipientAddress = '0x1713B79e3dbb8A76D80e038CA701A4a781AC69eB';
+
+const appData = JSON.stringify({
+	version: '1.4.0',
+	appCode: 'DefiLlama',
+	environment: 'production',
+	metadata: {
+		orderClass: {
+			orderClass: 'market'
+		},
+		partnerFee: [
+			{
+				priceImprovementBps: 5000, // Capture 50% of the price improvement
+				maxVolumeBps: 100, // Capped at 1% volume
+				recipient: feeRecipientAddress
+			}
+		]
+	}
+});
 
 const waitForOrder =
 	({ uid, trader, chain }) =>
@@ -76,7 +106,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			sellToken: tokenFrom,
 			buyToken: tokenTo,
 			receiver: extra.userAddress,
-			appData: '0xf249b3db926aa5b5a1b18f3fec86b9cc99b9a8a99ad7e8034242d2838ae97422', // generated using https://explorer.cow.fi/appdata?tab=encode
+			appData,
 			partiallyFillable: false,
 			sellTokenBalance: 'erc20',
 			buyTokenBalance: 'erc20',
@@ -115,7 +145,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
-		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
+		tokenApprovalAddress: cowContractAddress,
 		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589',
 		isMEVSafe: true
 	};
@@ -137,7 +167,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 					receiver: fromAddress as `0x${string}`,
 					sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
 					buyAmount: BigInt(rawQuote.quote.buyAmount),
-					appData: rawQuote.quote.appData as `0x${string}`,
+					appData: rawQuote.quote.appDataHash,
 					feeAmount: 0n,
 					validTo: rawQuote.quote.validTo,
 					partiallyFillable: rawQuote.quote.partiallyFillable,
@@ -157,7 +187,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 			sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
 			buyAmount: BigInt(rawQuote.quote.buyAmount),
 			validTo: rawQuote.quote.validTo as number,
-			appData: rawQuote.quote.appData as `0x${string}`,
+			appData: rawQuote.quote.appDataHash,
 			feeAmount: 0n,
 			kind: rawQuote.quote.kind as string,
 			partiallyFillable: rawQuote.quote.partiallyFillable as boolean,
