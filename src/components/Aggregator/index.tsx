@@ -384,13 +384,8 @@ export function AggregatorContainer() {
 	const routesRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 
-	const {  toTokenAddress } = useQueryParams();
-	const {
-		selectedChain,
-		selectedToToken,
-		finalSelectedFromToken,
-		finalSelectedToToken
-	} = useSelectedChainAndTokens();
+	const { toTokenAddress } = useQueryParams();
+	const { selectedChain, selectedToToken, finalSelectedFromToken, finalSelectedToToken } = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
 
@@ -1199,15 +1194,19 @@ export function AggregatorContainer() {
 											selectedRoute.price.isSignatureNeededForSwap &&
 											(selectedRoute.price.rawQuote as any).permit2 ? (
 												<Button
-													isLoading={signatureForSwapMutation.isPending}
-													loadingText={'Confirming'}
-													colorScheme={'messenger'}
 													onClick={() => {
 														handleSignatureForMutation();
 													}}
-													disabled={(signatureForSwapMutation.isPending || signatureForSwapMutation.data) ? true : false}
+													disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data ? true : false}
 												>
-													Sign
+													{signatureForSwapMutation.isPending ? (
+														<>
+															<Spinner />
+															<span>Confirming</span>
+														</>
+													) : (
+														'Sign'
+													)}
 												</Button>
 											) : null}
 
@@ -1336,7 +1335,7 @@ export function AggregatorContainer() {
 
 											{!isApproved && selectedRoute ? (
 												<Tooltip2 content="Already approved? Click to refetch token allowance">
-													<Button style={{height: "100%"}} onClick={() => refetchTokenAllowance?.()}>
+													<Button style={{ height: '100%' }} onClick={() => refetchTokenAllowance?.()}>
 														<RepeatIcon w="16px	" h="16px" />
 													</Button>
 												</Tooltip2>
@@ -1503,15 +1502,19 @@ export function AggregatorContainer() {
 														selectedRoute.price.isSignatureNeededForSwap &&
 														(selectedRoute.price.rawQuote as any).permit2 ? (
 															<Button
-																isLoading={signatureForSwapMutation.isPending}
-																loadingText={'Confirming'}
-																colorScheme={'messenger'}
 																onClick={() => {
 																	handleSignatureForMutation();
 																}}
 																disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data}
 															>
-																Sign
+																{signatureForSwapMutation.isPending ? (
+																	<>
+																		<Spinner />
+																		<span>Confirming</span>
+																	</>
+																) : (
+																	'Sign'
+																)}
 															</Button>
 														) : null}
 
@@ -1625,10 +1628,7 @@ export function AggregatorContainer() {
 
 														{!isApproved && selectedRoute ? (
 															<Tooltip2 content="Already approved? Click to refetch token allowance">
-																<Button
-																	style={{height: "100%"}}
-																	onClick={() => refetchTokenAllowance?.()}
-																>
+																<Button style={{ height: '100%' }} onClick={() => refetchTokenAllowance?.()}>
 																	<RepeatIcon w="16px	" h="16px" />
 																</Button>
 															</Tooltip2>
