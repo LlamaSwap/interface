@@ -45,23 +45,32 @@ const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
 const feeRecipientAddress = '0x1713B79e3dbb8A76D80e038CA701A4a781AC69eB';
 
-const appData = JSON.stringify({
-	version: '1.4.0',
-	appCode: 'DefiLlama',
-	environment: 'production',
-	metadata: {
-		orderClass: {
-			orderClass: 'market'
-		},
-		partnerFee: [
-			{
-				priceImprovementBps: 5000, // Capture 50% of the price improvement
-				maxVolumeBps: 100, // Capped at 1% volume
-				recipient: feeRecipientAddress
-			}
-		]
-	}
-});
+function buildAppData(slippage: string) {
+	// Convert slippage to basis points
+	const bps = Math.round(Number(slippage) * 100);
+	// Must be an integer between 0 and 10000
+	const slippageBips = isNaN(bps) || bps < 0 || bps > 10000 ? undefined : bps;
+
+	return JSON.stringify({
+		version: '1.4.0',
+		appCode: 'DefiLlama',
+		environment: 'production',
+		metadata: {
+			orderClass: {
+				orderClass: 'market'
+			},
+			partnerFee: [
+				{
+					priceImprovementBps: 5000, // Capture 50% of the price improvement
+					maxVolumeBps: 100, // Capped at 1% volume
+					recipient: feeRecipientAddress
+				}
+			],
+			// Include slippage in the appData if there's a valid value provided
+			...(slippageBips ? { quote: { slippageBips } } : undefined)
+		}
+	});
+}
 
 const waitForOrder =
 	({ uid, trader, chain }) =>
@@ -106,7 +115,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			sellToken: tokenFrom,
 			buyToken: tokenTo,
 			receiver: extra.userAddress,
-			appData,
+			// Caveat: slippage is only updated in the appData when a new quote is fetched
+			appData: buildAppData(extra.slippage),
 			partiallyFillable: false,
 			sellTokenBalance: 'erc20',
 			buyTokenBalance: 'erc20',
