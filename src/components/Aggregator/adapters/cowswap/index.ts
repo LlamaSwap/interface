@@ -161,7 +161,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
 		tokenApprovalAddress: cowContractAddress,
-		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589',
+		logo: 'https://raw.githubusercontent.com/cowprotocol/token-lists/refs/heads/main/src/public/images/1/0xdef1ca1fb7fbcdc777520aa7f396b4e015f497ab/logo.png',
 		isMEVSafe: true
 	};
 }
