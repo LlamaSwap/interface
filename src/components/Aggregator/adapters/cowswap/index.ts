@@ -12,7 +12,7 @@ import { ABI } from './abi';
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
 	gnosis: 'https://api.cow.fi/xdai',
-	arbitrum: 'https://api.cow.fi/arbitrum_one'
+	arbitrum: 'https://api.cow.fi/arbitrum_one',
 	base: 'https://api.cow.fi/base'
 };
 
