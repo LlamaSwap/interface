@@ -66,13 +66,11 @@ function buildAppData(slippage: string) {
 			orderClass: {
 				orderClass: 'market'
 			},
-			partnerFee: [
-				{
-					priceImprovementBps: 5000, // Capture 50% of the price improvement
-					maxVolumeBps: 100, // Capped at 1% volume
-					recipient: feeRecipientAddress
-				}
-			],
+			partnerFee: {
+				priceImprovementBps: 5000, // Capture 50% of the price improvement
+				maxVolumeBps: 100, // Capped at 1% volume
+				recipient: feeRecipientAddress
+			},
 			// Include slippage in the appData if there's a valid value provided
 			...(slippageBips ? { quote: { slippageBips } } : undefined)
 		}
