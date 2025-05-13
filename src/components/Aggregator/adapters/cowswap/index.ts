@@ -16,7 +16,7 @@ export const chainToId = {
 	base: 'https://api.cow.fi/base'
 };
 
-const ethFlowSlippagePerChain = {
+export const cowSwapEthFlowSlippagePerChain = {
 	ethereum: 2,
 	gnosis: 0.5,
 	arbitrum: 0.5,
@@ -169,7 +169,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 
 	if (from === zeroAddress) {
-		const minEthFlowSlippage = ethFlowSlippagePerChain[chain];
+		const minEthFlowSlippage = cowSwapEthFlowSlippagePerChain[chain];
 		if (rawQuote.slippage < minEthFlowSlippage) {
 			throw { reason: `Slippage for ETH orders on CoW Swap needs to be higher than ${minEthFlowSlippage}%` };
 		}
