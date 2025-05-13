@@ -190,27 +190,33 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 		}
 
 		// Only if the upload was successful, we can proceed with the order
-		const tx = await writeContract(config, {
-			address: nativeSwapAddress[chain],
-			abi: ABI.nativeSwap,
-			functionName: 'createOrder',
-			args: [
-				{
-					buyToken: to as `0x${string}`,
-					receiver: fromAddress as `0x${string}`,
-					sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
-					buyAmount: BigInt(rawQuote.quote.buyAmount),
-					appData: rawQuote.quote.appDataHash,
-					feeAmount: 0n,
-					validTo: rawQuote.quote.validTo,
-					partiallyFillable: rawQuote.quote.partiallyFillable,
-					quoteId: rawQuote.id
-				}
-			],
-			value: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount)
-		});
+		try {
+			const tx = await writeContract(config, {
+				address: nativeSwapAddress[chain],
+				abi: ABI.nativeSwap,
+				functionName: 'createOrder',
+				args: [
+					{
+						buyToken: to as `0x${string}`,
+						receiver: fromAddress as `0x${string}`,
+						sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
+						buyAmount: BigInt(rawQuote.quote.buyAmount),
+						appData: rawQuote.quote.appDataHash,
+						feeAmount: 0n,
+						validTo: rawQuote.quote.validTo,
+						partiallyFillable: rawQuote.quote.partiallyFillable,
+						quoteId: rawQuote.id
+					}
+				],
+				value: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount)
+			});
 
-		return tx;
+			return tx;
+		} catch (error) {
+			// Handle failures, such as user rejecting the transaction
+			console.warn('Error creating CoW Swap ethFlow order', error);
+			throw { reason: 'Failed to place order, please try again' };
+		}
 	} else {
 		// https://docs.cow.fi/cow-protocol/reference/core/signing-schemes#javascript-example
 		const order = {
