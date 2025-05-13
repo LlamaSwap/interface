@@ -65,7 +65,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			],
 			userAddr: extra.userAddress, // checksummed user address
 			slippageLimitPercent: extra.slippage, // set your slippage limit percentage (1 = 1%),
-			referralCode,
+			referralCode: extra.referralCode || referralCode,
 			// optional:
 			disableRFQs: true,
 			compact: true

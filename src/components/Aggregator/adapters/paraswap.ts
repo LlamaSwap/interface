@@ -45,7 +45,7 @@ export async function getQuote(
 	from: string,
 	to: string,
 	amount: string,
-	{ fromToken, toToken, userAddress, slippage, amountOut }
+	{ fromToken, toToken, userAddress, slippage, amountOut, feeRecipient, feeBps }
 ) {
 	// ethereum = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
 	// amount should include decimals
@@ -74,7 +74,13 @@ export async function getQuote(
 						takeSurplus: true,
 						priceRoute: data.priceRoute,
 						isCapSurplus: true,
-						...(side === 'BUY' ? { destAmount: data.priceRoute.destAmount } : { srcAmount: data.priceRoute.srcAmount })
+						...(side === 'BUY' ? { destAmount: data.priceRoute.destAmount } : { srcAmount: data.priceRoute.srcAmount }),
+						...(feeRecipient && feeBps
+							? {
+									partnerAdress: feeRecipient,
+									partnerFeeBps: feeBps
+								}
+							: {})
 					}),
 					headers: {
 						'Content-Type': 'application/json'

@@ -56,15 +56,17 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const authHeader = process.env.INCH_API_KEY ? { 'Authorization': `Bearer ${process.env.INCH_API_KEY as string}` } : {};
 	const tokenApprovalAddress = spenders[chain];
-
+	//fee in % not bps, min 0 max 3
+	const fees = extra.feeBps ? Math.min(extra.feeBps / 100, 3) : 0;
+	const feesPathParams = extra.feeRecipient && extra.feeBps ? `&referrer=${extra.feeRecipient}&fee=${fees}` : `&referrer=${altReferralAddress}`;
 	const [data, swapData] = await Promise.all([
 		fetch(
-			`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
+			`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&fee=${fees}&includeGas=true${feesPathParams}`,
 			{ headers: authHeader as any }
 		).then((r) => r.json()),
 		extra.userAddress !== zeroAddress
 			? fetch(
-				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&origin=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
+				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&origin=${extra.userAddress}&slippage=${extra.slippage}${feesPathParams}&disableEstimate=true`,
 				{ headers: authHeader as any }
 			).then((r) => r.json())
 			: null

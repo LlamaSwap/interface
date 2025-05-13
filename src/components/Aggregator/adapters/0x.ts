@@ -33,13 +33,15 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	const tokenTo = to === zeroAddress ? nativeToken : to;
 	const amountParam =
 		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
-
+	// fees = percentage (denoted as a decimal between 0 - 1.0 where 1.0 represents 100%) 
+	const fees = extra.feeBps ? Math.max(extra.feeBps / (100 * 100), 1) : 0;
+	const feesPathParams = extra.feeRecipient && extra.feeBps ? `&feeRecipient=${extra.feeRecipient}&buyTokenPercentageFee=${fees}&feeRecipientTradeSurplus=${extra.feeRecipient}` : `&feeRecipientTradeSurplus=${feeCollectorAddress}`;
 	const data = await fetch(
 		`${chainToId[chain]}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
 			extra.slippage / 100
 		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
 			extra.userAddress
-		}&skipValidation=true&feeRecipientTradeSurplus=${feeCollectorAddress}`,
+		}&skipValidation=true${feesPathParams}`,
 		{
 			headers: {
 				'0x-api-key': process.env.OX_API_KEY as string
