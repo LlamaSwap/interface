@@ -167,6 +167,22 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 			throw { reason: 'Slippage for ETH orders on CowSwap needs to be higher than 2%' };
 		}
 
+		// Upload appData as it's not included in the order for ethflow orders
+		const uploadedAppDataHash = await fetch(`${chainToId[chain]}/api/v1/app_data/${rawQuote.quote.appDataHash}`, {
+			method: 'PUT',
+			body: JSON.stringify({ fullAppData: rawQuote.quote.appData }),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then((r) => r.json());
+
+		if (uploadedAppDataHash !== rawQuote.quote.appDataHash) {
+			// AppDataHash differs, it means the body is different. Do not proceed
+			// Unlikely to happen, but leaving the check in place just in case
+			throw { reason: 'Failed to place order, please try again' };
+		}
+
+		// Only if the upload was successful, we can proceed with the order
 		const tx = await writeContract(config, {
 			address: nativeSwapAddress[chain],
 			abi: ABI.nativeSwap,
