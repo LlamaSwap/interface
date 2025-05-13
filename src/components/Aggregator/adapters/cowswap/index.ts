@@ -16,6 +16,13 @@ export const chainToId = {
 	base: 'https://api.cow.fi/base'
 };
 
+const ethFlowSlippagePerChain = {
+	ethereum: 2,
+	gnosis: 0.5,
+	arbitrum: 0.5,
+	base: 0.5
+};
+
 const wrappedTokens = {
 	ethereum: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
 	gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
@@ -162,9 +169,11 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ chain, fromAddress, rawQuote, from, to }) {
+
 	if (from === zeroAddress) {
-		if (rawQuote.slippage < 2) {
-			throw { reason: 'Slippage for ETH orders on CowSwap needs to be higher than 2%' };
+		const minEthFlowSlippage = ethFlowSlippagePerChain[chain];
+		if (rawQuote.slippage < minEthFlowSlippage) {
+			throw { reason: `Slippage for ETH orders on CoW Swap needs to be higher than ${minEthFlowSlippage}%` };
 		}
 
 		// Upload appData as it's not included in the order for ethflow orders
