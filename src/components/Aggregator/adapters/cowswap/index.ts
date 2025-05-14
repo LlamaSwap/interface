@@ -1,26 +1,43 @@
 // Source: https://docs.cow.fi/off-chain-services/api
 
 import { ExtraData } from '../../types';
-import { ABI } from './abi';
+
 import BigNumber from 'bignumber.js';
-import { chainsMap } from '../../constants';
 import { zeroAddress } from 'viem';
 import { signTypedData, watchContractEvent, writeContract } from 'wagmi/actions';
 import { config } from '../../../WalletProvider';
+import { chainsMap } from '../../constants';
+import { ABI } from './abi';
 
 export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
-	gnosis: 'https://api.cow.fi/xdai'
+	gnosis: 'https://api.cow.fi/xdai',
+	arbitrum: 'https://api.cow.fi/arbitrum_one',
+	base: 'https://api.cow.fi/base'
+};
+
+export const cowSwapEthFlowSlippagePerChain = {
+	ethereum: 2,
+	gnosis: 0.5,
+	arbitrum: 0.5,
+	base: 0.5
 };
 
 const wrappedTokens = {
 	ethereum: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-	gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
+	gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+	arbitrum: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+	base: '0x4200000000000000000000000000000000000006'
 };
 
+const cowContractAddress = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
+const cowSwapEthFlowContractAddress = '0xba3cb449bd2b4adddbc894d8697f5170800eadec';
+
 const nativeSwapAddress = {
-	ethereum: '0x40A50cf069e992AA4536211B23F286eF88752187',
-	gnosis: '0x40A50cf069e992AA4536211B23F286eF88752187'
+	ethereum: cowSwapEthFlowContractAddress,
+	gnosis: cowSwapEthFlowContractAddress,
+	arbitrum: cowSwapEthFlowContractAddress,
+	base: cowSwapEthFlowContractAddress
 };
 
 export const name = 'CowSwap';
@@ -29,9 +46,36 @@ export const referral = true;
 export const isOutputAvailable = true;
 
 export function approvalAddress() {
-	return '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
+	return cowContractAddress;
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
+const feeRecipientAddress = '0x1713B79e3dbb8A76D80e038CA701A4a781AC69eB';
+
+function buildAppData(slippage: string) {
+	// Convert slippage to basis points
+	const bps = Math.round(Number(slippage) * 100);
+	// Must be an integer between 0 and 10000
+	const slippageBips = isNaN(bps) || bps < 0 || bps > 10000 ? undefined : bps;
+
+	return JSON.stringify({
+		version: '1.4.0',
+		appCode: 'DefiLlama',
+		environment: 'production',
+		metadata: {
+			orderClass: {
+				orderClass: 'market'
+			},
+			partnerFee: {
+				priceImprovementBps: 9900, // Capture 99% of the price improvement
+				maxVolumeBps: 100, // Capped at 1% volume
+				recipient: feeRecipientAddress
+			},
+			// Include slippage in the appData if there's a valid value provided
+			...(slippageBips ? { quote: { slippageBips } } : undefined)
+		}
+	});
+}
 
 const waitForOrder =
 	({ uid, trader, chain }) =>
@@ -76,7 +120,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			sellToken: tokenFrom,
 			buyToken: tokenTo,
 			receiver: extra.userAddress,
-			appData: '0xf249b3db926aa5b5a1b18f3fec86b9cc99b9a8a99ad7e8034242d2838ae97422', // generated using https://explorer.cow.fi/appdata?tab=encode
+			// Caveat: slippage is only updated in the appData when a new quote is fetched
+			appData: buildAppData(extra.slippage),
 			partiallyFillable: false,
 			sellTokenBalance: 'erc20',
 			buyTokenBalance: 'erc20',
@@ -115,39 +160,63 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		estimatedGas: isEthflowOrder ? 56360 : 0, // 56360 is gas from sending createOrder() tx
 		validTo: data.quote?.validTo || 0,
 		rawQuote: { ...data, slippage: extra.slippage },
-		tokenApprovalAddress: '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110',
-		logo: 'https://assets.coingecko.com/coins/images/24384/small/cow.png?1660960589',
+		tokenApprovalAddress: cowContractAddress,
+		logo: 'https://raw.githubusercontent.com/cowprotocol/token-lists/refs/heads/main/src/public/images/1/0xdef1ca1fb7fbcdc777520aa7f396b4e015f497ab/logo.png',
 		isMEVSafe: true
 	};
 }
 
 export async function swap({ chain, fromAddress, rawQuote, from, to }) {
+
 	if (from === zeroAddress) {
-		if (rawQuote.slippage < 2) {
-			throw { reason: 'Slippage for ETH orders on CowSwap needs to be higher than 2%' };
+		const minEthFlowSlippage = cowSwapEthFlowSlippagePerChain[chain];
+		if (rawQuote.slippage < minEthFlowSlippage) {
+			throw { reason: `Slippage for ETH orders on CoW Swap needs to be higher than ${minEthFlowSlippage}%` };
 		}
 
-		const tx = await writeContract(config, {
-			address: nativeSwapAddress[chain],
-			abi: ABI.nativeSwap,
-			functionName: 'createOrder',
-			args: [
-				{
-					buyToken: to as `0x${string}`,
-					receiver: fromAddress as `0x${string}`,
-					sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
-					buyAmount: BigInt(rawQuote.quote.buyAmount),
-					appData: rawQuote.quote.appData as `0x${string}`,
-					feeAmount: 0n,
-					validTo: rawQuote.quote.validTo,
-					partiallyFillable: rawQuote.quote.partiallyFillable,
-					quoteId: rawQuote.id
-				}
-			],
-			value: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount)
-		});
+		// Upload appData as it's not included in the order for ethflow orders
+		const uploadedAppDataHash = await fetch(`${chainToId[chain]}/api/v1/app_data/${rawQuote.quote.appDataHash}`, {
+			method: 'PUT',
+			body: JSON.stringify({ fullAppData: rawQuote.quote.appData }),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then((r) => r.json());
 
-		return tx;
+		if (uploadedAppDataHash !== rawQuote.quote.appDataHash) {
+			// AppDataHash differs, it means the body is different. Do not proceed
+			// Unlikely to happen, but leaving the check in place just in case
+			throw { reason: 'Failed to place order, please try again' };
+		}
+
+		// Only if the upload was successful, we can proceed with the order
+		try {
+			const tx = await writeContract(config, {
+				address: nativeSwapAddress[chain],
+				abi: ABI.nativeSwap,
+				functionName: 'createOrder',
+				args: [
+					{
+						buyToken: to as `0x${string}`,
+						receiver: fromAddress as `0x${string}`,
+						sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
+						buyAmount: BigInt(rawQuote.quote.buyAmount),
+						appData: rawQuote.quote.appDataHash,
+						feeAmount: 0n,
+						validTo: rawQuote.quote.validTo,
+						partiallyFillable: rawQuote.quote.partiallyFillable,
+						quoteId: rawQuote.id
+					}
+				],
+				value: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount)
+			});
+
+			return tx;
+		} catch (error) {
+			// Handle failures, such as user rejecting the transaction
+			console.warn('Error creating CoW Swap ethFlow order', error);
+			throw { reason: 'Failed to place order, please try again' };
+		}
 	} else {
 		// https://docs.cow.fi/cow-protocol/reference/core/signing-schemes#javascript-example
 		const order = {
@@ -157,7 +226,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 			sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
 			buyAmount: BigInt(rawQuote.quote.buyAmount),
 			validTo: rawQuote.quote.validTo as number,
-			appData: rawQuote.quote.appData as `0x${string}`,
+			appData: rawQuote.quote.appDataHash,
 			feeAmount: 0n,
 			kind: rawQuote.quote.kind as string,
 			partiallyFillable: rawQuote.quote.partiallyFillable as boolean,
