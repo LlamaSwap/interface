@@ -67,7 +67,7 @@ function buildAppData(slippage: string) {
 				orderClass: 'market'
 			},
 			partnerFee: {
-				priceImprovementBps: 5000, // Capture 50% of the price improvement
+				priceImprovementBps: 9900, // Capture 99% of the price improvement
 				maxVolumeBps: 100, // Capped at 1% volume
 				recipient: feeRecipientAddress
 			},
