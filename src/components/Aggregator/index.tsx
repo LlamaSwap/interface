@@ -65,6 +65,7 @@ import { RefreshIcon } from '../RefreshIcon';
 import { zeroAddress } from 'viem';
 import { waitForTransactionReceipt } from 'wagmi/actions';
 import { config } from '../WalletProvider';
+import { cowSwapEthFlowSlippagePerChain } from './adapters/cowswap';
 
 /*
 Integrated:
@@ -966,12 +967,12 @@ export function AggregatorContainer() {
 				{finalSelectedFromToken?.value === zeroAddress && Number(slippage) < 2 ? (
 					<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow1">
 						<AlertIcon />
-						Swaps from {finalSelectedFromToken.symbol} on CowSwap need to have slippage higher than 2%.
+						Swaps from {finalSelectedFromToken.symbol} on CoW Swap need to have slippage higher than {selectedChain?.value ? cowSwapEthFlowSlippagePerChain[selectedChain?.value] : 2}%.
 					</Alert>
 				) : null}
 				<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow2">
 					<AlertIcon />
-					CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
+					CoW Swap orders are fill-or-kill, so they may not execute if price moves quickly against you.
 					{finalSelectedFromToken?.value === zeroAddress ? (
 						<>
 							<br /> For ETH orders, if it doesn't get executed the ETH will be returned to your wallet in 30 minutes.
