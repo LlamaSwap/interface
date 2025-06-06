@@ -1,4 +1,4 @@
-import { estimateGas, sendTransaction , sendCalls } from 'wagmi/actions';
+import { estimateGas, sendTransaction, sendCalls } from 'wagmi/actions';
 import { config } from '../../WalletProvider';
 
 export async function sendTx(txObject: any) {
@@ -16,18 +16,25 @@ export async function sendTx(txObject: any) {
 	return sendTransaction(config, txObject);
 }
 
-
 export async function sendMultipleTxs(calls: any[]) {
-	const swaptxObj = calls[calls.length - 1]
-	if (swaptxObj.data === '0x' || typeof swaptxObj.to !== 'string') {
-		throw new Error('Malformed tx'); // Should never happen
-	}
-	if (swaptxObj.gas === undefined) {
-		const gasPrediction = await estimateGas(config, swaptxObj).catch(() => null);
+	try {
+		const swaptxObj = calls[calls.length - 1];
 
-		if (gasPrediction) {
-			swaptxObj.gas = (gasPrediction * 14n) / 10n; // Increase gas +40%
+		if (swaptxObj.data === '0x' || typeof swaptxObj.to !== 'string') {
+			throw new Error('Malformed tx'); // Should never happen
 		}
+
+		if (swaptxObj.gas === undefined) {
+			const gasPrediction = await estimateGas(config, swaptxObj).catch(() => null);
+
+			if (gasPrediction) {
+				swaptxObj.gas = (gasPrediction * 14n) / 10n; // Increase gas +40%
+			}
+		}
+
+		return sendCalls(config, { calls: [swaptxObj] });
+	} catch (error) {
+		console.log(error);
+		throw new Error(error instanceof Error ? error.message : 'Unknown error');
 	}
-	return sendCalls(config, { calls: [swaptxObj] })
 }

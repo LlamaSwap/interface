@@ -333,4 +333,4 @@ export const topTokensByChain = {
 	]
 };
 
-export const EIP_5792_CHAINS = [1, 56];
+export const EIP_5792_CHAINS = [1, 56, 8453, 10, 100];

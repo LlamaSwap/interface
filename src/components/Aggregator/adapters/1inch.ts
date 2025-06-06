@@ -88,17 +88,17 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ tokens, amount, rawQuote, eip5792 }) {
-	const txObject = {
+	const txObj = {
 		from: rawQuote.tx.from,
 		to: rawQuote.tx.to,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value
 	};
 
-	const gasPrediction = await estimateGas(config, txObject).catch(() => null);
+	const gasPrediction = await estimateGas(config, txObj).catch(() => null);
 
 	const finalTxObj = {
-		...txObject,
+		...txObj,
 		// Increase gas +20% + 2 erc20 txs
 		...(gasPrediction ? { gas: (gasPrediction * 12n) / 10n + 86000n } : {})
 	};
@@ -107,23 +107,23 @@ export async function swap({ tokens, amount, rawQuote, eip5792 }) {
 		const txs: any = [];
 		if (eip5792.shouldRemoveApproval) {
 			txs.push({
-				from: rawQuote.tx.from,
+				from: txObj.from,
 				to: tokens.fromToken.address,
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [rawQuote.to, 0n]
+					args: [txObj.to, 0n]
 				})
 			});
 		}
 		if (!eip5792.isTokenApproved) {
 			txs.push({
-				from: rawQuote.tx.from,
+				from: txObj.from,
 				to: tokens.fromToken.address,
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+					args: [txObj.to, parseUnits(String(amount), tokens.fromToken.decimals)]
 				})
 			});
 		}

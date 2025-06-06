@@ -105,7 +105,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ tokens, amount, fromAddress, from, rawQuote, eip5792 }) {
-	const txObj: Record<string, string> = {
+	const txObj: any = {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
 		data: rawQuote.data,
@@ -117,23 +117,23 @@ export async function swap({ tokens, amount, fromAddress, from, rawQuote, eip579
 		const txs: any = [];
 		if (eip5792.shouldRemoveApproval) {
 			txs.push({
-				from: fromAddress,
+				from: txObj.from,
 				to: tokens.fromToken.address,
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [rawQuote.to, 0n]
+					args: [txObj.to, 0n]
 				})
 			});
 		}
 		if (!eip5792.isTokenApproved) {
 			txs.push({
-				from: fromAddress,
+				from: txObj.from,
 				to: tokens.fromToken.address,
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+					args: [txObj.to, parseUnits(String(amount), tokens.fromToken.decimals)]
 				})
 			});
 		}

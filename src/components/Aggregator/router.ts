@@ -62,6 +62,7 @@ export async function swap({
 		});
 		return res;
 	} catch (e) {
+		console.log(e)
 		throw e;
 	}
 }

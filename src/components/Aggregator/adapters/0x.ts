@@ -69,23 +69,23 @@ export async function swap({ tokens, amount, fromAddress, rawQuote, eip5792 }) {
 		const txs: any = [];
 		if (eip5792.shouldRemoveApproval) {
 			txs.push({
-				from: fromAddress,
+				from: txObj.from,
 				to: tokens.fromToken.address,
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [rawQuote.to, 0n]
+					args: [txObj.to, 0n]
 				})
 			});
 		}
 		if (!eip5792.isTokenApproved) {
 			txs.push({
-				from: fromAddress,
+				from: txObj.from,
 				to: tokens.fromToken.address,
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [rawQuote.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+					args: [txObj.to, parseUnits(String(amount), tokens.fromToken.decimals)]
 				})
 			})
 		}

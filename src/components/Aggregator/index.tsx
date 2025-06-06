@@ -1,6 +1,6 @@
 import { useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useSwitchChain } from 'wagmi';
+import { useAccount, useCapabilities, useSwitchChain } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
@@ -659,8 +659,10 @@ export function AggregatorContainer() {
 		mutationFn: (params: { adapter: string; rawQuote: any; isInfiniteApproval: boolean }) => gaslessApprove(params)
 	});
 
+	const { data: capabilities, error } = useCapabilities();
+
 	const isEip5792 =
-		selectedChain && connector?.id === 'io.metamask' ? EIP_5792_CHAINS.includes(selectedChain.id) : false;
+		selectedChain ? EIP_5792_CHAINS.includes(selectedChain.id) : false;
 
 	const isApproved =
 		selectedRoute?.price && selectedRoute?.isGasless
