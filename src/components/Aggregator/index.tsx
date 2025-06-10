@@ -878,6 +878,9 @@ export function AggregatorContainer() {
 						route: variables.route
 					});
 				});
+
+				setAmount(['', '']);
+
 				return;
 			}
 
