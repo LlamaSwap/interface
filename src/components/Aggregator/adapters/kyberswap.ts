@@ -1,6 +1,7 @@
+import { tokenApprovalAbi } from '../constants';
 import { ExtraData } from '../types';
-import { sendTx } from '../utils/sendTx';
-import { zeroAddress } from 'viem';
+import { sendMultipleTxs, sendTx } from '../utils/sendTx';
+import { encodeFunctionData, zeroAddress } from 'viem';
 
 // https://docs.kyberswap.com/kyberswap-solutions/kyberswap-aggregator/aggregator-api-specification/evm-swaps
 export const chainToId = {
@@ -103,19 +104,49 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ fromAddress, from, rawQuote }) {
-	const transactionOption: Record<string, string> = {
+export async function swap({ tokens, fromAddress, from, rawQuote, eip5792, fromAmount }) {
+	const txObj: any = {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
-		data: rawQuote.data,
+		data: rawQuote.data
 	};
 
-	if (from === zeroAddress) transactionOption.value = rawQuote.amountIn;
+	if (from === zeroAddress) txObj.value = rawQuote.amountIn;
 
-	const tx = await sendTx(transactionOption);
+	if (eip5792 && (eip5792.shouldRemoveApproval || !eip5792.isTokenApproved)) {
+		const txs: any = [];
+		if (eip5792.shouldRemoveApproval) {
+			txs.push({
+				from: txObj.from,
+				to: tokens.fromToken.address,
+				data: encodeFunctionData({
+					abi: tokenApprovalAbi,
+					functionName: 'approve',
+					args: [txObj.to, 0n]
+				})
+			});
+		}
+		if (!eip5792.isTokenApproved) {
+			txs.push({
+				from: txObj.from,
+				to: tokens.fromToken.address,
+				data: encodeFunctionData({
+					abi: tokenApprovalAbi,
+					functionName: 'approve',
+					args: [txObj.to, fromAmount]
+				})
+			});
+		}
+		txs.push(txObj);
+		const tx = await sendMultipleTxs(txs);
+		return tx;
+	}
+
+	const tx = await sendTx(txObj);
 
 	return tx;
 }
+
 export const getTxData = ({ rawQuote }) => rawQuote?.data;
 
 export const getTx = ({ rawQuote }) => ({

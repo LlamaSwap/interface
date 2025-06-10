@@ -39,10 +39,14 @@ interface SwapEvent {
 }
 
 export const sendSwapEvent = async (event: SwapEvent) => {
-	const data = await fetch(`https://llamaswap-stats.llama.fi/saveEvent`, {
-		method: 'POST',
-		body: JSON.stringify(event)
-	}).then((res) => res.json());
+	try {
+		const data = await fetch(`https://llamaswap-stats.llama.fi/saveEvent`, {
+			method: 'POST',
+			body: JSON.stringify(event)
+		}).then((res) => res.json());
 
-	return data;
+		return data;
+	} catch (error) {
+		console.log(error);
+	}
 };
