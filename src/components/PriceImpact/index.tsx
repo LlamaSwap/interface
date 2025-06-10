@@ -13,6 +13,7 @@ import {
 import BigNumber from 'bignumber.js';
 import { useState } from 'react';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from '../Aggregator/constants';
+import { formattedNum } from '~/utils';
 
 const PRICE_IMPACT_SMOL_WARNING_THRESHOLD = 1;
 
@@ -86,6 +87,7 @@ export function PriceImpact({
 	const shouldRevertPriceOrder =
 		fromToken && toTokenPrice && fromTokenPrice && fromTokenPrice / toTokenPrice < 0.0001 ? 1 : 0;
 
+
 	return (
 		<>
 			<Accordion allowToggle style={{ margin: '0 4px' }} index={['lg', 'md'].includes(breakpoint) ? [0] : undefined}>
@@ -94,13 +96,13 @@ export function PriceImpact({
 						{priceOrder + shouldRevertPriceOrder === 1 ? (
 							<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${
 								fromToken.symbol
-							} = ${amountReceived.toFixed(4)} ${toToken.symbol} ($${(
+							} = ${formattedNum(amountReceived.toNumber())} ${toToken.symbol} ($${(
 								Number(amountReceived) * Number(toTokenPrice)
 							).toFixed(2)})`}</Box>
 						) : (
 							<Box as="span" flex="1" textAlign="left" fontSize="0.875rem">{`1 ${
 								toToken.symbol
-							} = ${toTokenValue.toFixed(4)} ${fromToken.symbol} ($${(
+							} = ${formattedNum(toTokenValue.toNumber())} ${fromToken.symbol} ($${(
 								Number(toTokenValue) * Number(fromTokenPrice)
 							).toFixed(2)})`}</Box>
 						)}
@@ -119,7 +121,9 @@ export function PriceImpact({
 					>
 						<Text display="flex" justifyContent="space-between" gap="8px" alignItems="center">
 							<span>Expected Output</span>
-							<span>{totalAmountReceived ? `${totalAmountReceived.toFixed(4)} ${toToken.symbol}` : '-'}</span>
+							<span>
+								{totalAmountReceived ? `${formattedNum(totalAmountReceived.toNumber())} ${toToken.symbol}` : '-'}
+							</span>
 						</Text>
 						<Text
 							display="flex"
@@ -167,7 +171,7 @@ export function PriceImpact({
 							<span>
 								{minimumReceived === null
 									? '-'
-									: `${Number(minimumReceived) <= 0 ? 0 : minimumReceived.toFixed(4)} ${toToken.symbol}`}
+									: `${Number(minimumReceived) <= 0 ? 0 : formattedNum(minimumReceived.toNumber())} ${toToken.symbol}`}
 							</span>
 						</Text>
 					</AccordionPanel>

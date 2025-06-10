@@ -1,6 +1,6 @@
 import { useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useCapabilities, useSwitchChain } from 'wagmi';
+import { useAccount, useSignTypedData, useCapabilities, useSwitchChain } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
@@ -27,7 +27,7 @@ import {
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
 import SwapRoute, { LoadingRoute } from '~/components/SwapRoute';
-import { adaptersNames, getAllChains, swap, gaslessApprove } from './router';
+import { adaptersNames, getAllChains, swap, gaslessApprove, signatureForSwap } from './router';
 import { inifiniteApprovalAllowed } from './list';
 import Loader from './Loader';
 import { useTokenApprove } from './hooks';
@@ -65,6 +65,7 @@ import { RefreshIcon } from '../RefreshIcon';
 import { zeroAddress } from 'viem';
 import { waitForTransactionReceipt } from 'wagmi/actions';
 import { config } from '../WalletProvider';
+import { cowSwapEthFlowSlippagePerChain } from './adapters/cowswap';
 
 /*
 Integrated:
@@ -334,6 +335,7 @@ export function AggregatorContainer() {
 	const { openConnectModal } = useConnectModal();
 	const { switchChain } = useSwitchChain();
 	const addRecentTransaction = useAddRecentTransaction();
+	const { signTypedDataAsync } = useSignTypedData();
 
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState<string | null>(null);
@@ -655,10 +657,6 @@ export function AggregatorContainer() {
 		chain: selectedChain?.value
 	});
 
-	const gaslessApprovalMutation = useMutation({
-		mutationFn: (params: { adapter: string; rawQuote: any; isInfiniteApproval: boolean }) => gaslessApprove(params)
-	});
-
 	const { data: capabilities } = useCapabilities();
 
 	const isEip5792 =
@@ -666,8 +664,12 @@ export function AggregatorContainer() {
 			? capabilities[selectedChain.id].atomic!.status === 'supported'
 			: false;
 
-	const isApproved =
-		selectedRoute?.price && selectedRoute?.isGasless
+	const gaslessApprovalMutation = useMutation({
+		mutationFn: (params: { adapter: string; rawQuote: any; isInfiniteApproval: boolean }) => gaslessApprove(params)
+	});
+
+	const isApproved = selectedRoute?.price
+		? selectedRoute.isGasless
 			? (selectedRoute.price.rawQuote as any).approval.isRequired
 				? (selectedRoute.price.rawQuote as any).approval.isGaslessAvailable
 					? gaslessApprovalMutation.data
@@ -675,15 +677,30 @@ export function AggregatorContainer() {
 						: false
 					: isTokenApproved
 				: true
-			: isEip5792
+			: selectedRoute.price.tokenApprovalAddress === null
 				? true
-				: isTokenApproved;
+				: isEip5792
+					? true
+					: isTokenApproved
+		: false;
 
-	const isUSDTNotApprovedOnEthereum = isEip5792
-		? false
-		: selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval
-			? true
-			: false;
+	const isUSDTNotApprovedOnEthereum =
+		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval ? true : false;
+
+	const signatureForSwapMutation = useMutation({
+		mutationFn: (params: { adapter: string; signTypedDataAsync: typeof signTypedDataAsync; rawQuote: any }) =>
+			signatureForSwap(params)
+	});
+
+	const handleSignatureForMutation = () => {
+		if (selectedRoute) {
+			signatureForSwapMutation.mutate({
+				signTypedDataAsync,
+				adapter: selectedRoute.name,
+				rawQuote: selectedRoute.price.rawQuote
+			});
+		}
+	};
 
 	const swapMutation = useMutation({
 		mutationFn: (params: {
@@ -702,6 +719,7 @@ export function AggregatorContainer() {
 			route: any;
 			approvalData: any;
 			eip5792: { shouldRemoveApproval: boolean; isTokenApproved: boolean } | null;
+			signature: any;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -759,6 +777,7 @@ export function AggregatorContainer() {
 					hash: data,
 					description: `Swap transaction using ${variables.adapter} is sent.`
 				});
+
 				if (chainOnWallet?.blockExplorers) {
 					const explorerUrl = chainOnWallet.blockExplorers.default.url;
 					setTxModalOpen(true);
@@ -855,6 +874,8 @@ export function AggregatorContainer() {
 					});
 				});
 			}
+
+			signatureForSwapMutation.reset();
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
@@ -899,6 +920,23 @@ export function AggregatorContainer() {
 				return;
 			}
 
+			if (
+				selectedRoute.price.isSignatureNeededForSwap
+					? (selectedRoute.price.rawQuote as any).permit2
+						? signatureForSwapMutation.data
+							? false
+							: true
+						: false
+					: false
+			) {
+				toast({
+					title: 'Signature needed for swap',
+					description: 'Swap is blocked, please try another route.',
+					status: 'error'
+				});
+				return;
+			}
+
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
@@ -914,7 +952,8 @@ export function AggregatorContainer() {
 				amountIn: selectedRoute.amountIn,
 				fromAmount: selectedRoute.fromAmount,
 				approvalData: gaslessApprovalMutation?.data ?? {},
-				eip5792: isEip5792 ? { shouldRemoveApproval: shouldRemoveApproval ? true : false, isTokenApproved } : null
+				eip5792: isEip5792 ? { shouldRemoveApproval: shouldRemoveApproval ? true : false, isTokenApproved } : null,
+				signature: signatureForSwapMutation?.data
 			});
 		}
 	};
@@ -939,12 +978,13 @@ export function AggregatorContainer() {
 				{finalSelectedFromToken?.value === zeroAddress && Number(slippage) < 2 ? (
 					<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow1">
 						<AlertIcon />
-						Swaps from {finalSelectedFromToken.symbol} on CowSwap need to have slippage higher than 2%.
+						Swaps from {finalSelectedFromToken.symbol} on CoW Swap need to have slippage higher than{' '}
+						{selectedChain?.value ? cowSwapEthFlowSlippagePerChain[selectedChain?.value] : 2}%.
 					</Alert>
 				) : null}
 				<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow2">
 					<AlertIcon />
-					CowSwap orders are fill-or-kill, so they may not execute if price moves quickly against you.
+					CoW Swap orders are fill-or-kill, so they may not execute if price moves quickly against you.
 					{finalSelectedFromToken?.value === zeroAddress ? (
 						<>
 							<br /> For ETH orders, if it doesn't get executed the ETH will be returned to your wallet in 30 minutes.
@@ -1156,6 +1196,24 @@ export function AggregatorContainer() {
 												</Flex>
 											)}
 
+											{selectedRoute &&
+											isApproved &&
+											!isGaslessApproval &&
+											selectedRoute.price.isSignatureNeededForSwap &&
+											(selectedRoute.price.rawQuote as any).permit2 ? (
+												<Button
+													isLoading={signatureForSwapMutation.isPending}
+													loadingText={'Confirming'}
+													colorScheme={'messenger'}
+													onClick={() => {
+														handleSignatureForMutation();
+													}}
+													disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data ? true : false}
+												>
+													Sign
+												</Button>
+											) : null}
+
 											{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
 												<SwapConfirmation
 													isUnknownPrice={isUnknownPrice}
@@ -1209,7 +1267,17 @@ export function AggregatorContainer() {
 														!selectedRoute ||
 														slippageIsWorng ||
 														!isAmountSynced ||
-														isApproveInfiniteLoading
+														isApproveInfiniteLoading ||
+														signatureForSwapMutation.isPending ||
+														(selectedRoute.price.isSignatureNeededForSwap
+															? (selectedRoute.price.rawQuote as any).permit2
+																? isApproved
+																	? signatureForSwapMutation.data
+																		? false
+																		: true
+																	: false
+																: false
+															: false)
 													}
 												>
 													{!selectedRoute
@@ -1433,6 +1501,24 @@ export function AggregatorContainer() {
 															</Flex>
 														)}
 
+														{selectedRoute &&
+														isApproved &&
+														!isGaslessApproval &&
+														selectedRoute.price.isSignatureNeededForSwap &&
+														(selectedRoute.price.rawQuote as any).permit2 ? (
+															<Button
+																isLoading={signatureForSwapMutation.isPending}
+																loadingText={'Confirming'}
+																colorScheme={'messenger'}
+																onClick={() => {
+																	handleSignatureForMutation();
+																}}
+																disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data}
+															>
+																Sign
+															</Button>
+														) : null}
+
 														{(hasPriceImapct || isUnknownPrice) && !isLoading && selectedRoute && isApproved ? (
 															<SwapConfirmation
 																isUnknownPrice={isUnknownPrice}
@@ -1481,7 +1567,17 @@ export function AggregatorContainer() {
 																	isApproveResetLoading ||
 																	!selectedRoute ||
 																	slippageIsWorng ||
-																	!isAmountSynced
+																	!isAmountSynced ||
+																	signatureForSwapMutation.isPending ||
+																	(selectedRoute.price.isSignatureNeededForSwap
+																		? (selectedRoute.price.rawQuote as any).permit2
+																			? isApproved
+																				? signatureForSwapMutation.data
+																					? false
+																					: true
+																				: false
+																			: false
+																		: false)
 																}
 															>
 																{!selectedRoute
