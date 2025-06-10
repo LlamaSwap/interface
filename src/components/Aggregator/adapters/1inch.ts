@@ -4,7 +4,7 @@ import { altReferralAddress, tokenApprovalAbi } from '../constants';
 import { sendMultipleTxs, sendTx } from '../utils/sendTx';
 import { estimateGas } from 'wagmi/actions';
 import { config } from '../../WalletProvider';
-import { encodeFunctionData, parseUnits, zeroAddress } from 'viem';
+import { encodeFunctionData, zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 1,
@@ -54,24 +54,23 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 	const tokenFrom = from === zeroAddress ? nativeToken : from;
 	const tokenTo = to === zeroAddress ? nativeToken : to;
-	const authHeader = process.env.INCH_API_KEY ? { 'Authorization': `Bearer ${process.env.INCH_API_KEY as string}` } : {};
+	const authHeader = process.env.INCH_API_KEY ? { Authorization: `Bearer ${process.env.INCH_API_KEY as string}` } : {};
 	const tokenApprovalAddress = spenders[chain];
 
 	const [data, swapData] = await Promise.all([
-		fetch(
-			`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`,
-			{ headers: authHeader as any }
-		).then((r) => r.json()),
+		fetch(`${apiEndpoint}${chainToId[chain]}/quote?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&includeGas=true`, {
+			headers: authHeader as any
+		}).then((r) => r.json()),
 		extra.userAddress !== zeroAddress
 			? fetch(
-				`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&origin=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
-				{ headers: authHeader as any }
-			).then((r) => r.json())
+					`${apiEndpoint}${chainToId[chain]}/swap?src=${tokenFrom}&dst=${tokenTo}&amount=${amount}&from=${extra.userAddress}&origin=${extra.userAddress}&slippage=${extra.slippage}&referrer=${altReferralAddress}&disableEstimate=true`,
+					{ headers: authHeader as any }
+				).then((r) => r.json())
 			: null
 	]);
 
-	if(swapData && swapData.tx.to.toLowerCase() !== tokenApprovalAddress.toLowerCase()){
-		throw new Error("approval address doesn't match")
+	if (swapData && swapData.tx.to.toLowerCase() !== tokenApprovalAddress.toLowerCase()) {
+		throw new Error("approval address doesn't match");
 	}
 
 	const estimatedGas = data.gas || 0;
@@ -87,7 +86,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ tokens, amount, rawQuote, eip5792 }) {
+export async function swap({ tokens, fromAmount, rawQuote, eip5792 }) {
 	const txObj = {
 		from: rawQuote.tx.from,
 		to: rawQuote.tx.to,
@@ -123,7 +122,7 @@ export async function swap({ tokens, amount, rawQuote, eip5792 }) {
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [txObj.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+					args: [txObj.to, fromAmount]
 				})
 			});
 		}

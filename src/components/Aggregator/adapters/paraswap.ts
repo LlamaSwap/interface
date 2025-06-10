@@ -2,7 +2,7 @@
 
 import { sendMultipleTxs, sendTx } from '../utils/sendTx';
 import { defillamaReferrerAddress, tokenApprovalAbi } from '../constants';
-import { encodeFunctionData, parseUnits, zeroAddress } from 'viem';
+import { encodeFunctionData, zeroAddress } from 'viem';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
@@ -102,7 +102,7 @@ export async function getQuote(
 	};
 }
 
-export async function swap({ tokens, amount, rawQuote, eip5792 }) {
+export async function swap({ tokens, fromAmount, rawQuote, eip5792 }) {
 	const txObj = {
 		from: rawQuote.from,
 		to: rawQuote.to,
@@ -130,7 +130,7 @@ export async function swap({ tokens, amount, rawQuote, eip5792 }) {
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [txObj.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+					args: [txObj.to, fromAmount]
 				})
 			});
 		}

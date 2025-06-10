@@ -1,4 +1,4 @@
-import { encodeFunctionData, parseUnits } from 'viem';
+import { encodeFunctionData } from 'viem';
 import { sendMultipleTxs, sendTx } from '../../utils/sendTx';
 import { tokenApprovalAbi } from '../../constants';
 
@@ -96,7 +96,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ tokens, amount, rawQuote, eip5792 }) {
+export async function swap({ tokens, fromAmount, rawQuote, eip5792 }) {
 	const txObj = {
 		from: rawQuote.transaction.from,
 		to: rawQuote.transaction.to,
@@ -126,7 +126,7 @@ export async function swap({ tokens, amount, rawQuote, eip5792 }) {
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [txObj.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+					args: [txObj.to, fromAmount]
 				})
 			});
 		}

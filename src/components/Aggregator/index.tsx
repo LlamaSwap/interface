@@ -33,7 +33,7 @@ import Loader from './Loader';
 import { useTokenApprove } from './hooks';
 import { IRoute, useGetRoutes } from '~/queries/useGetRoutes';
 import { useGetPrice } from '~/queries/useGetPrice';
-import { EIP_5792_CHAINS, PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
+import { PRICE_IMPACT_WARNING_THRESHOLD } from './constants';
 import Tooltip, { Tooltip2 } from '../Tooltip';
 import type { IToken } from '~/types';
 import { sendSwapEvent } from './adapters/utils';
@@ -330,7 +330,7 @@ const chains = getAllChains();
 
 export function AggregatorContainer() {
 	// wallet stuff
-	const { address, isConnected, chain: chainOnWallet, connector } = useAccount();
+	const { address, isConnected, chain: chainOnWallet } = useAccount();
 	const { openConnectModal } = useConnectModal();
 	const { switchChain } = useSwitchChain();
 	const addRecentTransaction = useAddRecentTransaction();
@@ -659,10 +659,12 @@ export function AggregatorContainer() {
 		mutationFn: (params: { adapter: string; rawQuote: any; isInfiniteApproval: boolean }) => gaslessApprove(params)
 	});
 
-	const { data: capabilities, error } = useCapabilities();
+	const { data: capabilities } = useCapabilities();
 
 	const isEip5792 =
-		selectedChain ? EIP_5792_CHAINS.includes(selectedChain.id) : false;
+		selectedChain && capabilities?.[selectedChain.id]?.atomic?.status
+			? capabilities[selectedChain.id].atomic!.status === 'supported'
+			: false;
 
 	const isApproved =
 		selectedRoute?.price && selectedRoute?.isGasless
@@ -689,6 +691,7 @@ export function AggregatorContainer() {
 			from: string;
 			to: string;
 			amount: string | number;
+			fromAmount: string | number;
 			amountIn: string;
 			adapter: string;
 			fromAddress: string;
@@ -822,6 +825,9 @@ export function AggregatorContainer() {
 							);
 						}
 					});
+			} else if (typeof data === 'object' && data.id) {
+				//eip5792
+				console.log({ data });
 			} else {
 				setTxModalOpen(true);
 				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
@@ -906,11 +912,13 @@ export function AggregatorContainer() {
 				route: selectedRoute,
 				amount: selectedRoute.amount,
 				amountIn: selectedRoute.amountIn,
+				fromAmount: selectedRoute.fromAmount,
 				approvalData: gaslessApprovalMutation?.data ?? {},
 				eip5792: isEip5792 ? { shouldRemoveApproval: shouldRemoveApproval ? true : false, isTokenApproved } : null
 			});
 		}
 	};
+
 	const handleGaslessApproval = ({ isInfiniteApproval }: { isInfiniteApproval: boolean }) => {
 		if (selectedRoute?.price) {
 			gaslessApprovalMutation.mutate({

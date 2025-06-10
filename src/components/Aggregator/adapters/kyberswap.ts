@@ -1,7 +1,7 @@
 import { tokenApprovalAbi } from '../constants';
 import { ExtraData } from '../types';
 import { sendMultipleTxs, sendTx } from '../utils/sendTx';
-import { encodeFunctionData, parseUnits, zeroAddress } from 'viem';
+import { encodeFunctionData, zeroAddress } from 'viem';
 
 // https://docs.kyberswap.com/kyberswap-solutions/kyberswap-aggregator/aggregator-api-specification/evm-swaps
 export const chainToId = {
@@ -17,7 +17,7 @@ export const chainToId = {
 	linea: 'linea',
 	base: 'base',
 	scroll: 'scroll',
-	sonic: 'sonic',
+	sonic: 'sonic'
 	//mantle
 	//blast
 
@@ -27,7 +27,7 @@ export const chainToId = {
 	// bttc: 'bttc',
 };
 
-const universalRouter = "0x6131b5fae19ea4f9d964eac0408e4408b66337b5"
+const universalRouter = '0x6131b5fae19ea4f9d964eac0408e4408b66337b5';
 
 const routers = {
 	ethereum: universalRouter,
@@ -42,8 +42,8 @@ const routers = {
 	linea: universalRouter,
 	base: universalRouter,
 	scroll: universalRouter,
-	sonic: universalRouter,
-}
+	sonic: universalRouter
+};
 
 export const name = 'KyberSwap';
 export const token = 'KNC';
@@ -53,16 +53,14 @@ export function approvalAddress() {
 }
 
 const nativeToken = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
-const clientId = "llamaswap"
+const clientId = 'llamaswap';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {
 	const tokenFrom = from === zeroAddress ? nativeToken : from;
 	const tokenTo = to === zeroAddress ? nativeToken : to;
 
 	const quote = await fetch(
-		`https://aggregator-api.kyberswap.com/${
-			chainToId[chain]
-		}/api/v1/routes?tokenIn=${tokenFrom}&tokenOut=${tokenTo}&amountIn=${amount}&gasInclude=true`,
+		`https://aggregator-api.kyberswap.com/${chainToId[chain]}/api/v1/routes?tokenIn=${tokenFrom}&tokenOut=${tokenTo}&amountIn=${amount}&gasInclude=true`,
 		{
 			headers: {
 				'x-client-id': clientId
@@ -70,45 +68,45 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	).then((r) => r.json());
 
-	const tx = extra.userAddress === zeroAddress? null : await fetch(
-		`https://aggregator-api.kyberswap.com/${chainToId[chain]}/api/v1/route/build`,
-		{
-			headers: {
-				'x-client-id': clientId
-			},
-			method: "POST",
-			body: JSON.stringify({
-				routeSummary: quote.data.routeSummary, 
-				sender: extra.userAddress,
-				recipient: extra.userAddress,
-				slippageTolerance: +extra.slippage * 100,
-				source: clientId
-			})
-		}
-	).then((r) => r.json());
+	const tx =
+		extra.userAddress === zeroAddress
+			? null
+			: await fetch(`https://aggregator-api.kyberswap.com/${chainToId[chain]}/api/v1/route/build`, {
+					headers: {
+						'x-client-id': clientId
+					},
+					method: 'POST',
+					body: JSON.stringify({
+						routeSummary: quote.data.routeSummary,
+						sender: extra.userAddress,
+						recipient: extra.userAddress,
+						slippageTolerance: +extra.slippage * 100,
+						source: clientId
+					})
+				}).then((r) => r.json());
 
-	let gas = tx === null? quote.data.routeSummary.gas : tx.data.gas;
+	let gas = tx === null ? quote.data.routeSummary.gas : tx.data.gas;
 
-	if(tx !== null){
-		if(routers[chain].toLowerCase() !== tx.data.routerAddress.toLowerCase()){
-			throw new Error("Approval address doesn't match hardcoded one")
+	if (tx !== null) {
+		if (routers[chain].toLowerCase() !== tx.data.routerAddress.toLowerCase()) {
+			throw new Error("Approval address doesn't match hardcoded one");
 		}
 	}
 
 	return {
-		amountReturned: tx === null? quote.data.routeSummary.amountOut: tx.data.amountOut,
+		amountReturned: tx === null ? quote.data.routeSummary.amountOut : tx.data.amountOut,
 		estimatedGas: gas,
 		tokenApprovalAddress: routers[chain],
-		rawQuote: tx === null? {} : tx.data,
+		rawQuote: tx === null ? {} : tx.data,
 		logo: 'https://assets.coingecko.com/coins/images/14899/small/RwdVsGcw_400x400.jpg?1618923851'
 	};
 }
 
-export async function swap({ tokens, amount, fromAddress, from, rawQuote, eip5792 }) {
+export async function swap({ tokens, fromAddress, from, rawQuote, eip5792, fromAmount }) {
 	const txObj: any = {
 		from: fromAddress,
 		to: rawQuote.routerAddress,
-		data: rawQuote.data,
+		data: rawQuote.data
 	};
 
 	if (from === zeroAddress) txObj.value = rawQuote.amountIn;
@@ -133,7 +131,7 @@ export async function swap({ tokens, amount, fromAddress, from, rawQuote, eip579
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [txObj.to, parseUnits(String(amount), tokens.fromToken.decimals)]
+					args: [txObj.to, fromAmount]
 				})
 			});
 		}
