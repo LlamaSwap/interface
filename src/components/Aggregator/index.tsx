@@ -660,7 +660,10 @@ export function AggregatorContainer() {
 	const { data: capabilities } = useCapabilities();
 
 	const isEip5792 =
-		selectedChain && capabilities?.[selectedChain.id]?.atomic?.status
+		selectedRoute &&
+		selectedRoute.name !== 'CowSwap' &&
+		selectedChain &&
+		capabilities?.[selectedChain.id]?.atomic?.status
 			? capabilities[selectedChain.id].atomic!.status === 'supported'
 			: false;
 
@@ -845,7 +848,40 @@ export function AggregatorContainer() {
 							);
 						}
 					});
-			} else if (typeof data === 'object' && data.id) {
+
+				return;
+			}
+
+			if (data.id && data.waitForOrder) {
+				setTxModalOpen(true);
+				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
+				setTxUrl(txUrl);
+				data.waitForOrder(() => {
+					forceRefreshTokenBalance();
+
+					toast(formatSuccessToast(variables));
+
+					sendSwapEvent({
+						chain: selectedChain?.value ?? 'unknown',
+						user: address ?? 'unknown',
+						from: variables.from,
+						to: variables.to,
+						aggregator: variables.adapter,
+						isError: false,
+						quote: variables.rawQuote,
+						txUrl,
+						amount: String(variables.amountIn),
+						amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+						errorData: {},
+						slippage,
+						routePlace: String(variables?.index),
+						route: variables.route
+					});
+				});
+				return;
+			}
+
+			if (typeof data === 'object' && data.id) {
 				//eip5792
 				if (chainOnWallet?.blockExplorers) {
 					const explorerUrl = chainOnWallet.blockExplorers.default.url;
@@ -921,32 +957,8 @@ export function AggregatorContainer() {
 							);
 						}
 					});
-			} else {
-				setTxModalOpen(true);
-				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
-				setTxUrl(txUrl);
-				data.waitForOrder(() => {
-					forceRefreshTokenBalance();
 
-					toast(formatSuccessToast(variables));
-
-					sendSwapEvent({
-						chain: selectedChain?.value ?? 'unknown',
-						user: address ?? 'unknown',
-						from: variables.from,
-						to: variables.to,
-						aggregator: variables.adapter,
-						isError: false,
-						quote: variables.rawQuote,
-						txUrl,
-						amount: String(variables.amountIn),
-						amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
-						errorData: {},
-						slippage,
-						routePlace: String(variables?.index),
-						route: variables.route
-					});
-				});
+				return;
 			}
 
 			signatureForSwapMutation.reset();
