@@ -32,7 +32,7 @@ export async function sendMultipleTxs(calls: any[]) {
 			}
 		}
 
-		return sendCalls(config, { calls: [swaptxObj] });
+		return sendCalls(config, { calls: calls.length === 0 ? [swaptxObj] : [calls[0], swaptxObj] });
 	} catch (error) {
 		console.log(error);
 		throw new Error(error instanceof Error ? error.message : 'Unknown error');
