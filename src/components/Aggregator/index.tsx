@@ -63,7 +63,7 @@ import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
 import { zeroAddress } from 'viem';
-import { waitForTransactionReceipt } from 'wagmi/actions';
+import { waitForCallsStatus, waitForTransactionReceipt } from 'wagmi/actions';
 import { config } from '../WalletProvider';
 import { cowSwapEthFlowSlippagePerChain } from './adapters/cowswap';
 
@@ -815,7 +815,8 @@ export function AggregatorContainer() {
 							toast(formatErrorToast({}, true));
 						}
 					})
-					?.catch(() => {
+					?.catch((err) => {
+						console.log(err);
 						isError = true;
 						toast(formatErrorToast({}, true));
 					})
@@ -846,7 +847,80 @@ export function AggregatorContainer() {
 					});
 			} else if (typeof data === 'object' && data.id) {
 				//eip5792
-				console.log({ data });
+				if (chainOnWallet?.blockExplorers) {
+					const explorerUrl = chainOnWallet.blockExplorers.default.url;
+					setTxModalOpen(true);
+					txUrl = `${explorerUrl}/tx/${data.id}`;
+					setTxUrl(txUrl);
+				}
+
+				confirmingTxToastRef.current = toast({
+					title: 'Confirming Transaction',
+					description: '',
+					status: 'loading',
+					isClosable: true,
+					position: 'top-right'
+				});
+
+				let isError = false;
+				const balanceBefore = toTokenBalance?.data?.formatted;
+
+				waitForCallsStatus(config, {
+					id: data.id as `0x${string}`
+				})
+					.then((final) => {
+						if (final.status === 'success') {
+							forceRefreshTokenBalance();
+
+							if (confirmingTxToastRef.current) {
+								toast.close(confirmingTxToastRef.current);
+							}
+
+							toast(formatSuccessToast(variables));
+
+							setAmount(['', '']);
+						} else {
+							isError = true;
+							toast(formatErrorToast({}, true));
+						}
+
+						if (final.receipts && final.receipts.length > 0) {
+							addRecentTransaction({
+								hash: final.receipts[final.receipts.length - 1].transactionHash,
+								description: `Swap transaction using ${variables.adapter} is sent.`
+							});
+						}
+					})
+					?.catch((err) => {
+						console.log(err);
+						isError = true;
+						toast(formatErrorToast({}, true));
+					})
+					?.finally(() => {
+						if (selectedChain && finalSelectedToToken && address) {
+							getTokenBalance({ address, chainId: selectedChain.id, token: finalSelectedToToken.address }).then(
+								(balanceAfter) =>
+									sendSwapEvent({
+										chain: selectedChain.value,
+										user: address,
+										from: variables.from,
+										to: variables.to,
+										aggregator: variables.adapter,
+										isError,
+										quote: variables.rawQuote,
+										txUrl,
+										amount: String(variables.amountIn),
+										amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+										errorData: {},
+										slippage,
+										routePlace: String(variables?.index),
+										route: variables.route,
+										reportedOutput: Number(variables.amount) || 0,
+										realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
+									})
+							);
+						}
+					});
 			} else {
 				setTxModalOpen(true);
 				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
@@ -878,6 +952,7 @@ export function AggregatorContainer() {
 			signatureForSwapMutation.reset();
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
+			console.log(err);
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
 				toast(formatErrorToast(err, false));
 
