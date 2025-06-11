@@ -31,7 +31,6 @@ const wrappedTokens = {
 };
 
 const cowContractAddress = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
-const cowSwapSettlementContractAddress = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41';
 const cowSwapEthFlowContractAddress = '0xba3cb449bd2b4adddbc894d8697f5170800eadec';
 
 const nativeSwapAddress = {
@@ -39,13 +38,6 @@ const nativeSwapAddress = {
 	gnosis: cowSwapEthFlowContractAddress,
 	arbitrum: cowSwapEthFlowContractAddress,
 	base: cowSwapEthFlowContractAddress
-};
-
-const settlementAddress = {
-	ethereum: cowSwapSettlementContractAddress,
-	gnosis: cowSwapSettlementContractAddress,
-	arbitrum: cowSwapSettlementContractAddress,
-	base: cowSwapSettlementContractAddress
 };
 
 export const name = 'CowSwap';
@@ -89,7 +81,7 @@ const waitForOrder =
 	({ uid, trader, chain }) =>
 	(onSuccess) => {
 		const unwatch = watchContractEvent(config, {
-			address: settlementAddress[chain],
+			address: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
 			abi: ABI.settlement,
 			eventName: 'Trade',
 			args: { owner: trader },
@@ -175,130 +167,120 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ chain, fromAddress, rawQuote, from, to, isSmartContractWallet }) {
-	try {
-		if (from === zeroAddress) {
-			const minEthFlowSlippage = cowSwapEthFlowSlippagePerChain[chain];
-			if (rawQuote.slippage < minEthFlowSlippage) {
-				throw { reason: `Slippage for ETH orders on CoW Swap needs to be higher than ${minEthFlowSlippage}%` };
+
+	if (from === zeroAddress) {
+		const minEthFlowSlippage = cowSwapEthFlowSlippagePerChain[chain];
+		if (rawQuote.slippage < minEthFlowSlippage) {
+			throw { reason: `Slippage for ETH orders on CoW Swap needs to be higher than ${minEthFlowSlippage}%` };
+		}
+
+		// Upload appData as it's not included in the order for ethflow orders
+		const uploadedAppDataHash = await fetch(`${chainToId[chain]}/api/v1/app_data/${rawQuote.quote.appDataHash}`, {
+			method: 'PUT',
+			body: JSON.stringify({ fullAppData: rawQuote.quote.appData }),
+			headers: {
+				'Content-Type': 'application/json'
 			}
+		}).then((r) => r.json());
 
-			// Upload appData as it's not included in the order for ethflow orders
-			const uploadedAppDataHash = await fetch(`${chainToId[chain]}/api/v1/app_data/${rawQuote.quote.appDataHash}`, {
-				method: 'PUT',
-				body: JSON.stringify({ fullAppData: rawQuote.quote.appData }),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			}).then((r) => r.json());
+		if (uploadedAppDataHash !== rawQuote.quote.appDataHash) {
+			// AppDataHash differs, it means the body is different. Do not proceed
+			// Unlikely to happen, but leaving the check in place just in case
+			throw { reason: 'Failed to place order, please try again' };
+		}
 
-			if (uploadedAppDataHash !== rawQuote.quote.appDataHash) {
-				// AppDataHash differs, it means the body is different. Do not proceed
-				// Unlikely to happen, but leaving the check in place just in case
-				throw { reason: 'Failed to place order, please try again' };
-			}
-
-			// Only if the upload was successful, we can proceed with the order
-			try {
-				const tx = await writeContract(config, {
-					address: nativeSwapAddress[chain],
-					abi: ABI.nativeSwap,
-					functionName: 'createOrder',
-					args: [
-						{
-							buyToken: to as `0x${string}`,
-							receiver: fromAddress as `0x${string}`,
-							sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
-							buyAmount: BigInt(rawQuote.quote.buyAmount),
-							appData: rawQuote.quote.appDataHash,
-							feeAmount: 0n,
-							validTo: rawQuote.quote.validTo,
-							partiallyFillable: rawQuote.quote.partiallyFillable,
-							quoteId: rawQuote.id
-						}
-					],
-					value: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount)
-				});
-
-				return tx;
-			} catch (error) {
-				// Handle failures, such as user rejecting the transaction
-				console.warn('Error creating CoW Swap ethFlow order', error);
-				throw { reason: 'Failed to place order, please try again' };
-			}
-		} else {
-			// https://docs.cow.fi/cow-protocol/reference/core/signing-schemes#javascript-example
-			const order = getOrderFromQuote(rawQuote, fromAddress);
-
-			const signature = await signTypedData(config, {
-				primaryType: 'Order',
-				message: order,
-				domain: {
-					name: 'Gnosis Protocol',
-					version: 'v2',
-					chainId: chainsMap[chain],
-					verifyingContract: settlementAddress[chain]
-				},
-				types: {
-					Order: [
-						{ name: 'sellToken', type: 'address' },
-						{ name: 'buyToken', type: 'address' },
-						{ name: 'receiver', type: 'address' },
-						{ name: 'sellAmount', type: 'uint256' },
-						{ name: 'buyAmount', type: 'uint256' },
-						{ name: 'validTo', type: 'uint32' },
-						{ name: 'appData', type: 'bytes32' },
-						{ name: 'feeAmount', type: 'uint256' },
-						{ name: 'kind', type: 'string' },
-						{ name: 'partiallyFillable', type: 'bool' },
-						{ name: 'sellTokenBalance', type: 'string' },
-						{ name: 'buyTokenBalance', type: 'string' }
-					]
-				}
+		// Only if the upload was successful, we can proceed with the order
+		try {
+			const tx = await writeContract(config, {
+				address: nativeSwapAddress[chain],
+				abi: ABI.nativeSwap,
+				functionName: 'createOrder',
+				args: [
+					{
+						buyToken: to as `0x${string}`,
+						receiver: fromAddress as `0x${string}`,
+						sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
+						buyAmount: BigInt(rawQuote.quote.buyAmount),
+						appData: rawQuote.quote.appDataHash,
+						feeAmount: 0n,
+						validTo: rawQuote.quote.validTo,
+						partiallyFillable: rawQuote.quote.partiallyFillable,
+						quoteId: rawQuote.id
+					}
+				],
+				value: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount)
 			});
 
-			const data = await fetch(`${chainToId[chain]}/api/v1/orders`, {
-				method: 'POST',
-				body: JSON.stringify({
-					...rawQuote.quote,
-					...(isSmartContractWallet ? { from: fromAddress } : {}),
-					sellAmount: String(order.sellAmount),
-					feeAmount: '0',
-					signature,
-					signingScheme: isSmartContractWallet ? 'eip1271' : 'eip712'
-				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			}).then((r) => r.json());
-
-			if (data.errorType) throw { reason: data.description };
-
-			return { id: data, waitForOrder: waitForOrder({ uid: data, trader: fromAddress, chain }) };
+			return tx;
+		} catch (error) {
+			// Handle failures, such as user rejecting the transaction
+			console.warn('Error creating CoW Swap ethFlow order', error);
+			throw { reason: 'Failed to place order, please try again' };
 		}
-	} catch (error) {
-		console.log(error);
-		throw { reason: 'Failed to place order, please try again' };
+	} else {
+		// https://docs.cow.fi/cow-protocol/reference/core/signing-schemes#javascript-example
+		const order = {
+			sellToken: rawQuote.quote.sellToken as `0x${string}`,
+			buyToken: rawQuote.quote.buyToken as `0x${string}`,
+			receiver: fromAddress as `0x${string}`,
+			sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
+			buyAmount: BigInt(rawQuote.quote.buyAmount),
+			validTo: rawQuote.quote.validTo as number,
+			appData: rawQuote.quote.appDataHash,
+			feeAmount: 0n,
+			kind: rawQuote.quote.kind as string,
+			partiallyFillable: rawQuote.quote.partiallyFillable as boolean,
+			sellTokenBalance: 'erc20',
+			buyTokenBalance: 'erc20'
+		};
+
+		const signature = await signTypedData(config, {
+			primaryType: 'Order',
+			message: order,
+			domain: {
+				name: 'Gnosis Protocol',
+				version: 'v2',
+				chainId: chainsMap[chain],
+				verifyingContract: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'
+			},
+			types: {
+				Order: [
+					{ name: 'sellToken', type: 'address' },
+					{ name: 'buyToken', type: 'address' },
+					{ name: 'receiver', type: 'address' },
+					{ name: 'sellAmount', type: 'uint256' },
+					{ name: 'buyAmount', type: 'uint256' },
+					{ name: 'validTo', type: 'uint32' },
+					{ name: 'appData', type: 'bytes32' },
+					{ name: 'feeAmount', type: 'uint256' },
+					{ name: 'kind', type: 'string' },
+					{ name: 'partiallyFillable', type: 'bool' },
+					{ name: 'sellTokenBalance', type: 'string' },
+					{ name: 'buyTokenBalance', type: 'string' }
+				]
+			}
+		});
+
+		const data = await fetch(`${chainToId[chain]}/api/v1/orders`, {
+			method: 'POST',
+			body: JSON.stringify({
+				...rawQuote.quote,
+				...(isSmartContractWallet ? { from: fromAddress } : {}),
+				sellAmount: String(order.sellAmount),
+				feeAmount: '0',
+				signature,
+				signingScheme: isSmartContractWallet ? 'eip1271' : 'eip712'
+			}),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then((r) => r.json());
+
+		if (data.errorType) throw { reason: data.description };
+
+		return { id: data, waitForOrder: waitForOrder({ uid: data, trader: fromAddress, chain }) };
 	}
 }
-
-const getOrderFromQuote = (rawQuote, fromAddress) => {
-	const order = {
-		sellToken: rawQuote.quote.sellToken as `0x${string}`,
-		buyToken: rawQuote.quote.buyToken as `0x${string}`,
-		receiver: fromAddress as `0x${string}`,
-		sellAmount: BigInt(rawQuote.quote.sellAmount) + BigInt(rawQuote.quote.feeAmount),
-		buyAmount: BigInt(rawQuote.quote.buyAmount),
-		validTo: rawQuote.quote.validTo as number,
-		appData: rawQuote.quote.appDataHash,
-		feeAmount: 0n,
-		kind: rawQuote.quote.kind as string,
-		partiallyFillable: rawQuote.quote.partiallyFillable as boolean,
-		sellTokenBalance: 'erc20',
-		buyTokenBalance: 'erc20'
-	};
-
-	return order;
-};
 
 export const getTxData = () => '';
 
