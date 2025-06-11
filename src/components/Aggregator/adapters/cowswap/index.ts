@@ -3,7 +3,7 @@
 import { ExtraData } from '../../types';
 
 import BigNumber from 'bignumber.js';
-import { encodePacked, hashTypedData, zeroAddress } from 'viem';
+import { zeroAddress } from 'viem';
 import { signTypedData, watchContractEvent, writeContract } from 'wagmi/actions';
 import { config } from '../../../WalletProvider';
 import { chainsMap } from '../../constants';
@@ -227,49 +227,6 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 				console.warn('Error creating CoW Swap ethFlow order', error);
 				throw { reason: 'Failed to place order, please try again' };
 			}
-		} else if (isSmartContractWallet) {
-			const order = getOrderFromQuote(rawQuote, fromAddress);
-
-			const typedData = hashTypedData({
-				primaryType: 'Order',
-				message: order,
-				domain: {
-					name: 'Gnosis Protocol',
-					version: 'v2',
-					chainId: chainsMap[chain],
-					verifyingContract: settlementAddress[chain]
-				},
-				types: {
-					Order: [
-						{ name: 'sellToken', type: 'address' },
-						{ name: 'buyToken', type: 'address' },
-						{ name: 'receiver', type: 'address' },
-						{ name: 'sellAmount', type: 'uint256' },
-						{ name: 'buyAmount', type: 'uint256' },
-						{ name: 'validTo', type: 'uint32' },
-						{ name: 'appData', type: 'bytes32' },
-						{ name: 'feeAmount', type: 'uint256' },
-						{ name: 'kind', type: 'string' },
-						{ name: 'partiallyFillable', type: 'bool' },
-						{ name: 'sellTokenBalance', type: 'string' },
-						{ name: 'buyTokenBalance', type: 'string' }
-					]
-				}
-			});
-
-			const orderUid = encodePacked(
-				['bytes32', 'address', 'uint32'],
-				[typedData, rawQuote.from, rawQuote.quote.validTo]
-			);
-
-			const tx = await writeContract(config, {
-				address: settlementAddress[chain],
-				abi: ABI.setPreSignature,
-				functionName: 'setPreSignature',
-				args: [orderUid, true]
-			});
-
-			return tx;
 		} else {
 			// https://docs.cow.fi/cow-protocol/reference/core/signing-schemes#javascript-example
 			const order = getOrderFromQuote(rawQuote, fromAddress);
@@ -308,7 +265,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 					sellAmount: String(order.sellAmount),
 					feeAmount: '0',
 					signature,
-					signingScheme: 'eip712'
+					signingScheme: isSmartContractWallet ? 'eip1271' : 'eip712'
 				}),
 				headers: {
 					'Content-Type': 'application/json'
