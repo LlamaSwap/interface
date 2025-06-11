@@ -262,6 +262,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 				method: 'POST',
 				body: JSON.stringify({
 					...rawQuote.quote,
+					...(isSmartContractWallet ? { from: fromAddress } : {}),
 					sellAmount: String(order.sellAmount),
 					feeAmount: '0',
 					signature,
