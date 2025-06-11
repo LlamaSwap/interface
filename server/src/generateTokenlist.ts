@@ -7,7 +7,7 @@ const handler = async () => {
 		await storeJSONString('tokenlists.json', JSON.stringify(tokenlists), 3600);
 		// store token list by chain
 		for (const chain in tokenlists) {
-			const list = {}
+			const list = {};
 			for (const token of tokenlists[chain]) {
 				list[token.address] = token;
 			}

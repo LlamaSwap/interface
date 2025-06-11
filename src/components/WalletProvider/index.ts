@@ -1,10 +1,11 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import {
-  trustWallet,
-  coinbaseWallet,
-  zilPayWallet,
-  walletConnectWallet,
-  metaMaskWallet,
+	injectedWallet,
+	trustWallet,
+	coinbaseWallet,
+	zilPayWallet,
+	walletConnectWallet,
+	metaMaskWallet
 } from '@rainbow-me/rainbowkit/wallets';
 import { rpcsTransports } from '../Aggregator/rpcs';
 import { allChains } from './chains';
@@ -18,21 +19,14 @@ export const config = getDefaultConfig({
 	chains: allChains as any,
 	transports: rpcsTransports,
 	ssr: false,
-    wallets: [
-        {
-            groupName: 'Popular',
-            wallets: [
-            	metaMaskWallet,
-              trustWallet,
-            	zilPayWallet,
-            ],
-        },
-        {
-            groupName: 'Other',
-            wallets: [
-                coinbaseWallet,
-                walletConnectWallet,
-            ],
-        },
-    ],
+	wallets: [
+		{
+			groupName: 'Popular',
+			wallets: [injectedWallet, metaMaskWallet, trustWallet, zilPayWallet]
+		},
+		{
+			groupName: 'Other',
+			wallets: [coinbaseWallet, walletConnectWallet]
+		}
+	]
 }) as Config;

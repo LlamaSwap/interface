@@ -451,7 +451,6 @@ export const TokenSelect = ({
 		};
 	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
 
-
 	const isLoading = type === 'amountIn' ? fetchingFromToken : fetchingToToken;
 
 	const dialogState = Ariakit.useDialogState();

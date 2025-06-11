@@ -85,21 +85,23 @@ const allSettled = (promises) =>
 
 const chainsToFetchFromKyberswap = [324, 1101, 59144, 534352, 146];
 
-async function getFullCGTokenlist(){
-	const cgCoins = (await fetch("https://api.coingecko.com/api/v3/coins/list?include_platform=true").then(r => r.json())) as {
-        "id": string;
-        "symbol": string;
-        "name": string;
-        "platforms": {
-            [platform: string]: string
-        }
-    }[];
+async function getFullCGTokenlist() {
+	const cgCoins = (await fetch('https://api.coingecko.com/api/v3/coins/list?include_platform=true').then((r) =>
+		r.json()
+	)) as {
+		id: string;
+		symbol: string;
+		name: string;
+		platforms: {
+			[platform: string]: string;
+		};
+	}[];
 
-    return cgCoins.map(coin => ({
-        name: coin.name,
-        symbol: coin.symbol,
-        platforms: coin.platforms,
-    }))
+	return cgCoins.map((coin) => ({
+		name: coin.name,
+		symbol: coin.symbol,
+		platforms: coin.platforms
+	}));
 }
 
 export async function getTokenList() {
@@ -198,7 +200,6 @@ export async function getTokenList() {
 		});
 	}
 
-
 	// fetch name, symbol, decimals fo coingecko tokens
 	const geckoTokensList = (
 		await allSettled(
@@ -246,7 +247,9 @@ export async function getTokenList() {
 	// format and store final tokens list
 	let tokenlist = {};
 	for (const chain in { ...tokensFiltered, ...cgList }) {
-		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])].sort((a,b)=>(b.volume24h ?? 0) - (a.volume24h ?? 0));
+		tokenlist[chain] = [...formatAndSortTokens(tokensFiltered[chain] || [], chain), ...(cgList[chain] || [])].sort(
+			(a, b) => (b.volume24h ?? 0) - (a.volume24h ?? 0)
+		);
 	}
 
 	return tokenlist;
@@ -270,7 +273,7 @@ const getTopTokensByChain = async (chainId: string) => {
 					`page=${i + 1}&include_network_metrics=true`,
 				{
 					headers: {
-						"x-cg-pro-api-key": process.env.CG_API_KEY!
+						'x-cg-pro-api-key': process.env.CG_API_KEY!
 					}
 				}
 			)
@@ -283,7 +286,7 @@ const getTopTokensByChain = async (chainId: string) => {
 			if (response.status === 'fulfilled' && response.value.data) {
 				resData.push(...response.value.data);
 			} else {
-				console.log(geckoTerminalChainsMap[chainId], response)
+				console.log(geckoTerminalChainsMap[chainId], response);
 			}
 		});
 
@@ -291,7 +294,8 @@ const getTopTokensByChain = async (chainId: string) => {
 
 		for (const pool of resData) {
 			const token = pool.relationships.base_token.data.id.split('_')[1].toLowerCase();
-			volumeByTokens[token] = (volumeByTokens[token] || 0) + Number((pool.attributes?.volume_usd?.h24 || '0').split(".")[0]);
+			volumeByTokens[token] =
+				(volumeByTokens[token] || 0) + Number((pool.attributes?.volume_usd?.h24 || '0').split('.')[0]);
 		}
 
 		return [chainId, volumeByTokens];

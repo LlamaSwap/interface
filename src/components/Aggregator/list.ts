@@ -26,6 +26,6 @@ export const adaptersWithApiKeys = {
 	[matcha.name]: true,
 	[matchaGasless.name]: true,
 	[matchaV2.name]: true,
-	[inch.name]: true,
+	[inch.name]: true
 	//[hashflow.name]: true
 };

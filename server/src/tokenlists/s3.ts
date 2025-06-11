@@ -13,7 +13,7 @@ export function storeJSONString(filename: string, body: string, cache?: number) 
 		...(!!cache
 			? {
 					CacheControl: `max-age=${cache}`
-			  }
+				}
 			: {})
 	});
 	return client.send(command);

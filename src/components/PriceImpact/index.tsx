@@ -87,7 +87,6 @@ export function PriceImpact({
 	const shouldRevertPriceOrder =
 		fromToken && toTokenPrice && fromTokenPrice && fromTokenPrice / toTokenPrice < 0.0001 ? 1 : 0;
 
-
 	return (
 		<>
 			<Accordion allowToggle style={{ margin: '0 4px' }} index={['lg', 'md'].includes(breakpoint) ? [0] : undefined}>

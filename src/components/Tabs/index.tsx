@@ -134,19 +134,19 @@ const Tabs = ({
 
 	return (
 		<Wrapper>
-				<TabList>
-					{tabs.map((tab, index) => (
-						<Tab
-							ref={tabRefs.current[index]}
-							key={tab.id}
-							active={tab.id === activeTab}
-							onClick={() => handleTabChange(index)}
-						>
-							{tab.name}
-						</Tab>
-					))}
-					<ActiveTabBackground style={getActiveTabStyles()} />
-				</TabList>
+			<TabList>
+				{tabs.map((tab, index) => (
+					<Tab
+						ref={tabRefs.current[index]}
+						key={tab.id}
+						active={tab.id === activeTab}
+						onClick={() => handleTabChange(index)}
+					>
+						{tab.name}
+					</Tab>
+				))}
+				<ActiveTabBackground style={getActiveTabStyles()} />
+			</TabList>
 
 			<TabPanels>{tabs.find((tab) => tab.id === activeTab)?.content}</TabPanels>
 		</Wrapper>

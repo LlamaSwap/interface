@@ -1,16 +1,16 @@
-import * as React from 'react'
-import styled from 'styled-components'
-import { Tooltip as AriaTooltip, TooltipAnchor, useTooltipState } from 'ariakit/tooltip'
-import Link from 'next/link'
+import * as React from 'react';
+import styled from 'styled-components';
+import { Tooltip as AriaTooltip, TooltipAnchor, useTooltipState } from 'ariakit/tooltip';
+import Link from 'next/link';
 
 interface ITooltip {
-	content: string | null | React.ReactNode
-	href?: string
-	shallow?: boolean
-	onClick?: (e: any) => any
-	style?: {}
-	children: React.ReactNode
-	as?: any
+	content: string | null | React.ReactNode;
+	href?: string;
+	shallow?: boolean;
+	onClick?: (e: any) => any;
+	style?: {};
+	children: React.ReactNode;
+	as?: any;
 }
 
 const TooltipPopver = styled(AriaTooltip)`
@@ -22,7 +22,7 @@ const TooltipPopver = styled(AriaTooltip)`
 	border-radius: 8px;
 	filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 40%));
 	max-width: 228px;
-`
+`;
 
 const TooltipAnchor2 = styled(TooltipAnchor)`
 	overflow: hidden;
@@ -33,20 +33,20 @@ const TooltipAnchor2 = styled(TooltipAnchor)`
 	a {
 		display: flex;
 	}
-`
+`;
 
 const Popover2 = styled(TooltipPopver)`
 	padding: 12px;
-`
+`;
 
 export default function Tooltip({ content, as, href, shallow, onClick, children, ...props }: ITooltip) {
-	const tooltip = useTooltipState()
+	const tooltip = useTooltipState();
 
-	if (!content || content === '') return <>{children}</>
+	if (!content || content === '') return <>{children}</>;
 
 	const triggerProps = {
 		...(onClick && { onClick })
-	}
+	};
 
 	return (
 		<>
@@ -63,13 +63,13 @@ export default function Tooltip({ content, as, href, shallow, onClick, children,
 				{content}
 			</TooltipPopver>
 		</>
-	)
+	);
 }
 
 export function Tooltip2({ content, children, ...props }: ITooltip) {
-	const tooltip = useTooltipState()
+	const tooltip = useTooltipState();
 
-	if (!content || content === '') return <>{children}</>
+	if (!content || content === '') return <>{children}</>;
 
 	return (
 		<>
@@ -78,5 +78,5 @@ export function Tooltip2({ content, children, ...props }: ITooltip) {
 				{content}
 			</Popover2>
 		</>
-	)
+	);
 }

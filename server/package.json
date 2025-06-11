@@ -1,35 +1,35 @@
 {
-  "name": "llamaswap-backend",
-  "private": true,
-  "version": "1.0.0",
-  "scripts": {
-    "deploy": "export NODE_OPTIONS=--max-old-space-size=6144 && sls deploy --stage prod",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "serve": "node --max-old-space-size=8192 node_modules/serverless/bin/serverless offline start",
-    "test:watch": "jest --watch",
-    "build": "sls webpack"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.13.10",
-    "@babel/preset-env": "^7.13.12",
-    "@babel/preset-typescript": "^7.13.0",
-    "@types/aws-lambda": "^8.10.72",
-    "babel-core": "^6.26.3",
-    "babel-loader": "^8.2.2",
-    "serverless": "^2.31.0",
-    "serverless-prune-plugin": "^1.4.4",
-    "serverless-webpack-fixed": "^5.3.3",
-    "ts-loader": "^9.5.1",
-    "typescript": "5.4.5",
-    "webpack": "^5.27.2"
-  },
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.504.0",
-    "@rainbow-me/rainbowkit": "^2.1.6",
-    "bignumber.js": "^9.1.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "viem": "^2.21.10",
-    "wagmi": "^2.12.12"
-  }
+	"name": "llamaswap-backend",
+	"private": true,
+	"version": "1.0.0",
+	"scripts": {
+		"deploy": "export NODE_OPTIONS=--max-old-space-size=6144 && sls deploy --stage prod",
+		"format": "prettier --write \"src/**/*.ts\"",
+		"serve": "node --max-old-space-size=8192 node_modules/serverless/bin/serverless offline start",
+		"test:watch": "jest --watch",
+		"build": "sls webpack"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.13.10",
+		"@babel/preset-env": "^7.13.12",
+		"@babel/preset-typescript": "^7.13.0",
+		"@types/aws-lambda": "^8.10.72",
+		"babel-core": "^6.26.3",
+		"babel-loader": "^8.2.2",
+		"serverless": "^2.31.0",
+		"serverless-prune-plugin": "^1.4.4",
+		"serverless-webpack-fixed": "^5.3.3",
+		"ts-loader": "^9.5.1",
+		"typescript": "5.4.5",
+		"webpack": "^5.27.2"
+	},
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.504.0",
+		"@rainbow-me/rainbowkit": "^2.1.6",
+		"bignumber.js": "^9.1.1",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"viem": "^2.21.10",
+		"wagmi": "^2.12.12"
+	}
 }
