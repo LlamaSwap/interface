@@ -46,5 +46,17 @@ export const ABI = {
 			name: 'Trade',
 			type: 'event'
 		}
+	],
+	setPreSignature: [
+		{
+			inputs: [
+				{ internalType: 'bytes', name: 'orderUid', type: 'bytes' },
+				{ internalType: 'bool', name: 'signed', type: 'bool' }
+			],
+			name: 'setPreSignature',
+			outputs: [],
+			stateMutability: 'nonpayable',
+			type: 'function'
+		}
 	]
 };
