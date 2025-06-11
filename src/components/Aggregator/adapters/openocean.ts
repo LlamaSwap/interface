@@ -81,7 +81,7 @@ export async function swap({ rawQuote, chain }) {
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
-		value: rawQuote.value,
+		value: rawQuote.value
 	});
 	return tx;
 }

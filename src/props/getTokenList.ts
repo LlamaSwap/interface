@@ -1,7 +1,11 @@
 import { geckoTerminalChainsMap } from '~/components/Aggregator/constants';
 
 export async function getTokenList(chainId?: number) {
-	return fetch(chainId ? `https://d3g10bzo9rdluh.cloudfront.net/tokenlists-${chainId}.json` : `https://d3g10bzo9rdluh.cloudfront.net/tokenlists.json`).then((r) => r.json());
+	return fetch(
+		chainId
+			? `https://d3g10bzo9rdluh.cloudfront.net/tokenlists-${chainId}.json`
+			: `https://d3g10bzo9rdluh.cloudfront.net/tokenlists.json`
+	).then((r) => r.json());
 }
 
 export const getTopTokensByChain = async (chainId) => {

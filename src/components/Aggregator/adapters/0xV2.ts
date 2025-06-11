@@ -1,4 +1,4 @@
-import { numberToHex, size, zeroAddress, concat} from 'viem';
+import { numberToHex, size, zeroAddress, concat } from 'viem';
 import { sendTx } from '../utils/sendTx';
 
 export const name = 'Matcha/0x v2';
@@ -80,7 +80,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 	const signature = await signTypedDataAsync(rawQuote.permit2.eip712).catch((err) => {
-		console.log(err)
+		console.log(err);
 	});
 	return signature;
 }

@@ -1,3 +1,3 @@
-import { useTokenApprove } from './useTokenApprove'
+import { useTokenApprove } from './useTokenApprove';
 
-export { useTokenApprove }
+export { useTokenApprove };

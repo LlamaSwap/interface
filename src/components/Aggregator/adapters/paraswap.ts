@@ -19,17 +19,17 @@ export const chainToId = {
 };
 
 const approvers = {
-	ethereum: "0x6a000f20005980200259b80c5102003040001068",
-	bsc: "0x6a000f20005980200259b80c5102003040001068",
-	polygon: "0x6a000f20005980200259b80c5102003040001068",
-	avax: "0x6a000f20005980200259b80c5102003040001068",
-	arbitrum: "0x6a000f20005980200259b80c5102003040001068",
-	fantom: "0x6a000f20005980200259b80c5102003040001068",
-	optimism: "0x6a000f20005980200259b80c5102003040001068",
-	polygonzkevm: "0x6a000f20005980200259b80c5102003040001068",
-	base: "0x6a000f20005980200259b80c5102003040001068",
-	gnosis: "0x6a000f20005980200259b80c5102003040001068"
-}
+	ethereum: '0x6a000f20005980200259b80c5102003040001068',
+	bsc: '0x6a000f20005980200259b80c5102003040001068',
+	polygon: '0x6a000f20005980200259b80c5102003040001068',
+	avax: '0x6a000f20005980200259b80c5102003040001068',
+	arbitrum: '0x6a000f20005980200259b80c5102003040001068',
+	fantom: '0x6a000f20005980200259b80c5102003040001068',
+	optimism: '0x6a000f20005980200259b80c5102003040001068',
+	polygonzkevm: '0x6a000f20005980200259b80c5102003040001068',
+	base: '0x6a000f20005980200259b80c5102003040001068',
+	gnosis: '0x6a000f20005980200259b80c5102003040001068'
+};
 
 export const name = 'ParaSwap';
 export const token = 'PSP';
@@ -83,13 +83,13 @@ export async function getQuote(
 			: null;
 
 	if (dataSwap?.error) {
-		throw new Error(dataSwap.error)
+		throw new Error(dataSwap.error);
 	}
 
 	let gas = data.priceRoute.gasCost;
 
-	if(data.priceRoute.tokenTransferProxy.toLowerCase() !== approvers[chain].toLowerCase()){
-		throw new Error("Approval address doesn't match")
+	if (data.priceRoute.tokenTransferProxy.toLowerCase() !== approvers[chain].toLowerCase()) {
+		throw new Error("Approval address doesn't match");
 	}
 
 	return {
@@ -107,7 +107,7 @@ export async function swap({ rawQuote, chain }) {
 		from: rawQuote.from,
 		to: rawQuote.to,
 		data: rawQuote.data,
-		value: rawQuote.value,
+		value: rawQuote.value
 	});
 
 	return tx;

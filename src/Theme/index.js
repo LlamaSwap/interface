@@ -13,8 +13,8 @@ export const getStyle = (name, defaultValue) => {
 };
 
 const theme = (mode = 'dark') => {
-	const colorMode = getStyle('mode', mode)
-	const isDark = colorMode === 'dark'
+	const colorMode = getStyle('mode', mode);
+	const isDark = colorMode === 'dark';
 
 	return {
 		mode: isDark ? 'dark' : 'light',
@@ -77,7 +77,7 @@ const theme = (mode = 'dark') => {
 
 		breakpoints: [`${sm}rem`, `${med}rem`, `${lg}rem`, `${xl}rem`]
 	};
-}
+};
 
 export const GlobalStyle = createGlobalStyle`
 	body, #__next {

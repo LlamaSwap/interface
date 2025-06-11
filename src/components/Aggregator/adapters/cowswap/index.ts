@@ -167,7 +167,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ chain, fromAddress, rawQuote, from, to }) {
-
 	if (from === zeroAddress) {
 		const minEthFlowSlippage = cowSwapEthFlowSlippagePerChain[chain];
 		if (rawQuote.slippage < minEthFlowSlippage) {

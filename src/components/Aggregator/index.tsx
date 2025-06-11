@@ -368,13 +368,8 @@ export function AggregatorContainer() {
 	const routesRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 
-	const {  toTokenAddress } = useQueryParams();
-	const {
-		selectedChain,
-		selectedToToken,
-		finalSelectedFromToken,
-		finalSelectedToToken
-	} = useSelectedChainAndTokens();
+	const { toTokenAddress } = useQueryParams();
+	const { selectedChain, selectedToToken, finalSelectedFromToken, finalSelectedToToken } = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
 
@@ -967,7 +962,8 @@ export function AggregatorContainer() {
 				{finalSelectedFromToken?.value === zeroAddress && Number(slippage) < 2 ? (
 					<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow1">
 						<AlertIcon />
-						Swaps from {finalSelectedFromToken.symbol} on CoW Swap need to have slippage higher than {selectedChain?.value ? cowSwapEthFlowSlippagePerChain[selectedChain?.value] : 2}%.
+						Swaps from {finalSelectedFromToken.symbol} on CoW Swap need to have slippage higher than{' '}
+						{selectedChain?.value ? cowSwapEthFlowSlippagePerChain[selectedChain?.value] : 2}%.
 					</Alert>
 				) : null}
 				<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow2">
@@ -1196,7 +1192,7 @@ export function AggregatorContainer() {
 													onClick={() => {
 														handleSignatureForMutation();
 													}}
-													disabled={(signatureForSwapMutation.isPending || signatureForSwapMutation.data) ? true : false}
+													disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data ? true : false}
 												>
 													Sign
 												</Button>

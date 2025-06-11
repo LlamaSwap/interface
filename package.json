@@ -19,7 +19,7 @@
 		"@defillama/sdk": "^3.0.25",
 		"@emotion/react": "^11",
 		"@emotion/styled": "^11",
-		"@rainbow-me/rainbowkit": "2.1.6",
+		"@rainbow-me/rainbowkit": "2.2.6",
 		"@tanstack/react-query": "5.55.4",
 		"@tanstack/react-virtual": "^3.0.0-beta.36",
 		"ariakit": "^2.0.0-next.41",

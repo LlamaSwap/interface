@@ -36,7 +36,7 @@ module.exports = {
 		]
 	},
 	externals: {
-		'node:crypto': 'commonjs crypto',
+		'node:crypto': 'commonjs crypto'
 	},
 	resolve: {
 		extensions: ['.ts', '.js', '.json'],
