@@ -3,7 +3,7 @@
 import { ExtraData } from '../../types';
 
 import BigNumber from 'bignumber.js';
-import { hashTypedData, zeroAddress } from 'viem';
+import { encodePacked, hashTypedData, zeroAddress } from 'viem';
 import { signTypedData, watchContractEvent, writeContract } from 'wagmi/actions';
 import { config } from '../../../WalletProvider';
 import { chainsMap } from '../../constants';
@@ -257,7 +257,10 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 				}
 			});
 
-			const orderUid = `${typedData}${rawQuote.from}${rawQuote.quote.validTo}`;
+			const orderUid = encodePacked(
+				['bytes32', 'address', 'uint32'],
+				[typedData, rawQuote.from, rawQuote.quote.validTo]
+			);
 
 			const tx = await writeContract(config, {
 				address: settlementAddress[chain],
