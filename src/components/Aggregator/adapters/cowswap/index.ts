@@ -174,9 +174,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-let isSmartContractWallet = true;
-
-export async function swap({ chain, fromAddress, rawQuote, from, to }) {
+export async function swap({ chain, fromAddress, rawQuote, from, to, isSmartContractWallet }) {
 	try {
 		if (from === zeroAddress) {
 			const minEthFlowSlippage = cowSwapEthFlowSlippagePerChain[chain];

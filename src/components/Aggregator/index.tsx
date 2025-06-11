@@ -1,6 +1,6 @@
 import { useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useSignTypedData, useSwitchChain } from 'wagmi';
+import { useAccount, useBytecode, useSignTypedData, useSwitchChain } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
@@ -368,13 +368,8 @@ export function AggregatorContainer() {
 	const routesRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 
-	const {  toTokenAddress } = useQueryParams();
-	const {
-		selectedChain,
-		selectedToToken,
-		finalSelectedFromToken,
-		finalSelectedToToken
-	} = useSelectedChainAndTokens();
+	const { toTokenAddress } = useQueryParams();
+	const { selectedChain, selectedToToken, finalSelectedFromToken, finalSelectedToToken } = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
 
@@ -698,6 +693,11 @@ export function AggregatorContainer() {
 		}
 	};
 
+	const { data: bytecode } = useBytecode({
+		address,
+		chainId: selectedChain?.id
+	});
+
 	const swapMutation = useMutation({
 		mutationFn: (params: {
 			chain: string;
@@ -714,6 +714,7 @@ export function AggregatorContainer() {
 			route: any;
 			approvalData: any;
 			signature: any;
+			isSmartContractWallet: boolean;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -942,7 +943,8 @@ export function AggregatorContainer() {
 				amount: selectedRoute.amount,
 				amountIn: selectedRoute.amountIn,
 				approvalData: gaslessApprovalMutation?.data ?? {},
-				signature: signatureForSwapMutation?.data
+				signature: signatureForSwapMutation?.data,
+				isSmartContractWallet: (bytecode && bytecode !== '0x') ? true : false
 			});
 		}
 	};
@@ -967,7 +969,8 @@ export function AggregatorContainer() {
 				{finalSelectedFromToken?.value === zeroAddress && Number(slippage) < 2 ? (
 					<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow1">
 						<AlertIcon />
-						Swaps from {finalSelectedFromToken.symbol} on CoW Swap need to have slippage higher than {selectedChain?.value ? cowSwapEthFlowSlippagePerChain[selectedChain?.value] : 2}%.
+						Swaps from {finalSelectedFromToken.symbol} on CoW Swap need to have slippage higher than{' '}
+						{selectedChain?.value ? cowSwapEthFlowSlippagePerChain[selectedChain?.value] : 2}%.
 					</Alert>
 				) : null}
 				<Alert status="warning" borderRadius="0.375rem" py="8px" key="cow2">
@@ -1196,7 +1199,7 @@ export function AggregatorContainer() {
 													onClick={() => {
 														handleSignatureForMutation();
 													}}
-													disabled={(signatureForSwapMutation.isPending || signatureForSwapMutation.data) ? true : false}
+													disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data ? true : false}
 												>
 													Sign
 												</Button>
