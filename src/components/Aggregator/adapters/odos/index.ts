@@ -16,8 +16,7 @@ export const chainToId = {
 	//mode:
 	linea: 59144,
 	scroll: 534352,
-	sonic: 146,
-	unichain: 130
+	sonic: 146
 };
 
 export const name = 'Odos';
