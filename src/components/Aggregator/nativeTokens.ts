@@ -340,6 +340,16 @@ const sonic = {
 	decimals: 18
 };
 
+const unichain = {
+	mcap: Number.MAX_SAFE_INTEGER,
+	address: zeroAddress,
+	chainId: 130,
+	name: 'Ethereum',
+	symbol: 'ETH',
+	logoURI: chainIconUrl('ethereum'),
+	decimals: 18
+};
+
 export const nativeTokens = [
 	ethereum,
 	arbitrum,
@@ -374,5 +384,6 @@ export const nativeTokens = [
 	base,
 	linea,
 	scroll,
-	sonic
+	sonic,
+	unichain
 ];

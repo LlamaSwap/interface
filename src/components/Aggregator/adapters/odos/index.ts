@@ -16,7 +16,8 @@ export const chainToId = {
 	//mode:
 	linea: 59144,
 	scroll: 534352,
-	sonic: 146
+	sonic: 146,
+	unichain: 130
 };
 
 export const name = 'Odos';
@@ -38,6 +39,7 @@ const routers = {
 	linea: '0x2d8879046f1559E53eb052E949e9544bCB72f414',
 	scroll: '0xbFe03C9E20a9Fc0b37de01A172F207004935E0b1',
 	sonic: '0xac041df48df9791b0654f1dbbf2cc8450c5f2e9d',
+	unichain: '0x6409722F3a1C4486A3b1FE566cBDd5e9D946A1f3'
 	//polygonzkevm: '0x2b8B3f0949dfB616602109D2AAbBA11311ec7aEC'
 };
 
