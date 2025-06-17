@@ -34,15 +34,15 @@ const oneInchChains = {
 const tokensToFix = {
 	1: {
 		['0xb01dd87B29d187F3E3a4Bf6cdAebfb97F3D9aB98'.toLowerCase()]: {
-			name: 'BOLD (legacy)'
+			name: 'BOLD (legacy)' // BOLD -> BOLD (legacy)
 		},
 		['0x6b175474e89094c44da98b954eedeac495271d0f'.toLowerCase()]: {
-			symbol: 'DAI'
+			symbol: 'DAI' // XDAI -> DAI
 		}
 	},
 	43114: {
 		['0x152b9d0fdc40c096757f570a51e494bd4b943e50'.toLowerCase()]: {
-			symbol: 'BTC.b'
+			symbol: 'BTC.b' // BTC -> BTC.b
 		}
 	}
 }
