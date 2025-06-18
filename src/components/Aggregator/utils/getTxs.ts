@@ -8,15 +8,17 @@ export function getTxs({
 	value,
 	fromTokenAddress,
 	fromAmount,
-	eip5792
+	eip5792,
+	tokenApprovalAddress
 }: {
 	fromAddress: `0x${string}`;
 	toAddress: `0x${string}`;
 	data: `0x${string}`;
 	value?: bigint;
-	fromTokenAddress: `0x${string}`;
-	fromAmount: bigint;
-	eip5792: any;
+	fromTokenAddress?: `0x${string}`;
+	fromAmount?: bigint;
+	eip5792?: any;
+	tokenApprovalAddress?: `0x${string}`;
 }) {
 	const txObj = {
 		from: fromAddress,
@@ -28,6 +30,10 @@ export function getTxs({
 	const txs: any = [];
 
 	if (eip5792 && (eip5792.shouldRemoveApproval || !eip5792.isTokenApproved)) {
+		if (!fromTokenAddress) throw new Error('fromTokenAddress is required');
+		if (!tokenApprovalAddress) throw new Error('tokenApprovalAddress is required');
+		if (!fromAmount) throw new Error('fromAmount is required');
+		
 		if (eip5792.shouldRemoveApproval) {
 			txs.push({
 				from: txObj.from,
@@ -35,7 +41,7 @@ export function getTxs({
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [txObj.to, 0n]
+					args: [tokenApprovalAddress, 0n]
 				})
 			});
 		}
@@ -47,7 +53,7 @@ export function getTxs({
 				data: encodeFunctionData({
 					abi: tokenApprovalAbi,
 					functionName: 'approve',
-					args: [txObj.to, fromAmount]
+					args: [tokenApprovalAddress, fromAmount]
 				})
 			});
 		}

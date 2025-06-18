@@ -5,6 +5,7 @@ import { encodeFunctionData, zeroAddress } from 'viem';
 import { readContract } from 'wagmi/actions';
 import { config } from '../../../WalletProvider';
 import { chainsMap } from '../../constants';
+import { getTxs } from '../../utils/getTxs';
 
 // Source https://github.com/yieldyak/yak-aggregator
 export const chainToId = {
@@ -80,13 +81,13 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 		]
 	});
 
-	const tx = {
-		to: chainToId[chain],
+	const txs = getTxs({
+		fromAddress,
+		toAddress: chainToId[chain],
 		data,
-		...(from === zeroAddress ? { value: rawQuote.offer.amounts[0] } : {})
-	};
+		value: from === zeroAddress ? rawQuote.offer.amounts[0] : undefined
+	});
 
-	const res = await sendTx(tx);
-
+	const res = await sendTx(txs);
 	return res;
 }

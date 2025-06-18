@@ -88,7 +88,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ tokens, fromAmount, rawQuote, eip5792 }) {
+export async function swap({ tokens, fromAmount, rawQuote, eip5792, chain }) {
 	const txs = getTxs({
 		fromAddress: rawQuote.tx.from,
 		toAddress: rawQuote.tx.to,
@@ -96,7 +96,8 @@ export async function swap({ tokens, fromAmount, rawQuote, eip5792 }) {
 		value: rawQuote.tx.value,
 		fromTokenAddress: tokens.fromToken.address,
 		fromAmount,
-		eip5792
+		eip5792,
+		tokenApprovalAddress: spenders[chain]
 	});
 
 	const gasPrediction = await estimateGas(config, txs[txs.length - 1]).catch(() => null);

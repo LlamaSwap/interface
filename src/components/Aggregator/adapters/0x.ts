@@ -66,7 +66,8 @@ export async function swap({ tokens, fromAmount, fromAddress, rawQuote, eip5792 
 		value: rawQuote.value,
 		fromTokenAddress: tokens.fromToken.address,
 		fromAmount,
-		eip5792
+		eip5792,
+		tokenApprovalAddress: rawQuote.to
 	});
 
 	const tx = await sendTx(txs);

@@ -1,3 +1,4 @@
+import { getTxs } from '../utils/getTxs';
 import { sendTx } from '../utils/sendTx';
 import { zeroAddress } from 'viem';
 
@@ -77,12 +78,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ rawQuote, chain }) {
-	const tx = await sendTx({
-		from: rawQuote.from,
-		to: rawQuote.to,
+	const txs = getTxs({
+		fromAddress: rawQuote.from,
+		toAddress: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
 	});
+	const tx = await sendTx(txs);
 	return tx;
 }
 

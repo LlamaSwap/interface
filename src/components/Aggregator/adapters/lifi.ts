@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js';
 import { ExtraData } from '../types';
 import { zeroAddress } from 'viem';
 import { sendTx } from '../utils/sendTx';
+import { getTxs } from '../utils/getTxs';
 
 export const chainToId = {
 	ethereum: 'eth',
@@ -55,13 +56,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ rawQuote, chain }) {
-	const tx = await sendTx({
-		from: rawQuote.transactionRequest.from,
-		to: rawQuote.transactionRequest.to,
+	const txs = getTxs({
+		fromAddress: rawQuote.transactionRequest.from,
+		toAddress: rawQuote.transactionRequest.to,
 		data: rawQuote.transactionRequest.data,
-		value: rawQuote.transactionRequest.value,
-		...(chain === 'optimism' && { gas: rawQuote.gasLimit })
+		value: rawQuote.transactionRequest.value
 	});
+	const tx = await sendTx(txs);
 
 	return tx;
 }

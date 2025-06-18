@@ -92,18 +92,18 @@ export async function getQuote(
 	if(data.priceRoute.tokenTransferProxy.toLowerCase() !== approvers[chain].toLowerCase()){
 		throw new Error("Approval address doesn't match")
 	}
-
+	const tokenApprovalAddress = data.priceRoute.tokenTransferProxy;
 	return {
 		amountReturned: data.priceRoute.destAmount,
 		amountIn: data.priceRoute.srcAmount || 0,
 		estimatedGas: gas,
-		tokenApprovalAddress: data.priceRoute.tokenTransferProxy,
-		rawQuote: { ...dataSwap, gasLimit: gas },
+		tokenApprovalAddress,
+		rawQuote: { ...dataSwap, gasLimit: gas , tokenApprovalAddress},
 		logo: 'https://assets.coingecko.com/coins/images/20403/small/ep7GqM19_400x400.jpg?1636979120'
 	};
 }
 
-export async function swap({ tokens, fromAmount, fromAddress, rawQuote, eip5792 }) {
+export async function swap({ tokens, fromAmount, rawQuote, eip5792 }) {
 	const txs = getTxs({
 		fromAddress: rawQuote.from,
 		toAddress: rawQuote.to,
@@ -111,7 +111,8 @@ export async function swap({ tokens, fromAmount, fromAddress, rawQuote, eip5792 
 		value: rawQuote.value,
 		fromTokenAddress: tokens.fromToken.address,
 		fromAmount,
-		eip5792
+		eip5792,
+		tokenApprovalAddress: rawQuote.tokenApprovalAddress,
 	});
 
 	const tx = await sendTx(txs);

@@ -1,5 +1,6 @@
 import { numberToHex, size, zeroAddress, concat} from 'viem';
 import { sendTx } from '../utils/sendTx';
+import { getTxs } from '../utils/getTxs';
 
 export const name = 'Matcha/0x v2';
 export const token = 'ZRX';
@@ -96,12 +97,15 @@ export async function swap({ fromAddress, rawQuote, signature }) {
 	const data = signature
 		? concat([rawQuote.transaction.data, signatureLengthInHex, signature])
 		: rawQuote.transaction.data;
-	const tx = await sendTx({
-		from: fromAddress,
-		to: rawQuote.transaction.to,
+
+	const txs = getTxs({
+		fromAddress,
+		toAddress: rawQuote.transaction.to,
 		data,
-		value: rawQuote.transaction.value
+		value: rawQuote.transaction.value,
 	});
+
+	const tx = await sendTx(txs);
 
 	return tx;
 }
