@@ -886,13 +886,6 @@ export function AggregatorContainer() {
 
 			if (typeof data === 'object' && data.id) {
 				//eip5792
-				if (chainOnWallet?.blockExplorers) {
-					const explorerUrl = chainOnWallet.blockExplorers.default.url;
-					setTxModalOpen(true);
-					txUrl = `${explorerUrl}/tx/${data.id}`;
-					setTxUrl(txUrl);
-				}
-
 				confirmingTxToastRef.current = toast({
 					title: 'Confirming Transaction',
 					description: '',
@@ -924,10 +917,18 @@ export function AggregatorContainer() {
 						}
 
 						if (final.receipts && final.receipts.length > 0) {
-							addRecentTransaction({
-								hash: final.receipts[final.receipts.length - 1].transactionHash,
-								description: `Swap transaction using ${variables.adapter} is sent.`
-							});
+							const txHashRegex = /^0x[a-fA-F0-9]{64}$/;
+							const hash = final.receipts.find((r) => txHashRegex.test(r.transactionHash))?.transactionHash ?? null;
+							if (chainOnWallet?.blockExplorers && hash) {
+								const explorerUrl = chainOnWallet.blockExplorers.default.url;
+								setTxModalOpen(true);
+								txUrl = `${explorerUrl}/tx/${hash}`;
+								setTxUrl(txUrl);
+								addRecentTransaction({
+									hash,
+									description: `Swap transaction using ${variables.adapter} is sent.`
+								});
+							}
 						}
 					})
 					?.catch((err) => {
