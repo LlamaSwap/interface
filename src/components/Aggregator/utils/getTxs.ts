@@ -3,7 +3,7 @@ import { tokenApprovalAbi } from '../constants';
 
 export function getTxs({
 	fromAddress,
-	toAddress,
+	routerAddress,
 	data,
 	value,
 	fromTokenAddress,
@@ -12,7 +12,7 @@ export function getTxs({
 	tokenApprovalAddress
 }: {
 	fromAddress: `0x${string}`;
-	toAddress: `0x${string}`;
+	routerAddress: `0x${string}`;
 	data: `0x${string}`;
 	value?: bigint;
 	fromTokenAddress?: `0x${string}`;
@@ -22,7 +22,7 @@ export function getTxs({
 }) {
 	const txObj = {
 		from: fromAddress,
-		to: toAddress,
+		to: routerAddress,
 		data: data,
 		...(value ? { value } : {})
 	};

@@ -100,7 +100,7 @@ export async function swap({ fromAddress, rawQuote, signature }) {
 
 	const txs = getTxs({
 		fromAddress,
-		toAddress: rawQuote.transaction.to,
+		routerAddress: rawQuote.transaction.to,
 		data,
 		value: rawQuote.transaction.value,
 	});

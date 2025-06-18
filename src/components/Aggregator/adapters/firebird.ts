@@ -108,7 +108,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 export async function swap({ rawQuote, chain }) {
 	const txs = getTxs({
 		fromAddress: rawQuote.tx.from,
-		toAddress: rawQuote.tx.router,
+		routerAddress: rawQuote.tx.router,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value
 	});

@@ -83,7 +83,7 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 
 	const txs = getTxs({
 		fromAddress,
-		toAddress: chainToId[chain],
+		routerAddress: chainToId[chain],
 		data,
 		value: from === zeroAddress ? rawQuote.offer.amounts[0] : undefined
 	});
