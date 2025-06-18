@@ -1,6 +1,5 @@
-import { encodeFunctionData } from 'viem';
-import { sendMultipleTxs, sendTx } from '../../utils/sendTx';
-import { tokenApprovalAbi } from '../../constants';
+import { sendTx } from '../../utils/sendTx';
+import { getTxs } from '../../utils/getTxs';
 
 // https://api.odos.xyz/info/chains
 export const chainToId = {
@@ -97,47 +96,17 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ tokens, fromAmount, rawQuote, eip5792 }) {
-	const txObj = {
-		from: rawQuote.transaction.from,
-		to: rawQuote.transaction.to,
+	const txs = getTxs({
+		fromAddress: rawQuote.transaction.from,
+		toAddress: rawQuote.transaction.to,
 		data: rawQuote.transaction.data,
-		value: rawQuote.transaction.value
-		//gas: rawQuote.transaction.gas
-	}
+		value: rawQuote.transaction.value,
+		fromTokenAddress: tokens.fromToken.address,
+		fromAmount,
+		eip5792
+	});
 
-	if (eip5792 && (eip5792.shouldRemoveApproval || !eip5792.isTokenApproved)) {
-		const txs: any = [];
-		if (eip5792.shouldRemoveApproval) {
-			txs.push({
-				from: txObj.from,
-				to: tokens.fromToken.address,
-				data: encodeFunctionData({
-					abi: tokenApprovalAbi,
-					functionName: 'approve',
-					args: [txObj.to, 0n]
-				})
-			});
-		}
-
-		if (!eip5792.isTokenApproved) {
-			txs.push({
-				from: txObj.from,
-				to: tokens.fromToken.address,
-				data: encodeFunctionData({
-					abi: tokenApprovalAbi,
-					functionName: 'approve',
-					args: [txObj.to, fromAmount]
-				})
-			});
-		}
-
-		txs.push(txObj);
-
-		const tx = await sendMultipleTxs(txs);
-		return tx;
-	}
-
-	const tx = await sendTx(txObj);
+	const tx = await sendTx(txs);
 
 	return tx;
 }

@@ -1,22 +1,7 @@
 import { estimateGas, sendTransaction, sendCalls } from 'wagmi/actions';
 import { config } from '../../WalletProvider';
 
-export async function sendTx(txObject: any) {
-	if (txObject.data === '0x' || typeof txObject.to !== 'string') {
-		throw new Error('Malformed tx'); // Should never happen
-	}
-	if (txObject.gas === undefined) {
-		const gasPrediction = await estimateGas(config, txObject).catch(() => null);
-
-		if (gasPrediction) {
-			txObject.gas = (gasPrediction * 14n) / 10n; // Increase gas +40%
-		}
-	}
-
-	return sendTransaction(config, txObject);
-}
-
-export async function sendMultipleTxs(calls: any[]) {
+export async function sendTx(calls: any[]) {
 	try {
 		const swaptxObj = calls[calls.length - 1];
 
@@ -32,7 +17,14 @@ export async function sendMultipleTxs(calls: any[]) {
 			}
 		}
 
-		return sendCalls(config, { calls: calls.length === 0 ? [swaptxObj] : [calls[0], swaptxObj] });
+		// use sendTransaction for single tx ,so we can get the status of swap by calling waitForTransactionReceipt()
+		// return type is `0x${string}`
+		if (calls.length === 1) {
+			return sendTransaction(config, swaptxObj);
+		}
+
+		// return type is {id: `0x${string}`}
+		return sendCalls(config, { calls: calls.slice(0, -1).concat([swaptxObj]) });
 	} catch (error) {
 		console.log(error);
 		throw new Error(error instanceof Error ? error.message : 'Unknown error');

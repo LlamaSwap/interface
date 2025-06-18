@@ -1,10 +1,11 @@
 // Source https://portal.1inch.dev/documentation/apis/swap/classic-swap/introduction
 
-import { altReferralAddress, tokenApprovalAbi } from '../constants';
-import { sendMultipleTxs, sendTx } from '../utils/sendTx';
+import { altReferralAddress } from '../constants';
+import { sendTx } from '../utils/sendTx';
 import { estimateGas } from 'wagmi/actions';
 import { config } from '../../WalletProvider';
-import { encodeFunctionData, zeroAddress } from 'viem';
+import { zeroAddress } from 'viem';
+import { getTxs } from '../utils/getTxs';
 
 export const chainToId = {
 	ethereum: 1,
@@ -88,51 +89,25 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ tokens, fromAmount, rawQuote, eip5792 }) {
-	const txObj = {
-		from: rawQuote.tx.from,
-		to: rawQuote.tx.to,
+	const txs = getTxs({
+		fromAddress: rawQuote.tx.from,
+		toAddress: rawQuote.tx.to,
 		data: rawQuote.tx.data,
-		value: rawQuote.tx.value
-	};
+		value: rawQuote.tx.value,
+		fromTokenAddress: tokens.fromToken.address,
+		fromAmount,
+		eip5792
+	});
 
-	const gasPrediction = await estimateGas(config, txObj).catch(() => null);
+	const gasPrediction = await estimateGas(config, txs[txs.length - 1]).catch(() => null);
 
 	const finalTxObj = {
-		...txObj,
+		...txs[txs.length - 1],
 		// Increase gas +20% + 2 erc20 txs
 		...(gasPrediction ? { gas: (gasPrediction * 12n) / 10n + 86000n } : {})
 	};
 
-	if (eip5792 && (eip5792.shouldRemoveApproval || !eip5792.isTokenApproved)) {
-		const txs: any = [];
-		if (eip5792.shouldRemoveApproval) {
-			txs.push({
-				from: txObj.from,
-				to: tokens.fromToken.address,
-				data: encodeFunctionData({
-					abi: tokenApprovalAbi,
-					functionName: 'approve',
-					args: [txObj.to, 0n]
-				})
-			});
-		}
-		if (!eip5792.isTokenApproved) {
-			txs.push({
-				from: txObj.from,
-				to: tokens.fromToken.address,
-				data: encodeFunctionData({
-					abi: tokenApprovalAbi,
-					functionName: 'approve',
-					args: [txObj.to, fromAmount]
-				})
-			});
-		}
-		txs.push(finalTxObj);
-		const tx = await sendMultipleTxs(txs);
-		return tx;
-	}
-
-	const tx = await sendTx(finalTxObj);
+	const tx = await sendTx(txs.slice(0, -1).concat([finalTxObj]));
 
 	return tx;
 }

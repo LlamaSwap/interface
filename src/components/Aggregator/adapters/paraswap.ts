@@ -1,8 +1,9 @@
 // Source: https://developers.paraswap.network/api/master
 
-import { sendMultipleTxs, sendTx } from '../utils/sendTx';
-import { defillamaReferrerAddress, tokenApprovalAbi } from '../constants';
-import { encodeFunctionData, zeroAddress } from 'viem';
+import { sendTx } from '../utils/sendTx';
+import { defillamaReferrerAddress } from '../constants';
+import { zeroAddress } from 'viem';
+import { getTxs } from '../utils/getTxs';
 
 // api docs have an outdated chain list, need to check https://app.paraswap.io/# to find supported networks
 export const chainToId = {
@@ -102,44 +103,18 @@ export async function getQuote(
 	};
 }
 
-export async function swap({ tokens, fromAmount, rawQuote, eip5792 }) {
-	const txObj = {
-		from: rawQuote.from,
-		to: rawQuote.to,
+export async function swap({ tokens, fromAmount, fromAddress, rawQuote, eip5792 }) {
+	const txs = getTxs({
+		fromAddress: rawQuote.from,
+		toAddress: rawQuote.to,
 		data: rawQuote.data,
-		value: rawQuote.value
-	};
+		value: rawQuote.value,
+		fromTokenAddress: tokens.fromToken.address,
+		fromAmount,
+		eip5792
+	});
 
-	if (eip5792 && (eip5792.shouldRemoveApproval || !eip5792.isTokenApproved)) {
-		const txs: any = [];
-		if (eip5792.shouldRemoveApproval) {
-			txs.push({
-				from: txObj.from,
-				to: tokens.fromToken.address,
-				data: encodeFunctionData({
-					abi: tokenApprovalAbi,
-					functionName: 'approve',
-					args: [txObj.to, 0n]
-				})
-			});
-		}
-		if (!eip5792.isTokenApproved) {
-			txs.push({
-				from: txObj.from,
-				to: tokens.fromToken.address,
-				data: encodeFunctionData({
-					abi: tokenApprovalAbi,
-					functionName: 'approve',
-					args: [txObj.to, fromAmount]
-				})
-			});
-		}
-		txs.push(txObj);
-		const tx = await sendMultipleTxs(txs);
-		return tx;
-	}
-
-	const tx = await sendTx(txObj);
+	const tx = await sendTx(txs);
 
 	return tx;
 }
