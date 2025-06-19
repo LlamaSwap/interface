@@ -686,7 +686,7 @@ export function AggregatorContainer() {
 					? true
 					: isTokenApproved
 		: false;
-	console.log({isApproved, isTokenApproved})
+
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval ? true : false;
 

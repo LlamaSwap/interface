@@ -103,7 +103,11 @@ export async function swap({ tokens, fromAmount, fromAddress, rawQuote, signatur
 		fromAddress,
 		routerAddress: rawQuote.transaction.to,
 		data,
-		value: rawQuote.transaction.value
+		value: rawQuote.transaction.value,
+		fromTokenAddress: tokens.fromToken.address,
+		fromAmount,
+		eip5792,
+		tokenApprovalAddress: permit2Address
 	});
 
 	const tx = await sendTx(txs);	
