@@ -661,7 +661,7 @@ export function AggregatorContainer() {
 
 	const isEip5792 =
 		selectedRoute &&
-		!['CowSwap', '0x Gasless', 'Matcha/0x v2'].includes(selectedRoute.name) &&
+		!['CowSwap', '0x Gasless'].includes(selectedRoute.name) &&
 		selectedChain &&
 		capabilities?.[selectedChain.id]?.atomic?.status
 			? capabilities[selectedChain.id].atomic!.status === 'supported'
@@ -968,7 +968,7 @@ export function AggregatorContainer() {
 			signatureForSwapMutation.reset();
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
-			console.log(err);
+			console.log(err)
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
 				toast(formatErrorToast(err, false));
 

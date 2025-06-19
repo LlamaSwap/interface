@@ -33,7 +33,7 @@ export function getTxs({
 		if (!fromTokenAddress) throw new Error('fromTokenAddress is required');
 		if (!tokenApprovalAddress) throw new Error('tokenApprovalAddress is required');
 		if (!fromAmount) throw new Error('fromAmount is required');
-		
+
 		if (eip5792.shouldRemoveApproval) {
 			txs.push({
 				from: txObj.from,
