@@ -661,7 +661,7 @@ export function AggregatorContainer() {
 
 	const isEip5792 =
 		selectedRoute &&
-		selectedRoute.name !== 'CowSwap' &&
+		!['CowSwap', '0x Gasless', 'Matcha/0x v2'].includes(selectedRoute.name) &&
 		selectedChain &&
 		capabilities?.[selectedChain.id]?.atomic?.status
 			? capabilities[selectedChain.id].atomic!.status === 'supported'
@@ -686,7 +686,7 @@ export function AggregatorContainer() {
 					? true
 					: isTokenApproved
 		: false;
-
+	console.log({isApproved, isTokenApproved})
 	const isUSDTNotApprovedOnEthereum =
 		selectedChain && finalSelectedFromToken && selectedChain.id === 1 && shouldRemoveApproval ? true : false;
 

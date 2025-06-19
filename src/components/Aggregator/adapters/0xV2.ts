@@ -86,7 +86,7 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 	return signature;
 }
 
-export async function swap({ fromAddress, rawQuote, signature }) {
+export async function swap({ tokens, fromAmount, fromAddress, rawQuote, signature, eip5792 }) {
 	// signature not needed if using allowance holder api
 	const signatureLengthInHex = signature
 		? numberToHex(size(signature), {
@@ -94,6 +94,7 @@ export async function swap({ fromAddress, rawQuote, signature }) {
 				size: 32
 			})
 		: null;
+
 	const data = signature
 		? concat([rawQuote.transaction.data, signatureLengthInHex, signature])
 		: rawQuote.transaction.data;
@@ -102,10 +103,10 @@ export async function swap({ fromAddress, rawQuote, signature }) {
 		fromAddress,
 		routerAddress: rawQuote.transaction.to,
 		data,
-		value: rawQuote.transaction.value,
+		value: rawQuote.transaction.value
 	});
 
-	const tx = await sendTx(txs);
+	const tx = await sendTx(txs);	
 
 	return tx;
 }
