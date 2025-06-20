@@ -31,20 +31,21 @@ const oneInchChains = {
 	aurora: 1313161554
 };
 
-const fixTotkens = (tokenlist) => {
-	// BTC -> BTC.b
-	tokenlist[43114].find(
-		({ address }) => address.toLowerCase() === '0x152b9d0fdc40c096757f570a51e494bd4b943e50'
-	).symbol = 'BTC.b';
-	//RSR address
-	// tokenlist[1].find(({ address }) => address.toLowerCase() === '0x8762db106b2c2a0bccb3a80d1ed41273552616e8').address =
-	// 	'0x320623b8e4ff03373931769a31fc52a4e78b5d70';
-	// XDAI -> DAI
-	tokenlist[1].find(({ address }) => address.toLowerCase() === '0x6b175474e89094c44da98b954eedeac495271d0f').symbol =
-		'DAI';
-
-	return tokenlist;
-};
+const tokensToFix = {
+	1: {
+		['0xb01dd87B29d187F3E3a4Bf6cdAebfb97F3D9aB98'.toLowerCase()]: {
+			name: 'BOLD (legacy)' // BOLD -> BOLD (legacy)
+		},
+		['0x6b175474e89094c44da98b954eedeac495271d0f'.toLowerCase()]: {
+			symbol: 'DAI' // XDAI -> DAI
+		}
+	},
+	43114: {
+		['0x152b9d0fdc40c096757f570a51e494bd4b943e50'.toLowerCase()]: {
+			symbol: 'BTC.b' // BTC -> BTC.b
+		}
+	}
+}
 
 const markMultichain = (tokens) => {
 	const multichainTokens = {};
@@ -155,8 +156,6 @@ export async function getTokenList() {
 			.map((token) => ({ ...token, address: token.address.toLowerCase() }));
 	});
 
-	tokensFiltered = fixTotkens(tokensFiltered);
-
 	tokensFiltered = markMultichain(tokensFiltered);
 
 	// get top tokens on each chain
@@ -216,15 +215,16 @@ export async function getTokenList() {
 	const formatAndSortTokens = (tokens, chain) => {
 		return tokens
 			.map((t) => {
-				const volume24h = topTokensByVolume[chain]?.[t.address.toLowerCase()] ?? 0;
-
+				const address = t.address.toLowerCase()
+				const volume24h = topTokensByVolume[chain]?.[address] ?? 0;
+				const details = {...t, ...(tokensToFix[chain]?.[address] || {})}
 				return {
-					...t,
-					address: t.address.toLowerCase(),
-					label: t.symbol,
-					value: t.address,
-					logoURI: t.ownLogoURI || `https://token-icons.llamao.fi/icons/tokens/${t.chainId}/${t.address}?h=48&w=48`,
-					logoURI2: t.logoURI || null,
+					...details,
+					address,
+					label: details.symbol,
+					value: address,
+					logoURI: details.ownLogoURI || `https://token-icons.llamao.fi/icons/tokens/${details.chainId}/${address}?h=48&w=48`,
+					logoURI2: details.logoURI || null,
 					volume24h
 				};
 			})
