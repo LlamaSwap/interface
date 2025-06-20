@@ -45,7 +45,8 @@ export async function swap({
 	tokens,
 	approvalData,
 	eip5792,
-	signature
+	signature,
+	isSmartContractWallet
 }) {
 	const aggregator = adaptersMap[adapter];
 
@@ -62,7 +63,8 @@ export async function swap({
 			tokens,
 			approvalData,
 			eip5792,
-			signature
+			signature,
+			isSmartContractWallet
 		});
 		return res;
 	} catch (e) {

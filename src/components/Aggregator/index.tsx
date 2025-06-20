@@ -1,6 +1,6 @@
 import { useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useSignTypedData, useCapabilities, useSwitchChain } from 'wagmi';
+import { useAccount, useSignTypedData, useCapabilities, useSwitchChain, useBytecode } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
@@ -705,6 +705,11 @@ export function AggregatorContainer() {
 		}
 	};
 
+	const { data: bytecode } = useBytecode({
+		address,
+		chainId: selectedChain?.id
+	});
+
 	const swapMutation = useMutation({
 		mutationFn: (params: {
 			chain: string;
@@ -723,6 +728,7 @@ export function AggregatorContainer() {
 			approvalData: any;
 			eip5792: { shouldRemoveApproval: boolean; isTokenApproved: boolean } | null;
 			signature: any;
+			isSmartContractWallet: boolean;
 		}) => swap(params),
 		onSuccess: (data, variables) => {
 			let txUrl;
@@ -1044,7 +1050,8 @@ export function AggregatorContainer() {
 				fromAmount: selectedRoute.fromAmount,
 				approvalData: gaslessApprovalMutation?.data ?? {},
 				eip5792: isEip5792 ? { shouldRemoveApproval: shouldRemoveApproval ? true : false, isTokenApproved } : null,
-				signature: signatureForSwapMutation?.data
+				signature: signatureForSwapMutation?.data,
+				isSmartContractWallet: (bytecode && bytecode !== '0x') ? true : false
 			});
 		}
 	};
