@@ -70,7 +70,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	).then((r) => r.json());
 
-	const tx = extra.userAddress === zeroAddress? null : await fetch(
+	const tx = extra.userAddress === zeroAddress ? null : await fetch(
 		`https://aggregator-api.kyberswap.com/${chainToId[chain]}/api/v1/route/build`,
 		{
 			headers: {
@@ -104,11 +104,12 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ tokens, fromAmount, fromAddress, rawQuote, eip5792 , chain}) {
+export async function swap({ tokens, fromAmount, fromAddress, from, rawQuote, eip5792 , chain}) {
 	const txs = getTxs({
 		fromAddress: fromAddress,
 		routerAddress: rawQuote.routerAddress,
 		data: rawQuote.data,
+		...(from === zeroAddress ? { value: rawQuote.amountIn } : {}),
 		fromTokenAddress: tokens.fromToken.address,
 		fromAmount,
 		eip5792,
