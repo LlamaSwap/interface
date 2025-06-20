@@ -166,7 +166,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ chain, fromAddress, rawQuote, from, to }) {
+export async function swap({ chain, fromAddress, rawQuote, from, to, isSmartContractWallet }) {
 
 	if (from === zeroAddress) {
 		const minEthFlowSlippage = cowSwapEthFlowSlippagePerChain[chain];
@@ -265,10 +265,11 @@ export async function swap({ chain, fromAddress, rawQuote, from, to }) {
 			method: 'POST',
 			body: JSON.stringify({
 				...rawQuote.quote,
+				...(isSmartContractWallet ? { from: fromAddress } : {}),
 				sellAmount: String(order.sellAmount),
 				feeAmount: '0',
 				signature,
-				signingScheme: 'eip712'
+				signingScheme: isSmartContractWallet ? 'eip1271' : 'eip712'
 			}),
 			headers: {
 				'Content-Type': 'application/json'
