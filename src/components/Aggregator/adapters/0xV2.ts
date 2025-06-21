@@ -25,7 +25,20 @@ export const chainToId = {
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 const feeCollectorAddress = '0x9Ab6164976514F1178E2BB4219DA8700c9D96E9A';
 const permit2Address = '0x000000000022d473030f116ddee9f6b43ac78ba3';
-const allowanceHolderAddress = '0x0000000000001fF3684f28c67538d4D072C22734';
+const allowanceHolderAddress = {
+	ethereum: '0x0000000000001ff3684f28c67538d4d072c22734',
+	bsc: '0x0000000000001ff3684f28c67538d4d072c22734',
+	polygon: '0x0000000000001ff3684f28c67538d4d072c22734',
+	optimism: '0x0000000000001ff3684f28c67538d4d072c22734',
+	arbitrum: '0x0000000000001ff3684f28c67538d4d072c22734',
+	avax: '0x0000000000001ff3684f28c67538d4d072c22734',
+	base: '0x0000000000001ff3684f28c67538d4d072c22734',
+	blast: '0x0000000000001ff3684f28c67538d4d072c22734',
+	scroll: '0x0000000000005e88410ccdfade4a5efae4b49562',
+	mantle: '0x0000000000005e88410ccdfade4a5efae4b49562',
+	linea: '0x000000000000175a8b9bc6d539b3708eed92ea6c'
+	
+}
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// amount should include decimals
@@ -43,7 +56,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	// only expects integer
 	const slippage = (extra.slippage * 100) | 0;
 
-	if (extra.isAtomicTxsSupported) {
+	if (extra.isAtomicTxsSupported && allowanceHolderAddress[chain]) {
 		const data = await fetch(
 			`https://api.0x.org/swap/allowance-holder/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
 			{
@@ -70,7 +83,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		if (data) {
 			if (
 				data?.issues?.allowance?.spender &&
-				data.issues.allowance.spender.toLowerCase() !== allowanceHolderAddress.toLowerCase()
+				data.issues.allowance.spender.toLowerCase() !== allowanceHolderAddress[chain].toLowerCase()
 			) {
 				throw new Error(`Approval address does not match`);
 			}
@@ -78,7 +91,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			return {
 				amountReturned: data?.buyAmount || 0,
 				amountIn: data?.sellAmount || 0,
-				tokenApprovalAddress: allowanceHolderAddress,
+				tokenApprovalAddress: allowanceHolderAddress[chain],
 				estimatedGas: data.transaction.gas,
 				rawQuote: { ...data, gasLimit: data.transaction.gas },
 				isSignatureNeededForSwap: false,
