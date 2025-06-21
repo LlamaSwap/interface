@@ -1,4 +1,5 @@
 import { sendTx } from '../../utils/sendTx';
+import { getTxs } from '../../utils/getTxs';
 
 // https://api.odos.xyz/info/chains
 export const chainToId = {
@@ -94,14 +95,19 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ rawQuote }) {
-	const tx = await sendTx({
-		from: rawQuote.transaction.from,
-		to: rawQuote.transaction.to,
+export async function swap({ tokens, fromAmount, rawQuote, eip5792, chain }) {
+	const txs = getTxs({
+		fromAddress: rawQuote.transaction.from,
+		routerAddress: rawQuote.transaction.to,
 		data: rawQuote.transaction.data,
-		value: rawQuote.transaction.value
-		//gas: rawQuote.transaction.gas
+		value: rawQuote.transaction.value,
+		fromTokenAddress: tokens.fromToken.address,
+		fromAmount,
+		eip5792,
+		tokenApprovalAddress: routers[chain]
 	});
+
+	const tx = await sendTx(txs);
 
 	return tx;
 }

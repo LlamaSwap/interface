@@ -102,10 +102,10 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ rawQuote, chain }) {
-	const tx = await sendTx({
+	const tx = await sendTx([{
 		...rawQuote.tx,
 		...(chain === 'optimism' && { gas: rawQuote.tx.gasLimit })
-	});
+	}]);
 
 	return tx;
 }

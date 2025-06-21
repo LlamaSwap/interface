@@ -1,4 +1,5 @@
 import { ExtraData } from '../types';
+import { getTxs } from '../utils/getTxs';
 import { sendTx } from '../utils/sendTx';
 import { zeroAddress } from 'viem';
 
@@ -69,7 +70,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	).then((r) => r.json());
 
-	const tx = extra.userAddress === zeroAddress? null : await fetch(
+	const tx = extra.userAddress === zeroAddress ? null : await fetch(
 		`https://aggregator-api.kyberswap.com/${chainToId[chain]}/api/v1/route/build`,
 		{
 			headers: {
@@ -103,19 +104,23 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ fromAddress, from, rawQuote }) {
-	const transactionOption: Record<string, string> = {
-		from: fromAddress,
-		to: rawQuote.routerAddress,
+export async function swap({ tokens, fromAmount, fromAddress, from, rawQuote, eip5792 , chain}) {
+	const txs = getTxs({
+		fromAddress: fromAddress,
+		routerAddress: rawQuote.routerAddress,
 		data: rawQuote.data,
-	};
+		...(from === zeroAddress ? { value: rawQuote.amountIn } : {}),
+		fromTokenAddress: tokens.fromToken.address,
+		fromAmount,
+		eip5792,
+		tokenApprovalAddress: routers[chain],
+	});
 
-	if (from === zeroAddress) transactionOption.value = rawQuote.amountIn;
-
-	const tx = await sendTx(transactionOption);
+	const tx = await sendTx(txs);
 
 	return tx;
 }
+
 export const getTxData = ({ rawQuote }) => rawQuote?.data;
 
 export const getTx = ({ rawQuote }) => ({

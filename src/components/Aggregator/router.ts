@@ -37,12 +37,14 @@ export async function swap({
 	from,
 	to,
 	amount,
+	fromAmount,
 	fromAddress,
 	slippage = '1',
 	adapter,
 	rawQuote,
 	tokens,
 	approvalData,
+	eip5792,
 	signature,
 	isSmartContractWallet
 }) {
@@ -54,19 +56,23 @@ export async function swap({
 			from,
 			to,
 			amount,
+			fromAmount,
 			fromAddress,
 			slippage,
 			rawQuote,
 			tokens,
 			approvalData,
+			eip5792,
 			signature,
 			isSmartContractWallet
 		});
 		return res;
 	} catch (e) {
+		console.log(e)
 		throw e;
 	}
 }
+
 export async function gaslessApprove({ adapter, rawQuote, isInfiniteApproval }) {
 	const aggregator = adaptersMap[adapter];
 

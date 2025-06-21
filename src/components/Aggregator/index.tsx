@@ -1,6 +1,6 @@
 import { useRef, useState, Fragment, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useAccount, useBytecode, useSignTypedData, useSwitchChain } from 'wagmi';
+import { useAccount, useSignTypedData, useCapabilities, useSwitchChain, useBytecode } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
 import { ArrowDown } from 'react-feather';
@@ -63,7 +63,7 @@ import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
 import { zeroAddress } from 'viem';
-import { waitForTransactionReceipt } from 'wagmi/actions';
+import { waitForCallsStatus, waitForTransactionReceipt } from 'wagmi/actions';
 import { config } from '../WalletProvider';
 import { cowSwapEthFlowSlippagePerChain } from './adapters/cowswap';
 
@@ -657,6 +657,16 @@ export function AggregatorContainer() {
 		chain: selectedChain?.value
 	});
 
+	const { data: capabilities } = useCapabilities();
+
+	const isEip5792 =
+		selectedRoute &&
+		!['CowSwap', '0x Gasless'].includes(selectedRoute.name) &&
+		selectedChain &&
+		capabilities?.[selectedChain.id]?.atomic?.status
+			? capabilities[selectedChain.id].atomic!.status === 'supported'
+			: false;
+
 	const gaslessApprovalMutation = useMutation({
 		mutationFn: (params: { adapter: string; rawQuote: any; isInfiniteApproval: boolean }) => gaslessApprove(params)
 	});
@@ -672,7 +682,9 @@ export function AggregatorContainer() {
 				: true
 			: selectedRoute.price.tokenApprovalAddress === null
 				? true
-				: isTokenApproved
+				: isEip5792
+					? true
+					: isTokenApproved
 		: false;
 
 	const isUSDTNotApprovedOnEthereum =
@@ -704,6 +716,7 @@ export function AggregatorContainer() {
 			from: string;
 			to: string;
 			amount: string | number;
+			fromAmount: string | number;
 			amountIn: string;
 			adapter: string;
 			fromAddress: string;
@@ -713,6 +726,7 @@ export function AggregatorContainer() {
 			index: number;
 			route: any;
 			approvalData: any;
+			eip5792: { shouldRemoveApproval: boolean; isTokenApproved: boolean } | null;
 			signature: any;
 			isSmartContractWallet: boolean;
 		}) => swap(params),
@@ -810,7 +824,8 @@ export function AggregatorContainer() {
 							toast(formatErrorToast({}, true));
 						}
 					})
-					?.catch(() => {
+					?.catch((err) => {
+						console.log(err);
 						isError = true;
 						toast(formatErrorToast({}, true));
 					})
@@ -839,7 +854,11 @@ export function AggregatorContainer() {
 							);
 						}
 					});
-			} else {
+
+				return;
+			}
+
+			if (data.id && data.waitForOrder) {
 				setTxModalOpen(true);
 				txUrl = `https://explorer.cow.fi/orders/${data.id}`;
 				setTxUrl(txUrl);
@@ -865,11 +884,97 @@ export function AggregatorContainer() {
 						route: variables.route
 					});
 				});
+
+				setAmount(['', '']);
+
+				return;
+			}
+
+			if (typeof data === 'object' && data.id) {
+				//eip5792
+				confirmingTxToastRef.current = toast({
+					title: 'Confirming Transaction',
+					description: '',
+					status: 'loading',
+					isClosable: true,
+					position: 'top-right'
+				});
+
+				let isError = false;
+				const balanceBefore = toTokenBalance?.data?.formatted;
+
+				waitForCallsStatus(config, {
+					id: data.id as `0x${string}`
+				})
+					.then((final) => {
+						if (final.status === 'success') {
+							forceRefreshTokenBalance();
+
+							if (confirmingTxToastRef.current) {
+								toast.close(confirmingTxToastRef.current);
+							}
+
+							toast(formatSuccessToast(variables));
+
+							setAmount(['', '']);
+						} else {
+							isError = true;
+							toast(formatErrorToast({}, true));
+						}
+
+						if (final.receipts && final.receipts.length > 0) {
+							const txHashRegex = /^0x[a-fA-F0-9]{64}$/;
+							const hash = final.receipts.find((r) => txHashRegex.test(r.transactionHash))?.transactionHash ?? null;
+							if (chainOnWallet?.blockExplorers && hash) {
+								const explorerUrl = chainOnWallet.blockExplorers.default.url;
+								setTxModalOpen(true);
+								txUrl = `${explorerUrl}/tx/${hash}`;
+								setTxUrl(txUrl);
+								addRecentTransaction({
+									hash,
+									description: `Swap transaction using ${variables.adapter} is sent.`
+								});
+							}
+						}
+					})
+					?.catch((err) => {
+						console.log(err);
+						isError = true;
+						toast(formatErrorToast({}, true));
+					})
+					?.finally(() => {
+						if (selectedChain && finalSelectedToToken && address) {
+							getTokenBalance({ address, chainId: selectedChain.id, token: finalSelectedToToken.address }).then(
+								(balanceAfter) =>
+									sendSwapEvent({
+										chain: selectedChain.value,
+										user: address,
+										from: variables.from,
+										to: variables.to,
+										aggregator: variables.adapter,
+										isError,
+										quote: variables.rawQuote,
+										txUrl,
+										amount: String(variables.amountIn),
+										amountUsd: fromTokenPrice ? +fromTokenPrice * +variables.amountIn || 0 : null,
+										errorData: {},
+										slippage,
+										routePlace: String(variables?.index),
+										route: variables.route,
+										reportedOutput: Number(variables.amount) || 0,
+										realOutput: Number(balanceAfter?.formatted) - Number(balanceBefore) || 0
+									})
+							);
+						}
+					});
+
+				return;
 			}
 
 			signatureForSwapMutation.reset();
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
+			console.log(err)
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
 				toast(formatErrorToast(err, false));
 
@@ -942,7 +1047,9 @@ export function AggregatorContainer() {
 				route: selectedRoute,
 				amount: selectedRoute.amount,
 				amountIn: selectedRoute.amountIn,
+				fromAmount: selectedRoute.fromAmount,
 				approvalData: gaslessApprovalMutation?.data ?? {},
+				eip5792: isEip5792 ? { shouldRemoveApproval: shouldRemoveApproval ? true : false, isTokenApproved } : null,
 				signature: signatureForSwapMutation?.data,
 				isSmartContractWallet: (bytecode && bytecode !== '0x') ? true : false
 			});
@@ -1235,7 +1342,7 @@ export function AggregatorContainer() {
 															return;
 														}
 
-														if (approve) approve();
+														if (!isEip5792 && approve) approve();
 
 														if (
 															balance.data &&
@@ -1538,7 +1645,7 @@ export function AggregatorContainer() {
 																		return;
 																	}
 
-																	if (approve) approve();
+																	if (!isEip5792 && approve) approve();
 
 																	if (
 																		balance.data &&
