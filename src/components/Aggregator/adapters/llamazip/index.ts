@@ -5,6 +5,7 @@ import { zeroAddress } from 'viem';
 import { simulateContract } from 'wagmi/actions';
 import { config } from '../../../WalletProvider';
 import { chainsMap } from '../../constants';
+import { getTxs } from '../../utils/getTxs';
 
 export const name = 'LlamaZip';
 export const token = 'none';
@@ -114,12 +115,13 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ fromAddress, rawQuote }) {
-	const tx = await sendTx({
-		from: fromAddress,
-		to: rawQuote.tx.to,
+	const txs = getTxs({
+		fromAddress,
+		routerAddress: rawQuote.tx.to,
 		data: rawQuote.tx.data,
 		value: rawQuote.tx.value
 	});
+	const tx = await sendTx(txs);
 	return tx;
 }
 

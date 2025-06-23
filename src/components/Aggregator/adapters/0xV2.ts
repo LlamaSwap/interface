@@ -1,5 +1,6 @@
 import { numberToHex, size, zeroAddress, concat} from 'viem';
 import { sendTx } from '../utils/sendTx';
+import { getTxs } from '../utils/getTxs';
 
 export const name = 'Matcha/0x v2';
 export const token = 'ZRX';
@@ -17,8 +18,8 @@ export const chainToId = {
 	scroll: '534352',
 	blast: '81457',
 	mantle: '5000',
-	mode: '34443'
-	// missing unichain
+	mode: '34443',
+	unichain: '130'
 };
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
@@ -85,23 +86,32 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 	return signature;
 }
 
-export async function swap({ fromAddress, rawQuote, signature }) {
-	// signature not needed if using allowance holder api
-	const signatureLengthInHex = signature
-		? numberToHex(size(signature), {
-				signed: false,
-				size: 32
-			})
-		: null;
+export async function swap({ tokens, fromAmount, fromAddress, rawQuote, signature, eip5792 }) {
+	if (!signature) {
+		throw { reason: 'Signature is required' }
+	}
+
+	const signatureLengthInHex = numberToHex(size(signature), {
+		signed: false,
+		size: 32
+	});
+
 	const data = signature
 		? concat([rawQuote.transaction.data, signatureLengthInHex, signature])
 		: rawQuote.transaction.data;
-	const tx = await sendTx({
-		from: fromAddress,
-		to: rawQuote.transaction.to,
+
+	const txs = getTxs({
+		fromAddress,
+		routerAddress: rawQuote.transaction.to,
 		data,
-		value: rawQuote.transaction.value
+		value: rawQuote.transaction.value,
+		fromTokenAddress: tokens.fromToken.address,
+		fromAmount,
+		eip5792,
+		tokenApprovalAddress: permit2Address
 	});
+
+	const tx = await sendTx(txs);
 
 	return tx;
 }

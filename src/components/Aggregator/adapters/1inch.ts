@@ -5,6 +5,7 @@ import { sendTx } from '../utils/sendTx';
 import { estimateGas } from 'wagmi/actions';
 import { config } from '../../WalletProvider';
 import { zeroAddress } from 'viem';
+import { getTxs } from '../utils/getTxs';
 
 export const chainToId = {
 	ethereum: 1,
@@ -87,21 +88,28 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ rawQuote }) {
-	const txObject = {
-		from: rawQuote.tx.from,
-		to: rawQuote.tx.to,
+export async function swap({ tokens, fromAmount, rawQuote, eip5792, chain }) {
+	const txs = getTxs({
+		fromAddress: rawQuote.tx.from,
+		routerAddress: rawQuote.tx.to,
 		data: rawQuote.tx.data,
-		value: rawQuote.tx.value
-	};
+		value: rawQuote.tx.value,
+		fromTokenAddress: tokens.fromToken.address,
+		fromAmount,
+		eip5792,
+		tokenApprovalAddress: spenders[chain]
+	});
 
-	const gasPrediction = await estimateGas(config, txObject).catch(() => null);
+	const gasPrediction = await estimateGas(config, txs[txs.length - 1]).catch(() => null);
 
-	const tx = await sendTx({
-		...txObject,
+	const finalTxObj = {
+		...txs[txs.length - 1],
 		// Increase gas +20% + 2 erc20 txs
 		...(gasPrediction ? { gas: (gasPrediction * 12n) / 10n + 86000n } : {})
-	});
+	};
+
+	const tx = await sendTx(txs.slice(0, -1).concat([finalTxObj]));
+
 	return tx;
 }
 

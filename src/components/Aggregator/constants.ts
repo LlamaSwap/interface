@@ -39,7 +39,8 @@ export const chainsMap = {
 	mode: 34443,
 	mantle: 5000,
 	scroll: 534352,
-	sonic: 146
+	sonic: 146,
+	unichain: 130
 } as const;
 
 export const geckoChainsMap: Record<string, number> = {
@@ -78,7 +79,8 @@ export const geckoChainsMap: Record<string, number> = {
 	mode: 34443,
 	mantle: 5000,
 	scroll: 534352,
-	sonic: 146
+	sonic: 146,
+	unichain: 130
 };
 
 export const chainGasToken: Record<keyof typeof chainsMap, string> = {
@@ -117,7 +119,8 @@ export const chainGasToken: Record<keyof typeof chainsMap, string> = {
 	mode: 'ethereum',
 	mantle: 'mantle',
 	scroll: 'ethereum',
-	sonic: 'sonic'
+	sonic: 'sonic',
+	unichain: 'ethereum'
 };
 
 export const geckoTerminalChainsMap = {
@@ -151,7 +154,8 @@ export const geckoTerminalChainsMap = {
 	324: 'zksync',
 	1088: 'metis',
 	8453: 'base',
-	59144: 'linea'
+	59144: 'linea',
+	130: 'unichain'
 };
 
 export const chainIdToName = (chainId) => {
@@ -226,7 +230,8 @@ export const wrappedTokensByChain = {
 	34443: '0x4200000000000000000000000000000000000006', // Mode: WETH
 	5000: '0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8', // Mantle: WMNT
 	534352: '0x5300000000000000000000000000000000000004', // Scroll: WETH
-	146: '0x039e2fb66102314ce7b64ce5ce3e5183bc94ad38' // Sonic: wS
+	146: '0x039e2fb66102314ce7b64ce5ce3e5183bc94ad38', // Sonic: wS
+	130: '0x4200000000000000000000000000000000000006' // Unichain: WETH
 } as const;
 
 export const topTokensByChain = {
@@ -330,5 +335,13 @@ export const topTokensByChain = {
 		'0x29219dd400f2bf60e5a23d13be72b486d4038894', // USDC.e
 		'0x039e2fb66102314ce7b64ce5ce3e5183bc94ad38', // wS
 		'0x50c42deacd8fc9773493ed674b675be577f2634b' // WETH
+	],
+	130: [
+		zeroAddress,
+		'0x078D782b760474a361dDA0AF3839290b0EF57AD6', // USDC
+		'0x9151434b16b9763660705744891fA906F660EcC5', // USDT0
+		'0x4200000000000000000000000000000000000006' // WETH
 	]
 };
+
+export const EIP_5792_CHAINS = [1, 42161, 8453, 80094, 56, 100, 57073, 10, 130];

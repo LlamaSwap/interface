@@ -264,6 +264,13 @@ const sonic = {
 	iconBackground: '#000'
 };
 
+const unichain = {
+	...wagmiChains.unichain,
+	network: 'unichain',
+	iconUrl: chainIconUrl('unichain'),
+	iconBackground: '#000'
+};
+
 interface IChain extends Chain {
 	network: string;
 	iconUrl: string;
@@ -304,5 +311,6 @@ export const allChains: Array<IChain> = [
 	velas,
 	harmony,
 	scroll,
-	sonic
+	sonic,
+	unichain
 ];

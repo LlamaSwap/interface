@@ -1,6 +1,7 @@
 import { defillamaReferrerAddress } from '../constants';
-import { sendTx } from '../utils/sendTx';
-import { zeroAddress } from 'viem';
+import { getTxs } from '../utils/getTxs';
+import {  sendTx } from '../utils/sendTx';
+import {  zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 'https://api.0x.org/',
@@ -57,13 +58,19 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 	};
 }
 
-export async function swap({ fromAddress, rawQuote, chain }) {
-	const tx = await sendTx({
-		from: fromAddress,
-		to: rawQuote.to,
+export async function swap({ tokens, fromAmount, fromAddress, rawQuote, eip5792 }) {
+	const txs = getTxs({
+		fromAddress,
+		routerAddress: rawQuote.to,
 		data: rawQuote.data,
 		value: rawQuote.value,
+		fromTokenAddress: tokens.fromToken.address,
+		fromAmount,
+		eip5792,
+		tokenApprovalAddress: rawQuote.to
 	});
+
+	const tx = await sendTx(txs);
 
 	return tx;
 }
