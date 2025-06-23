@@ -13,21 +13,27 @@ export const chainToId = {
 	ethereum: 'https://api.cow.fi/mainnet',
 	gnosis: 'https://api.cow.fi/xdai',
 	arbitrum: 'https://api.cow.fi/arbitrum_one',
-	base: 'https://api.cow.fi/base'
+	base: 'https://api.cow.fi/base',
+	avax: 'https://api.cow.fi/avalanche',
+	polygon: 'https://api.cow.fi/polygon'
 };
 
 export const cowSwapEthFlowSlippagePerChain = {
 	ethereum: 2,
 	gnosis: 0.5,
 	arbitrum: 0.5,
-	base: 0.5
+	base: 0.5,
+	avax: 0.5,
+	polygon: 0.5
 };
 
 const wrappedTokens = {
 	ethereum: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
 	gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
 	arbitrum: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-	base: '0x4200000000000000000000000000000000000006'
+	base: '0x4200000000000000000000000000000000000006',
+	avax: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
+	polygon: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270'
 };
 
 const cowContractAddress = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
@@ -37,7 +43,9 @@ const nativeSwapAddress = {
 	ethereum: cowSwapEthFlowContractAddress,
 	gnosis: cowSwapEthFlowContractAddress,
 	arbitrum: cowSwapEthFlowContractAddress,
-	base: cowSwapEthFlowContractAddress
+	base: cowSwapEthFlowContractAddress,
+	avax: cowSwapEthFlowContractAddress,
+	polygon: cowSwapEthFlowContractAddress
 };
 
 export const name = 'CowSwap';
