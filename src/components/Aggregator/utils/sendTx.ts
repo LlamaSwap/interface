@@ -24,7 +24,7 @@ export async function sendTx(calls: any[]) {
 		}
 
 		// return type is {id: `0x${string}`}
-		return sendCalls(config, { calls: calls.slice(0, -1).concat([swaptxObj]) });
+		return sendCalls(config, { calls: calls.slice(0, -1).concat([swaptxObj]), forceAtomic: true });
 	} catch (error) {
 		console.log(error);
 		throw new Error(error instanceof Error ? error.message : 'Unknown error');
