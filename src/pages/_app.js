@@ -7,6 +7,7 @@ import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import '~/Theme/globals.css';
 import { config } from '~/components/WalletProvider';
+import sdk  from '@farcaster/frame-sdk';
 
 const Provider = styled.div`
 	width: 100%;
@@ -22,6 +23,8 @@ function App({ Component, pageProps }) {
 
 	React.useEffect(() => {
 		setIsMounted(true);
+		sdk.actions.ready();//exit mini app loader screen and display interface
+
 	}, []);
 
 	return (
