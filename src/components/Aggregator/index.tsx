@@ -398,6 +398,13 @@ export function AggregatorContainer() {
 
 	const { gasTokenPrice, toTokenPrice, fromTokenPrice, gasPriceData } = tokenPrices || {};
 
+	const { data: capabilities } = useCapabilities();
+
+	const isAtomicTxsSupported =
+		selectedChain && capabilities?.[selectedChain.id]?.atomic?.status
+			? capabilities[selectedChain.id].atomic!.status === 'supported'
+			: false;
+
 	const {
 		data: routes = [],
 		isLoading,
@@ -418,6 +425,7 @@ export function AggregatorContainer() {
 			toToken: finalSelectedToToken,
 			slippage,
 			isPrivacyEnabled,
+			isAtomicTxsSupported,
 			amountOut: amountOutWithDecimals
 		}
 	});
@@ -657,15 +665,8 @@ export function AggregatorContainer() {
 		chain: selectedChain?.value
 	});
 
-	const { data: capabilities } = useCapabilities();
-
 	const isEip5792 =
-		selectedRoute &&
-		!['CowSwap', '0x Gasless'].includes(selectedRoute.name) &&
-		selectedChain &&
-		capabilities?.[selectedChain.id]?.atomic?.status
-			? capabilities[selectedChain.id].atomic!.status === 'supported'
-			: false;
+		selectedRoute && !['CowSwap', '0x Gasless'].includes(selectedRoute.name) && isAtomicTxsSupported ? true : false;
 
 	const gaslessApprovalMutation = useMutation({
 		mutationFn: (params: { adapter: string; rawQuote: any; isInfiniteApproval: boolean }) => gaslessApprove(params)
@@ -974,7 +975,7 @@ export function AggregatorContainer() {
 			signatureForSwapMutation.reset();
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
-			console.log(err)
+			console.log(err);
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
 				toast(formatErrorToast(err, false));
 
@@ -1051,7 +1052,7 @@ export function AggregatorContainer() {
 				approvalData: gaslessApprovalMutation?.data ?? {},
 				eip5792: isEip5792 ? { shouldRemoveApproval: shouldRemoveApproval ? true : false, isTokenApproved } : null,
 				signature: signatureForSwapMutation?.data,
-				isSmartContractWallet: (bytecode && bytecode !== '0x') ? true : false
+				isSmartContractWallet: bytecode && bytecode !== '0x' ? true : false
 			});
 		}
 	};
