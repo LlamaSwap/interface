@@ -87,7 +87,7 @@ export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 }
 
 export async function swap({ tokens, fromAmount, fromAddress, rawQuote, signature, eip5792 }) {
-	if (!signature) {
+	if (rawQuote.isSignatureNeededForSwap && tokens.fromToken.address !== zeroAddress && !signature) {
 		throw { reason: 'Signature is required' }
 	}
 
