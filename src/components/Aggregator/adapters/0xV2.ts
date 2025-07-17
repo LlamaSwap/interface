@@ -79,7 +79,6 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 			return null;
 		});
 
-		// fetch permit2 quote if allowance holder quote is not available
 		if (data) {
 			if (
 				data?.issues?.allowance?.spender &&
@@ -100,6 +99,7 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		}
 	}
 
+	// fetch permit2 quote if allowance holder quote is not available
 	const data = await fetch(
 		`https://api.0x.org/swap/permit2/quote?chainId=${chainToId[chain]}&buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippageBps=${slippage}&taker=${taker}&tradeSurplusRecipient=${feeCollectorAddress}`,
 		{

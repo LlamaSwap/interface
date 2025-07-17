@@ -167,6 +167,9 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 }
 
 export async function swap({ chain, fromAddress, rawQuote, from, to, isSmartContractWallet }) {
+	if (rawQuote.slippage < 0 || rawQuote.slippage >= 100) {
+		throw { reason: 'Invalid slippage. Please set a slippage between 0 and 99.99%' };
+	}
 
 	if (from === zeroAddress) {
 		const minEthFlowSlippage = cowSwapEthFlowSlippagePerChain[chain];
