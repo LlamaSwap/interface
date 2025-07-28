@@ -1,4 +1,4 @@
-import { numberToHex, size, zeroAddress, concat} from 'viem';
+import { numberToHex, size, zeroAddress, concat } from 'viem';
 import { sendTx } from '../utils/sendTx';
 import { getTxs } from '../utils/getTxs';
 
@@ -81,24 +81,26 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 
 export async function signatureForSwap({ rawQuote, signTypedDataAsync }) {
 	const signature = await signTypedDataAsync(rawQuote.permit2.eip712).catch((err) => {
-		console.log(err)
+		console.log(err);
 	});
 	return signature;
 }
 
 export async function swap({ tokens, fromAmount, fromAddress, rawQuote, signature, eip5792 }) {
-	if (rawQuote.isSignatureNeededForSwap && tokens.fromToken.address !== zeroAddress && !signature) {
-		throw { reason: 'Signature is required' }
+	let data;
+	if (rawQuote.isSignatureNeededForSwap && tokens.fromToken.address !== zeroAddress) {
+		if (!signature) {
+			throw { reason: 'Signature is required' };
+		}
+		const signatureLengthInHex = numberToHex(size(signature), {
+			signed: false,
+			size: 32
+		});
+
+		data = concat([rawQuote.transaction.data, signatureLengthInHex, signature]);
+	} else {
+		data = rawQuote.transaction.data;
 	}
-
-	const signatureLengthInHex = numberToHex(size(signature), {
-		signed: false,
-		size: 32
-	});
-
-	const data = signature
-		? concat([rawQuote.transaction.data, signatureLengthInHex, signature])
-		: rawQuote.transaction.data;
 
 	const txs = getTxs({
 		fromAddress,
