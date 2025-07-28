@@ -7,7 +7,6 @@ import { ArrowDown } from 'react-feather';
 import styled from 'styled-components';
 import {
 	useToast,
-	Button,
 	FormControl,
 	FormLabel,
 	Switch,
@@ -289,6 +288,24 @@ const ConnectButtonWrapper = styled.div`
 
 	& > div {
 		width: 100%;
+	}
+`;
+
+const Button = styled.button`
+	background: #a2cdff;
+	color: #1a202c;
+	border-radius: 6px;
+	font-size: 16px;
+	font-weight: 600;
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	justify-content: center;
+	padding: 8px;
+
+	&:disabled {
+		cursor: not-allowed;
+		opacity: 0.6;
 	}
 `;
 
@@ -614,7 +631,7 @@ export function AggregatorContainer() {
 			? +selectedRoute.fromAmount > Number(balance.data.value)
 			: false;
 
-	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '';
+	const slippageIsWrong = Number.isNaN(Number(slippage)) || slippage === '';
 
 	const forceRefreshTokenBalance = () => {
 		if (chainOnWallet && address) {
@@ -639,9 +656,7 @@ export function AggregatorContainer() {
 		approve,
 		approveInfinite,
 		approveReset,
-		isLoading: isApproveLoading,
-		isInfiniteLoading: isApproveInfiniteLoading,
-		isResetLoading: isApproveResetLoading,
+		isFetchingAllowance,
 		isConfirmingApproval,
 		isConfirmingInfiniteApproval,
 		isConfirmingResetApproval,
@@ -1002,7 +1017,7 @@ export function AggregatorContainer() {
 		if (
 			selectedRoute &&
 			selectedRoute.price &&
-			!slippageIsWorng &&
+			!slippageIsWrong &&
 			selectedChain &&
 			finalSelectedFromToken &&
 			finalSelectedToToken &&
@@ -1230,12 +1245,9 @@ export function AggregatorContainer() {
 						</>
 
 						{!isConnected ? (
-							<Button colorScheme={'messenger'} onClick={openConnectModal}>
-								Connect Wallet
-							</Button>
+							<Button onClick={openConnectModal}>Connect Wallet</Button>
 						) : !isValidSelectedChain ? (
 							<Button
-								colorScheme={'messenger'}
 								onClick={() => {
 									if (selectedChain) {
 										switchChain({ chainId: selectedChain.id });
@@ -1252,17 +1264,11 @@ export function AggregatorContainer() {
 								Switch Network
 							</Button>
 						) : insufficientBalance ? (
-							<Button colorScheme={'messenger'} aria-disabled>
-								Insufficient Balance
-							</Button>
+							<Button disabled>Insufficient Balance</Button>
 						) : !selectedRoute && isSmallScreen && finalSelectedFromToken && finalSelectedToToken ? (
-							<Button colorScheme={'messenger'} onClick={() => setUiState(STATES.ROUTES)}>
-								Select Aggregator
-							</Button>
+							<Button onClick={() => setUiState(STATES.ROUTES)}>Select Aggregator</Button>
 						) : hasMaxPriceImpact && !isDegenModeEnabled ? (
-							<Button colorScheme={'messenger'} aria-disabled>
-								Price impact is too large
-							</Button>
+							<Button disabled>Price impact is too large</Button>
 						) : (
 							<>
 								{router && address && (
@@ -1281,15 +1287,19 @@ export function AggregatorContainer() {
 														need to reset your approval and approve again`}
 													</Text>
 													<Button
-														isLoading={isApproveResetLoading}
-														loadingText={isConfirmingResetApproval ? 'Confirming' : 'Preparing transaction'}
-														colorScheme={'messenger'}
 														onClick={() => {
 															if (approveReset) approveReset();
 														}}
-														aria-disabled={isApproveResetLoading || !selectedRoute}
+														disabled={isConfirmingResetApproval || !selectedRoute}
 													>
-														Reset Approval
+														{isConfirmingResetApproval ? (
+															<>
+																<Spinner />
+																<span>Confirming</span>
+															</>
+														) : (
+															'Reset Approval'
+														)}
 													</Button>
 												</Flex>
 											)}
@@ -1300,15 +1310,19 @@ export function AggregatorContainer() {
 											selectedRoute.price.isSignatureNeededForSwap &&
 											(selectedRoute.price.rawQuote as any).permit2 ? (
 												<Button
-													isLoading={signatureForSwapMutation.isPending}
-													loadingText={'Confirming'}
-													colorScheme={'messenger'}
 													onClick={() => {
 														handleSignatureForMutation();
 													}}
 													disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data ? true : false}
 												>
-													Sign
+													{signatureForSwapMutation.isPending ? (
+														<>
+															<Spinner />
+															<span>Confirming</span>
+														</>
+													) : (
+														'Sign'
+													)}
 												</Button>
 											) : null}
 
@@ -1321,18 +1335,6 @@ export function AggregatorContainer() {
 												/>
 											) : (
 												<Button
-													isLoading={
-														swapMutation.isPending ||
-														isApproveLoading ||
-														(gaslessApprovalMutation.isPending && !gaslessApprovalMutation.variables.isInfiniteApproval)
-													}
-													loadingText={
-														isConfirmingApproval ||
-														(gaslessApprovalMutation.isPending && !gaslessApprovalMutation.variables.isInfiniteApproval)
-															? 'Confirming'
-															: 'Preparing transaction'
-													}
-													colorScheme={'messenger'}
 													onClick={() => {
 														//scroll Routes into view
 														!selectedRoute && routesRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1354,18 +1356,19 @@ export function AggregatorContainer() {
 
 														if (isApproved) handleSwap();
 													}}
-													aria-disabled={
+													disabled={
 														isUSDTNotApprovedOnEthereum ||
 														swapMutation.isPending ||
 														gaslessApprovalMutation.isPending ||
-														isApproveLoading ||
-														isApproveResetLoading ||
+														isConfirmingApproval ||
+														isConfirmingResetApproval ||
 														!(finalSelectedFromToken && finalSelectedToToken) ||
 														insufficientBalance ||
 														!selectedRoute ||
-														slippageIsWorng ||
+														slippageIsWrong ||
 														!isAmountSynced ||
-														isApproveInfiniteLoading ||
+														isConfirmingInfiniteApproval ||
+														isFetchingAllowance ||
 														signatureForSwapMutation.isPending ||
 														(selectedRoute.price.isSignatureNeededForSwap
 															? (selectedRoute.price.rawQuote as any).permit2
@@ -1378,29 +1381,32 @@ export function AggregatorContainer() {
 															: false)
 													}
 												>
-													{!selectedRoute
-														? 'Select Aggregator'
-														: isApproved
-															? `Swap via ${selectedRoute.name}`
-															: slippageIsWorng
-																? 'Set Slippage'
-																: 'Approve'}
+													{!selectedRoute ? (
+														'Select Aggregator'
+													) : isConfirmingApproval ||
+													  (gaslessApprovalMutation.isPending &&
+															!gaslessApprovalMutation.variables.isInfiniteApproval) ? (
+														<>
+															<Spinner />
+															<span>Confirming</span>
+														</>
+													) : swapMutation.isPending ? (
+														<>
+															<Spinner />
+															<span>Preparing transaction</span>
+														</>
+													) : isApproved ? (
+														`Swap via ${selectedRoute?.name}`
+													) : slippageIsWrong ? (
+														'Set Slippage'
+													) : (
+														'Approve'
+													)}
 												</Button>
 											)}
 
 											{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
 												<Button
-													colorScheme={'messenger'}
-													loadingText={
-														isConfirmingInfiniteApproval ||
-														(gaslessApprovalMutation.isPending && gaslessApprovalMutation.variables.isInfiniteApproval)
-															? 'Confirming'
-															: 'Preparing transaction'
-													}
-													isLoading={
-														isApproveInfiniteLoading ||
-														(gaslessApprovalMutation.isPending && gaslessApprovalMutation.variables.isInfiniteApproval)
-													}
 													onClick={() => {
 														if (!isApproved && isGaslessApproval) {
 															handleGaslessApproval({ isInfiniteApproval: true });
@@ -1409,24 +1415,33 @@ export function AggregatorContainer() {
 
 														if (approveInfinite) approveInfinite();
 													}}
-													aria-disabled={
+													disabled={
 														isUSDTNotApprovedOnEthereum ||
 														swapMutation.isPending ||
 														gaslessApprovalMutation.isPending ||
-														isApproveLoading ||
-														isApproveResetLoading ||
-														isApproveInfiniteLoading ||
+														isConfirmingApproval ||
+														isConfirmingResetApproval ||
+														isConfirmingInfiniteApproval ||
 														!selectedRoute
 													}
 												>
-													{'Approve Infinite'}
+													{isConfirmingInfiniteApproval ||
+													(gaslessApprovalMutation.isPending &&
+														gaslessApprovalMutation.variables.isInfiniteApproval) ? (
+														<>
+															<Spinner />
+															<span>Confirming</span>
+														</>
+													) : (
+														'Approve Infinite'
+													)}
 												</Button>
 											)}
 
 											{isSmallScreen && warnings?.length ? (
 												<Popover>
 													<PopoverTrigger>
-														<Button backgroundColor={'rgb(224, 148, 17)'} maxWidth="100px">
+														<Button style={{ background: 'rgb(224, 148, 17)', maxWidth: '100px' }}>
 															{warnings.length} Warning{warnings.length === 1 ? '' : 's'}
 														</Button>
 													</PopoverTrigger>
@@ -1436,12 +1451,7 @@ export function AggregatorContainer() {
 
 											{!isApproved && selectedRoute ? (
 												<Tooltip2 content="Already approved? Click to refetch token allowance">
-													<Button
-														colorScheme={'messenger'}
-														width={'24px'}
-														padding={'4px'}
-														onClick={() => refetchTokenAllowance?.()}
-													>
+													<Button style={{ height: '100%' }} onClick={() => refetchTokenAllowance?.()}>
 														<RepeatIcon w="16px	" h="16px" />
 													</Button>
 												</Tooltip2>
@@ -1552,7 +1562,6 @@ export function AggregatorContainer() {
 										</ConnectButtonWrapper>
 									) : !isValidSelectedChain ? (
 										<Button
-											colorScheme={'messenger'}
 											onClick={() => {
 												if (selectedChain) {
 													switchChain({ chainId: selectedChain.id });
@@ -1586,15 +1595,19 @@ export function AggregatorContainer() {
 																		need to reset your approval and approve again`}
 																</Text>
 																<Button
-																	isLoading={isApproveResetLoading}
-																	loadingText={isConfirmingResetApproval ? 'Confirming' : 'Preparing transaction'}
-																	colorScheme={'messenger'}
 																	onClick={() => {
 																		if (approveReset) approveReset();
 																	}}
-																	aria-disabled={isApproveResetLoading || !selectedRoute}
+																	disabled={isConfirmingResetApproval || !selectedRoute}
 																>
-																	Reset Approval
+																	{isConfirmingResetApproval ? (
+																		<>
+																			<Spinner />
+																			<span>Confirming</span>
+																		</>
+																	) : (
+																		'Reset Approval'
+																	)}
 																</Button>
 															</Flex>
 														)}
@@ -1605,15 +1618,19 @@ export function AggregatorContainer() {
 														selectedRoute.price.isSignatureNeededForSwap &&
 														(selectedRoute.price.rawQuote as any).permit2 ? (
 															<Button
-																isLoading={signatureForSwapMutation.isPending}
-																loadingText={'Confirming'}
-																colorScheme={'messenger'}
 																onClick={() => {
 																	handleSignatureForMutation();
 																}}
 																disabled={signatureForSwapMutation.isPending || signatureForSwapMutation.data}
 															>
-																Sign
+																{signatureForSwapMutation.isPending ? (
+																	<>
+																		<Spinner />
+																		<span>Confirming</span>
+																	</>
+																) : (
+																	'Sign'
+																)}
 															</Button>
 														) : null}
 
@@ -1625,20 +1642,6 @@ export function AggregatorContainer() {
 															/>
 														) : (
 															<Button
-																isLoading={
-																	swapMutation.isPending ||
-																	isApproveLoading ||
-																	(gaslessApprovalMutation.isPending &&
-																		!gaslessApprovalMutation.variables.isInfiniteApproval)
-																}
-																loadingText={
-																	isConfirmingApproval ||
-																	(gaslessApprovalMutation.isPending &&
-																		!gaslessApprovalMutation.variables.isInfiniteApproval)
-																		? 'Confirming'
-																		: 'Preparing transaction'
-																}
-																colorScheme={'messenger'}
 																onClick={() => {
 																	if (!isApproved && isGaslessApproval) {
 																		handleGaslessApproval({ isInfiniteApproval: false });
@@ -1657,15 +1660,19 @@ export function AggregatorContainer() {
 
 																	if (isApproved) handleSwap();
 																}}
-																aria-disabled={
+																disabled={
 																	isUSDTNotApprovedOnEthereum ||
 																	swapMutation.isPending ||
 																	gaslessApprovalMutation.isPending ||
-																	isApproveLoading ||
-																	isApproveResetLoading ||
+																	isConfirmingApproval ||
+																	isConfirmingResetApproval ||
+																	!(finalSelectedFromToken && finalSelectedToToken) ||
+																	insufficientBalance ||
 																	!selectedRoute ||
-																	slippageIsWorng ||
+																	slippageIsWrong ||
 																	!isAmountSynced ||
+																	isConfirmingInfiniteApproval ||
+																	isFetchingAllowance ||
 																	signatureForSwapMutation.isPending ||
 																	(selectedRoute.price.isSignatureNeededForSwap
 																		? (selectedRoute.price.rawQuote as any).permit2
@@ -1678,31 +1685,32 @@ export function AggregatorContainer() {
 																		: false)
 																}
 															>
-																{!selectedRoute
-																	? 'Select Aggregator'
-																	: isApproved
-																		? `Swap via ${selectedRoute?.name}`
-																		: slippageIsWorng
-																			? 'Set Slippage'
-																			: 'Approve'}
+																{!selectedRoute ? (
+																	'Select Aggregator'
+																) : isConfirmingApproval ||
+																  (gaslessApprovalMutation.isPending &&
+																		!gaslessApprovalMutation.variables.isInfiniteApproval) ? (
+																	<>
+																		<Spinner />
+																		<span>Confirming</span>
+																	</>
+																) : swapMutation.isPending ? (
+																	<>
+																		<Spinner />
+																		<span>Preparing transaction</span>
+																	</>
+																) : isApproved ? (
+																	`Swap via ${selectedRoute?.name}`
+																) : slippageIsWrong ? (
+																	'Set Slippage'
+																) : (
+																	'Approve'
+																)}
 															</Button>
 														)}
 
 														{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
 															<Button
-																colorScheme={'messenger'}
-																loadingText={
-																	isConfirmingInfiniteApproval ||
-																	(gaslessApprovalMutation.isPending &&
-																		gaslessApprovalMutation.variables.isInfiniteApproval)
-																		? 'Confirming'
-																		: 'Preparing transaction'
-																}
-																isLoading={
-																	isApproveInfiniteLoading ||
-																	(gaslessApprovalMutation.isPending &&
-																		gaslessApprovalMutation.variables.isInfiniteApproval)
-																}
 																onClick={() => {
 																	if (!isApproved && isGaslessApproval) {
 																		handleGaslessApproval({ isInfiniteApproval: true });
@@ -1711,28 +1719,32 @@ export function AggregatorContainer() {
 
 																	if (approveInfinite) approveInfinite();
 																}}
-																aria-disabled={
+																disabled={
 																	isUSDTNotApprovedOnEthereum ||
 																	swapMutation.isPending ||
 																	gaslessApprovalMutation.isPending ||
-																	isApproveLoading ||
-																	isApproveResetLoading ||
-																	isApproveInfiniteLoading ||
+																	isConfirmingApproval ||
+																	isConfirmingResetApproval ||
+																	isConfirmingInfiniteApproval ||
 																	!selectedRoute
 																}
 															>
-																{'Approve Infinite'}
+																{isConfirmingInfiniteApproval ||
+																(gaslessApprovalMutation.isPending &&
+																	gaslessApprovalMutation.variables.isInfiniteApproval) ? (
+																	<>
+																		<Spinner />
+																		<span>Confirming</span>
+																	</>
+																) : (
+																	'Approve Infinite'
+																)}
 															</Button>
 														)}
 
 														{!isApproved && selectedRoute ? (
 															<Tooltip2 content="Already approved? Click to refetch token allowance">
-																<Button
-																	colorScheme={'messenger'}
-																	width={'24px'}
-																	padding={'4px'}
-																	onClick={() => refetchTokenAllowance?.()}
-																>
+																<Button style={{ height: '100%' }} onClick={() => refetchTokenAllowance?.()}>
 																	<RepeatIcon w="16px	" h="16px" />
 																</Button>
 															</Tooltip2>
@@ -1791,3 +1803,28 @@ export function AggregatorContainer() {
 		</Wrapper>
 	);
 }
+
+const SpinnerWrapper = styled.svg`
+	animation: spin 1s linear infinite;
+
+	@keyframes spin {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
+	}
+`;
+const Spinner = () => {
+	return (
+		<SpinnerWrapper height={16} width={16} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+			<circle style={{ opacity: '0.25' }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+			<path
+				style={{ opacity: '0.75' }}
+				fill="currentColor"
+				d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+			></path>
+		</SpinnerWrapper>
+	);
+};
