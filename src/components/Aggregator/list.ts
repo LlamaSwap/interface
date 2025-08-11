@@ -2,7 +2,7 @@ import * as matcha from './adapters/0x';
 import * as inch from './adapters/1inch';
 import * as cowswap from './adapters/cowswap';
 //import * as firebird from './adapters/firebird';
-import * as kyberswap from './adapters/kyberswap';
+//import * as kyberswap from './adapters/kyberswap';
 //import * as hashflow from './adapters/hashflow';
 //import * as openocean from './adapters/openocean';
 import * as paraswap from './adapters/paraswap';
@@ -18,7 +18,7 @@ import * as odos from './adapters/odos';
 import * as matchaGasless from './adapters/0xGasless';
 import * as matchaV2 from './adapters/0xV2';
 
-export const adapters = [matcha, cowswap, paraswap, kyberswap, inch, matchaGasless, odos, matchaV2];
+export const adapters = [matcha, cowswap, paraswap, inch, matchaGasless, odos, matchaV2];
 
 export const inifiniteApprovalAllowed = [matcha.name, cowswap.name, matchaGasless.name];
 
