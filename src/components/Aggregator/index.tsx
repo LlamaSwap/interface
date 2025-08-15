@@ -150,8 +150,6 @@ const Body = styled.div`
 
 const Wrapper = styled.div`
 	width: 100%;
-	height: 100%;
-	min-height: 100%;
 	text-align: center;
 	display: flex;
 	flex-direction: column;
@@ -974,7 +972,7 @@ export function AggregatorContainer() {
 			signatureForSwapMutation.reset();
 		},
 		onError: (err: { reason: string; code: string }, variables) => {
-			console.log(err)
+			console.log(err);
 			if (err.code !== 'ACTION_REJECTED' || err.code.toString() === '-32603') {
 				toast(formatErrorToast(err, false));
 
@@ -1051,7 +1049,7 @@ export function AggregatorContainer() {
 				approvalData: gaslessApprovalMutation?.data ?? {},
 				eip5792: isEip5792 ? { shouldRemoveApproval: shouldRemoveApproval ? true : false, isTokenApproved } : null,
 				signature: signatureForSwapMutation?.data,
-				isSmartContractWallet: (bytecode && bytecode !== '0x') ? true : false
+				isSmartContractWallet: bytecode && bytecode !== '0x' ? true : false
 			});
 		}
 	};
