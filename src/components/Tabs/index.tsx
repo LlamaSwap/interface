@@ -64,6 +64,7 @@ const Tab = styled.li<{ active: boolean }>`
 const Wrapper = styled.div`
 	display: flex;
 	flex-direction: column;
+	flex-grow: 1;
 	align-items: center;
 	gap: 24px;
 	width: 100%;
@@ -80,6 +81,7 @@ const Wrapper = styled.div`
 
 const TabPanels = styled.div`
 	width: 100%;
+	flex-grow: 1;
 	display: flex;
 	justify-content: center;
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
@@ -134,19 +136,19 @@ const Tabs = ({
 
 	return (
 		<Wrapper>
-				<TabList>
-					{tabs.map((tab, index) => (
-						<Tab
-							ref={tabRefs.current[index]}
-							key={tab.id}
-							active={tab.id === activeTab}
-							onClick={() => handleTabChange(index)}
-						>
-							{tab.name}
-						</Tab>
-					))}
-					<ActiveTabBackground style={getActiveTabStyles()} />
-				</TabList>
+			<TabList>
+				{tabs.map((tab, index) => (
+					<Tab
+						ref={tabRefs.current[index]}
+						key={tab.id}
+						active={tab.id === activeTab}
+						onClick={() => handleTabChange(index)}
+					>
+						{tab.name}
+					</Tab>
+				))}
+				<ActiveTabBackground style={getActiveTabStyles()} />
+			</TabList>
 
 			<TabPanels>{tabs.find((tab) => tab.id === activeTab)?.content}</TabPanels>
 		</Wrapper>
