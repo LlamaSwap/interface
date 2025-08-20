@@ -14,12 +14,27 @@ export function useQueryParams() {
 	const toToken = urlParams.get('to');
 	const fromToken = urlParams.get('from');
 	const chainOnURL = urlParams.get('chain');
+	const fromAmountOnURL = urlParams.get('fromAmount');
+	const toAmountOnURL = urlParams.get('toAmount');
 
 	const { ...query } = router.query;
 
 	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
 	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
 	const toTokenAddress = typeof toToken === 'string' ? toToken.toLowerCase() : null;
+	
+	// Only allow one amount parameter to be set - prioritize fromAmount if both exist
+	const fromAmount = fromAmountOnURL || null;
+	const toAmount = fromAmountOnURL ? null : toAmountOnURL || null;
+
+	// Clean up URL if both amount params exist (keep only fromAmount)
+	useEffect(() => {
+		if (router.isReady && fromAmountOnURL && toAmountOnURL) {
+			const query = { ...router.query };
+			delete query.toAmount;
+			router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
+		}
+	}, [router, fromAmountOnURL, toAmountOnURL]);
 
 	useEffect(() => {
 		if (router.isReady && !chainOnURL) {
@@ -30,7 +45,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: chain.value, from: zeroAddress, tab: 'swap' }
+						query: { ...query, chain: chain.value, from: zeroAddress, fromAmount: "0.1", tab: 'swap' }
 					},
 					undefined,
 					{ shallow: true }
@@ -40,7 +55,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: 'ethereum', from: zeroAddress, tab: 'swap' }
+						query: { ...query, chain: 'ethereum', from: zeroAddress, fromAmount: "0.1", tab: 'swap' }
 					},
 					undefined,
 					{ shallow: true }
@@ -49,5 +64,5 @@ export function useQueryParams() {
 		}
 	}, [chainOnURL, chainOnWallet, isConnected, router]);
 
-	return { chainName, fromTokenAddress, toTokenAddress };
+	return { chainName, fromTokenAddress, toTokenAddress, fromAmount, toAmount };
 }
