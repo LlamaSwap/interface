@@ -1,4 +1,4 @@
-import { useRef, useState, Fragment, useEffect } from 'react';
+import { useRef, useState, Fragment, useEffect, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useSignTypedData, useCapabilities, useSwitchChain, useBytecode } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
@@ -340,7 +340,56 @@ export function AggregatorContainer() {
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState<string | null>(null);
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
-	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['', '']);
+	const [[amount, amountOut], setAmountState] = useState<[number | string, number | string]>(['', '']);
+
+	// Get router early since it's needed for URL updates
+	const router = useRouter();
+
+	// Wrapper to update both state and URL params
+	const setAmount = useCallback<React.Dispatch<React.SetStateAction<[string | number, string | number]>>>((newAmounts) => {
+		setAmountState(newAmounts);
+		
+		// Also update URL params when amounts change
+		if (typeof newAmounts === 'function') {
+			// Handle function updates
+			setAmountState((prev) => {
+				const updated = newAmounts(prev);
+				const [fromAmt, toAmt] = updated;
+				const query = { ...router.query };
+				
+				// Clear both first
+				delete query.fromAmount;
+				delete query.toAmount;
+				
+				// Set the appropriate one
+				if (fromAmt && fromAmt !== '' && fromAmt !== '0') {
+					query.fromAmount = String(fromAmt);
+				} else if (toAmt && toAmt !== '' && toAmt !== '0') {
+					query.toAmount = String(toAmt);
+				}
+				
+				router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
+				return updated;
+			});
+		} else {
+			// Handle direct value updates
+			const [fromAmt, toAmt] = newAmounts;
+			const query = { ...router.query };
+			
+			// Clear both first
+			delete query.fromAmount;
+			delete query.toAmount;
+			
+			// Set the appropriate one
+			if (fromAmt && fromAmt !== '' && fromAmt !== '0') {
+				query.fromAmount = String(fromAmt);
+			} else if (toAmt && toAmt !== '' && toAmt !== '0') {
+				query.toAmount = String(toAmt);
+			}
+			
+			router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
+		}
+	}, [router]);
 
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.3');
 	const [lastOutputValue, setLastOutputValue] = useState<{ aggregator: string; amount: number } | null>(null);
@@ -366,9 +415,8 @@ export function AggregatorContainer() {
 
 	// get selected chain and tokens from URL query params
 	const routesRef = useRef<HTMLDivElement>(null);
-	const router = useRouter();
 
-	const { toTokenAddress } = useQueryParams();
+	const { toTokenAddress, fromAmount: fromAmountQuery, toAmount: toAmountQuery } = useQueryParams();
 	const { selectedChain, selectedToToken, finalSelectedFromToken, finalSelectedToToken } = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
@@ -539,7 +587,7 @@ export function AggregatorContainer() {
 			.push(
 				{
 					pathname: '/',
-					query: { ...router.query, chain: newChain.value, from: zeroAddress, to: undefined }
+					query: { ...router.query, chain: newChain.value, from: zeroAddress, to: undefined, fromAmount: '10', toAmount: undefined }
 				},
 				undefined,
 				{ shallow: true }
@@ -573,6 +621,15 @@ export function AggregatorContainer() {
 			onToTokenChange(undefined);
 		}
 	}, [router?.query, savedTokens]);
+
+	// Initialize amounts from query parameters only
+	useEffect(() => {
+		if (fromAmountQuery) {
+			setAmountState([fromAmountQuery, '']);
+		} else if (toAmountQuery) {
+			setAmountState(['', toAmountQuery]);
+		}
+	}, [fromAmountQuery, toAmountQuery]);
 
 	useEffect(() => {
 		if (selectedRoute?.amount && aggregator) {
@@ -1174,7 +1231,7 @@ export function AggregatorContainer() {
 								router.push(
 									{
 										pathname: router.pathname,
-										query: { ...router.query, to: finalSelectedFromToken?.address, from: finalSelectedToToken?.address }
+										query: { ...router.query, to: finalSelectedFromToken?.address, from: finalSelectedToToken?.address, fromAmount: amountOut || undefined, toAmount: amount || undefined }
 									},
 									undefined,
 									{ shallow: true }
