@@ -29,9 +29,13 @@ The widget is responsive, so you can change the width and height in any way you 
 - chain: default chain (eg `chain=ethereum`). This parameter is required
 - from: token to sell, to use the gas token for the chain use 0x0000000000000000000000000000000000000000 (eg `from=0x0000000000000000000000000000000000000000`)
 - to: token to buy, to use the gas token for the chain use 0x0000000000000000000000000000000000000000 (eg `to=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48`)
+- fromAmount: amount to sell (eg `fromAmount=0.1`). Only one of `fromAmount` or `toAmount` can be specified
+- toAmount: amount to buy (eg `toAmount=400`). Only one of `fromAmount` or `toAmount` can be specified
 - background: color of the background (eg `background=rgb(10,20,30)`)
 
-Note: only tokens that are part of our token lists are accepted in `from` and `to`, this is to prevent scammers linking to llamaswap with fake tokens loaded (eg a fake USDC)
+**Important notes:**
+- Only tokens that are part of our token lists are accepted in `from` and `to`, this is to prevent scammers linking to llamaswap with fake tokens loaded (eg a fake USDC)
+- If both `fromAmount` and `toAmount` are provided, only `fromAmount` will be used and `toAmount` will be ignored
 
 #### API integration
 
