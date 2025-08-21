@@ -111,6 +111,7 @@ export function InputAmountAndTokenSelect({
 				<Box pos="relative">
 					<StyledInput
 						type="text"
+						inputMode="decimal"
 						value={amount}
 						placeholder={(placeholder && String(placeholder)) || '0'}
 						onChange={(e) => {
