@@ -16,7 +16,9 @@ export const chainToId = {
 	optimism: 10,
 	polygonzkevm: 1101,
 	base: 8453,
-	gnosis: 100
+	gnosis: 100,
+	sonic: 146,
+	unichain: 130
 };
 
 const approvers = {
@@ -29,7 +31,9 @@ const approvers = {
 	optimism: "0x6a000f20005980200259b80c5102003040001068",
 	polygonzkevm: "0x6a000f20005980200259b80c5102003040001068",
 	base: "0x6a000f20005980200259b80c5102003040001068",
-	gnosis: "0x6a000f20005980200259b80c5102003040001068"
+	gnosis: "0x6a000f20005980200259b80c5102003040001068",
+	sonic: "0x6a000f20005980200259b80c5102003040001068",
+	unichain: "0x6a000f20005980200259b80c5102003040001068"
 }
 
 export const name = 'ParaSwap';
