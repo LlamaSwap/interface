@@ -17,6 +17,7 @@
 		"@chakra-ui/icons": "^2.0.12",
 		"@chakra-ui/react": "2.8.2",
 		"@defillama/sdk": "^3.0.25",
+		"@ekubo/evm-hyper-router-sdk": "0.1.0-alpha.1",
 		"@emotion/react": "^11",
 		"@emotion/styled": "^11",
 		"@rainbow-me/rainbowkit": "^2.2.8",
