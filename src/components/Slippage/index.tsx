@@ -65,6 +65,7 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 				<input
 					value={slippage}
 					type="text"
+					inputMode="decimal"
 					style={{
 						width: '100%',
 						height: '2rem',
