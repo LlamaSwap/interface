@@ -46,6 +46,8 @@ export default function Layout({ title, children, ...props }: ILayoutProps) {
 		<>
 			<Head>
 				<title>{title}</title>
+				<meta name="fc:frame" content="{&quot;version&quot;:&quot;next&quot;,&quot;imageUrl&quot;:&quot;https://swap.defillama.com/farcaster-miniapp-cover.png&quot;,&quot;button&quot;:{&quot;title&quot;:&quot;Open&quot;,&quot;action&quot;:{&quot;type&quot;:&quot;launch_frame&quot;,&quot;name&quot;:&quot;LlamaSwap!&quot;,&quot;url&quot;:&quot;https://swap.defillama.com&quot;,&quot;splashImageUrl&quot;:&quot;https://swap.defillama.com/loader.png&quot;,&quot;splashBackgroundColor&quot;:&quot;#22242A&quot;}}}"/>
+
 			</Head>
 			<Phishing />
 			<ThemeProvider>

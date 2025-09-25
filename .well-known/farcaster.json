@@ -1,0 +1,19 @@
+{
+  "accountAssociation": {
+    "header": "TODO:Signed Association Here",
+    "payload": "TODO:Signed Association Here",
+    "signature": "TODO:Signed Association Here"
+  },
+  "frame": {
+    "version": "1",
+    "name": "LlamaSwap",
+    "iconUrl": "https://swap.defillama.com/icon.png",
+    "homeUrl": "https://swap.defillama.com",
+    "imageUrl": "https://swap.defillama.com/loader.png",
+    "buttonTitle": "Open LlamaSwap",
+    "splashImageUrl": "https://swap.defillama.com/loader-200x200.png",
+    "splashBackgroundColor": "#22242A",
+    "webhookUrl": "",
+    "primaryCategory": "finance"
+  }
+}
