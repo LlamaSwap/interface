@@ -6,6 +6,12 @@ import { Phishing } from './Phishing';
 import ConnectButton from '~/components/Aggregator/ConnectButton';
 import Header from '~/components/Aggregator/Header';
 
+const AppWrapper = styled.div`
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+`;
+
 const PageWrapper = styled.div`
 	flex: 1;
 	display: flex;
@@ -47,18 +53,20 @@ export default function Layout({ title, children, ...props }: ILayoutProps) {
 			<Head>
 				<title>{title}</title>
 			</Head>
-			<Phishing />
-			<ThemeProvider>
-				<GlobalStyle />
-				<PageWrapper>
-					<Center {...props}>
-						<Header>
-							<ConnectButton {...(props as any)} />
-						</Header>
-						{children}
-					</Center>
-				</PageWrapper>
-			</ThemeProvider>
+			<AppWrapper>
+				<Phishing />
+				<ThemeProvider>
+					<GlobalStyle />
+					<PageWrapper>
+						<Center {...props}>
+							<Header>
+								<ConnectButton {...(props as any)} />
+							</Header>
+							{children}
+						</Center>
+					</PageWrapper>
+				</ThemeProvider>
+			</AppWrapper>
 		</>
 	);
 }
