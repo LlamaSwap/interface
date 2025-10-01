@@ -15,7 +15,8 @@ export const chainToId = {
 	arbitrum: 'https://api.cow.fi/arbitrum_one',
 	base: 'https://api.cow.fi/base',
 	avax: 'https://api.cow.fi/avalanche',
-	polygon: 'https://api.cow.fi/polygon'
+	polygon: 'https://api.cow.fi/polygon',
+	bsc: 'https://api.cow.fi/bnb'
 };
 
 export const cowSwapEthFlowSlippagePerChain = {
@@ -24,7 +25,8 @@ export const cowSwapEthFlowSlippagePerChain = {
 	arbitrum: 0.5,
 	base: 0.5,
 	avax: 0.5,
-	polygon: 0.5
+	polygon: 0.5,
+	bsc: 0.5
 };
 
 const wrappedTokens = {
@@ -33,7 +35,8 @@ const wrappedTokens = {
 	arbitrum: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
 	base: '0x4200000000000000000000000000000000000006',
 	avax: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
-	polygon: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270'
+	polygon: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+	bsc: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c'
 };
 
 const cowContractAddress = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110';
@@ -45,7 +48,8 @@ const nativeSwapAddress = {
 	arbitrum: cowSwapEthFlowContractAddress,
 	base: cowSwapEthFlowContractAddress,
 	avax: cowSwapEthFlowContractAddress,
-	polygon: cowSwapEthFlowContractAddress
+	polygon: cowSwapEthFlowContractAddress,
+	bsc: cowSwapEthFlowContractAddress
 };
 
 export const name = 'CowSwap';
