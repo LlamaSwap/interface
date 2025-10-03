@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { zeroAddress } from 'viem';
 import { useAccount } from 'wagmi';
 import { getAllChains } from '~/components/Aggregator/router';
@@ -15,14 +15,14 @@ export function useQueryParams() {
 	const fromToken = urlParams.get('from');
 	const chainOnURL = urlParams.get('chain');
 
-	const { ...query } = router.query;
+
 
 	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
 	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
 	const toTokenAddress = typeof toToken === 'string' ? toToken.toLowerCase() : null;
 
 	useEffect(() => {
-		if (router.isReady && !chainOnURL) {
+		if (router.isReady && router.pathname !== '/token-liquidity' && !chainOnURL) {
 			const chain = chainOnWallet ? chains.find((c) => c.chainId === chainOnWallet.id) : null;
 
 			// redirects to chain on wallet if supported
@@ -30,7 +30,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: chain.value, from: zeroAddress, tab: 'swap' }
+						query: { ...router.query, chain: chain.value, from: zeroAddress, tab: 'swap' }
 					},
 					undefined,
 					{ shallow: true }
@@ -40,7 +40,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: 'ethereum', from: zeroAddress, tab: 'swap' }
+						query: { ...router.query, chain: 'ethereum', from: zeroAddress, tab: 'swap' }
 					},
 					undefined,
 					{ shallow: true }
@@ -49,5 +49,5 @@ export function useQueryParams() {
 		}
 	}, [chainOnURL, chainOnWallet, isConnected, router]);
 
-	return { chainName, fromTokenAddress, toTokenAddress };
+	return useMemo(() => ({ chainName, fromTokenAddress, toTokenAddress }), [chainName, fromTokenAddress, toTokenAddress]);
 }

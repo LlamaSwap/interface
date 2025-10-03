@@ -1,73 +1,40 @@
 import * as React from 'react';
 import { useRouter } from 'next/router';
+import { useCallback } from 'react';
 import { Flex, FormControl, FormLabel, Heading, IconButton } from '@chakra-ui/react';
 import Layout from '~/layout';
-import { chainsMap } from '~/components/Aggregator/constants';
 import ReactSelect from '~/components/MultiSelect';
 import { getAllChains } from '~/components/Aggregator/router';
 import { LiquidityByToken } from '~/components/LiquidityByToken';
-import type { IToken } from '~/types';
 import { ArrowRight } from 'react-feather';
-import { getTokenList } from '~/props/getTokenList';
-
-export async function getStaticProps() {
-	const tokenlist = await getTokenList();
-	return { props: { tokenlist } };
-}
+import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
+import { TokenSelect } from '~/components/InputAmountAndTokenSelect/TokenSelect';
+import styled from 'styled-components';
 
 const chains = getAllChains();
 
-export default function TokenLiquidity({ tokenlist }) {
+export default function TokenLiquidity() {
 	const router = useRouter();
 
-	const { chain, from: fromToken, to: toToken } = router.query;
+	const { finalSelectedFromToken, finalSelectedToToken, selectedChain } = useSelectedChainAndTokens();
 
-	const chainName = typeof chain === 'string' ? chain.toLowerCase() : 'ethereum';
-	const fromTokenSymbol = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
-	const toTokenSymbol = typeof toToken === 'string' ? toToken.toLowerCase() : null;
-
-	const { selectedChain, selectedFromToken, selectedToToken, chainTokenList } = React.useMemo(() => {
-		const tokenList: Array<IToken> = tokenlist && chainName ? tokenlist[chainsMap[chainName]] || [] : null;
-
-		const selectedChain = chains.find((c) => c.value === chainName);
-
-		const selectedFromToken = tokenList?.find(
-			(t) => t.symbol.toLowerCase() === fromTokenSymbol || t.address.toLowerCase() === fromTokenSymbol
-		);
-
-		const selectedToToken = tokenList?.find(
-			(t) => t.symbol.toLowerCase() === toTokenSymbol || t.address.toLowerCase() === toTokenSymbol
-		);
-
-		return {
-			selectedChain,
-			selectedFromToken: selectedFromToken
-				? { ...selectedFromToken, label: selectedFromToken.symbol, value: selectedFromToken.address }
-				: null,
-			selectedToToken: selectedToToken
-				? { ...selectedToToken, label: selectedToToken.symbol, value: selectedToToken.address }
-				: null,
-			chainTokenList: tokenList
-		};
-	}, [chainName, fromTokenSymbol, toTokenSymbol, tokenlist]);
-
-	const onChainChange = (chain) => {
+	const onChainChange = useCallback((chain) => {
 		router.push({ pathname: router.pathname, query: { ...router.query, chain: chain.value } }, undefined, {
 			shallow: true
 		});
-	};
+	}, [router]);
 
-	const onFromTokenChange = (token) => {
-		router.push({ pathname: router.pathname, query: { ...router.query, from: token.symbol } }, undefined, {
+	const onFromTokenChange = useCallback((token) => {
+		router.push({ pathname: router.pathname, query: { ...router.query, from: token.address } }, undefined, {
 			shallow: true
 		});
-	};
+	}, [router]);
 
-	const onToTokenChange = (token) => {
-		router.push({ pathname: router.pathname, query: { ...router.query, to: token.symbol } }, undefined, {
+	const onToTokenChange = useCallback((token) => {
+		router.push({ pathname: router.pathname, query: { ...router.query, to: token.address } }, undefined, {
 			shallow: true
 		});
-	};
+	}, [router]);
 
 	return (
 		<Layout title={`Token Liquidity - LlamaSwap`} defaultSEO>
@@ -86,19 +53,16 @@ export default function TokenLiquidity({ tokenlist }) {
 						<FormLabel htmlFor="privacy-switch" pb="0" lineHeight={1}>
 							From
 						</FormLabel>
-						<ReactSelect
-							options={chainTokenList}
-							value={selectedFromToken}
-							onChange={onFromTokenChange}
-							style={{ flex: 1 }}
-						/>
+						<SelectWrapper>
+							<TokenSelect onClick={onFromTokenChange} type="amountIn" />
+						</SelectWrapper>
 					</FormControl>
 					<IconButton
 						onClick={() =>
 							router.push(
 								{
 									pathname: router.pathname,
-									query: { ...router.query, to: fromToken, from: toToken }
+									query: { ...router.query, to: finalSelectedFromToken?.address, from: finalSelectedToToken?.address }
 								},
 								undefined,
 								{ shallow: true }
@@ -114,19 +78,35 @@ export default function TokenLiquidity({ tokenlist }) {
 						<FormLabel htmlFor="privacy-switch" pb="0" lineHeight={1}>
 							To
 						</FormLabel>
-						<ReactSelect
-							options={chainTokenList}
-							value={selectedToToken}
-							onChange={onToTokenChange}
-							style={{ flex: 1 }}
-						/>
+						<SelectWrapper>
+							<TokenSelect onClick={onToTokenChange} type="amountOut" />
+						</SelectWrapper>
 					</FormControl>
 				</Flex>
 			</Flex>
 
-			{selectedChain && selectedFromToken && selectedToToken && (
-				<LiquidityByToken fromToken={selectedFromToken} toToken={selectedToToken} chain={chainName} />
+			{selectedChain && finalSelectedFromToken && finalSelectedToToken && (
+				<LiquidityByToken
+					fromToken={finalSelectedFromToken}
+					toToken={finalSelectedToToken}
+					chain={selectedChain.value}
+				/>
 			)}
 		</Layout>
 	);
 }
+
+const SelectWrapper = styled.span`
+	width: 100%;
+	& > *:first-child {
+		width: 100%;
+		max-width: 100%;
+		box-shadow:
+			0px 24px 32px rgba(0, 0, 0, 0.04),
+			0px 16px 24px rgba(0, 0, 0, 0.04),
+			0px 4px 8px rgba(0, 0, 0, 0.04),
+			0px 0px 1px rgba(0, 0, 0, 0.04);
+		border-radius: 12px;
+		background: ${({ theme }) => theme.bg6};
+	}
+`;
