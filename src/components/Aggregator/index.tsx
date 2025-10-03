@@ -1,4 +1,4 @@
-import { useRef, useState, Fragment, useEffect } from 'react';
+import { useRef, useState, Fragment, useEffect, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useSignTypedData, useCapabilities, useSwitchChain, useBytecode } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
@@ -548,18 +548,18 @@ export function AggregatorContainer() {
 				if (switchChain) switchChain({ chainId: newChain.chainId });
 			});
 	};
-	const onFromTokenChange = (token) => {
+	const onFromTokenChange = useCallback((token) => {
 		setAggregator(null);
 		router.push({ pathname: router.pathname, query: { ...router.query, from: token.address } }, undefined, {
 			shallow: true
 		});
-	};
-	const onToTokenChange = (token) => {
+	}, [router]);
+	const onToTokenChange = useCallback((token) => {
 		setAggregator(null);
 		router.push({ pathname: router.pathname, query: { ...router.query, to: token?.address || undefined } }, undefined, {
 			shallow: true
 		});
-	};
+	}, [router]);
 
 	useEffect(() => {
 		const isUnknown =
