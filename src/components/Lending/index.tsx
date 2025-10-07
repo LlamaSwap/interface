@@ -16,6 +16,7 @@ import { last } from 'lodash';
 import { ArrowDownIcon, ArrowUpIcon, ExternalLinkIcon, QuestionIcon } from '@chakra-ui/icons';
 import { IPool } from '~/types';
 import { useLendingProps } from '~/queries/useLendingProps';
+import NextLink from 'next/link';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -31,45 +32,47 @@ const YieldsRow = ({ data, index, style, amountsProvided }) => {
 	} = row;
 
 	return (
-		<RowContainer style={style} onClick={() => (url ? window.open(url, '_blank') : null)}>
-			<YieldsCell style={{ marginLeft: '24px', minWidth: '50px' }}>
-				<Tooltip label={row.chain} aria-label={row.chain} placement="top">
-					<ChainIcon
-						src={`https://icons.llamao.fi/icons/chains/rsz_${row.chain.toLowerCase()}?w=48&h=48`}
-						alt={row.chain}
-					/>
-				</Tooltip>
-			</YieldsCell>
-			<YieldsCell style={{ overflow: 'hidden', display: 'block', textAlign: 'center' }}>
-				<Tooltip label={`${row.symbol} ➞ ${row.borrowPool?.symbol}`} aria-label={row.symbol} placement="top">
-					<span>
-						{row.symbol} ➞ {row.borrowPool?.symbol}
-					</span>
-				</Tooltip>
-			</YieldsCell>
-			<YieldsCell>
-				<ChainIcon
-					src={`https://icons.llamao.fi/icons/protocols/${row.project}?w=48&h=48`}
-					style={{ position: 'absolute' }}
-					alt={row.project}
-				/>
-				<span style={{ marginLeft: '28px' }}>{name}</span>
-			</YieldsCell>
-			<YieldsCell
-				style={{
-					color: amountsProvided ? (row.totalApy > 0 ? 'rgba(0, 255, 0, 0.6)' : 'rgba(255, 0, 0, 0.6)') : undefined
-				}}
-			>
-				{amountsProvided ? (
-					row.totalApy?.toFixed(2) + '%'
-				) : (
-					<Tooltip label="Please provide the amount you'd like to lend and borrow to see the APY.">
-						<QuestionIcon width="16px" height="16px" />
+		<RowContainer style={style}>
+			<NextLink href={url ?? '/'} target="_blank" rel="noreferrer noopener">
+				<YieldsCell style={{ marginLeft: '24px', minWidth: '50px' }}>
+					<Tooltip label={row.chain} aria-label={row.chain} placement="top">
+						<ChainIcon
+							src={`https://icons.llamao.fi/icons/chains/rsz_${row.chain.toLowerCase()}?w=48&h=48`}
+							alt={row.chain}
+						/>
 					</Tooltip>
-				)}
-			</YieldsCell>
-			<YieldsCell>{'$' + formatAmountString(row.borrowPool?.totalAvailableUsd)}</YieldsCell>
-			<YieldsCell>{formatAmountString(row?.ltv * 100)}%</YieldsCell>
+				</YieldsCell>
+				<YieldsCell style={{ overflow: 'hidden', display: 'block', textAlign: 'center' }}>
+					<Tooltip label={`${row.symbol} ➞ ${row.borrowPool?.symbol}`} aria-label={row.symbol} placement="top">
+						<span>
+							{row.symbol} ➞ {row.borrowPool?.symbol}
+						</span>
+					</Tooltip>
+				</YieldsCell>
+				<YieldsCell>
+					<ChainIcon
+						src={`https://icons.llamao.fi/icons/protocols/${row.project}?w=48&h=48`}
+						style={{ position: 'absolute' }}
+						alt={row.project}
+					/>
+					<span style={{ marginLeft: '28px' }}>{name}</span>
+				</YieldsCell>
+				<YieldsCell
+					style={{
+						color: amountsProvided ? (row.totalApy > 0 ? 'rgba(0, 255, 0, 0.6)' : 'rgba(255, 0, 0, 0.6)') : undefined
+					}}
+				>
+					{amountsProvided ? (
+						row.totalApy?.toFixed(2) + '%'
+					) : (
+						<Tooltip label="Please provide the amount you'd like to lend and borrow to see the APY.">
+							<QuestionIcon width="16px" height="16px" />
+						</Tooltip>
+					)}
+				</YieldsCell>
+				<YieldsCell>{'$' + formatAmountString(row.borrowPool?.totalAvailableUsd)}</YieldsCell>
+				<YieldsCell>{formatAmountString(row?.ltv * 100)}%</YieldsCell>
+			</NextLink>
 		</RowContainer>
 	);
 };

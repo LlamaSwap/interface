@@ -14,6 +14,7 @@ import { Filter } from 'react-feather';
 import { ArrowBackIcon, ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 import { useYieldProps } from '~/queries/useYieldProps';
 import { useGetTokenList } from '~/queries/useGetTokenList';
+import Link from 'next/link';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -23,30 +24,29 @@ const ChainIcon = styled.img`
 `;
 
 const YieldsRow = ({ data, index, style }) => (
-	<RowContainer
-		style={style}
-		onClick={() => window?.open(`https://defillama.com/yields/pool/${data[index].pool}`, '_blank')}
-	>
-		<YieldsCell>
-			<Tooltip label={data[index].symbol} placement={'top'}>
-				{data[index].symbol}
-			</Tooltip>
-		</YieldsCell>
-		<YieldsCell style={{ marginLeft: '30px' }}>
-			<ChainIcon
-				src={`https://icons.llamao.fi/icons/protocols/${data[index].project}?w=48&h=48`}
-				alt={data[index].project}
-			/>
-		</YieldsCell>
-		<YieldsCell style={{ marginLeft: '30px' }}>
-			<ChainIcon
-				src={`https://icons.llamao.fi/icons/chains/rsz_${data[index].chain.toLowerCase()}?w=48&h=48`}
-				alt={data[index].chain}
-			/>
-		</YieldsCell>
-		<YieldsCell>{data[index].apyMean30d.toFixed(2)}%</YieldsCell>
-		<YieldsCell>{'$' + formatAmountString(data[index].tvlUsd)}</YieldsCell>
-	</RowContainer>
+	<Link href={`https://defillama.com/yields/pool/${data[index].pool}`} target="_blank" rel="noreferrer noopener">
+		<RowContainer style={style}>
+			<YieldsCell>
+				<Tooltip label={data[index].symbol} placement={'top'}>
+					{data[index].symbol}
+				</Tooltip>
+			</YieldsCell>
+			<YieldsCell style={{ marginLeft: '30px' }}>
+				<ChainIcon
+					src={`https://icons.llamao.fi/icons/protocols/${data[index].project}?w=48&h=48`}
+					alt={data[index].project}
+				/>
+			</YieldsCell>
+			<YieldsCell style={{ marginLeft: '30px' }}>
+				<ChainIcon
+					src={`https://icons.llamao.fi/icons/chains/rsz_${data[index].chain.toLowerCase()}?w=48&h=48`}
+					alt={data[index].chain}
+				/>
+			</YieldsCell>
+			<YieldsCell>{data[index].apyMean30d.toFixed(2)}%</YieldsCell>
+			<YieldsCell>{'$' + formatAmountString(data[index].tvlUsd)}</YieldsCell>
+		</RowContainer>
+	</Link>
 );
 
 const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
