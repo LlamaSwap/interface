@@ -9,7 +9,7 @@ export const RefreshIcon = ({ refetch, lastFetched }: { refetch: () => void; las
 
 	return (
 		<Tooltip2
-			content={`Displayed data will auto-refresh after ${secondsToRefresh} seconds. Click here to update manually`}
+			content={`Displayed quotes will auto-refresh after ${secondsToRefresh} seconds. Click here to update now`}
 		>
 			<RepeatIcon pos="absolute" w="16px	" h="16px" mt="4px" ml="4px" />
 			<CircularProgress

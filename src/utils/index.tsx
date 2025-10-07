@@ -2,7 +2,7 @@ export const capitalizeFirstLetter = (word) => word.charAt(0).toUpperCase() + wo
 
 const ICONS_CDN = 'https://icons.llamao.fi/icons';
 
-export function protoclIconUrl(protocol) {
+export function protocolIconUrl(protocol) {
 	return `${ICONS_CDN}/protocols/${protocol}?w=48&h=48`;
 }
 
@@ -26,7 +26,7 @@ export const formattedNum = (number, symbol = false, acceptNegatives = false) =>
 		currencySymbol = symbol;
 	}
 	if (!number || number === '' || Number.isNaN(Number(number))) {
-		return symbol ? `${currencySymbol}0` : 0;
+		return symbol ? `${currencySymbol}0` : '0';
 	}
 	let formattedNum = String();
 	let num = parseFloat(number);

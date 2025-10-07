@@ -56,6 +56,7 @@ export const REFETCH_INTERVAL = 25_000;
 const defaultRouteResponse = ({ adapter, amount }) => ({
 	price: null,
 	name: adapter.name,
+	logo: '',
 	airdrop: !adapter.token,
 	fromAmount: amount,
 	txData: '',
@@ -109,6 +110,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			txData,
 			tx: adapter?.getTx?.(price),
 			name: adapter.name,
+			logo: price.logo,
 			airdrop: !adapter.token,
 			fromAmount: amountIn,
 			isOutputAvailable: adapter.isOutputAvailable,

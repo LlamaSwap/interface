@@ -93,7 +93,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		amountReturned: swapData.outputTokens[0].amount,
 		estimatedGas: swapData.transaction.gas <= 0 ? swapData.gasEstimate : swapData.transaction.gas,
 		rawQuote: swapData,
-		tokenApprovalAddress: routers[chain]
+		tokenApprovalAddress: routers[chain],
+		logo: 'https://icons.llamao.fi/icons/protocols/odos?w=48&q=75'
 	};
 }
 

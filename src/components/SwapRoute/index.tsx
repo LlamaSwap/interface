@@ -1,10 +1,11 @@
 import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
-import { Flex, Skeleton, Text } from '@chakra-ui/react';
+import { Badge, Flex, Skeleton, Text } from '@chakra-ui/react';
 import { AlertCircle, Gift, Unlock, ZapOff } from 'react-feather';
 import { GasIcon } from '../Icons';
 import { formattedNum } from '~/utils';
+import Image from 'next/image';
 
 interface IToken {
 	address: string;
@@ -49,6 +50,7 @@ interface IRoute {
 
 const Route = ({
 	name,
+	logo,
 	price,
 	toToken,
 	setRoute,
@@ -83,15 +85,16 @@ const Route = ({
 			? `$${formattedNum(netOut.toFixed(1), false, true)}`
 			: null;
 	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
-	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
+	const txGas = isGasNotKnown ? '' : '$' + parseFloat(formattedNum(gasUsd)).toFixed(2);
 
 	const inputAmount = amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0' ? amountIn : null;
+	const best = index === 0;
 	return (
 		<RouteWrapper
 			onClick={setRoute}
-			className={selected ? 'RouteWrapper is-selected' : 'RouteWrapper'}
+			className={selected ? 'RouteWrapper is-selected' : best ? 'RouteWrapper is-best' : 'RouteWrapper'}
 			selected={selected}
-			best={index === 0}
+			best={best}
 		>
 			<RouteRow>
 				{inputAmount ? (
@@ -115,10 +118,10 @@ const Route = ({
 				)}
 				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
 					<Flex as="span" alignItems="center" gap="8px">
-						{index === 0 ? (
-							<Text as="span" color="#059669" fontSize={14} fontWeight={700}>
+						{best ? (
+							<Badge size="xs" variant="solid" colorScheme="green">
 								BEST
-							</Text>
+							</Badge>
 						) : Number.isFinite(lossPercent) ? (
 							<Text as="span" color="red.300" fontSize={12}>
 								-{Math.abs(100 - lossPercent * 100).toFixed(2)}%
@@ -187,12 +190,10 @@ const Route = ({
 						)}
 						<Text display="flex" gap="3px">
 							via
-							{isApproved ? (
-								<Tooltip content="Token is approved for this aggregator.">
-									<Unlock size={14} color="#059669" />
-								</Tooltip>
-							) : (
-								' '
+							{logo && (
+								<div style={{ display: 'flex', alignItems: 'center' }}>
+									<Image src={logo} width={14} height={14} alt={name} style={{ height: 'auto', width: '14px' }} />
+								</div>
 							)}
 							{name}
 							{price.isMEVSafe === true ? (
@@ -200,6 +201,13 @@ const Route = ({
 									<ZapOff size={14} color="#059669" />
 								</Tooltip>
 							) : null}
+							{isApproved ? (
+								<Tooltip content="Token is approved for this aggregator.">
+									<Unlock size={14} color="#059669" />
+								</Tooltip>
+							) : (
+								' '
+							)}
 						</Text>
 					</Text>
 				</Text>
@@ -231,6 +239,11 @@ const RouteWrapper = styled.div<{ selected?: boolean; best?: boolean }>`
 	&.is-selected {
 		border-color: rgb(31 114 229);
 		background-color: rgb(3 11 23);
+	}
+
+	&.is-best {
+		border-color: rgb(56 189 248);
+		background-color: rgb(4 17 32);
 	}
 
 	background-color: ${({ selected }) => (selected ? ' #161616;' : '#2d3039;')};
