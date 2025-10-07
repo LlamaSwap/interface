@@ -181,7 +181,7 @@ const Routes = styled.div<{ visible: boolean }>`
 	text-align: left;
 	overflow-y: scroll;
 	width: 100%;
-	min-height: 100%;
+	height: 100%;
 	overflow-x: hidden;
 	align-self: stretch;
 	max-width: 30rem;
@@ -611,7 +611,7 @@ export function AggregatorContainer() {
 		!Number.isNaN(Number(balance.data.formatted)) &&
 		balance.data.value &&
 		selectedRoute?.fromAmount
-			? +selectedRoute.fromAmount > Number(balance.data.value)
+			? +Number(selectedRoute.fromAmount) > Number(balance.data.value)
 			: false;
 
 	const slippageIsWorng = Number.isNaN(Number(slippage)) || slippage === '';

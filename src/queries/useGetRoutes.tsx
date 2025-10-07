@@ -81,9 +81,11 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 				: adapter.getQuote;
 		if (adapter.isOutputAvailable) {
 			price = await quouteFunc(chain, from, to, amount, extra);
-			if (price) {
-				amountIn = price.amountIn;
+			if (!price.amountIn) {
+				console.error(`${adapter.name} returned price without amountIn for output trade`);
+				return defaultRouteResponse({ adapter, amount });
 			}
+			amountIn = price.amountIn;
 		} else if (isOutputDefined && !adapter.isOutputAvailable) {
 			return defaultRouteResponse({ adapter, amount });
 		} else {
@@ -94,7 +96,7 @@ export async function getAdapterRoutes({ adapter, chain, from, to, amount, extra
 			return defaultRouteResponse({ adapter, amount });
 		}
 
-		if (!amountIn) throw Error('amountIn is not defined');
+		if (!amountIn || amountIn === '0') throw Error('amountIn is not defined');
 
 		const txData = adapter?.getTxData?.(price) ?? '';
 		let l1Gas: number | 'Unknown' = 0;
@@ -171,7 +173,7 @@ export function useGetRoutes({
 			lastFetched:
 				res
 					.filter((d) => d.isSuccess && !d.isFetching && d.dataUpdatedAt > 0)
-					.sort((a, b) => a.dataUpdatedAt - b.dataUpdatedAt)?.[0]?.dataUpdatedAt ?? Date.now(),
+					.sort((a, b) => b.dataUpdatedAt - a.dataUpdatedAt)?.[0]?.dataUpdatedAt ?? Date.now(),
 			loadingRoutes,
 			data,
 			isLoading: res.length > 0 && data.length === 0

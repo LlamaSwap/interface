@@ -14,6 +14,8 @@ import { Filter } from 'react-feather';
 import { ArrowBackIcon, ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 import { useYieldProps } from '~/queries/useYieldProps';
 import { useGetTokenList } from '~/queries/useGetTokenList';
+import Link from 'next/link';
+import { UpDownArrow } from '../Icons';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -23,30 +25,29 @@ const ChainIcon = styled.img`
 `;
 
 const YieldsRow = ({ data, index, style }) => (
-	<RowContainer
-		style={style}
-		onClick={() => window?.open(`https://defillama.com/yields/pool/${data[index].pool}`, '_blank')}
-	>
-		<YieldsCell>
-			<Tooltip label={data[index].symbol} placement={'top'}>
-				{data[index].symbol}
-			</Tooltip>
-		</YieldsCell>
-		<YieldsCell style={{ marginLeft: '30px' }}>
-			<ChainIcon
-				src={`https://icons.llamao.fi/icons/protocols/${data[index].project}?w=48&h=48`}
-				alt={data[index].project}
-			/>
-		</YieldsCell>
-		<YieldsCell style={{ marginLeft: '30px' }}>
-			<ChainIcon
-				src={`https://icons.llamao.fi/icons/chains/rsz_${data[index].chain.toLowerCase()}?w=48&h=48`}
-				alt={data[index].chain}
-			/>
-		</YieldsCell>
-		<YieldsCell>{data[index].apyMean30d.toFixed(2)}%</YieldsCell>
-		<YieldsCell>{'$' + formatAmountString(data[index].tvlUsd)}</YieldsCell>
-	</RowContainer>
+	<Link href={`https://defillama.com/yields/pool/${data[index].pool}`} target="_blank" rel="noreferrer noopener">
+		<RowContainer style={style}>
+			<YieldsCell>
+				<Tooltip label={data[index].symbol} placement={'top'}>
+					{data[index].symbol}
+				</Tooltip>
+			</YieldsCell>
+			<YieldsCell style={{ marginLeft: '30px' }}>
+				<ChainIcon
+					src={`https://icons.llamao.fi/icons/protocols/${data[index].project}?w=48&h=48`}
+					alt={data[index].project}
+				/>
+			</YieldsCell>
+			<YieldsCell style={{ marginLeft: '30px' }}>
+				<ChainIcon
+					src={`https://icons.llamao.fi/icons/chains/rsz_${data[index].chain.toLowerCase()}?w=48&h=48`}
+					alt={data[index].chain}
+				/>
+			</YieldsCell>
+			<YieldsCell>{data[index].apyMean30d.toFixed(2)}%</YieldsCell>
+			<YieldsCell>{'$' + formatAmountString(data[index].tvlUsd)}</YieldsCell>
+		</RowContainer>
+	</Link>
 );
 
 const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
@@ -133,32 +134,37 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 							/>
 						) : (
 							<div>
-								<ArrowBackIcon
-									width={'24px'}
-									height={'24px'}
-									ml="-4px"
-									mb="1"
-									cursor={'pointer'}
-									onClick={() => {
-										setIsSearch(true);
-										router?.push({ query: { ...router.query, tab: 'earn', search: '' } }, undefined, { shallow: true });
-									}}
-								/>
-								<Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} mb="6">
-									<Text display={'flex'} fontSize={'20px'} gap="4px">
-										Earn with{' '}
-										<Text fontWeight={'500'} color={'gray.500'}>
-											{search}
-										</Text>
-									</Text>
-
-									<IconButton
-										aria-label="Filters"
-										icon={<Filter />}
-										bgColor={'rgb(20, 22, 25)'}
-										onClick={() => setShowFilters(true)}
+								<div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+									<ArrowBackIcon
+										width={'24px'}
+										height={'24px'}
+										mr="4px"
+										mb="1"
+										cursor={'pointer'}
+										onClick={() => {
+											setIsSearch(true);
+											router?.push({ query: { ...router.query, tab: 'earn', search: '' } }, undefined, {
+												shallow: true
+											});
+										}}
 									/>
-								</Box>
+									<Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} width={'100%'}>
+										<Text display={'flex'} fontSize={'20px'} gap="4px">
+											Earn with{' '}
+											<Text fontWeight={'500'} color={'gray.500'}>
+												{search}
+											</Text>
+										</Text>
+
+										<IconButton
+											aria-label="Filters"
+											icon={<Filter />}
+											bgColor={'inherit'}
+											onClick={() => setShowFilters(true)}
+										/>
+									</Box>
+								</div>
+
 								<Divider width="100%" position="absolute" top="108px" left="0" borderColor={'#2C2F36'} />
 								<ColumnHeader>
 									<YieldsCell>Symbol</YieldsCell>
@@ -166,6 +172,9 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 									<YieldsCell style={{ marginLeft: '16px' }}>Chain</YieldsCell>
 									<YieldsCell
 										style={{
+											display: 'flex',
+											justifyContent: 'center',
+											alignItems: 'center',
 											marginLeft: '20px',
 											minWidth: '90px',
 											color: sortBy === 'apyMean30d' ? 'white' : 'inherit',
@@ -181,11 +190,19 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 											) : (
 												<ArrowDownIcon mb="1" />
 											)
-										) : null}
+										) : (
+											<UpDownArrow />
+										)}
 									</YieldsCell>
 									<YieldsCell
 										onClick={() => handleSort('tvlUsd')}
-										style={{ color: sortBy === 'tvlUsd' ? 'white' : 'inherit', cursor: 'pointer' }}
+										style={{
+											display: 'flex',
+											justifyContent: 'center',
+											alignItems: 'center',
+											color: sortBy === 'tvlUsd' ? 'white' : 'inherit',
+											cursor: 'pointer'
+										}}
 									>
 										TVL{' '}
 										{sortBy === 'tvlUsd' ? (
@@ -194,7 +211,9 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 											) : (
 												<ArrowDownIcon mb="1" />
 											)
-										) : null}
+										) : (
+											<UpDownArrow />
+										)}
 									</YieldsCell>
 								</ColumnHeader>
 								{data?.length ? (
