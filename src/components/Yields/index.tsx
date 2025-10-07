@@ -15,6 +15,7 @@ import { ArrowBackIcon, ArrowDownIcon, ArrowUpIcon } from '@chakra-ui/icons';
 import { useYieldProps } from '~/queries/useYieldProps';
 import { useGetTokenList } from '~/queries/useGetTokenList';
 import Link from 'next/link';
+import { UpDownArrow } from '../Icons';
 
 const ChainIcon = styled.img`
 	width: 24px;
@@ -133,32 +134,37 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 							/>
 						) : (
 							<div>
-								<ArrowBackIcon
-									width={'24px'}
-									height={'24px'}
-									ml="-4px"
-									mb="1"
-									cursor={'pointer'}
-									onClick={() => {
-										setIsSearch(true);
-										router?.push({ query: { ...router.query, tab: 'earn', search: '' } }, undefined, { shallow: true });
-									}}
-								/>
-								<Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} mb="6">
-									<Text display={'flex'} fontSize={'20px'} gap="4px">
-										Earn with{' '}
-										<Text fontWeight={'500'} color={'gray.500'}>
-											{search}
-										</Text>
-									</Text>
-
-									<IconButton
-										aria-label="Filters"
-										icon={<Filter />}
-										bgColor={'rgb(20, 22, 25)'}
-										onClick={() => setShowFilters(true)}
+								<div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+									<ArrowBackIcon
+										width={'24px'}
+										height={'24px'}
+										mr="4px"
+										mb="1"
+										cursor={'pointer'}
+										onClick={() => {
+											setIsSearch(true);
+											router?.push({ query: { ...router.query, tab: 'earn', search: '' } }, undefined, {
+												shallow: true
+											});
+										}}
 									/>
-								</Box>
+									<Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} width={'100%'}>
+										<Text display={'flex'} fontSize={'20px'} gap="4px">
+											Earn with{' '}
+											<Text fontWeight={'500'} color={'gray.500'}>
+												{search}
+											</Text>
+										</Text>
+
+										<IconButton
+											aria-label="Filters"
+											icon={<Filter />}
+											bgColor={'inherit'}
+											onClick={() => setShowFilters(true)}
+										/>
+									</Box>
+								</div>
+
 								<Divider width="100%" position="absolute" top="108px" left="0" borderColor={'#2C2F36'} />
 								<ColumnHeader>
 									<YieldsCell>Symbol</YieldsCell>
@@ -166,6 +172,9 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 									<YieldsCell style={{ marginLeft: '16px' }}>Chain</YieldsCell>
 									<YieldsCell
 										style={{
+											display: 'flex',
+											justifyContent: 'center',
+											alignItems: 'center',
 											marginLeft: '20px',
 											minWidth: '90px',
 											color: sortBy === 'apyMean30d' ? 'white' : 'inherit',
@@ -181,11 +190,19 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 											) : (
 												<ArrowDownIcon mb="1" />
 											)
-										) : null}
+										) : (
+											<UpDownArrow />
+										)}
 									</YieldsCell>
 									<YieldsCell
 										onClick={() => handleSort('tvlUsd')}
-										style={{ color: sortBy === 'tvlUsd' ? 'white' : 'inherit', cursor: 'pointer' }}
+										style={{
+											display: 'flex',
+											justifyContent: 'center',
+											alignItems: 'center',
+											color: sortBy === 'tvlUsd' ? 'white' : 'inherit',
+											cursor: 'pointer'
+										}}
 									>
 										TVL{' '}
 										{sortBy === 'tvlUsd' ? (
@@ -194,7 +211,9 @@ const Yields = ({ tokens, isLoading, data: { data: initialData, config } }) => {
 											) : (
 												<ArrowDownIcon mb="1" />
 											)
-										) : null}
+										) : (
+											<UpDownArrow />
+										)}
 									</YieldsCell>
 								</ColumnHeader>
 								{data?.length ? (
