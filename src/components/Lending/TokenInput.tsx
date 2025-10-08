@@ -37,6 +37,9 @@ const customSelectStyles = {
 	}),
 	option: (provided, state) => ({
 		...provided,
+		whiteSpace: 'nowrap',
+		overflow: 'hidden',
+		textOverflow: 'ellipsis',
 		backgroundColor: state.isSelected ? '#4A5568' : state.isFocused ? '#3f444e' : '#222429',
 		color: 'white',
 		'&:active': {
@@ -85,8 +88,13 @@ export function LendingInput({
 }) {
 	const router = useRouter();
 	const { includeRewardApy } = router.query;
+
+	// const handlePercentChange = (percent) => {
+	// 	onAmountChange(Number(amount * percent).toFixed(2));
+	// };
+
 	return (
-		<TokenContainer h="144px">
+		<TokenContainer h="144px" style={{ position: 'relative', zIndex: isBorrow ? 1 : 2 }}>
 			<TokenLabel>{isBorrow ? 'You Borrow' : 'Collateral'}</TokenLabel>
 			{!isBorrow ? (
 				<Flex justifyContent={'flex-end'} pr="8" gap="2" position={'absolute'} right={'0'} fontSize={'12px'}>
@@ -107,7 +115,7 @@ export function LendingInput({
 				</Flex>
 			) : null}
 			<Flex flexDir={{ md: 'row' }} gap={{ base: '12px', md: '8px' }} position={'relative'}>
-				<Box pos="relative" display={'flex'} justifyContent={'space-between'}>
+				<Box pos="relative" display={'flex'} justifyContent={'space-between'} style={{ zIndex: isBorrow ? 1 : 2 }}>
 					<TokenInput
 						width="50%"
 						placeholder="0"
@@ -142,25 +150,25 @@ export function LendingInput({
 						</Text>
 					) : null}
 				</AmountUsd>
-				{isBorrow ? (
+				{/* {isBorrow ? (
 					<Flex gap="8px" mt="2" justify="flex-end">
-						<Button onClick={() => onAmountChange('25%')} size="xs">
+						<Button onClick={() => handlePercentChange(0.25)} size="xs">
 							<Text fontSize={'14px'} fontWeight={'bold'}>
 								25%
 							</Text>
 						</Button>
-						<Button onClick={() => onAmountChange('50%')} size={'xs'}>
+						<Button onClick={() => handlePercentChange(0.5)} size={'xs'}>
 							<Text fontSize={'14px'} fontWeight={'bold'}>
 								50%
 							</Text>
 						</Button>
-						<Button onClick={() => onAmountChange('75%')} size={'xs'}>
+						<Button onClick={() => handlePercentChange(0.75)} size={'xs'}>
 							<Text fontSize={'14px'} fontWeight={'bold'}>
 								75%
 							</Text>
 						</Button>
 					</Flex>
-				) : null}
+				) : null} */}
 			</Flex>
 		</TokenContainer>
 	);
