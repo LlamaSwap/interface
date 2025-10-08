@@ -53,7 +53,9 @@ const YieldsRow = ({ data, index, style, amountsProvided }) => {
 					style={{ position: 'absolute' }}
 					alt={row.project}
 				/>
-				<span style={{ marginLeft: '28px' }}>{name}</span>
+				<Tooltip label={name} aria-label={name} placement="top">
+					<span style={{ marginLeft: '28px' }}>{name}</span>
+				</Tooltip>
 			</YieldsCell>
 			<YieldsCell
 				style={{
@@ -76,14 +78,8 @@ const YieldsRow = ({ data, index, style, amountsProvided }) => {
 
 const customTokens = [
 	{
-		label: 'Stables',
-		value: 'STABLES',
-		logoURI: 'https://icons.llamao.fi/icons/pegged/usd_native?h=48&w=48'
-	},
-	{
-		label: 'ETH',
-		value: 'ETH',
-		logoURI: 'https://icons.llamao.fi/icons/pegged/ethereum?h=48&w=48'
+		label: 'All USD Stablecoins',
+		value: 'STABLES'
 	}
 ];
 const useGetPrices = (tokens) => {
@@ -427,9 +423,11 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 									}}
 									amount={amountToLend || ''}
 									onAmountChange={setAmountToLend}
-									tokenPlaceholder="Token to Lend"
+									tokenPlaceholder="Select token"
 								/>
 								<SwapInputArrow
+									bottom="0px"
+									zIndex={10}
 									onClick={() => {
 										router.push(
 											{
@@ -462,7 +460,7 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 									}}
 									amount={amountToBorrow || ''}
 									onAmountChange={setAmountToBorrow}
-									tokenPlaceholder="Token to Borrow"
+									tokenPlaceholder="Select token"
 									isBorrow
 								/>
 							</Flex>
@@ -516,7 +514,19 @@ const Lending = ({ data: { yields: initialData, ...props }, isLoading }) => {
 							</TabButtonsContainer>
 							<TabContent>
 								{filteredPoolPairs.length === 0 ? (
-									<NotFound text={'Select a lending and borrowing token to see the available pairs.'} size="200px" />
+									<>
+										{!selectedLendToken || !selectedBorrowToken ? (
+											<NotFound
+												text={'Select a lending and borrowing token to see the available pairs.'}
+												size="200px"
+											/>
+										) : (
+											<NotFound
+												text={'No available pairs found. Please try another lending and borrowing token.'}
+												size="200px"
+											/>
+										)}
+									</>
 								) : (
 									<YieldsContainer ref={containerRef} style={{ paddingTop: 0 }}>
 										<ColumnHeader
