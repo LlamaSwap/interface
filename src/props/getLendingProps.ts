@@ -17,7 +17,7 @@ export async function getLSDPageData(pools) {
 
 	let lsdApy = pools
 		.filter((p) => lsdProtocolsSlug.includes(p.project) && p.chain === 'Ethereum' && p.symbol.includes('ETH'))
-		.concat(pools.find((i) => i.project === 'crypto.com-staked-eth'))
+		.concat(pools.find((i) => i.project === 'crypto.com-staked-eth') || [])
 		.map((p) => ({
 			...p,
 			name: p.project
@@ -73,7 +73,8 @@ async function getLendBorrowData(pools: Array<IPool> = []) {
 
 			const apyBaseBorrow = x.apyBaseBorrow !== null ? -x.apyBaseBorrow : null;
 			const apyRewardBorrow = x.apyRewardBorrow;
-			const apyBorrow = apyBaseBorrow === null && apyRewardBorrow === null ? null : apyBaseBorrow + apyRewardBorrow;
+			const apyBorrow =
+				apyBaseBorrow === null && apyRewardBorrow === null ? null : (apyBaseBorrow || 0) + (apyRewardBorrow || 0);
 			const isBorrowable = x.borrowable || x.totalBorrowUsd > 0;
 			const lsdApy =
 				lsdData.find((i) => p?.symbol?.toLowerCase().includes(i.symbol?.toLowerCase()) && !p.symbol?.includes('-'))
@@ -83,12 +84,12 @@ async function getLendBorrowData(pools: Array<IPool> = []) {
 				const compoundData = compoundPools.find(
 					(a) => a.underlyingTokens[0].toLowerCase() === x.underlyingTokens[0].toLowerCase()
 				);
-				totalAvailableUsd = compoundData?.totalSupplyUsd - compoundData?.totalBorrowUsd;
+				totalAvailableUsd = compoundData ? compoundData.totalSupplyUsd - compoundData.totalBorrowUsd : null;
 			} else if (p.project === 'morpho-aave') {
 				const aaveData = aavev2Pools.find(
 					(a) => a.underlyingTokens[0].toLowerCase() === x.underlyingTokens[0].toLowerCase()
 				);
-				totalAvailableUsd = aaveData?.totalSupplyUsd - aaveData?.totalBorrowUsd;
+				totalAvailableUsd = aaveData ? aaveData.totalSupplyUsd - aaveData.totalBorrowUsd : null;
 			} else if (x.totalSupplyUsd === null && x.totalBorrowUsd === null) {
 				totalAvailableUsd = null;
 			} else if (cdpPools.includes(x.pool)) {
@@ -117,11 +118,11 @@ async function getLendBorrowData(pools: Array<IPool> = []) {
 				borrowFactor: x.borrowFactor,
 				totalAvailableUsd,
 				apyBorrow,
-				rewardTokens: (p.apyReward ?? 0) > 0 || x.apyRewardBorrow > 0 ? x.rewardTokens : p.rewardTokens
+				rewardTokens: (p.apyReward ?? 0) > 0 || (x.apyRewardBorrow || 0) > 0 ? x.rewardTokens : p.rewardTokens
 			};
 		})
 		.filter(Boolean)
-		.sort((a, b) => b!.totalSupplyUsd - a!.totalSupplyUsd) as Array<IPool>;
+		.sort((a, b) => (b?.totalSupplyUsd || 0) - (a?.totalSupplyUsd || 0)) as Array<IPool>;
 
 	return {
 		yields: pools,
